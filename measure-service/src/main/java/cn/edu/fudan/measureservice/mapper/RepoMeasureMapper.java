@@ -65,6 +65,8 @@ public interface RepoMeasureMapper {
 
     List<Map<String, Object>> getCommitMsgByCondition(@Param("repo_id")String repoId,@Param("developer_name")String developerName,@Param("since")String beginDate,@Param("until")String endDate);
 
+    List<String> getCommitMsgByRepoId(@Param("repo_id")String repoId,@Param("developer")String developerName);
 
+    Integer getCommitNumByRepoId(@Param("repo_id")String repoId,@Param("developer")String developerName);
 
 }

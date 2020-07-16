@@ -652,7 +652,36 @@ public class MeasureDeveloperServiceImpl implements MeasureDeveloperService {
         // 遍历所有repo，进行jira度量统计
         for (String repo : repoList){
             // 0. 获取开发者完成的jira任务列表 即jira的ID列表
+            List<String> commit_msg = repoMeasureMapper.getCommitMsgByRepoId(repo,developer);
+            String first_msg = commit_msg.get(0);
+            String keyword = first_msg.substring( 0, first_msg.indexOf( ' ' ) ) ;
+            JSONArray jiraKeyResponse = restInterfaceManager.getJiraInfoByKey("key",keyword);
+            JSONObject keydata = (JSONObject) jiraKeyResponse.get(0);
+            JSONObject fields = keydata.getJSONObject("fields");
+            JSONObject project = fields.getJSONObject("project");
+            String key = project.getString("key");
+            //获取全部jira任务
+            int jiraNum =0;
+            JSONArray jiraProjectResponse = restInterfaceManager.getJiraInfoByKey("project",key);
+            for(int i=0 ; i<jiraProjectResponse.size(); i++) {
+                JSONObject projectdata = (JSONObject) jiraProjectResponse.get(i);
+                //获取status状态
+                fields = projectdata.getJSONObject("fields");
+                JSONObject Status = fields.getJSONObject("status");
+                String status = Status.getString("name");
+                //获取开发员姓名
+                JSONObject Assignee = fields.getJSONObject("assignee");
+                String assignee = Assignee.getString("assignee");
+                //统计jira任务数
+                if(status.equals("done")&&assignee.equals(developer))
+                    jiraNum++;
+            }
 
+            // 1. 获取完成jira任务需要的commit数量
+            double average;
+            int commitNum = repoMeasureMapper.getCommitNumByRepoId(repo,developer);
+            average = commitNum/jiraNum;
+            return average;
             // 1. 获取完成jira任务需要的commit数量
 
             // 2. 获取这些commit的工作日天数
