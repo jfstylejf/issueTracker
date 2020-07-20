@@ -440,7 +440,7 @@ public class MeasureDeveloperServiceImpl implements MeasureDeveloperService {
     private Efficiency getDeveloperEfficiency(String repoId,String beginDate, String endDate, String developer, String branch,
                                               int developerNumber){
         //提交频率指标
-        int totalCommitCount = getCommitCountsByDuration(repoId, beginDate, endDate);
+        int totalCommitCount = repoMeasureMapper.getCommitCountsByDuration(repoId, beginDate, endDate,null);
         int developerCommitCount = repoMeasureMapper.getCommitCountsByDuration(repoId, beginDate, endDate, developer);
         //代码量指标
         int developerLOC = repoMeasureMapper.getRepoLOCByDuration(repoId, beginDate, endDate, developer);
