@@ -178,15 +178,17 @@ public class MeasureScanServiceImpl implements MeasureScanService {
             repoMeasure.setDel_comment_lines(map.get("delCommentLines"));
 
             Map<DiffEntry.ChangeType, List<String>> filePaths = jGitHelper.getDiffFilePathList(commitId);
-            List<String> changedFilePathList = filePaths.get(DiffEntry.ChangeType.MODIFY);
             int changedFiles = 0;
-            if (changedFilePathList != null) {
-                for (String s : changedFilePathList) {
-                    if (! FileFilter.javaFilenameFilter(s)){
-                        changedFiles++;
+            for (List<String> changedFilePathList : filePaths.values()){
+                if (changedFilePathList != null) {
+                    for (String s : changedFilePathList) {
+                        if (! FileFilter.javaFilenameFilter(s)){
+                            changedFiles++;
+                        }
                     }
                 }
             }
+
             repoMeasure.setChanged_files(changedFiles);
         }
         

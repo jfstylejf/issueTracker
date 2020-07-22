@@ -2,6 +2,8 @@ package cn.edu.fudan.measureservice.portrait;
 
 import lombok.*;
 
+import java.io.Serializable;
+
 /**
  * description:
  *
@@ -12,7 +14,7 @@ import lombok.*;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Competence implements Formula{
+public class Competence implements Formula, Serializable {
 
 
     // 基础数据
@@ -73,19 +75,19 @@ public class Competence implements Formula{
     @Override
     public double cal() {
         levelScore = getLevelScore();
-        if (levelScore >=0 && levelScore <= 3.0/developerNumber){
+        if (levelScore >=0 && levelScore <= 0.1/developerNumber){
             return 1;
         }
-        if (levelScore >3.0/developerNumber && levelScore <= 4.0/developerNumber){
+        if (levelScore >0.1/developerNumber && levelScore <= 0.6/developerNumber){
             return 2;
         }
-        if (levelScore >4.0/developerNumber && levelScore <= 5.0/developerNumber){
+        if (levelScore >0.6/developerNumber && levelScore <= 1.5/developerNumber){
             return 3;
         }
-        if (levelScore >5.0/developerNumber && levelScore <= 6.0/developerNumber){
+        if (levelScore >1.5/developerNumber && levelScore <= 3.0/developerNumber){
             return 4;
         }
-        if (levelScore >6.0/developerNumber){
+        if (levelScore >3.0/developerNumber){
             return 5;
         }
         return 0;
@@ -279,7 +281,10 @@ public class Competence implements Formula{
         if (levelScore != defaultLevel) {
             return levelScore;
         }
-        levelScore = 0.5*surviveRate + 0.2*nonRepetitiveCodeRate + 0.3*(developerAddStatement*1.0/totalAddStatement);
+        if (totalAddStatement != 0){
+            levelScore = 0.5*surviveRate + 0.2*focusRange + 0.3*(developerAddStatement*1.0/totalAddStatement);
+            return levelScore;
+        }
         return levelScore;
     }
 

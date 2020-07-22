@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -98,6 +99,7 @@ public class RestInterfaceManager {
         return restTemplate.getForObject(projectServicePath + "/inner/projects?account_id=" + account_id,JSONArray.class);
     }
 
+    @CachePut("projects")
     public JSONArray getProjectsOfRepo(String repoId){
         JSONArray result = restTemplate.getForObject(projectServicePath + "/inner/project?repo_id=" + repoId,JSONArray.class);
         return result;
@@ -212,7 +214,7 @@ public class RestInterfaceManager {
         ResponseEntity responseEntity = restTemplate.exchange(url.toString(), HttpMethod.GET, request, JSONObject.class);
         String body = responseEntity.getBody().toString();
         JSONObject result = JSONObject.parseObject(body);
-        if(result.get("data") != null){
+        if(result.getIntValue("code") == 200){
             return result.getIntValue("data");
         }
         return 0;

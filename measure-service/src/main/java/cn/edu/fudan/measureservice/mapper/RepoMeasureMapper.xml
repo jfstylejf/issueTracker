@@ -500,7 +500,7 @@
                 </if>
             </trim>
         </where>
-        ORDER BY commit_time
+        ORDER BY commit_time DESC
     </select>
 
     <select id="getCommitMsgByRepoId" parameterType="String" resultType="String">

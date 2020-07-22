@@ -653,14 +653,28 @@ public class JGitHelper {
 
     public static void main(String[] args) throws ParseException {
         String repoPath = "D:\\Project\\FDSELab\\开源项目\\IssueTracker-Master";
+        String commitId = "f6b81325edc2c26fa54b62fc63188e35ecec8620";
         JGitHelper jGitHelper = new JGitHelper(repoPath);
-        Map<String, Integer> map = jGitHelper.getLinesData("57c2891947f2907c0ddc97b421a95899bb5428c4");
+        Map<String, Integer> map = jGitHelper.getLinesData(commitId);
         System.out.println("addLines :"+map.get("addLines"));
         System.out.println("delLines :"+map.get("delLines"));
         System.out.println("addCommentLines :"+map.get("addCommentLines"));
         System.out.println("delCommentLines :"+map.get("delCommentLines"));
         System.out.println("addWhiteLines :"+map.get("addWhiteLines"));
         System.out.println("delWhiteLines :"+map.get("delWhiteLines"));
+
+        Map<DiffEntry.ChangeType, List<String>> filePaths = jGitHelper.getDiffFilePathList(commitId);
+        int changedFiles = 0;
+        for (List<String> changedFilePathList : filePaths.values()){
+            if (changedFilePathList != null) {
+                for (String s : changedFilePathList) {
+                    if (! FileFilter.javaFilenameFilter(s)){
+                        changedFiles++;
+                    }
+                }
+            }
+        }
+        System.out.println(changedFiles);
     }
 
 }
