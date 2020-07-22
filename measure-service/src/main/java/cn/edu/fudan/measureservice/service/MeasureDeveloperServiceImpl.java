@@ -5,16 +5,14 @@ import cn.edu.fudan.measureservice.domain.*;
 import cn.edu.fudan.measureservice.mapper.RepoMeasureMapper;
 import cn.edu.fudan.measureservice.portrait.*;
 import cn.edu.fudan.measureservice.util.DateTimeUtil;
-import cn.edu.fudan.measureservice.util.GitUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
-import java.io.Console;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -27,12 +25,9 @@ import java.util.regex.Pattern;
 
 @Slf4j
 @Service
+//@CacheConfig(cacheNames = "portrait")
 public class MeasureDeveloperServiceImpl implements MeasureDeveloperService {
 
-    private Logger logger = LoggerFactory.getLogger(MeasureDeveloperServiceImpl.class);
-
-    @Value("${repoHome}")
-    private String repoHome;
     @Value("${inactive}")
     private int inactive;
     @Value("${lessActive}")
@@ -43,13 +38,11 @@ public class MeasureDeveloperServiceImpl implements MeasureDeveloperService {
 
     private RestInterfaceManager restInterfaceManager;
     private RepoMeasureMapper repoMeasureMapper;
-    private GitUtil gitUtil;
 
 
-    public MeasureDeveloperServiceImpl(RestInterfaceManager restInterfaceManager, RepoMeasureMapper repoMeasureMapper, GitUtil gitUtil) {
+    public MeasureDeveloperServiceImpl(RestInterfaceManager restInterfaceManager, RepoMeasureMapper repoMeasureMapper) {
         this.restInterfaceManager = restInterfaceManager;
         this.repoMeasureMapper = repoMeasureMapper;
-        this.gitUtil = gitUtil;
     }
 
     @Override
@@ -193,39 +186,40 @@ public class MeasureDeveloperServiceImpl implements MeasureDeveloperService {
 
     @Override
     public Object getRepoListByDeveloperName(String developer_name, String token, String category) {
-        String repoPath=null;
-        // 这里配合脚本的判断分支，将since以及until设置为值为null的字符串；
-        String since = "null";
-        String until = "null";
-        int commitCount ;
-        Map<String,String> result = new HashMap<>();
-        List<JSONObject> projectList = restInterfaceManager.getProjectListByCategory(token,category);
-        if(projectList != null){
-            for(Object project:projectList){
-                JSONObject protectJson = (JSONObject)project;
-                if(protectJson.get("download_status").toString().equals("Downloading")){
-                    continue;
-                }
-                String repo_id = protectJson.get("repo_id").toString();
-                String repo_name = protectJson.get("name").toString();
-                try{
-                    repoPath=restInterfaceManager.getRepoPath(repo_id,"");
-                    if(repoPath!=null){
-                        commitCount = gitUtil.getCommitCount(repoPath,since,until,developer_name);
-                        if(commitCount != 0){
-                            String active = getActivityByRepoId(repo_id);
-                            result.put(repo_name,active);
-                        }
-                    }
-                }finally {
-                    if(repoPath!=null) {
-                        restInterfaceManager.freeRepoPath(repo_id,repoPath);
-                    }
-                }
-            }
-        }
-
-        return result;
+//        String repoPath=null;
+//        // 这里配合脚本的判断分支，将since以及until设置为值为null的字符串；
+//        String since = "null";
+//        String until = "null";
+//        int commitCount ;
+//        Map<String,String> result = new HashMap<>();
+//        List<JSONObject> projectList = restInterfaceManager.getProjectListByCategory(token,category);
+//        if(projectList != null){
+//            for(Object project:projectList){
+//                JSONObject protectJson = (JSONObject)project;
+//                if(protectJson.get("download_status").toString().equals("Downloading")){
+//                    continue;
+//                }
+//                String repo_id = protectJson.get("repo_id").toString();
+//                String repo_name = protectJson.get("name").toString();
+//                try{
+//                    repoPath=restInterfaceManager.getRepoPath(repo_id,"");
+//                    if(repoPath!=null){
+//                        commitCount = gitUtil.getCommitCount(repoPath,since,until,developer_name);
+//                        if(commitCount != 0){
+//                            String active = getActivityByRepoId(repo_id);
+//                            result.put(repo_name,active);
+//                        }
+//                    }
+//                }finally {
+//                    if(repoPath!=null) {
+//                        restInterfaceManager.freeRepoPath(repo_id,repoPath);
+//                    }
+//                }
+//            }
+//        }
+//
+//        return result;
+        return null;
     }
 
     @Override
@@ -244,17 +238,17 @@ public class MeasureDeveloperServiceImpl implements MeasureDeveloperService {
             JSONObject result = restInterfaceManager.getProjectListByCondition(token,category,project_name,null);
             int code =result.getIntValue("code");
             if(code != 200){
-                logger.error("request project api failed  ---> {}",project_name);
+                log.error("request project api failed  ---> {}",project_name);
                 throw new RuntimeException("request project api failed  ---> "+ project_name);
             }
             JSONArray projects = result.getJSONArray("data");
             if(projects.size() == 0){
-                logger.info("do not have this project --> {}",project_name );
+                log.info("do not have this project --> {}",project_name );
                 throw new RuntimeException("do not have this project --> "+project_name);
             }
             if (projects.size() > 1){
                 // 这一段的方法待优化 可以在多个project中取最近counts 次数的commits的度量
-                logger.info("more than one project named --> {}",project_name );
+                log.info("more than one project named --> {}",project_name );
                 throw new RuntimeException("more than one project named --> "+project_name);
             }
             JSONObject project =  projects.getJSONObject(0);
@@ -273,14 +267,14 @@ public class MeasureDeveloperServiceImpl implements MeasureDeveloperService {
             codeQuality = new CodeQuality(repoMeasure.getAdd_lines(),repoMeasure.getDel_lines(),newIssueCounts,repoMeasure.getCommit_time());
             JSONArray projects = restInterfaceManager.getProjectsOfRepo(repoMeasure.getRepo_id());
             if(projects.size()==0){
-                logger.error("can not find project by repo_id --->{}",repoMeasure.getRepo_id());
+                log.error("can not find project by repo_id --->{}",repoMeasure.getRepo_id());
             }else {
                 projectName = projects.getJSONObject(0).getString("name");
             }
             codeQuality.setCommitId(repoMeasure.getCommit_id());
             codeQuality.setProjectName(projectName);
             if(newIssueCounts == -1){
-                logger.info("this commit --> {} can not be compiled",repoMeasure.getCommit_id());
+                log.info("this commit --> {} can not be compiled",repoMeasure.getCommit_id());
                 codeQuality.setExpression("this commit can not be compiled!");
             }
 
@@ -387,6 +381,7 @@ public class MeasureDeveloperServiceImpl implements MeasureDeveloperService {
 
 
     @Override
+    @Cacheable(cacheNames = {"developerMetrics"})
     public DeveloperMetrics getPortrait(String repoId, String developer, String beginDate, String endDate, String token, String tool) throws ParseException {
         if ("".equals(beginDate) || beginDate == null){
             beginDate = repoMeasureMapper.getFirstCommitDateByCondition(repoId,null);
@@ -575,6 +570,12 @@ public class MeasureDeveloperServiceImpl implements MeasureDeveloperService {
                 .build();
     }
 
+
+    @CacheEvict(cacheNames = {"portraitLevel","developerMetrics"})
+    public void reloadCache() {
+    }
+
+    @Cacheable(cacheNames = {"portraitLevel"}, key = "#developer")
     @Override
     public Object getPortraitLevel(String developer, String token) throws ParseException {
         //获取developerMetricsList
@@ -588,19 +589,19 @@ public class MeasureDeveloperServiceImpl implements MeasureDeveloperService {
             for (int i = 0; i < projects.size(); i++){
                 String tool = projects.getJSONObject(i).getString("type");
                 String repoName = projects.getJSONObject(i).getString("name");
-                logger.info("Current repo is : " + repoName + ", the issue_scan_type is " + tool);
+                log.info("Current repo is : " + repoName + ", the issue_scan_type is " + tool);
                 //只添加被sonarqube扫描过的项目，findbugs之后会逐渐被废弃
                 if ("sonarqube".equals(tool)){
                     String beginDate = repoMeasureMapper.getFirstCommitDateByCondition(repoId,null);
 //                    String endDate = repoMeasureMapper.getLastCommitDateOfOneRepo(repoId);
-                    logger.info("Start to get portrait of " + developer + " in repo : " + repoName);
+                    log.info("Start to get portrait of " + developer + " in repo : " + repoName);
                     DeveloperMetrics metrics = getPortrait(repoId, developer, beginDate, endDate, token, tool);
                     developerMetricsList.add(metrics);
-                    logger.info("Successfully get portrait of " + developer + " in repo : " + repoName);
+                    log.info("Successfully get portrait of " + developer + " in repo : " + repoName);
                 }
             }
         }
-        logger.info("Get portrait of " + developer + " complete!" );
+        log.info("Get portrait of " + developer + " complete!" );
         //获取第一次提交commit的日期
         LocalDateTime firstCommitDateTime;
         LocalDate firstCommitDate = null;
@@ -697,7 +698,7 @@ public class MeasureDeveloperServiceImpl implements MeasureDeveloperService {
         // 从字符串开头，返回匹配到的第一个字符串
         if (matcher.find()) {
             // 输出第一次匹配的内容
-            logger.info("jira ID is : {}",matcher.group());
+            log.info("jira ID is : {}",matcher.group());
             return matcher.group();
         }
         return "noJiraID" ;

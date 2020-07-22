@@ -2,6 +2,8 @@ package cn.edu.fudan.measureservice.portrait;
 
 import lombok.*;
 
+import java.io.Serializable;
+
 /**
  * description:
  *
@@ -12,7 +14,7 @@ import lombok.*;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Competence implements Formula{
+public class Competence implements Formula, Serializable {
 
 
     // 基础数据

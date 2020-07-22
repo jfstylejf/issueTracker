@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -15,7 +16,7 @@ import java.util.Date;
  * create: 2020-05-18 21:26
  **/
 @Data
-public class DeveloperMetrics{
+public class DeveloperMetrics implements Serializable {
 
     private LocalDate firstCommitDate;
     private int totalLine;

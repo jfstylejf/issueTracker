@@ -64,24 +64,24 @@ public class MeasureDeveloperController {
         }
     }
 
-    /**
-     * 中汇需要
-     */
-    @GetMapping("/measure/developer/repository-list")
-    @CrossOrigin
-    public ResponseBean getRepoListByDeveloperName(
-                                                    @RequestParam("developer_name")String developer_name,
-                                                    @RequestParam("category")String category,
-                                                    HttpServletRequest request
-    ){
-        try{
-            String token = request.getHeader("token");
-            return new ResponseBean(200,"success",measureDeveloperService.getRepoListByDeveloperName(developer_name,token,category));
-        }catch (Exception e){
-            e.printStackTrace();
-            return new ResponseBean(401,"failed",null);
-        }
-    }
+//    /**
+//     * 中汇需要
+//     */
+//    @GetMapping("/measure/developer/repository-list")
+//    @CrossOrigin
+//    public ResponseBean getRepoListByDeveloperName(
+//                                                    @RequestParam("developer_name")String developer_name,
+//                                                    @RequestParam("category")String category,
+//                                                    HttpServletRequest request
+//    ){
+//        try{
+//            String token = request.getHeader("token");
+//            return new ResponseBean(200,"success",measureDeveloperService.getRepoListByDeveloperName(developer_name,token,category));
+//        }catch (Exception e){
+//            e.printStackTrace();
+//            return new ResponseBean(401,"failed",null);
+//        }
+//    }
 
     /**
      * 中汇需要

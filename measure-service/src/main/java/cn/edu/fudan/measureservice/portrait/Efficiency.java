@@ -3,6 +3,8 @@ package cn.edu.fudan.measureservice.portrait;
 
 import lombok.*;
 
+import java.io.Serializable;
+
 /**
  * description: 开发人员效率 某段时间内完成的工作量
  *
@@ -13,7 +15,7 @@ import lombok.*;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Efficiency implements Formula{
+public class Efficiency implements Formula, Serializable {
 
 
     // 下面是基础数据 工作量
