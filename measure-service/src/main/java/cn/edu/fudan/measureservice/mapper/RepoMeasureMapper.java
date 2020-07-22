@@ -67,6 +67,6 @@ public interface RepoMeasureMapper {
 
     List<String> getCommitMsgByRepoId(@Param("repo_id")String repoId,@Param("developer")String developerName);
 
-    Integer getCommitNumByRepoId(@Param("repo_id")String repoId,@Param("developer")String developerName);
+    int getCommitNumByRepoId(@Param("repo_id")String repoId,@Param("developer")String developerName);
 
 }

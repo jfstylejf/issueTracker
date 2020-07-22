@@ -513,14 +513,15 @@
             <if test="repo_id != null and repo_id != '' ">
                 and repo_id = #{repo_id}
             </if>
+
             <if test="developer != null and developer != '' ">
                 and developer_name = #{developer}
             </if>
-        </trim>>
-        <where>
+        </trim>
+        </where>
     </select>
 
-    <select id="getCommitNumByRepoId" parameterType="String" resultType="String">
+    <select id="getCommitNumByRepoId" parameterType="String" resultType="int">
         SELECT
         count(commit_message)
         FROM
@@ -530,11 +531,12 @@
             <if test="repo_id != null and repo_id != '' ">
                 and repo_id = #{repo_id}
             </if>
+
             <if test="developer != null and developer != '' ">
                 and developer_name = #{developer}
             </if>
-        </trim>>
-        <where>
+        </trim>
+        </where>
     </select>
 
 
