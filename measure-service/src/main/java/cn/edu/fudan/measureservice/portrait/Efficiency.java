@@ -215,7 +215,7 @@ public class Efficiency implements Formula, Serializable {
     }
 
     public double getNewLogicLineLevel() {
-        if (defaultScore != newLogicLineLevel) {
+        if (!((Double)defaultScore).equals(newLogicLineLevel)) {
             return newLogicLineLevel;
         }
         //具体的计算方式
@@ -243,7 +243,7 @@ public class Efficiency implements Formula, Serializable {
     }
 
     public double getDelLogicLineLevel() {
-        if (defaultScore != delLogicLineLevel) {
+        if (!((Double)defaultScore).equals(delLogicLineLevel)) {
             return delLogicLineLevel;
         }
         //具体的计算方式
@@ -271,7 +271,7 @@ public class Efficiency implements Formula, Serializable {
     }
 
     public double getValidStatementLevel() {
-        if (defaultScore != validStatementLevel) {
+        if (!((Double)defaultScore).equals(validStatementLevel)) {
             return validStatementLevel;
         }
         //具体的计算方式

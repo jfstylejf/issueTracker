@@ -16,7 +16,6 @@ import java.io.Serializable;
 @AllArgsConstructor
 public class Competence implements Formula, Serializable {
 
-
     // 基础数据
     @Setter
     private int developerNumber;
@@ -55,8 +54,8 @@ public class Competence implements Formula, Serializable {
 
     // 以下各个评分由具体的公式计算出来,在getter方法中实现
 
-    private double defaultScore = 1;
-    private double defaultLevel = 0;
+    private Double defaultScore = 1.0;
+    private Double defaultLevel = 0.0;
 
 
     private double nonRepetitiveCodeRate = defaultScore;
@@ -289,10 +288,9 @@ public class Competence implements Formula, Serializable {
     }
 
     public double getLevel() {
-        if (level != defaultLevel) {
-            return level;
+        if (defaultLevel.equals(level)) {
+            level = cal();
         }
-        level = cal();
         return level;
     }
 
