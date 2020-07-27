@@ -521,23 +521,5 @@
         </where>
     </select>
 
-    <select id="getCommitNumByRepoId" parameterType="String" resultType="int">
-        SELECT
-        count(commit_message)
-        FROM
-        repo_measure
-        <where>
-        <trim prefixOverrides="and">
-            <if test="repo_id != null and repo_id != '' ">
-                and repo_id = #{repo_id}
-            </if>
-
-            <if test="developer != null and developer != '' ">
-                and developer_name = #{developer}
-            </if>
-        </trim>
-        </where>
-    </select>
-
 
 </mapper>

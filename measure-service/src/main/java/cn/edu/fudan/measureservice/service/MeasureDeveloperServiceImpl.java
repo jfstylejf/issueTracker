@@ -53,7 +53,7 @@ public class MeasureDeveloperServiceImpl implements MeasureDeveloperService {
         String sinceday = dateFormatChange(since);
         String untilday = dateFormatChange(until);
 
-        return repoMeasureMapper.getCommitCountsByDuration(repo_id, sinceday, untilday,null);
+        return repoMeasureMapper.getCommitCountsByDuration(repo_id,sinceday, untilday,null);
     }
 
     //把日期格式从“2010.10.10转化为2010-10-10”
@@ -658,7 +658,24 @@ public class MeasureDeveloperServiceImpl implements MeasureDeveloperService {
         for (String repo : repoList) {
             // 0. 获取开发者完成的jira任务列表 即jira的ID列表
             List<String> commit_msg = repoMeasureMapper.getCommitMsgByRepoId(repo, developer);
-            String first_msg = commit_msg.get(0);
+            //找到包含jira单号的所有commit信息
+            List<String> includingJiraCommit_msg = null;
+            int legalCommitNum = 0;
+            for(String str:commit_msg) {
+                String temp = getJiraIDFromCommitMsg(str);
+                if(temp.equals("noJiraID"))
+                    continue;
+                else {
+                    includingJiraCommit_msg.add(str);
+                    legalCommitNum++;
+                }
+            }
+
+            if( includingJiraCommit_msg==null ) {
+                return null;
+            }
+            //获取单个repo下的一个jiraID来查找所有jira任务
+            String first_msg = includingJiraCommit_msg.get(0);
             String keyword = getJiraIDFromCommitMsg(first_msg);
             JSONArray jiraKeyResponse = restInterfaceManager.getJiraInfoByKey("key", keyword);
             JSONObject keydata = (JSONObject) jiraKeyResponse.get(0);
@@ -685,7 +702,7 @@ public class MeasureDeveloperServiceImpl implements MeasureDeveloperService {
             }
             // 1. 获取完成jira任务需要的commit数量
             if (jiraNum != 0) {
-                commitNum += repoMeasureMapper.getCommitNumByRepoId(repo, developer);
+                commitNum += legalCommitNum;
                 total_jiraNum += jiraNum;
             }
          }
