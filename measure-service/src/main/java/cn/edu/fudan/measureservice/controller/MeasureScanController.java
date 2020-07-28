@@ -64,6 +64,16 @@ public class MeasureScanController {
         }
     }
 
+    @DeleteMapping("/measure/{repoId}")
+    public ResponseBean deleteRepoMeasureByRepoId(@PathVariable("repoId")String repoId){
+        try{
+            measureScanService.delete(repoId);
+            return new ResponseBean(200,"success",null);
+        }catch (Exception e){
+            e.printStackTrace();
+            return new ResponseBean(401,"failed",null);
+        }
+    }
 
     @Autowired
     public void setMeasureScanService(MeasureScanService measureScanService) {

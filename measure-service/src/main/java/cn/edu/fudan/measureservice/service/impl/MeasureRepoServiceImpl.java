@@ -1,8 +1,9 @@
-package cn.edu.fudan.measureservice.service;
+package cn.edu.fudan.measureservice.service.impl;
 
 import cn.edu.fudan.measureservice.component.RestInterfaceManager;
 import cn.edu.fudan.measureservice.domain.*;
 import cn.edu.fudan.measureservice.mapper.RepoMeasureMapper;
+import cn.edu.fudan.measureservice.service.MeasureRepoService;
 import cn.edu.fudan.measureservice.util.DateTimeUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;

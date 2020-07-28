@@ -39,7 +39,10 @@ public class Quality implements Formula, Serializable {
     private double standard = defaultScore;
     private double security = defaultScore;
     private double issueRate = defaultScore;
-    private double issueDensity = defaultScore;//平均每100行代码，产生的缺陷数
+    /**
+     * 平均每100行代码，产生的缺陷数
+     */
+    private double issueDensity = defaultScore;
     private double standardLevel = defaultScore;
     private double securityLevel = defaultScore;
     private double issueRateLevel = defaultScore;
@@ -75,18 +78,16 @@ public class Quality implements Formula, Serializable {
      */
 
     public double getLevel(){
-        if (level != defaultScore) {
-            return level;
+        if (((Double)defaultScore).equals(level)) {
+            level = cal();
         }
-        level = cal();
         return level;
     }
 
     public double getLevelScore() {
-        if (levelScore != defaultScore) {
-            return levelScore;
+        if (((Double)defaultScore).equals(levelScore)) {
+            levelScore = 0.25*standard + 0.25*security + 0.25*issueRate + 0.25*issueDensity;
         }
-        levelScore = 0.25*standard + 0.25*security + 0.25*issueRate + 0.25*issueDensity;
         return levelScore;
     }
 

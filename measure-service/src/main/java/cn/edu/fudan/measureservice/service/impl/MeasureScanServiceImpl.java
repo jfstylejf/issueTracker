@@ -1,4 +1,4 @@
-package cn.edu.fudan.measureservice.service;
+package cn.edu.fudan.measureservice.service.impl;
 
 import cn.edu.fudan.measureservice.analyzer.JavaNcss;
 import cn.edu.fudan.measureservice.annotation.RepoResource;
@@ -9,8 +9,8 @@ import cn.edu.fudan.measureservice.domain.core.MeasureScan;
 import cn.edu.fudan.measureservice.domain.dto.RepoResourceDTO;
 import cn.edu.fudan.measureservice.mapper.FileMeasureMapper;
 import cn.edu.fudan.measureservice.mapper.MeasureScanMapper;
-import cn.edu.fudan.measureservice.mapper.PackageMeasureMapper;
 import cn.edu.fudan.measureservice.mapper.RepoMeasureMapper;
+import cn.edu.fudan.measureservice.service.MeasureScanService;
 import cn.edu.fudan.measureservice.util.FileFilter;
 import cn.edu.fudan.measureservice.util.JGitHelper;
 import lombok.SneakyThrows;
@@ -21,7 +21,6 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import javax.lang.model.util.ElementScanner6;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -119,6 +118,20 @@ public class MeasureScanServiceImpl implements MeasureScanService {
         }
 
         log.info("Measure scan complete!");
+    }
+
+    @Override
+    public void stop(String repoId) {
+        // todo
+    }
+
+    @Override
+    @SneakyThrows
+    public void delete(String repoId) {
+        log.info("measurement info start to delete");
+        repoMeasureMapper.delRepoMeasureByRepoId(repoId);
+        repoMeasureMapper.delFileMeasureByRepoId(repoId);
+        log.info("measurement delete completed");
     }
 
 
