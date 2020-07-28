@@ -635,16 +635,22 @@ public class MeasureDeveloperServiceImpl implements MeasureDeveloperService {
     }
 
     @Override
-    public Object getJiraMeasureInfo(String repoId, String developer, String beginDate, String endDate) {
+    public Object getJiraMeasureInfo(String repoId, String developer, String beginDate, String endDate) throws ParseException {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        Date startDay = new Date();
+        Date end = new Date();
         if ("".equals(beginDate) || beginDate == null){
             beginDate = repoMeasureMapper.getFirstCommitDateByCondition(repoId,developer);
+            startDay = sdf.parse(beginDate);
         }
+        else
+            startDay = sdf.parse(beginDate);
         if ("".equals(endDate) || endDate == null){
-//            LocalDate today = LocalDate.now();
-//            DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-//            endDate = df.format(today);
             endDate = repoMeasureMapper.getLastCommitDateOfOneRepo(repoId,developer);
+            end = sdf.parse(endDate);
         }
+        else
+            end = sdf.parse(endDate);
         List<String> repoList = new ArrayList<>();
         if ("".equals(repoId) || repoId == null){
             repoList = repoMeasureMapper.getRepoListByDeveloper(developer);
@@ -654,6 +660,7 @@ public class MeasureDeveloperServiceImpl implements MeasureDeveloperService {
 
         // 遍历所有repo，进行jira度量统计
         int total_jiraNum =0;
+        int withinDays_jiraNum =0;
         int commitNum = 0;
         for (String repo : repoList) {
             // 0. 获取开发者完成的jira任务列表 即jira的ID列表
@@ -691,13 +698,20 @@ public class MeasureDeveloperServiceImpl implements MeasureDeveloperService {
                 fields = projectdata.getJSONObject("fields");
                 JSONObject Status = fields.getJSONObject("status");
                 String status = Status.getString("name");
+                //获取创建时间
+                String str = fields.getString("created");
+                String result[] = str.split("T");
+                String createDay = result[0];
                 //获取开发员姓名
                 JSONObject Assignee = fields.getJSONObject("assignee");
                 if (Assignee != null) {
                     String assignee = Assignee.getString("name");
-                    //统计jira任务数
-                    if (status.equals("done") && assignee.equals(developer))
+                    //统计jira任务数,并统计是不是在指定时间段完成的
+                    if (status.equals("done") && assignee.equals(developer)) {
                         jiraNum++;
+                        if(createDay.compareTo(beginDate)>0&&createDay.compareTo(endDate)<0)
+                            withinDays_jiraNum++;
+                    }
                 }
             }
             // 1. 获取完成jira任务需要的commit数量
@@ -706,17 +720,35 @@ public class MeasureDeveloperServiceImpl implements MeasureDeveloperService {
                 total_jiraNum += jiraNum;
             }
          }
+        List<Map<String,Object>> response = new ArrayList<>();
          double average;
-         if (commitNum != 0) {
+         if (total_jiraNum != 0) {
              average = commitNum * 1.0 / total_jiraNum;
-             return average;
+             Map map = new HashMap();
+             map.put("该开发人员平均完成一个JIRA任务所需的commit次数为：",average);
+             response.add(map);
          }
-         else
-             return 0;
-            // 1. 获取完成jira任务需要的commit数量
+         else {
+             Map map =new HashMap();
+             map.put("该开发人员还没有完成JIRA任务",0);
+             response.add(map);
+         }
 
-            // 2. 获取这些commit的工作日天数v
+         // 2. 获取时间段内平均完成的JIRA任务
+        Long total_Days = (end.getTime()-startDay.getTime())/(1000*60*60*24);
+        if(withinDays_jiraNum !=0 ) {
+            average = withinDays_jiraNum*1.0/total_Days;
+            Map map = new HashMap();
+            map.put("该开发人员平均每天可以完成的JIRA任务数",average);
+            response.add(map);
+        }
+        else {
+            Map map = new HashMap();
+            map.put("该开发人员平均每个工作日可以完成的JIRA任务数为：",0);
+            response.add(map);
+        }
 
+        return response;
     }
 
     @Override

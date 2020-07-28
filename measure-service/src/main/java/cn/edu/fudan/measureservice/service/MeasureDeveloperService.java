@@ -106,7 +106,7 @@ public interface MeasureDeveloperService {
      *
      * @return 返回开发者jira相关的度量数据
      */
-    Object getJiraMeasureInfo(String repoId, String developer, String beginDate, String endDate);
+    Object getJiraMeasureInfo(String repoId, String developer, String beginDate, String endDate) throws ParseException;
 
     /**
      *
