@@ -262,7 +262,7 @@ public class RestInterfaceManager {
 
     //-------------------------------------------jira API-------------------------------------------
     public JSONArray getJiraInfoByKey(String type, String keyword){
-        JSONObject response = restTemplate.getForObject("http://10.141.221.85:8000/jira/jql"  + "?keyword=" + keyword +  "&type=" + type, JSONObject.class);
+        JSONObject response = restTemplate.getForObject("http://127.0.0.1:8887/jira/jql"  + "?keyword=" + keyword +  "&type=" + type, JSONObject.class);
         if(response.getIntValue("code") == 200){
             return response.getJSONArray("data");
         }
