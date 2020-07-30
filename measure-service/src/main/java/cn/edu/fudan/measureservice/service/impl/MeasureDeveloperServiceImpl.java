@@ -700,9 +700,12 @@ public class MeasureDeveloperServiceImpl implements MeasureDeveloperService {
                 JSONObject Status = fields.getJSONObject("status");
                 String status = Status.getString("name");
                 //获取创建时间
-                String str = fields.getString("created");
-                String result[] = str.split("T");
-                String createDay = result[0];
+                String str = fields.getString("resolutiondate");
+                String createDay =null;
+                if(str!=null){
+                    String result[] = str.split("T");
+                    createDay = result[0];
+                }
                 //获取开发员姓名
                 JSONObject Assignee = fields.getJSONObject("assignee");
                 if (Assignee != null) {
@@ -710,7 +713,7 @@ public class MeasureDeveloperServiceImpl implements MeasureDeveloperService {
                     //统计jira任务数,并统计是不是在指定时间段完成的
                     if (status.equals("done") && assignee.equals(developer)) {
                         jiraNum++;
-                        if(createDay.compareTo(beginDate)>0&&createDay.compareTo(endDate)<0)
+                        if(createDay!=null&&createDay.compareTo(beginDate)>0&&createDay.compareTo(endDate)<0)
                             withinDays_jiraNum++;
                     }
                 }
@@ -726,12 +729,12 @@ public class MeasureDeveloperServiceImpl implements MeasureDeveloperService {
          if (total_jiraNum != 0) {
              average = commitNum * 1.0 / total_jiraNum;
              Map map = new HashMap();
-             map.put("该开发人员平均完成一个JIRA任务所需的commit次数为：",average);
+             map.put("CommitPerJira",average);
              response.add(map);
          }
          else {
              Map map =new HashMap();
-             map.put("该开发人员还没有完成JIRA任务",0);
+             map.put("CommitPerJira",-1);
              response.add(map);
          }
 
@@ -740,12 +743,12 @@ public class MeasureDeveloperServiceImpl implements MeasureDeveloperService {
         if(withinDays_jiraNum !=0 ) {
             average = withinDays_jiraNum*1.0/total_Days;
             Map map = new HashMap();
-            map.put("该开发人员平均每天可以完成的JIRA任务数",average);
+            map.put("JiraPerDay",average);
             response.add(map);
         }
         else {
             Map map = new HashMap();
-            map.put("该开发人员平均每个工作日可以完成的JIRA任务数为：",0);
+            map.put("JiraPerDay",-1);
             response.add(map);
         }
 
