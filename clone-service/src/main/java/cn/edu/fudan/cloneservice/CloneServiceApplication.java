@@ -7,7 +7,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 
 
 @SpringBootApplication
-@EnableAsync//开启异步调用的支持
+@EnableAsync
 @MapperScan(basePackages = {"cn.edu.fudan.cloneservice.mapper" , "cn.edu.fudan.cloneservice.scan.mapper"})
 public class CloneServiceApplication {
 

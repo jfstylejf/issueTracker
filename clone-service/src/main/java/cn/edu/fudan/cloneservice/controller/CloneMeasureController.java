@@ -3,7 +3,6 @@ package cn.edu.fudan.cloneservice.controller;
 import cn.edu.fudan.cloneservice.domain.ResponseBean;
 import cn.edu.fudan.cloneservice.service.CloneMeasureService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -12,21 +11,21 @@ import org.springframework.web.bind.annotation.*;
  */
 @CrossOrigin
 @RestController
-@EnableAutoConfiguration
 public class CloneMeasureController {
+
     @Autowired
     CloneMeasureService cloneMeasureService;
 
-    @GetMapping(value = {"/cloneMeasure/insertMeasureClone"})
-    public ResponseBean insertMeasureClone(@RequestParam("repo_id") String repoId, @RequestParam("commit_id") String commitId){
-
-        try{
-            return new ResponseBean(200,"success",cloneMeasureService.insertCloneMeasure(repoId, commitId));
-        }catch (Exception e){
-            e.printStackTrace();
-            return new ResponseBean(401,"failed",null);
-        }
-    }
+//    @GetMapping(value = {"/cloneMeasure/insertMeasureClone"})
+//    public ResponseBean insertMeasureClone(@RequestParam("repo_id") String repoId, @RequestParam("commit_id") String commitId){
+//
+//        try{
+//            return new ResponseBean(200,"success",cloneMeasureService.insertCloneMeasure(repoId, commitId));
+//        }catch (Exception e){
+//            e.printStackTrace();
+//            return new ResponseBean(401,"failed",null);
+//        }
+//    }
 
     @GetMapping(value = {"/cloneMeasure/latestCloneLines"})
     public ResponseBean getLatestCloneLines(@RequestParam("repo_id") String repoId){
@@ -39,8 +38,11 @@ public class CloneMeasureController {
         }
     }
 
+    /**
+     * fixme 暂时只有一个用户没有做鉴权操作
+     */
     @GetMapping(value = {"/cloneMeasure/getMeasureClone"})
-    public ResponseBean getMeasureCloneData(@RequestParam("repo_id") String repoId,
+    public ResponseBean getMeasureCloneData(@RequestParam(value = "repo_id", required = false, defaultValue = "") String repoId,
                                             @RequestParam("developer") String developer,
                                             @RequestParam("start") String start,
                                             @RequestParam("end") String end){

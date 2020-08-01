@@ -1,20 +1,18 @@
 package cn.edu.fudan.cloneservice.thread;
 
 import cn.edu.fudan.cloneservice.component.RestInterfaceManager;
-import cn.edu.fudan.cloneservice.scan.dao.CloneRepoDao;
-import cn.edu.fudan.cloneservice.scan.domain.CloneRepo;
-import cn.edu.fudan.cloneservice.scan.task.ScanTask;
+import cn.edu.fudan.cloneservice.dao.CloneRepoDao;
+import cn.edu.fudan.cloneservice.domain.clone.CloneRepo;
+import cn.edu.fudan.cloneservice.task.ScanTask;
 import cn.edu.fudan.cloneservice.service.CloneMeasureService;
 import cn.edu.fudan.cloneservice.util.JGitUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Lookup;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
-import org.springframework.web.context.annotation.RequestScope;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -173,7 +171,7 @@ public class MultiThreadingExtractor {
         }
         //先执行粒度为method，仅需执行一次最近的commit
         String latestCommitId = commitList.get(commitList.size() - 1);
-        scanTask.runSynchronously(repoId,latestCommitId, "method");
+        scanTask.runSynchronously(repoId,latestCommitId, "method", null);
         CloneRepo cloneRepo = initCloneRepo(repoId);
         cloneRepo.setUuid(cloneRepoUuid);
         cloneRepo.setStartScanTime(new Date());
@@ -212,7 +210,7 @@ public class MultiThreadingExtractor {
                 }
                 scanThreadPool.submit(()-> {
                     logger.info("{}-> start scan", Thread.currentThread().getName());
-                    scanTask.runSynchronously(repoId,commitId, "snippet");
+                    scanTask.runSynchronously(repoId,commitId, "snippet", null);
                     measureQueue.offer(commitId);
                 });
 
@@ -240,7 +238,7 @@ public class MultiThreadingExtractor {
                 }
                 measureThreadPool.submit(()->{
                     logger.info("{}-> start measure", Thread.currentThread().getName());
-                    cloneMeasureService.insertCloneMeasure(repoId, commitId);
+                    cloneMeasureService.insertCloneMeasure(repoId, commitId, null);
                     CloneRepo cloneRepo = new CloneRepo();
                     cloneRepo.setUuid(uuid);
                     cloneRepo.setScannedCommitCount(scanCount.incrementAndGet());

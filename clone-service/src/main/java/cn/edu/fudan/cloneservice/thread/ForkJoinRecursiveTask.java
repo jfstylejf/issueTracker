@@ -2,9 +2,10 @@ package cn.edu.fudan.cloneservice.thread;
 
 
 import cn.edu.fudan.cloneservice.domain.CloneMeasure;
-import cn.edu.fudan.cloneservice.scan.domain.CloneLocation;
+import cn.edu.fudan.cloneservice.domain.clone.CloneLocation;
 import cn.edu.fudan.cloneservice.util.ComputeUtil;
 import cn.edu.fudan.cloneservice.util.JGitUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,10 +19,9 @@ import java.util.stream.IntStream;
  * @author zyh
  * @date 2020/6/11
  */
+@Slf4j
 @Component
 public class ForkJoinRecursiveTask {
-
-    private static Logger logger = LoggerFactory.getLogger(ForkJoinRecursiveTask.class);
 
     /**
      * 定义分解任务的最大阈值,即将一个clone location list分解成若干个子list，每个list的最大值
@@ -79,7 +79,7 @@ public class ForkJoinRecursiveTask {
             CloneMeasure cloneMeasure = new CloneMeasure();
 
             List<CloneLocation> locationList = getSubList(start, end);
-            logger.info("{} -> cloneLocation init success!", Thread.currentThread().getName());
+            log.info("{} -> cloneLocation init success!", Thread.currentThread().getName());
             //key记录repoPath和克隆组id, value记录新增且是clone的行号，记录clone片段的信息,会存在重复
             Map<String, String> addCloneLocationMap = new HashMap<>(512);
             //key记录repoPath和克隆组id, value记录新增且是self clone的行号，记录clone片段的信息,会存在重复
