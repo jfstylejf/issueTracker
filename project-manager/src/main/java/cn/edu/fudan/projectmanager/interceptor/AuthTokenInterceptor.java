@@ -2,6 +2,7 @@ package cn.edu.fudan.projectmanager.interceptor;
 
 import cn.edu.fudan.projectmanager.component.RestInterfaceManager;
 import cn.edu.fudan.projectmanager.exception.AuthException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -13,11 +14,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.nio.charset.StandardCharsets;
 
-/**
- * @author WZY
- * @version 1.0
- **/
-
+@Slf4j
 public class AuthTokenInterceptor implements HandlerInterceptor {
 
     private RestInterfaceManager restInterfaceManager;
@@ -43,7 +40,8 @@ public class AuthTokenInterceptor implements HandlerInterceptor {
             }
             String userToken = httpServletRequest.getHeader("token");
             if (userToken == null) {
-                throw new AuthException("need user token!");
+                log.error("need user token!");
+                return false;
             }
             restInterfaceManager.userAuth(userToken);
             return true;

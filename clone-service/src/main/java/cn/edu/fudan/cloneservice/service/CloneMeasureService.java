@@ -16,9 +16,10 @@ public interface CloneMeasureService {
      * 插入clone度量结果
      * @param repoId repo id
      * @param commitId commit id
+     * @param repoPath  path
      * @return
      */
-    CloneMeasure insertCloneMeasure(String repoId, String commitId);
+    CloneMeasure insertCloneMeasure(String repoId, String commitId, String repoPath);
 
     /**
      * 获取一段时间内人员度量

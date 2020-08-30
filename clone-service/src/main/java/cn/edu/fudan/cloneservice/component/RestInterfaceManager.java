@@ -38,16 +38,16 @@ public class RestInterfaceManager {
     }
 
     //---------------------------------------------code service---------------------------------------------------------
-    public String getRepoPath(String repoId,String commit_id){
+    public String getRepoPath(String repoId){
         String repoPath=null;
-        JSONObject response=restTemplate.getForObject(codeServicePath + "?repo_id=" + repoId+"&commit_id="+commit_id, JSONObject.class).getJSONObject("data");
+        JSONObject response=restTemplate.getForObject(codeServicePath + "?repo_id=" + repoId, JSONObject.class).getJSONObject("data");
         if (response != null ){
             if(response.getString("status").equals("Successful")) {
                 repoPath=response.getString("content");
                 log.info("repoHome -> {}" ,repoPath);
             }else{
                 log.error("get repoHome fail -> {}",response.getString("content"));
-                log.error("repoId -> {} commitId -> {}",repoId,commit_id);
+                log.error("repoId -> {}",repoId);
             }
         } else {
             log.error("code service response null!");
