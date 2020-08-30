@@ -2,6 +2,7 @@ package cn.edu.fudan.projectmanager.component;
 
 import cn.edu.fudan.projectmanager.exception.AuthException;
 import com.alibaba.fastjson.JSONObject;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -9,10 +10,7 @@ import org.springframework.web.client.RestTemplate;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * @author WZY
- * @version 1.0
- **/
+@Slf4j
 @Component
 public class RestInterfaceManager {
 
@@ -61,11 +59,13 @@ public class RestInterfaceManager {
         return restTemplate.getForObject(accountServicePath+"/user/accountName?accountId="+accountId,String.class);
     }
 
-    public void userAuth(String userToken)throws AuthException {
+    public boolean userAuth(String userToken)throws AuthException {
         JSONObject result = restTemplate.getForObject(accountServicePath + "/user/auth/" + userToken, JSONObject.class);
         if (result == null || result.getIntValue("code") != 200) {
-            throw new AuthException("auth failed!");
+            log.error("auth failed!");
+            return false;
         }
+        return true;
     }
 
     //--------------------------------issue service----------------------------------------------------------
