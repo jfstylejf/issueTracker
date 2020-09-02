@@ -59,7 +59,7 @@
     </select>
 
     <select id="getAccountByAccountName" parameterType="String" resultMap="account">
-        select * from account where accountName = #{accountName}
+        select * from account where account_name = #{accountName}
     </select>
 
     <select id="login" resultMap="account">
@@ -91,7 +91,7 @@
     </select>
 
     <select id="getAccountNameById" parameterType="String" resultType="String">
-        select accountName from account where uuid=#{uuid};
+        select account_name from account where uuid=#{uuid};
     </select>
 
     <update id="updateToolsEnable" parameterType="java.util.List">
