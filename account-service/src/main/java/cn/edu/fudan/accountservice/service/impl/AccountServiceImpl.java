@@ -124,11 +124,11 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public List<String> getGroupsByAccountName(String accountName) {
-        String group = accountDao.getAccountByAccountName(accountName).getGroups();
-        if(null!=group){
-            List<String> groups = Arrays.asList(group.split(",")).stream().map(s -> (s.trim())).collect(Collectors.toList());
-            return groups;
-        }
+//        String group = accountDao.getAccountByAccountName(accountName).getGroups();
+//        if(null!=group){
+//            List<String> groups = Arrays.asList(group.split(",")).stream().map(s -> (s.trim())).collect(Collectors.toList());
+//            return groups;
+//        }
         return null;
     }
 

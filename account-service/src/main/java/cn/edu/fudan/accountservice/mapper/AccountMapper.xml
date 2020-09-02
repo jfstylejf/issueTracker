@@ -5,12 +5,15 @@
 
     <resultMap id="account" type="Account">
         <id property="uuid" column="uuid"/>
-        <result property="accountName" column="accountName"/>
+        <result property="accountName" column="account_name"/>
         <result property="password" column="password"/>
         <result property="name" column="name"/>
         <result property="email" column="email"/>
+        <result property="dep" column="account_dep"/>
         <result property="right" column="account_right"/>
-        <result property="groups" column="groups"/>
+        <result property="gitname" column="account_gitname"/>
+        <result property="status" column="account_status"/>
+        <result property="role" column="account_role"/>
     </resultMap>
 
     <resultMap id="tool" type="Tool">
@@ -23,25 +26,31 @@
     </resultMap>
 
     <insert id="addAccount" parameterType="Account">
-        insert into account
+        insert into issueTracker.account
         (
-        uuid,
-        accountName,
-        password,
-        name,
-        email,
-        account_right,
-        groups
+            uuid,
+            account_name,
+            password,
+            name,
+            email,
+            account_right,
+            account_dep,
+            account_gitname,
+            account_status,
+            account_role
         )
         values
         (
-        #{uuid},
-        #{accountName},
-        #{password},
-        #{name},
-        #{email},
-        #{right},
-        #{groups}
+            #{uuid},
+            #{accountName},
+            #{password},
+            #{name},
+            #{email},
+            #{right},
+            #{dep},
+            #{gitname},
+            #{status},
+            #{role}
         )
     </insert>
 
@@ -54,11 +63,11 @@
     </select>
 
     <select id="login" resultMap="account">
-        select *
+        select uuid, account_name, password, name, email, account_right,account_dep,account_gitname,account_status,account_role
         from
-        account
+            issueTracker.account
         where
-        accountName=#{accountName} and password=#{password}
+            account_name=#{accountName} and password=#{password}
     </select>
 
     <select id="getAccountByEmail" parameterType="String" resultMap="account">
