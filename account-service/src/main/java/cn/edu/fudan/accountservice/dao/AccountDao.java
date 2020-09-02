@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Map;
 
 @Repository
 public class AccountDao {
@@ -38,6 +39,8 @@ public class AccountDao {
     public boolean isEmailExist(String email) {
         return accountMapper.getAccountByEmail(email) != null;
     }
+
+    public List<Map<String,String>> getStatusByName(List name){return accountMapper.getStatusByName(name);}
 
     public void addAccount(Account account) {
         accountMapper.addAccount(account);

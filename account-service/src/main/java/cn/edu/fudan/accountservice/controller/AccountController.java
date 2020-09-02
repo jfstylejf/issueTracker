@@ -43,6 +43,13 @@ public class AccountController {
         return new ResponseBean(200, "success", accountService.isNameExist(nickName));
     }
 
+    @GetMapping("/status")
+    @CrossOrigin
+    public Object getStatusByName(@RequestBody List<String> name) {
+        return new ResponseBean(200, " ",accountService.getStatusByName(name));
+    }
+
+
     @PostMapping("/register")
     @CrossOrigin
     public Object createUser(@RequestBody Account account) {

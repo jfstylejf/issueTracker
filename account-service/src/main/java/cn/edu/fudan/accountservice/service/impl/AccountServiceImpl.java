@@ -12,9 +12,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -23,6 +21,7 @@ import java.util.stream.Collectors;
 public class AccountServiceImpl implements AccountService {
 
     private StringRedisTemplate stringRedisTemplate;
+
 
     @Autowired
     public void setStringRedisTemplate(StringRedisTemplate stringRedisTemplate) {
@@ -73,6 +72,18 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    public Object getStatusByName(List name) {
+        List<Map<String,String>> result = accountDao.getStatusByName(name);
+        Map<String, Integer> nameStatus = new HashMap<>(8);
+        for(Map<String,String> m : result){
+            String authorName = m.get("name");
+            String authorStatus = m.get("account_status");
+            nameStatus.put(authorName,Integer.valueOf(authorStatus));
+        }
+        return nameStatus;
+    }
+
+    @Override
     public boolean authByToken(String userToken) {
         return stringRedisTemplate.opsForValue().get("login:" + userToken) != null;
     }
@@ -97,6 +108,7 @@ public class AccountServiceImpl implements AccountService {
         if (isEmailExist(account.getEmail())) {
             throw new RuntimeException("email has been used!");
         }
+
         if (isNameExist(account.getName())) {
             throw new RuntimeException("nickName has been used!");
         }

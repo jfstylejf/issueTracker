@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Map;
 
 @Repository
 public interface AccountMapper {
@@ -42,6 +43,14 @@ public interface AccountMapper {
      * @return Account
      */
     Account getAccountByEmail(@Param("email") String email);
+
+    /**
+     * get account by status
+     *
+     * @param name get user name
+     * @return Account
+     */
+    List<Map<String,String>> getStatusByName(@Param("name_list") List<String> name);
 
     /**
      * get account by account name

@@ -52,6 +52,14 @@ public interface AccountService {
     boolean isEmailExist(String email);
 
     /**
+     * get status by name
+     *
+     * @param name get user status
+     * @return status and name
+     */
+    Object getStatusByName(List name);
+
+    /**
      * auth by token
      *
      * @param userToken get user token

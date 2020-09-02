@@ -65,6 +65,18 @@
         select * from account where email = #{email}
     </select>
 
+    <select id="getStatusByName" parameterType="String" resultType="Map">
+        select name,account_status from account
+        <where>
+            <if test="name_list != null">
+                name in
+                <foreach collection="name_list" separator="," open="(" close=")" item="item">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
     <select id="getAllAccountId" resultType="String">
         select uuid from account;
     </select>

@@ -9,6 +9,7 @@ public class Account implements Serializable {
     private String password;
     private String name;
     private String email;
+    private String status;
     /**
      * 用户权限管理，0表示管理员，1表示团队负责人，默认为1
      */
@@ -64,6 +65,14 @@ public class Account implements Serializable {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     public String getUuid() {
