@@ -52,6 +52,7 @@ public interface AccountMapper {
      */
     List<Map<String,String>> getStatusByName(@Param("name_list") List<String> name);
 
+    List<Account> getAccountStatus();
     /**
      * get account by account name
      *

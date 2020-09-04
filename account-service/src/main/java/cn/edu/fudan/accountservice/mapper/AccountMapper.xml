@@ -86,6 +86,10 @@
         </where>
     </select>
 
+    <select id="getAccountStatus" parameterType="String" resultMap="account">
+        select name,account_dep,email,account_status,account_role from account;
+    </select>
+
     <select id="getAllAccountId" resultType="String">
         select uuid from account;
     </select>

@@ -42,6 +42,8 @@ public class AccountDao {
 
     public List<Map<String,String>> getStatusByName(List name){return accountMapper.getStatusByName(name);}
 
+    public List<Account> getAccountStatus(){ return accountMapper.getAccountStatus(); }
+
     public void addAccount(Account account) {
         accountMapper.addAccount(account);
     }
@@ -54,9 +56,7 @@ public class AccountDao {
         accountMapper.updateToolsEnable(tools);
     }
 
-    public List<Tool> getTools(){
-        return accountMapper.getTools();
-    }
+    public List<Tool> getTools(){ return accountMapper.getTools(); }
 
     public String getAccountNameById(String uuid){
         return accountMapper.getAccountNameById(uuid);

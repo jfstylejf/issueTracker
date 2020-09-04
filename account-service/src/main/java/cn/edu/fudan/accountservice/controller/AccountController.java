@@ -49,6 +49,12 @@ public class AccountController {
         return new ResponseBean(200, " ",accountService.getStatusByName(name));
     }
 
+    @GetMapping("/status/getData")
+    @CrossOrigin
+    public Object getAccountStatus(){
+        //return accountService.getAccountStatus();
+        return new ResponseBean(200, " ",accountService.getAccountStatus());
+    }
 
     @PostMapping("/register")
     @CrossOrigin

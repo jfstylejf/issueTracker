@@ -84,6 +84,11 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    public List<Account> getAccountStatus(){
+        return accountDao.getAccountStatus();
+    }
+
+    @Override
     public boolean authByToken(String userToken) {
         return stringRedisTemplate.opsForValue().get("login:" + userToken) != null;
     }

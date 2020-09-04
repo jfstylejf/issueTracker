@@ -59,6 +59,9 @@ public interface AccountService {
      */
     Object getStatusByName(List name);
 
+
+    List<Account> getAccountStatus();
+
     /**
      * auth by token
      *
