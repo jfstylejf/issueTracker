@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @Repository
 public class ProjectDao {
@@ -108,5 +109,13 @@ public class ProjectDao {
 
     public Date getLatestCommitTime(String repoId){
         return projectMapper.getLatestCommitTime(repoId);
+    }
+
+    public List<Map<String, Object>> getProjectInfoByAccountName(String accountName) {
+        return projectMapper.getProjectInfoByAccountName(accountName);
+    }
+
+    public List<Map<String, String>> getAllProject() {
+        return projectMapper.getAllProject();
     }
 }

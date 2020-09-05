@@ -5,27 +5,16 @@ import cn.edu.fudan.projectmanager.domain.ResponseBean;
 import cn.edu.fudan.projectmanager.service.KafkaConsumerService;
 import cn.edu.fudan.projectmanager.service.ProjectService;
 import com.alibaba.fastjson.JSONObject;
-import com.fasterxml.jackson.databind.exc.InvalidFormatException;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 
 @RestController
-@EnableAutoConfiguration
 public class ProjectController {
 
     private ProjectService projectService;
@@ -247,6 +236,23 @@ public class ProjectController {
             e.printStackTrace();
             return new ResponseBean(401, "project add failed!", null);
         }
+    }
+
+    /**
+     * description todo 补足注释
+     * @param accountName
+     *
+     * @return
+     */
+    @GetMapping(value = "/project/info")
+    public Object getProjectInfoByAccountName(@RequestParam String accountName) {
+        return projectService.getProjectInfoByAccountName(accountName);
+    }
+
+
+    @GetMapping(value = "/project/all")
+    public Object getAllProject() {
+        return projectService.getAllProject();
     }
 
 }

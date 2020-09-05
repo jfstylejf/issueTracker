@@ -245,4 +245,10 @@
         select commit_time from commit where repo_id = #{repo_id} and commit_time = (select max(commit_time) from commit where
         repo_id = #{repo_id});
     </select>
+
+    <select id="getProjectInfoByAccountName" parameterType="String" resultType="java.util.HashMap">
+        select p.account_name,account_right,p.account_role,p.project_name
+        from account as a ,project_relation as p
+        where a.account_name = p.account_name and a.account_name = #{account_name}
+    </select>
 </mapper>

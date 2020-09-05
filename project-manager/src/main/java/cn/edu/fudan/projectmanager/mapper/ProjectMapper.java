@@ -2,10 +2,12 @@ package cn.edu.fudan.projectmanager.mapper;
 
 import cn.edu.fudan.projectmanager.domain.Project;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 import org.springframework.stereotype.Repository;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 
 @Repository
@@ -53,4 +55,9 @@ public interface ProjectMapper {
     List<Project> getProjects();
 
     Date getLatestCommitTime(@Param("repo_id") String repo_id);
+
+    List<Map<String,Object>> getProjectInfoByAccountName(@Param("account_name") String accountName);
+
+    @Select("SELECT module,name,repo_id FROM issueTracker.project order by module;")
+    List<Map<String, String>> getAllProject();
 }

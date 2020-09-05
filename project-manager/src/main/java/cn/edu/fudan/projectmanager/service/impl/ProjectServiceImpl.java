@@ -3,13 +3,10 @@ package cn.edu.fudan.projectmanager.service.impl;
 
 import cn.edu.fudan.projectmanager.component.RestInterfaceManager;
 import cn.edu.fudan.projectmanager.dao.ProjectDao;
-import cn.edu.fudan.projectmanager.domain.CompleteUpdate;
 import cn.edu.fudan.projectmanager.domain.NeedDownload;
 import cn.edu.fudan.projectmanager.domain.Project;
-import cn.edu.fudan.projectmanager.domain.ScanMessageWithTime;
 import cn.edu.fudan.projectmanager.service.ProjectService;
 import cn.edu.fudan.projectmanager.util.DateTimeUtil;
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
@@ -577,5 +574,27 @@ public class ProjectServiceImpl implements ProjectService {
         projectDao.updateProjectStatus(project1);
     }
 
+    @Override
+    public List<Map<String, Object>> getProjectInfoByAccountName(String accountName) {
+        return projectDao.getProjectInfoByAccountName(accountName);
+    }
+
+    @Override
+    public Object getAllProject() {
+        List<Map<String, String>> projects =  projectDao.getAllProject();
+        Map<String, List< Map<String, String>>> result = new HashMap<>(8);
+        for (Map<String, String> project : projects) {
+            String projectName = project.get("module");
+            if (! result.keySet().contains(projectName)) {
+                result.put(projectName, new ArrayList<>(4));
+            }
+            List< Map<String, String>> v = result.get(projectName);
+            Map<String, String> p = new HashMap<>(4);
+            p.put("repo_id", project.get("repo_id"));
+            p.put("name", project.get("name"));
+            v.add(p);
+        }
+        return result;
+    }
 
 }
