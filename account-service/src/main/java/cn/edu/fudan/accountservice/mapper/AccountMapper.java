@@ -53,6 +53,15 @@ public interface AccountMapper {
     List<Map<String,String>> getStatusByName(@Param("name_list") List<String> name);
 
     List<Account> getAccountStatus();
+
+    /**
+     * update statusInfo by account name
+     *
+     * @param statusInfo
+     * @return null
+     */
+    void updateStatusInfo(List<Account> statusInfo);
+
     /**
      * get account by account name
      *

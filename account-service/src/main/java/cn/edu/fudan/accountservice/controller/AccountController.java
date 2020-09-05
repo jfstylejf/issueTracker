@@ -14,7 +14,6 @@ import java.util.List;
 
 
 @RestController
-@EnableAutoConfiguration
 @RequestMapping("/user")
 public class AccountController {
 
@@ -52,8 +51,19 @@ public class AccountController {
     @GetMapping("/status/getData")
     @CrossOrigin
     public Object getAccountStatus(){
-        //return accountService.getAccountStatus();
         return new ResponseBean(200, " ",accountService.getAccountStatus());
+    }
+
+    @PutMapping(value = "/status/dep/role")
+    @CrossOrigin
+    public Object updateAccountStatus(@RequestBody List<Account> statusInfo){
+        try{
+            accountService.updateAccountStatus(statusInfo);
+            return new ResponseBean(200, "Successful!", null);
+        }catch (Exception e){
+            return new ResponseBean(401, "update failed! " + e.getMessage(), null);
+        }
+
     }
 
     @PostMapping("/register")

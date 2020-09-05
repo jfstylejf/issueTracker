@@ -8,13 +8,11 @@ import cn.edu.fudan.accountservice.domain.Tool;
 import cn.edu.fudan.accountservice.service.AccountService;
 import cn.edu.fudan.accountservice.util.MD5Util;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 
 @Service
@@ -81,6 +79,14 @@ public class AccountServiceImpl implements AccountService {
             nameStatus.put(authorName,Integer.valueOf(authorStatus));
         }
         return nameStatus;
+    }
+
+    @Override
+    public void updateAccountStatus(List<Account> statusInfo) {
+        if(statusInfo.size()!=0){
+            accountDao.updateAccountStatus(statusInfo);
+        }
+        return;
     }
 
     @Override

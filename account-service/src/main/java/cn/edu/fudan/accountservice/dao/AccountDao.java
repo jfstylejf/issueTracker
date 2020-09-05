@@ -44,6 +44,10 @@ public class AccountDao {
 
     public List<Account> getAccountStatus(){ return accountMapper.getAccountStatus(); }
 
+    public void updateAccountStatus(List<Account> statusInfo){
+        accountMapper.updateStatusInfo(statusInfo);
+    }
+
     public void addAccount(Account account) {
         accountMapper.addAccount(account);
     }

@@ -4,6 +4,7 @@ package cn.edu.fudan.accountservice.service;
 import cn.edu.fudan.accountservice.domain.Account;
 import cn.edu.fudan.accountservice.domain.ResponseBean;
 import cn.edu.fudan.accountservice.domain.Tool;
+import com.sun.org.apache.xpath.internal.objects.XObject;
 
 import java.util.List;
 
@@ -59,6 +60,13 @@ public interface AccountService {
      */
     Object getStatusByName(List name);
 
+    /**
+     * update status
+     *
+     * @param statusInfo
+     * @return null
+     */
+    void updateAccountStatus(List<Account> statusInfo);
 
     List<Account> getAccountStatus();
 

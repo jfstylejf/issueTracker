@@ -90,6 +90,25 @@
         select name,account_dep,email,account_status,account_role from account;
     </select>
 
+    <update id="updateStatusInfo" parameterType="java.util.List">
+        <foreach collection="list" item="item" index="index" open="" close="" separator=";">
+            update account
+            <set >
+                <if test="item.role != null" >
+                    account_role = #{item.role},
+                </if>
+                <if test="item.dep != null" >
+                    account_dep = #{item.dep},
+                </if>
+                <if test="item.status != null" >
+                    account_status = #{item.status},
+                </if>
+            </set>
+            where name = #{item.name}
+        </foreach>
+
+    </update>
+
     <select id="getAllAccountId" resultType="String">
         select uuid from account;
     </select>
