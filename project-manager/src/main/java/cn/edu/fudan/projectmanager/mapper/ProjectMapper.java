@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 
 @Repository
@@ -53,4 +54,6 @@ public interface ProjectMapper {
     List<Project> getProjects();
 
     Date getLatestCommitTime(@Param("repo_id") String repo_id);
+
+    List<Map<String,Object>> getProjectInfoByAccountName(@Param("account_name") String accountName);
 }

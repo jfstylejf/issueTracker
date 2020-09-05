@@ -577,5 +577,9 @@ public class ProjectServiceImpl implements ProjectService {
         projectDao.updateProjectStatus(project1);
     }
 
+    @Override
+    public List<Map<String, Object>> getProjectInfoByAccountName(String accountName) {
+        return projectDao.getProjectInfoByAccountName(accountName);
+    }
 
 }
