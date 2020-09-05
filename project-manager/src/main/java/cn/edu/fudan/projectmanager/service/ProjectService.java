@@ -80,4 +80,7 @@ public interface ProjectService {
     void updateProject(JSONObject project);
 
     public List<Map<String, Object>> getProjectInfoByAccountName(String accountName);
+
+
+    Object getAllProject();
 }

@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.util.List;
 
 @RestController
-@EnableAutoConfiguration
 public class ProjectController {
 
     private ProjectService projectService;
@@ -248,6 +247,12 @@ public class ProjectController {
     @GetMapping(value = "/project/info")
     public Object getProjectInfoByAccountName(@RequestParam String accountName) {
         return projectService.getProjectInfoByAccountName(accountName);
+    }
+
+
+    @GetMapping(value = "/project/all")
+    public Object getAllProject() {
+        return projectService.getAllProject();
     }
 
 }

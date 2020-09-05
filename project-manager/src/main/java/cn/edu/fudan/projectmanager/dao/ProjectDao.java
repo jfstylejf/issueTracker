@@ -114,4 +114,8 @@ public class ProjectDao {
     public List<Map<String, Object>> getProjectInfoByAccountName(String accountName) {
         return projectMapper.getProjectInfoByAccountName(accountName);
     }
+
+    public List<Map<String, String>> getAllProject() {
+        return projectMapper.getAllProject();
+    }
 }
