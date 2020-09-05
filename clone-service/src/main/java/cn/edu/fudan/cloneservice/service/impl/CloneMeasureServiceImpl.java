@@ -15,7 +15,6 @@ import cn.edu.fudan.cloneservice.util.ComputeUtil;
 import cn.edu.fudan.cloneservice.util.JGitUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -37,9 +36,18 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
     @Override
     public CloneMessage getCloneMeasure(String repositoryId, String developer, String start, String end){
         List<String> repoIds = new ArrayList<>();
+        String trim = ",";
+        String [] targetRepos  = new String[0];
+        if (repositoryId.contains(trim)) {
+            targetRepos = repositoryId.split(trim);
+            repositoryId = null;
+        }
         repoIds.add(repositoryId);
         if (StringUtils.isEmpty(repositoryId)) {
             repoIds = repoCommitMapper.getrepoIdList(developer);
+        }
+        if (targetRepos.length != 0) {
+            repoIds = Arrays.asList(targetRepos);
         }
 
         int newCloneLines = 0;
