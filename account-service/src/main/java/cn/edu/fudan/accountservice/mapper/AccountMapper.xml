@@ -87,7 +87,7 @@
     </select>
 
     <select id="getAccountStatus" parameterType="String" resultMap="account">
-        select name,account_dep,email,account_status,account_role from account;
+        select account_name, name, account_gitname, account_dep, email, account_status, account_role from account;
     </select>
 
     <update id="updateStatusInfo" parameterType="java.util.List">
