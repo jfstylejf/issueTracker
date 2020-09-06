@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -585,6 +586,9 @@ public class ProjectServiceImpl implements ProjectService {
         Map<String, List< Map<String, String>>> result = new HashMap<>(8);
         for (Map<String, String> project : projects) {
             String projectName = project.get("module");
+            if (StringUtils.isEmpty(projectName)) {
+                projectName = "unnamed";
+            }
             if (! result.keySet().contains(projectName)) {
                 result.put(projectName, new ArrayList<>(4));
             }
