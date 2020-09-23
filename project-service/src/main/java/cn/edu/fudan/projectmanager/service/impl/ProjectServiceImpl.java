@@ -1,13 +1,14 @@
 package cn.edu.fudan.projectmanager.service.impl;
 
-
 import cn.edu.fudan.projectmanager.component.RestInterfaceManager;
 import cn.edu.fudan.projectmanager.dao.ProjectDao;
 import cn.edu.fudan.projectmanager.domain.NeedDownload;
 import cn.edu.fudan.projectmanager.domain.Project;
+import cn.edu.fudan.projectmanager.mapper.AccountMapper;
 import cn.edu.fudan.projectmanager.service.ProjectService;
 import cn.edu.fudan.projectmanager.util.DateTimeUtil;
 import com.alibaba.fastjson.JSONObject;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -33,10 +34,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class ProjectServiceImpl implements ProjectService {
-
-    private static Logger logger = LoggerFactory.getLogger(ProjectServiceImpl.class);
 
     @Value("${github.api.path}")
     private String githubAPIPath;
@@ -46,6 +46,9 @@ public class ProjectServiceImpl implements ProjectService {
     private String cloneResPreHome;
 
     private RestInterfaceManager restInterfaceManager;
+
+    private AccountMapper accountMapper;
+
 
     @Autowired
     public void setRestInterfaceManager(RestInterfaceManager restInterfaceManager) {
@@ -78,7 +81,7 @@ public class ProjectServiceImpl implements ProjectService {
     private void send(String projectId, String url,boolean isPrivate,String username,String password, String branch,String repoSource) {
         NeedDownload needDownload = new NeedDownload(projectId, url,isPrivate,username,password ,branch,repoSource);
         kafkaTemplate.send("ProjectManager", JSONObject.toJSONString(needDownload));
-        logger.info("send message to topic ProjectManage ---> " + JSONObject.toJSONString(needDownload));
+        log.info("send message to topic ProjectManage ---> " + JSONObject.toJSONString(needDownload));
     }
 
 
@@ -158,16 +161,16 @@ public class ProjectServiceImpl implements ProjectService {
         String logInfo = "";
         for (int i = 0; i < projectListInfo.size(); i++){
             JSONObject projectInfo = projectListInfo.get(i);
-            logger.info("开始导入第" + (i+1) + "个项目：" + projectInfo.getString("url"));
+            log.info("开始导入第" + (i+1) + "个项目：" + projectInfo.getString("url"));
             logInfo = logInfo + "开始导入第" + (i+1) + "个项目：" + projectInfo.getString("url");
             try {
                 addOneProject(userToken,projectInfo);
-                logger.info("导入第" + (i+1) + "个项目成功！");
+                log.info("导入第" + (i+1) + "个项目成功！");
                 logInfo = logInfo + "导入第" + (i+1) + "个项目成功！";
             }catch (Exception e){
-                logger.info("导入第" + (i+1) + "个项目失败：");
+                log.info("导入第" + (i+1) + "个项目失败：");
                 logInfo = logInfo + "导入第" + (i+1) + "个项目失败：";
-                logger.info(e.getMessage());
+                log.info(e.getMessage());
                 logInfo = logInfo + e.getMessage();
                 flag = false;
                 continue;
@@ -192,9 +195,9 @@ public class ProjectServiceImpl implements ProjectService {
         file.transferTo(destFile);
 
         System.out.println("文件上传成功");
-        logger.info("文件上传成功");
+        log.info("文件上传成功");
         System.out.println("开始读取EXCEL内容");
-        logger.info("开始读取EXCEL内容");
+        log.info("开始读取EXCEL内容");
 
         Sheet sheet;
         InputStream fis = null;
@@ -212,7 +215,7 @@ public class ProjectServiceImpl implements ProjectService {
         int totalRowNum = sheet.getLastRowNum();
 
         System.out.println("当前表格共有："+totalRowNum+"行");
-        logger.info("当前表格共有："+totalRowNum+"行");
+        log.info("当前表格共有："+totalRowNum+"行");
 
 
         for(int i = 13;i <= totalRowNum; i++){
@@ -221,10 +224,10 @@ public class ProjectServiceImpl implements ProjectService {
             if(row!=null){
                 int columnNum = row.getPhysicalNumberOfCells();
                 System.out.println("该行共有列数："+columnNum);
-                logger.info("该行共有列数："+columnNum);
+                log.info("该行共有列数："+columnNum);
                 for(int j=1;j<columnNum;j++){
                     System.out.println("当前处理第"+i+"行，第"+j+"列");
-                    logger.info("当前处理第"+i+"行，第"+j+"列");
+                    log.info("当前处理第"+i+"行，第"+j+"列");
                     Cell cell = row.getCell(j);
                     String cellValue="";
                     if(cell!=null){
@@ -293,19 +296,21 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public Object getProjectListByKeyWord(String userToken, String module,String keyWord,String type,int isRecycled) {
-        String account_id = restInterfaceManager.getAccountId(userToken);
-        if("1".equals(account_id)){
+        String accountUuid = restInterfaceManager.getAccountId(userToken);
+        int accountRight = accountMapper.getAccountRightByAccountUuid(accountUuid);
+        final int superAccountRight = 1;
+        if(accountRight == superAccountRight){
             List<Project> projects = projectDao.getAllProjectByKeyWord(keyWord,module,type).stream()
-                    .filter(project -> project.getRecycled()==isRecycled).collect(Collectors.toList());
-            projects.stream().forEach(project -> project.setAccount_name(restInterfaceManager.getAccountName(project.getAccount_id())));
-            //遍历projects，将till_commit_time + 8小时，更改为北京时间
-            return resetTillCommitTime(projects);
-        }else {
-            List<Project> projects = projectDao.getProjectByKeyWordAndAccountId(account_id, keyWord.trim(), module, type).stream()
-                    .filter(project -> project.getRecycled()==isRecycled).collect(Collectors.toList());
+                    .filter(project -> project.getRecycled() == isRecycled).collect(Collectors.toList());
+            projects.forEach(project -> project.setAccount_name(restInterfaceManager.getAccountName(project.getAccount_id())));
             //遍历projects，将till_commit_time + 8小时，更改为北京时间
             return resetTillCommitTime(projects);
         }
+
+        List<Project> projects = projectDao.getProjectByKeyWordAndAccountId(accountUuid, keyWord.trim(), module, type).stream()
+                .filter(project -> project.getRecycled()==isRecycled).collect(Collectors.toList());
+        //遍历projects，将till_commit_time + 8小时，更改为北京时间
+        return resetTillCommitTime(projects);
     }
 
     private Object resetTillCommitTime(List<Project> projects) {
@@ -397,7 +402,7 @@ public class ProjectServiceImpl implements ProjectService {
             //repoId为空表示没有下载完成，直接删除
             projectDao.remove(projectId);
         }
-        logger.info("project delete success!");
+        log.info("project delete success!");
     }
 
     private void deleteProjectInfo(String repoId, String accountId, String type){
@@ -437,10 +442,10 @@ public class ProjectServiceImpl implements ProjectService {
         File file=new File(filePath);
         if(file.exists()){
             if(file.delete()){
-                logger.info("clone pre file delete success!");
+                log.info("clone pre file delete success!");
             }
         }else {
-            logger.info("clone pre file not exist!");
+            log.info("clone pre file not exist!");
         }
     }
 
@@ -601,4 +606,8 @@ public class ProjectServiceImpl implements ProjectService {
         return result;
     }
 
+    @Autowired
+    public void setAccountMapper(AccountMapper accountMapper) {
+        this.accountMapper = accountMapper;
+    }
 }

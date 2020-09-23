@@ -15,7 +15,7 @@
     <modules>
         <module>account-service</module>
         <module>clone-service</module>
-        <module>project-manager</module>
+        <module>project-service</module>
         <module>scan-service</module>
         <module>issue-service</module>
         <module>tag-service</module>

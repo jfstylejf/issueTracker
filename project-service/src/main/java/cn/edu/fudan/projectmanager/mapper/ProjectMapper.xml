@@ -88,9 +88,6 @@
             <if test="module != null and module != '' ">
                 and module like "%"#{module}"%"
             </if>
-            <if test="type != null and type != ''">
-                and type = #{type}
-            </if>
         </where>
         order by add_time desc
     </select>
@@ -105,9 +102,6 @@
             </if>
             <if test="module != null and module != '' ">
                 and module like "%"#{module}"%"
-            </if>
-            <if test="type != null and type != ''">
-                and type = #{type}
             </if>
         </where>
         order by add_time desc
@@ -144,7 +138,7 @@
     </select>
 
     <select id="getProjectsByURLAndTypeBranch" parameterType="String" resultMap="project">
-        select * from project where url = #{url}and type = #{type} and branch = #{branch}
+        select * from project where url = #{url} and type = #{type} and branch = #{branch}
     </select>
 
     <select id="getRepoIdsByAccountIdAndType" parameterType="String" resultType="String">

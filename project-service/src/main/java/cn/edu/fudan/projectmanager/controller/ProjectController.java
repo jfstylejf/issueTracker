@@ -87,14 +87,15 @@ public class ProjectController {
         return projectService.getProjectListByModule(userToken,type,module);
     }
 
+    @Deprecated
     @GetMapping(value = {"/project/filter"})
     public Object keyWordQuery(HttpServletRequest request,
-                               @RequestParam("keyWord") String keyWord,
+                               @RequestParam(name = "key_word", required = false )String keyWord,
                                @RequestParam(name = "repo",required = false) String module,
-                               @RequestParam(name = "type",required = false,defaultValue = "bug")String type,
-                               @RequestParam(name = "isRecycled",required = false,defaultValue = "0") int isRecycled) {
+                               @RequestParam(name = "type",required = false, defaultValue = "bug")String type,
+                               @RequestParam(name = "isRecycled",required = false, defaultValue = "0") int isRecycled) {
         String userToken = request.getHeader("token");
-        return projectService.getProjectListByKeyWord(userToken, module,keyWord,type,isRecycled);
+        return projectService.getProjectListByKeyWord(userToken, module, keyWord, type, isRecycled);
     }
 
     @DeleteMapping(value = {"/project/{projectId}"})
