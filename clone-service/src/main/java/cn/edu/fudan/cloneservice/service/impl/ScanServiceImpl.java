@@ -55,7 +55,6 @@ public class ScanServiceImpl implements ScanService {
         synchronized (lock) {
             if (scanStatus.keySet().contains(repoUuid)) {
                 scanStatus.put(repoUuid, true);
-                log.info("repo {} is scanning", repoUuid);
                 return;
             }
             scanStatus.putIfAbsent(repoUuid, false);
@@ -77,23 +76,6 @@ public class ScanServiceImpl implements ScanService {
         }
         beginScan(repoUuid, branch, beginCommit, isUpdate);
         checkAfterScan(repoUuid,branch);
-    }
-
-    private void checkAfterScan(String repoUuid, String branch) {
-        if (! scanStatus.keySet().contains(repoUuid)) {
-            log.error("{} : not in scan map", repoUuid);
-            return;
-        }
-        //扫完再次判断是否有更新请求
-        synchronized (lock) {
-            if (scanStatus.get(repoUuid)) {
-                scanStatus.put(repoUuid, false);
-            } else {
-                scanStatus.remove(repoUuid);
-                return;
-            }
-        }
-        prepareForScan(repoUuid, branch, null);
     }
 
     private void beginScan(String repoUuid, String branch, String beginCommit, boolean isUpdate) {
@@ -145,6 +127,22 @@ public class ScanServiceImpl implements ScanService {
         cloneRepo.setTotalCommitCount(commitList.size());
         cloneRepoDao.insertCloneRepo(cloneRepo);
 
+    }
+
+    private void checkAfterScan(String repoUuid, String branch) {
+        if (! scanStatus.keySet().contains(repoUuid)) {
+            log.error("{} : not in scan map", repoUuid);
+            return;
+        }
+        //扫完再次判断是否有更新请求
+        synchronized (lock) {
+            if (! scanStatus.get(repoUuid)) {
+                scanStatus.remove(repoUuid);
+                return;
+            }
+            scanStatus.put(repoUuid, false);
+        }
+        prepareForScan(repoUuid, branch, null);
     }
 
     private CloneRepo initCloneRepo(String repoId){
