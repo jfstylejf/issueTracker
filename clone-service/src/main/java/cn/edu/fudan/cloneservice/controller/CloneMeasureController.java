@@ -43,7 +43,7 @@ public class CloneMeasureController {
      */
     @GetMapping(value = {"/cloneMeasure/getMeasureClone"})
     public ResponseBean getMeasureCloneData(@RequestParam(value = "repo_id", required = false, defaultValue = "") String repoId,
-                                            @RequestParam("developer") String developer,
+                                            @RequestParam(value = "developer", required = false) String developer,
                                             @RequestParam("start") String start,
                                             @RequestParam("end") String end){
         try{

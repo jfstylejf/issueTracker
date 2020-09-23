@@ -24,6 +24,16 @@ public interface RepoCommitMapper {
             "IN (SELECT repo_id FROM issueTracker.project);")
     List<String> getrepoIdList(String author);
 
+
+    /**
+     *description
+     * @param
+     * @return list
+     */
+    @Select("SELECT distinct(repo_id) FROM issueTracker.commit_view " +
+            "WHERE repo_id " +
+            "IN (SELECT repo_id FROM issueTracker.project);")
+    List<String> getProjectRepoIdList();
     /**
      * description
      * @param repoId repoId
@@ -36,6 +46,7 @@ public interface RepoCommitMapper {
             "WHERE repo_id = #{repoId} AND developer = #{author}" +
             "AND commit_time >= #{start} AND commit_time <= #{end} ORDER BY commit_time;")
     List<String> getAuthorCommitList(String repoId, String author, String start, String end);
+
 
     /**
      * description
