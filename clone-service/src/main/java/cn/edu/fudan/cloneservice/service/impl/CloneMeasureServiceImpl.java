@@ -206,10 +206,10 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
     }
 
     @Override
-    public CloneMeasure insertCloneMeasure(String repoId, String commitId, String repoPath) {
+    public void insertCloneMeasure(String repoId, String commitId, String repoPath) {
         //如果数据库中有对应的信息则直接返回
         if (cloneMeasureDao.getCloneMeasureCount(repoId, commitId) > 0) {
-            return null;
+            return;
         }
         int increasedLines;
         int currentCloneLines;
@@ -242,6 +242,9 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
 
         //todo
         CloneMeasure cloneMeasure = forkJoinRecursiveTask.extract(repoId, commitId, repoPath, cloneLocations, cloneLocationMap, map);
+        if (cloneMeasure == null) {
+            return;
+        }
 
         addCloneLocationMap = cloneMeasure.getAddCloneLocationMap();
         selfCloneLocationMap = cloneMeasure.getSelfCloneLocationMap();
@@ -257,7 +260,6 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
             cloneInfoDao.insertCloneInfo(cloneInfoList);
         }
 
-        return cloneMeasure;
     }
 
     private List<CloneInfo> getCloneInfoList(String repoId, String commitId, Map<String, String> addCloneLocationMap, Map<String, String> selfCloneLocationMap) {

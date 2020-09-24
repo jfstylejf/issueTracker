@@ -40,10 +40,9 @@ public class ForkJoinRecursiveTask {
         ForkJoinTask<CloneMeasure> future = forkJoinPool.submit(new CalculatedRecursiveTask(0, cloneLocations.size() - 1, repoId, commitId, repoPath, cloneLocations, cloneLocationMap, map));
         try {
             return future.get();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            log.error("ForkJoinTask get CloneMeasure error!");
+            log.error(e.getMessage());
         }
         return null;
     }

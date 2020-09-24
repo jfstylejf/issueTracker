@@ -19,7 +19,7 @@ public interface CloneMeasureService {
      * @param repoPath  path
      * @return
      */
-    CloneMeasure insertCloneMeasure(String repoId, String commitId, String repoPath);
+    void insertCloneMeasure(String repoId, String commitId, String repoPath);
 
     /**
      * 获取一段时间内人员度量
