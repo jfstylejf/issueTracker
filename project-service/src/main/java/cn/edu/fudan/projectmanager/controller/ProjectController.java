@@ -90,10 +90,10 @@ public class ProjectController {
     @Deprecated
     @GetMapping(value = {"/project/filter"})
     public Object keyWordQuery(HttpServletRequest request,
-                               @RequestParam(name = "key_word", required = false )String keyWord,
+                               @RequestParam(name = "keyWord", required = false )String keyWord,
                                @RequestParam(name = "repo",required = false) String module,
                                @RequestParam(name = "type",required = false, defaultValue = "bug")String type,
-                               @RequestParam(name = "isRecycled",required = false, defaultValue = "0") int isRecycled) {
+                               @RequestParam(name = "recycled",required = false, defaultValue = "0") int isRecycled) {
         String userToken = request.getHeader("token");
         return projectService.getProjectListByKeyWord(userToken, module, keyWord, type, isRecycled);
     }

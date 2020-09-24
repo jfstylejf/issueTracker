@@ -298,7 +298,7 @@ public class ProjectServiceImpl implements ProjectService {
     public Object getProjectListByKeyWord(String userToken, String module,String keyWord,String type,int isRecycled) {
         String accountUuid = restInterfaceManager.getAccountId(userToken);
         int accountRight = accountMapper.getAccountRightByAccountUuid(accountUuid);
-        final int superAccountRight = 1;
+        final int superAccountRight = 0;
         if(accountRight == superAccountRight){
             List<Project> projects = projectDao.getAllProjectByKeyWord(keyWord,module,type).stream()
                     .filter(project -> project.getRecycled() == isRecycled).collect(Collectors.toList());
