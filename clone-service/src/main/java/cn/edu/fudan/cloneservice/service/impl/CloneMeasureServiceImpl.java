@@ -11,6 +11,7 @@ import cn.edu.fudan.cloneservice.domain.clone.CloneLocation;
 import cn.edu.fudan.cloneservice.mapper.CloneInfoMapper;
 import cn.edu.fudan.cloneservice.mapper.RepoCommitMapper;
 import cn.edu.fudan.cloneservice.service.CloneMeasureService;
+import cn.edu.fudan.cloneservice.service.ScanService;
 import cn.edu.fudan.cloneservice.thread.ForkJoinRecursiveTask;
 import cn.edu.fudan.cloneservice.util.ComputeUtil;
 import cn.edu.fudan.cloneservice.util.JGitUtil;
@@ -21,7 +22,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
+/**
+ * @author fancying
+ */
 @Slf4j
 @Service
 public class CloneMeasureServiceImpl implements CloneMeasureService {
@@ -35,34 +40,82 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
     private CloneInfoMapper cloneInfoMapper;
 
     @Override
-    public CloneMessage getCloneMeasure(String repositoryId, String developer, String start, String end) {
+    public List<CloneMessage> getCloneMeasure(String repositoryId, String developer, String start, String end) {
+
+        List<CloneMessage> cloneMessages = new ArrayList<>();
+        if (StringUtils.isEmpty(developer)) {
+            if (StringUtils.isEmpty(repositoryId)) {
+                log.error("repositoryId and developer is null");
+                return cloneMessages;
+            }
+            // 单个repo 维度
+            List<String> developerList = repoCommitMapper.getAllDeveloper(repositoryId);
+            List<CloneMessage> gitNameClone = new ArrayList<>(developerList.size());
+            developerList.forEach(d -> gitNameClone.add(getOneDeveloperCloneInfo(repositoryId, d, start, end)));
+
+            // 聚合 key gitName value trueName
+            Map<String, String> trueNameGitName = getName(developerList);
+            gitNameClone.forEach(d -> d.setDeveloper(trueNameGitName.get(d.getDeveloper())));
+            Map<String, List<CloneMessage>> map = gitNameClone.parallelStream().collect(Collectors.groupingBy(CloneMessage::getDeveloper));
+            map.values().forEach(c -> cloneMessages.add(union(c)));
+        } else {
+            List<String> gitName = repoCommitMapper.getAllGitName(developer);
+            gitName.forEach(n -> cloneMessages.add(getOneDeveloperCloneInfo(repositoryId, n, start, end)));
+            CloneMessage u = union(cloneMessages);
+            cloneMessages.clear();
+            cloneMessages.add(u);
+        }
+        return cloneMessages;
+    }
+
+    /**
+     * fixme 目前先简单相加 后面从入库的时候就考虑人员聚合
+     */
+    private CloneMessage union(List<CloneMessage> cloneMessageList) {
+        if (cloneMessageList == null || cloneMessageList.size() == 0) {
+            return null;
+        }
+        CloneMessage result = cloneMessageList.get(0);
+        for (int i = 1; i < cloneMessageList.size(); i++) {
+
+            CloneMessage c = cloneMessageList.get(i);
+            result.setIncreasedCloneLines(result.getIncreasedCloneLines() + c.getIncreasedCloneLines());
+            result.setSelfIncreasedCloneLines(result.getSelfIncreasedCloneLines() + c.getSelfIncreasedCloneLines());
+            result.setEliminateCloneLines(result.getEliminateCloneLines() + c.getEliminateCloneLines());
+            result.setAllEliminateCloneLines(result.getAllEliminateCloneLines() + c.getAllEliminateCloneLines());
+            result.setAddLines(result.getAddLines() + c.getAddLines());
+
+            result.setIncreasedCloneLinesRate(result.getIncreasedCloneLines() + "/" + result.getAddLines());
+        }
+
+        return result;
+    }
+
+    private Map<String, String> getName(List<String> developerList) {
+        Map<String, String> result = new HashMap<>(developerList.size() >> 1);
+        List<Map<String, String>> trueName = repoCommitMapper.getAllTrueName();
+        for (Map<String, String> m : trueName) {
+            String name = m.get("name");
+            String gitName = m.get("account_gitname");
+            if (developerList.contains(gitName)) {
+                result.put(gitName, name);
+            }
+        }
+        return result;
+    }
+
+
+    private CloneMessage getOneDeveloperCloneInfo(String repositoryId, String developer, String start, String end) {
         List<String> repoIds = new ArrayList<>();
         String trim = ",";
-        String[] targetRepos = new String[0];
+        String [] targetRepos  = new String[0];
         if (repositoryId.contains(trim)) {
             targetRepos = repositoryId.split(trim);
             repositoryId = null;
         }
-
-        List<String> developerList = new ArrayList<>();
-        developerList.add(developer);
-        if (!cloneInfoMapper.getGitName(developer).isEmpty()) {
-            for (String aDeveloper : cloneInfoMapper.getGitName(developer)) {
-                if (!developerList.contains(aDeveloper)) developerList.add(aDeveloper);
-            }
-        }
-
         repoIds.add(repositoryId);
         if (StringUtils.isEmpty(repositoryId)) {
-            if (developer != null) {
-                for (String aDeveloper : developerList) {
-                    if (repoCommitMapper.getrepoIdList(aDeveloper).isEmpty()) continue;
-                    for (String repoId : repoCommitMapper.getrepoIdList(aDeveloper)) {
-                        if (!repoIds.contains(repoId)) repoIds.add(repoId);
-                    }
-                    repoIds.addAll(repoCommitMapper.getrepoIdList(aDeveloper));
-                }
-            } else repoIds = repoCommitMapper.getProjectRepoIdList();
+            repoIds = repoCommitMapper.getrepoIdList(developer);
         }
         if (targetRepos.length != 0) {
             repoIds = Arrays.asList(targetRepos);
@@ -74,32 +127,25 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
         int allDeleteCloneLines = 0;
         int addLines = 0;
         for (String repoId : repoIds) {
-            List<String> developerCommitList = new ArrayList<>();
-            if (developer == null) {
-                developerCommitList.addAll(repoCommitMapper.getCommitList(repoId, start, end));
-            } else {
-                for (String aDeveloper : developerList) {
-                    developerCommitList.addAll(repoCommitMapper.getAuthorCommitList(repoId, aDeveloper, start, end));
-                }
-            }
+            List<String> developerCommitList = repoCommitMapper.getAuthorCommitList(repoId, developer, start, end);
             List<String> repoCommitList = repoCommitMapper.getCommitList(repoId, start, end);
             List<CloneMeasure> cloneMeasures = cloneMeasureDao.getCloneMeasures(repoId);
 
             int preCloneLines = 0;
-            for (String commitId : repoCommitList) {
-                for (CloneMeasure cloneMeasure1 : cloneMeasures) {
+            for(String commitId : repoCommitList){
+                for(CloneMeasure cloneMeasure1 : cloneMeasures){
                     //计算个人
-                    if (cloneMeasure1.getCommitId().equals(commitId) && developerCommitList.contains(commitId)) {
+                    if(cloneMeasure1.getCommitId().equals(commitId) && developerCommitList.contains(commitId)){
                         newCloneLines += cloneMeasure1.getNewCloneLines();
                         selfCloneLines += cloneMeasure1.getSelfCloneLines();
-                        if (preCloneLines > cloneMeasure1.getCloneLines()) {
+                        if(preCloneLines > cloneMeasure1.getCloneLines()){
                             deleteCloneLines += preCloneLines - cloneMeasure1.getCloneLines();
                         }
                     }
                     //计算全体
-                    if (cloneMeasure1.getCommitId().equals(commitId)) {
+                    if(cloneMeasure1.getCommitId().equals(commitId)){
                         //消除clone行数,只计算消除
-                        if (preCloneLines > cloneMeasure1.getCloneLines()) {
+                        if(preCloneLines > cloneMeasure1.getCloneLines()){
                             allDeleteCloneLines += preCloneLines - cloneMeasure1.getCloneLines();
                         }
                         preCloneLines = cloneMeasure1.getCloneLines();
@@ -107,21 +153,17 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
                     }
                 }
             }
-            if (developer == null) {
-                addLines += restInterfaceManager.getAddLines(repoId, start, end, null);
-            } else {
-                for(String aDeveloper: developerList)
-                addLines += restInterfaceManager.getAddLines(repoId, start, end, aDeveloper);
-            }
+            addLines += restInterfaceManager.getAddLines(repoId, start, end, developer);
         }
 
-
         CloneMessage cloneMessage = new CloneMessage();
-        cloneMessage.setIncreasedCloneLines(newCloneLines + "");
-        cloneMessage.setSelfIncreasedCloneLines(selfCloneLines + "");
-        cloneMessage.setIncreasedCloneLinesRate(newCloneLines + "/" + addLines);
-        cloneMessage.setEliminateCloneLines(deleteCloneLines + "");
-        cloneMessage.setAllEliminateCloneLines(allDeleteCloneLines + "");
+        cloneMessage.setDeveloper(developer);
+        cloneMessage.setIncreasedCloneLines(newCloneLines);
+        cloneMessage.setSelfIncreasedCloneLines(selfCloneLines);
+        cloneMessage.setAddLines(addLines);
+        cloneMessage.setIncreasedCloneLinesRate(newCloneLines+"/"+addLines);
+        cloneMessage.setEliminateCloneLines(deleteCloneLines);
+        cloneMessage.setAllEliminateCloneLines(allDeleteCloneLines);
 
         return cloneMessage;
     }

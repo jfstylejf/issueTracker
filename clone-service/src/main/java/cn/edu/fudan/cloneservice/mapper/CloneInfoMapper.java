@@ -13,7 +13,7 @@ import java.util.List;
 @Repository
 public interface CloneInfoMapper {
 
-    List<String> getGitName(@Param("name")String name);
+//    List<String> getGitName(@Param("name")String name);
 
     /**
      * 批量插入clone info

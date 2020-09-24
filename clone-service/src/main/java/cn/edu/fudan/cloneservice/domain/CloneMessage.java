@@ -14,10 +14,11 @@ import lombok.NoArgsConstructor;
 public class CloneMessage {
 
     private String repoId;
-    private String increasedCloneLines;
-    private String selfIncreasedCloneLines;
+    private String developer;
+    private Integer increasedCloneLines;
+    private Integer selfIncreasedCloneLines;
     private String increasedCloneLinesRate;
-    private String eliminateCloneLines;
-    private String allEliminateCloneLines;
-
+    private Integer eliminateCloneLines;
+    private Integer allEliminateCloneLines;
+    private Integer addLines;
 }

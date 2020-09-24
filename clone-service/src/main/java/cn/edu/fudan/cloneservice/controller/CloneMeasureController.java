@@ -1,9 +1,13 @@
 package cn.edu.fudan.cloneservice.controller;
 
+import cn.edu.fudan.cloneservice.domain.CloneMessage;
 import cn.edu.fudan.cloneservice.domain.ResponseBean;
 import cn.edu.fudan.cloneservice.service.CloneMeasureService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * @author znj
@@ -47,7 +51,12 @@ public class CloneMeasureController {
                                             @RequestParam("start") String start,
                                             @RequestParam("end") String end){
         try{
-            return new ResponseBean(200,"success",cloneMeasureService.getCloneMeasure(repoId,developer,start,end));
+            List<CloneMessage> result = cloneMeasureService.getCloneMeasure(repoId,developer,start,end);
+            Object data = result;
+            if (! StringUtils.isEmpty(developer) && result.size() > 0) {
+                data = result.get(0);
+            }
+            return new ResponseBean(200,"success", data);
         }catch (Exception e){
             e.printStackTrace();
             return new ResponseBean(401,"failed",null);

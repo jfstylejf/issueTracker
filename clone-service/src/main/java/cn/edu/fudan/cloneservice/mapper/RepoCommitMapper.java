@@ -1,9 +1,11 @@
 package cn.edu.fudan.cloneservice.mapper;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.annotations.Select;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * description: commit view 表 查询接口
@@ -59,4 +61,22 @@ public interface RepoCommitMapper {
             "WHERE repo_id = #{repoId} AND commit_time >= #{start} AND commit_time <= #{end} ORDER BY commit_time;")
     List<String> getCommitList(String repoId, String start, String end);
 
+    /**
+     * description
+     * @param repositoryId repoId
+     * @return list
+     */
+    @Select("SELECT distinct(developer) FROM issueTracker.commit_view " +
+            "where repo_id = #{repositoryId};")
+    List<String> getAllDeveloper(String repositoryId);
+
+    /**
+     * fixme 移动到其他地方
+     * @return key name、account_gitname
+     */
+    @Select("SELECT name,account_gitname FROM issueTracker.account_info;")
+    List<Map<String, String>> getAllTrueName();
+
+    @Select("SELECT account_gitname FROM issueTracker.account_info WHERE `name` = #{developer};")
+    List<String> getAllGitName(String developer);
 }

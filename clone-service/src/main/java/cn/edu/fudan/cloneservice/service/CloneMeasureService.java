@@ -27,9 +27,9 @@ public interface CloneMeasureService {
      * @param developer name
      * @param start start time
      * @param end end time
-     * @return
+     * @return list
      */
-    CloneMessage getCloneMeasure(String repoId, String developer, String start, String end);
+    List<CloneMessage> getCloneMeasure(String repoId, String developer, String start, String end);
 
     /**
      * 删除clone度量结果
