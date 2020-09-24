@@ -48,19 +48,19 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
                 log.error("repositoryId and developer is null");
                 return cloneMessages;
             }
-            // 单个repo 维度
+            // 单个repo 维度 存放的是用户的git name
             List<String> developerList = repoCommitMapper.getAllDeveloper(repositoryId);
-            List<CloneMessage> gitNameClone = new ArrayList<>(developerList.size());
-            developerList.forEach(d -> gitNameClone.add(getOneDeveloperCloneInfo(repositoryId, d, start, end)));
-
             // 聚合 key gitName value trueName
             Map<String, String> trueNameGitName = getName(developerList);
-            gitNameClone.forEach(d -> d.setDeveloper(trueNameGitName.get(d.getDeveloper())));
+
+            List<CloneMessage> gitNameClone = new ArrayList<>(developerList.size());
+            developerList.forEach(d -> gitNameClone.add(getOneDeveloperCloneInfo(repositoryId, d, start, end, trueNameGitName.get(d))));
+
             Map<String, List<CloneMessage>> map = gitNameClone.parallelStream().collect(Collectors.groupingBy(CloneMessage::getDeveloper));
             map.values().forEach(c -> cloneMessages.add(union(c)));
         } else {
             List<String> gitName = repoCommitMapper.getAllGitName(developer);
-            gitName.forEach(n -> cloneMessages.add(getOneDeveloperCloneInfo(repositoryId, n, start, end)));
+            gitName.forEach(n -> cloneMessages.add(getOneDeveloperCloneInfo(repositoryId, n, start, end, developer)));
             CloneMessage u = union(cloneMessages);
             cloneMessages.clear();
             cloneMessages.add(u);
@@ -82,12 +82,13 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
             result.setIncreasedCloneLines(result.getIncreasedCloneLines() + c.getIncreasedCloneLines());
             result.setSelfIncreasedCloneLines(result.getSelfIncreasedCloneLines() + c.getSelfIncreasedCloneLines());
             result.setEliminateCloneLines(result.getEliminateCloneLines() + c.getEliminateCloneLines());
-            result.setAllEliminateCloneLines(result.getAllEliminateCloneLines() + c.getAllEliminateCloneLines());
-            result.setAddLines(result.getAddLines() + c.getAddLines());
+
+            if (! result.getRepoId().equals(c.getRepoId())) {
+                result.setAllEliminateCloneLines(result.getAllEliminateCloneLines() + c.getAllEliminateCloneLines());
+            }
 
             result.setIncreasedCloneLinesRate(result.getIncreasedCloneLines() + "/" + result.getAddLines());
         }
-
         return result;
     }
 
@@ -105,7 +106,7 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
     }
 
 
-    private CloneMessage getOneDeveloperCloneInfo(String repositoryId, String developer, String start, String end) {
+    private CloneMessage getOneDeveloperCloneInfo(String repositoryId, String developer, String start, String end, String trueName) {
         List<String> repoIds = new ArrayList<>();
         String trim = ",";
         String [] targetRepos  = new String[0];
@@ -153,15 +154,18 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
                     }
                 }
             }
-            addLines += restInterfaceManager.getAddLines(repoId, start, end, developer);
+            addLines += restInterfaceManager.getAddLines(repoId, start, end, trueName);
         }
 
         CloneMessage cloneMessage = new CloneMessage();
-        cloneMessage.setDeveloper(developer);
+        cloneMessage.setDeveloper(trueName);
+        if (StringUtils.isEmpty(trueName)) {
+            cloneMessage.setDeveloper(developer);
+        }
+        cloneMessage.setRepoId(repositoryId);
         cloneMessage.setIncreasedCloneLines(newCloneLines);
         cloneMessage.setSelfIncreasedCloneLines(selfCloneLines);
         cloneMessage.setAddLines(addLines);
-        cloneMessage.setIncreasedCloneLinesRate(newCloneLines+"/"+addLines);
         cloneMessage.setEliminateCloneLines(deleteCloneLines);
         cloneMessage.setAllEliminateCloneLines(allDeleteCloneLines);
 
