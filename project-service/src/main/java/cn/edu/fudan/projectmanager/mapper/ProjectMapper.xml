@@ -71,9 +71,6 @@
 
     <select id="getProjectByAccountId" parameterType="String" resultMap="project">
         select * from project
-        <if test="account_id != null">
-            where account_id = #{account_id}
-        </if>
         order by add_time desc
     </select>
 
@@ -81,9 +78,8 @@
         select *
         from project
         <where>
-            account_id = #{account_id}
             <if test="keyWord != null and keyWord != '' ">
-                and name like "%"#{keyWord}"%"
+                name like "%"#{keyWord}"%"
             </if>
             <if test="module != null and module != '' ">
                 and module like "%"#{module}"%"
@@ -112,12 +108,12 @@
     </select>
 
     <select id="getProjectList" parameterType="String" resultMap="project">
-        select * from project where account_id = #{account_id} and type = #{type} order by module desc
+        select * from project where  type = #{type} order by module desc
     </select>
 
 <!--    jeff-->
     <select id="getProjectListByModule" parameterType="String" resultMap="project">
-        select * from project where account_id = #{account_id} and type = #{type} and module = #{module} order by add_time desc
+        select * from project where type = #{type} and module = #{module} order by add_time desc
     </select>
 
     <select id="getProjectByID" parameterType="String" resultMap="project">
@@ -125,7 +121,7 @@
     </select>
 
     <select id="getProjectByURLTypeAndAccountIdBranch" parameterType="String" resultType="project">
-        select * from project where account_id = #{account_id} and url = #{url} and type = #{type} and branch = #{branch}
+        select * from project where  url = #{url} and type = #{type} and branch = #{branch}
     </select>
 
 
@@ -142,7 +138,7 @@
     </select>
 
     <select id="getRepoIdsByAccountIdAndType" parameterType="String" resultType="String">
-        select repo_id from project where account_id = #{account_id} and type = #{type}
+        select repo_id from project where  type = #{type}
     </select>
 
     <delete id="remove" parameterType="String">
@@ -163,9 +159,6 @@
             </if>
             <if test="download_status != null">
                 download_status = #{download_status},
-            </if>
-            <if test="account_id != null">
-                account_id = #{account_id},
             </if>
             <if test="scan_status != null">
                 scan_status = #{scan_status},
@@ -210,16 +203,15 @@
     <select id="getProjectByRepoIdAndCategory" parameterType="String" resultMap="project">
         select *
         from project
-        where repo_id = #{repo_id} and type = #{category} and account_id = #{account_id}
+        where repo_id = #{repo_id} and type = #{category}
     </select>
 
     <select id="getProjectsByCondition" parameterType="String" resultMap="project">
         select uuid,name,language,url,repo_source,type,account_id,download_status,scan_status,add_time,till_commit_time,last_scan_time,description,repo_id,branch,first_auto_scan,module
         from project
         <where>
-            account_id = #{account_id}
             <if test="type != null and type != '' ">
-                and type = #{type}
+                type = #{type}
             </if>
             <if test="name != null and name != '' and name != 'null'">
                 and name = #{name}
