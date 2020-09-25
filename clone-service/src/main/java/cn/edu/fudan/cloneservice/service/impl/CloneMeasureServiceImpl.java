@@ -86,9 +86,8 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
             if (! result.getRepoId().equals(c.getRepoId())) {
                 result.setAllEliminateCloneLines(result.getAllEliminateCloneLines() + c.getAllEliminateCloneLines());
             }
-
-            result.setIncreasedCloneLinesRate(result.getIncreasedCloneLines() + "/" + result.getAddLines());
         }
+        result.setIncreasedCloneLinesRate(result.getIncreasedCloneLines() + "/" + result.getAddLines());
         return result;
     }
 

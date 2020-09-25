@@ -66,8 +66,8 @@ public class ScanServiceImpl implements ScanService {
         boolean isUpdate = false;
         // 更新操作
         if (StringUtils.isEmpty(beginCommit)) {
-            String commitId = cloneMeasureDao.getLatestCloneLines(repoUuid).getCommitId();
-            if (StringUtils.isEmpty(commitId)) {
+            beginCommit = cloneMeasureDao.getLatestCloneLines(repoUuid).getCommitId();
+            if (StringUtils.isEmpty(beginCommit)) {
                 log.warn("{} : hasn't scanned before", repoUuid);
                 checkAfterScan(repoUuid,branch);
                 return;
