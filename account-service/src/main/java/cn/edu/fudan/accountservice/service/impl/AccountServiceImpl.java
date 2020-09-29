@@ -166,4 +166,11 @@ public class AccountServiceImpl implements AccountService {
 
         return accountDao.getAccountNameById(accountId);
     }
+
+    @Override
+    public Map<String,Object> getRightByToken(String userToken) {
+        String username = stringRedisTemplate.opsForValue().get("login:" + userToken);
+        return accountDao.getRightByAccountName(username);
+    }
+
 }

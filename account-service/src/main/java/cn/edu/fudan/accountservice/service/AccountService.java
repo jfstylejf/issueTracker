@@ -7,6 +7,7 @@ import cn.edu.fudan.accountservice.domain.Tool;
 import com.sun.org.apache.xpath.internal.objects.XObject;
 
 import java.util.List;
+import java.util.Map;
 
 
 public interface AccountService {
@@ -107,4 +108,6 @@ public interface AccountService {
     List<Tool> getTools();
 
     String getAccountNameById(String accountId);
+
+    Map<String,Object> getRightByToken(String userToken);
 }

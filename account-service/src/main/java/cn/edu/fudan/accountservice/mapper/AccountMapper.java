@@ -83,4 +83,6 @@ public interface AccountMapper {
 
     String getAccountNameById(String id);
 
+    List<Map<String,Object>> getRightByAccountName(String accountName);
+
 }

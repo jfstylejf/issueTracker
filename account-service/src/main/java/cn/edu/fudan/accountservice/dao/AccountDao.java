@@ -6,6 +6,8 @@ import cn.edu.fudan.accountservice.mapper.AccountMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -64,5 +66,15 @@ public class AccountDao {
 
     public String getAccountNameById(String uuid){
         return accountMapper.getAccountNameById(uuid);
+    }
+
+    public Map<String,Object> getRightByAccountName(String accountName) {
+        List<Map<String,Object>> rightList = accountMapper.getRightByAccountName(accountName);
+        Map<String,Object> accountInfo = rightList.get(0);
+
+        Integer accountRight = (Integer)accountInfo.get("account_right");
+        accountInfo.put("right", accountRight);
+        accountInfo.remove("account_right");
+        return accountInfo;
     }
 }

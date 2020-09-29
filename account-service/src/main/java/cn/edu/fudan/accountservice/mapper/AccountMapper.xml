@@ -139,4 +139,9 @@
     <select id="getTools" resultMap="tool">
         select * from tool
     </select>
+
+    <select id="getRightByAccountName" parameterType="String" resultType="java.util.HashMap">
+        select uuid,account_right from account where account_name = #{accountName}
+    </select>
+
 </mapper>

@@ -81,13 +81,23 @@ public class AccountController {
 
     @GetMapping(value = "/accountId")
     public Object getAccountID(@RequestParam("userToken") String userToken) {
-        return accountService.getAccountByToken(userToken).getUuid();
+        return new ResponseBean(200, "success", accountService.getAccountByToken(userToken).getUuid());
     }
 
     @GetMapping(value = "/auth/{userToken}")
     public Object auth(@PathVariable("userToken") String userToken) {
         if (accountService.authByToken(userToken)) {
             return new ResponseBean(200, "auth pass", null);
+        } else {
+            return new ResponseBean(401, "token time out,please login", null);
+        }
+    }
+
+    @GetMapping(value = "/right/{userToken}")
+    @CrossOrigin
+    public Object right(@PathVariable("userToken") String userToken) {
+        if (accountService.authByToken(userToken)) {
+            return new ResponseBean(200, "success", accountService.getRightByToken(userToken));
         } else {
             return new ResponseBean(401, "token time out,please login", null);
         }
