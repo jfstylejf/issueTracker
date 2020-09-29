@@ -105,12 +105,12 @@ public class AccountController {
 
     @GetMapping(value = "/accountIds")
     public Object getAccountIds() {
-        return accountService.getAllAccountId();
+        return new ResponseBean(200, "success", accountService.getAllAccountId());
     }
 
     @GetMapping(value = "/accountGroups")
     public Object getGroupsByAccountName(@RequestParam("accountName") String accountName){
-        return accountService.getGroupsByAccountName(accountName);
+        return new ResponseBean(200, "success",accountService.getGroupsByAccountName(accountName));
     }
 
     @PostMapping(value = "/updateTools")
@@ -125,11 +125,11 @@ public class AccountController {
 
     @GetMapping(value = "/tools")
     public Object getTools(){
-        return accountService.getTools();
+        return new ResponseBean(200, "success",accountService.getTools());
     }
 
     @GetMapping(value = "/accountName")
     public Object getAccountNameById(@RequestParam("accountId") String accountId){
-        return accountService.getAccountNameById(accountId);
+        return new ResponseBean(200, "success",accountService.getAccountNameById(accountId));
     }
 }
