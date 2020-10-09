@@ -87,22 +87,24 @@ public class ScanServiceImpl implements ScanService {
         }
         JGitHelper jGitHelper = new JGitHelper(repoPath);
         List<String> commitList = jGitHelper.getCommitListByBranchAndBeginCommit(branch, beginCommit, isUpdate);
-        log.info("commit size : " +  commitList.size());
+        int commitSize = commitList.size();
+        int lastCommitIndex = commitSize - 1;
+        log.info("commit size : " +  commitSize);
 
         // 先执行粒度为method，仅需执行一次最近的commit
         String uuid = UUID.randomUUID().toString();
         executeLastCommit(uuid, repoUuid, commitList, repoPath);
-        commitList.remove(commitList.get(commitList.size() - 1));
         CloneRepo cloneRepo = new CloneRepo();
         cloneRepo.setUuid(uuid);
 
-        for (int i = 0; i < commitList.size() ;i++) {
+        for (int i = 0; i < commitSize ;i++) {
             long start = System.currentTimeMillis();
             String commitId = commitList.get(i);
-            jGitHelper.checkout(commitId);
-            scanTask.runSynchronously(repoUuid, commitId, "snippet", repoPath);
-            cloneMeasureService.insertCloneMeasure(repoUuid, commitId, repoPath);
-
+            if (i != lastCommitIndex) {
+                jGitHelper.checkout(commitId);
+                scanTask.runSynchronously(repoUuid, commitId, "snippet", repoPath);
+                cloneMeasureService.insertCloneMeasure(repoUuid, commitId, repoPath);
+            }
             cloneRepo.setScannedCommitCount(i + 1);
             cloneRepo.setEndScanTime(new Date());
             cloneRepo.setStatus(ScanStatus.COMPLETE);
@@ -120,7 +122,7 @@ public class ScanServiceImpl implements ScanService {
         scanTask.runSynchronously(repoUuid, latestCommitId, "method", repoPath);
 
         CloneRepo cloneRepo = initCloneRepo(repoUuid);
-        cloneRepo.setUuid( uuid);
+        cloneRepo.setUuid(uuid);
         cloneRepo.setStartScanTime(new Date());
         cloneRepo.setStartCommit(commitList.get(0));
         cloneRepo.setEndCommit(latestCommitId);

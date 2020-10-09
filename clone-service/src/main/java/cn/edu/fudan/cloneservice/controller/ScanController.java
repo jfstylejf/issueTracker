@@ -39,7 +39,6 @@ public class ScanController {
     @GetMapping(value = {"/clone/saga-cpu/scan-status"})
     public Object getCloneRepo(@RequestParam("repoId") String repoId) {
         try {
-
             return new ResponseBean(200, "scan msg send success!", scanService.getLatestCloneRepo(repoId));
         } catch (Exception e) {
             return new ResponseBean(401, e.getMessage(), null);
