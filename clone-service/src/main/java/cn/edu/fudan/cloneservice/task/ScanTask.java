@@ -18,15 +18,6 @@ public class ScanTask {
     @Resource(name = "CPUClone")
     private ScanOperation scanOperation;
 
-//    @Autowired
-//    private CloneScanLock cloneScanLock;
-//
-//    private RestInterfaceManager restInterfaceManager;
-//
-//    @Autowired
-//    public void setRestInterfaceManager(RestInterfaceManager restInterfaceManager) {
-//        this.restInterfaceManager = restInterfaceManager;
-//    }
 
     private void scan(ScanOperation scanOperation, String repoId, String commitId, String type, String repoPath) throws RuntimeException{
         //没有共享资源，不需要锁

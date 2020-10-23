@@ -6,9 +6,12 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableAsync;
 
 
+/**
+ * @author fancying
+ */
 @SpringBootApplication
 @EnableAsync
-@MapperScan(basePackages = {"cn.edu.fudan.cloneservice.mapper" , "cn.edu.fudan.cloneservice.scan.mapper"})
+@MapperScan("cn.edu.fudan.cloneservice.mapper")
 public class CloneServiceApplication {
 
     public static void main(String[] args) {
