@@ -53,7 +53,7 @@ public class Swagger2 {
     private static final String CONTROLLER_PACKAGE = "cn.edu.fudan.accountservice.controller";
     private static final String TITLE = "code wisdom account-service Api";
     private static final String DOC_DES = "code wisdom account-service api doc";
-    private static final String VISIT_URL = "http://10.176.34.85:8002/";
+    private static final String VISIT_URL = "http://10.176.34.85:8001/";
     private static final String EMAIL = "20212010084@fudan.edu.cn";
 
     @Value("${defaultUserToken}")
@@ -94,7 +94,7 @@ public class Swagger2 {
                 .title(TITLE)
                 // 联系人信息
                 .contact(new Contact("CODE WISDOM",
-                        "http://10.176.34.85:8002/",
+                        "http://10.176.34.85:8001/",
                         EMAIL))
                 // 详细信息
                 .description(DOC_DES)
