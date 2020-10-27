@@ -48,6 +48,8 @@ import java.util.*;
  * @author Richy
  * create: 2020-10-19 12:04
  **/
+@Configuration
+@EnableSwagger2
 public class Swagger2 {
     private static final String DEFAULT_PATH = "/account-swagger";
     private static final String CONTROLLER_PACKAGE = "cn.edu.fudan.accountservice.controller";
@@ -94,7 +96,7 @@ public class Swagger2 {
                 .title(TITLE)
                 // 联系人信息
                 .contact(new Contact("CODE WISDOM",
-                        "http://10.176.34.85:8001/",
+                        "http://10.176.34.85:8888/",
                         EMAIL))
                 // 详细信息
                 .description(DOC_DES)
@@ -159,7 +161,6 @@ public class Swagger2 {
     @Controller
     @ApiIgnore
     @RequestMapping(DEFAULT_PATH)
-
     public static class SwaggerResourceController implements InitializingBean {
 
         private ApiResourceController apiResourceController;

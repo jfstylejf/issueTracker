@@ -33,27 +33,28 @@ public class AccountController {
         this.accountService = accountService;
     }
 
-    @ApiOperation(value="获取用户名并检查",notes="@return boolean",httpMethod = "GET")
+    @ApiOperation(value="检查用户名是否存在",notes="@return boolean",httpMethod = "GET")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "accountName", value = "开发人员姓名", dataType = "String", required = true,defaultValue = "lluo"),
+            @ApiImplicitParam(name = "accountName", value = "开发人员姓名", dataType = "String", required = true,defaultValue = "chenyuan"),
     })
     @GetMapping("/account-name/check")
     public Object checkUserName(@RequestParam("accountName") String accountName) {
         return new ResponseBean(200, "success", accountService.isAccountNameExist(accountName));
     }
 
-    @ApiOperation(value="获取用户邮箱并检查",notes="@return boolean",httpMethod = "GET")
+    @ApiOperation(value="检查邮箱是否存在",notes="@return boolean",httpMethod = "GET")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "email", value = "开发人员邮箱", dataType = "String", required = true,defaultValue = "chjunlm@126.com"),
+            @ApiImplicitParam(name = "email", value = "开发人员邮箱", dataType = "String", required = true,defaultValue = "chenyuan@163.com"),
     })
     @GetMapping("/email/check")
     public Object checkEmail(@RequestParam("email") String email) {
         return new ResponseBean(200, "success", accountService.isEmailExist(email));
     }
 
-    @ApiOperation(value="获取用户昵称并检查",notes="@return boolean",httpMethod = "GET")
+    /* 用户昵称=真实姓名=界面显示姓名 */
+    @ApiOperation(value="检查用户昵称是否存在",notes="@return boolean",httpMethod = "GET")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "nickName", value = "开发人员昵称", dataType = "String", required = true,defaultValue = "王露"),
+            @ApiImplicitParam(name = "nickName", value = "开发人员昵称", dataType = "String", required = true,defaultValue = "王贵成"),
     })
     @GetMapping("/nick-name/check")
     public Object checkNickName(@RequestParam("nickName") String nickName) {
@@ -62,7 +63,7 @@ public class AccountController {
 
     @ApiOperation(value="获取用户在职状态",notes="@return Object",httpMethod = "GET")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "name", value = "开发人员姓名列表", dataType = "List<String>", required = true,defaultValue = "[\"admin1\",\"罗理\",\"程君\"]"),
+            @ApiImplicitParam(name = "name", value = "开发人员姓名列表", dataType = "List<String>", required = true,defaultValue = "[\"admin\",\"chenyuan\",\"王贵成\"]"),
     })
     @GetMapping("/status")
     public Object getStatusByName(@RequestBody List<String> name) {
@@ -77,7 +78,7 @@ public class AccountController {
 
     @ApiOperation(value="更改用户角色、部门、在职状态",httpMethod = "PUT")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "statusInfo", value = "用户角色、部门、在职状态", dataType = "List<Account>", required = true,defaultValue = "[\"admin1\",\"罗理\",\"程君\"]"),
+            @ApiImplicitParam(name = "statusInfo", value = "用户角色、部门、在职状态", dataType = "List<Account>", required = true,defaultValue = "[\"P\",\"工程开发部\",\"1\"]"),
     })
     @PutMapping(value = "/status/dep/role")
     public Object updateAccountStatus(@RequestBody List<Account> statusInfo){
@@ -113,10 +114,10 @@ public class AccountController {
         }
     }
 
-    @ApiOperation(value="注册",notes="@return AccountInfo",httpMethod = "GET")
+    @ApiOperation(value="用户登录",notes="@return AccountInfo",httpMethod = "GET")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "username", value = "用户姓名", dataType = "String", required = true,defaultValue = "admin1"),
-            @ApiImplicitParam(name = "password", value = "密码", dataType = "String", required = true,defaultValue = "YWRtaW4x"),
+            @ApiImplicitParam(name = "username", value = "用户姓名", dataType = "String", required = true,defaultValue = "admin"),
+            @ApiImplicitParam(name = "password", value = "密码", dataType = "String", required = true,defaultValue = "YWRtaW4="),
     })
     @GetMapping(value = {"/login"})
     public Object login(@RequestParam("username") String username, @RequestParam("password") String password, HttpServletResponse response) {
@@ -129,13 +130,16 @@ public class AccountController {
 
     @ApiOperation(value="获取当前登录用户的uuid",notes="@return Account Uuid",httpMethod = "GET")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "userToken", value = "用户token", dataType = "String", required = true,defaultValue = "378f71b14cc4a0f1e6ce18bfe3a4028e"),
+            @ApiImplicitParam(name = "userToken", value = "用户token", dataType = "String", required = true,defaultValue = "ec15d79e36e14dd258cfff3d48b73d35"),
     })
     @GetMapping(value = "/accountId")
     public Object getAccountID(@RequestParam("userToken") String userToken) {
         return new ResponseBean(200, "success", accountService.getAccountByToken(userToken).getUuid());
     }
 
+    /*
+    待测
+     */
     @ApiOperation(value="获取当前登录用户登录状态",httpMethod = "GET")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "userToken", value = "用户token", dataType = "String", required = true,defaultValue = "378f71b14cc4a0f1e6ce18bfe3a4028e"),
@@ -149,9 +153,9 @@ public class AccountController {
         }
     }
 
-    @ApiOperation(value="获取当前登录用户权限",notes="@return Map<String,Object>",httpMethod = "GET")
+    @ApiOperation(value="获取当前登录用户的权限和uuid",notes="@return Map<String,Object>",httpMethod = "GET")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "userToken", value = "用户token", dataType = "String", required = true,defaultValue = "378f71b14cc4a0f1e6ce18bfe3a4028e"),
+            @ApiImplicitParam(name = "userToken", value = "用户token", dataType = "String", required = true,defaultValue = "ec15d79e36e14dd258cfff3d48b73d35"),
     })
     @GetMapping(value = "/right/{userToken}")
     @CrossOrigin
@@ -171,13 +175,16 @@ public class AccountController {
 
     @ApiOperation(value="通过姓名获取用户组别",notes="@return List<String>",httpMethod = "GET")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "accountName", value = "开发人员姓名", dataType = "String", required = true,defaultValue = "lluo"),
+            @ApiImplicitParam(name = "accountName", value = "开发人员姓名", dataType = "String", required = true,defaultValue = "chenyuan"),
     })
     @GetMapping(value = "/accountGroups")
     public Object getGroupsByAccountName(@RequestParam("accountName") String accountName){
         return new ResponseBean(200, "success",accountService.getGroupsByAccountName(accountName));
     }
 
+    /*
+    待测
+     */
     @ApiOperation(value="更新工具",httpMethod = "POST")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "tools", value = "工具", dataType = "List<Tool>", required = true,defaultValue = "[\"sonarqube\",\"findbugs\"]"),
