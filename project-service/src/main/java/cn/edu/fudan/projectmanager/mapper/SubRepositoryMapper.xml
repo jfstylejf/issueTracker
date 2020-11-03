@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.edu.fudan.projectmanager.mapper.SubRepositoryMapper">
+
+    <resultMap id="subRepository" type="SubRepository">
+        <id property="uuid" column="uuid"/>
+        <result property="url" column="url"/>
+        <result property="language" column="language"/>
+        <result property="branch" column="branch"/>
+        <result property="repoSource" column="repo_source"/>
+        <result property="downloadStatus" column="download_status"/>
+        <result property="latestCommitTime" column="latest_commit_time"/>
+        <result property="repoUuid" column="repo_uuid"/>
+        <result property="projectName" column="project_name"/>
+        <result property="recycled" column="recycled"/>
+        <result property="importAccountUuid" column="import_account_uuid"/>
+        <result property="scanStart" column="scan_start"/>
+        <result property="repoName" column="name"/>
+    </resultMap>
+
+    <insert id="insertOneRepo" parameterType="subRepository">
+        insert ignore into sub_repository
+        (
+        uuid,
+        url,
+        language,
+        branch,
+        repo_source,
+        download_status,
+        latest_commit_time,
+        repo_uuid,
+        project_name,
+        recycled,
+        import_account_uuid
+        )
+        VALUES
+        (
+        #{uuid},
+        #{url},
+        #{language},
+        #{branch},
+        #{repoSource},
+        #{downloadStatus},
+        #{latestCommitTime},
+        #{repoUuid},
+        #{projectName},
+        #{recycled},
+        #{importAccountUuid}
+        )
+    </insert>
+
+    <update id="updateSubRepository" parameterType="subRepository">
+        update sub_repository
+        <set>
+            <if test="language != null">
+                language = #{language},
+            </if>
+            <if test="downloadStatus != null">
+                download_status = #{downloadStatus},
+            </if>
+            <if test="latestCommitTime != null">
+                latest_commit_time = #{latestCommitTime},
+            </if>
+            <if test="repoUuid != null">
+                repo_uuid = #{repoUuid},
+            </if>
+            <if test="projectName != null">
+                project_name = #{projectName},
+            </if>
+            <if test="recycled != null">
+                recycled = #{recycled},
+            </if>
+        </set>
+        where uuid = #{uuid}
+    </update>
+
+    <select id="getSubRepoByUuid" parameterType="String" resultMap="subRepository">
+        SELECT uuid , url, language, branch, repo_source, download_status,
+               latest_commit_time, repo_uuid, project_name, recycled, import_account_uuid, scan_start
+        FROM sub_repository
+        WHERE uuid = #{uuid}
+    </select>
+
+    <select id="getSubRepoByRepoUuid" parameterType="String" resultMap="subRepository">
+        SELECT uuid , url, language, branch, repo_source, download_status,
+               latest_commit_time, repo_uuid, project_name, recycled, import_account_uuid, scan_start
+        FROM sub_repository
+        WHERE repo_uuid = #{repo_uuid}
+    </select>
+
+
+
+    <select id="getAllSubRepoByAccountId" resultMap="subRepository" parameterType="String">
+        SELECT s.uuid , url, language, branch, repo_source, download_status,
+               latest_commit_time, repo_uuid, s.project_name, recycled, import_account_uuid, scan_start, name
+        FROM sub_repository as s inner join repo_user as r
+        WHERE r.account_uuid = #{accountUuid} and s.uuid = r.sub_repository_uuid ;
+    </select>
+
+</mapper>

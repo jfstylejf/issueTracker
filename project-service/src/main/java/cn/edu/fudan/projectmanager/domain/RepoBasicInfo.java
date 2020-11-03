@@ -1,12 +1,12 @@
+package cn.edu.fudan.projectmanager.domain;
+
+
+
 /**
  * @description:
  * @author: fancying
  * @create: 2019-03-23 19:56
  **/
-package cn.edu.fudan.projectmanager.domain;
-
-import java.util.Date;
-
 public class RepoBasicInfo {
 
     private String name;

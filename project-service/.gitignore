@@ -1,5 +1,9 @@
-/target/
-!.mvn/wrapper/maven-wrapper.jar
+HELP.md
+target/
+.mvn
+!**/src/main/**
+**/src/test/**
+log/
 
 ### STS ###
 .apt_generated
@@ -11,15 +15,23 @@
 .sts4-cache
 
 ### IntelliJ IDEA ###
-.idea
+.idea/
+.idea/workspace.xml
 *.iws
 *.iml
 *.ipr
 
 ### NetBeans ###
 /nbproject/private/
-/build/
 /nbbuild/
 /dist/
 /nbdist/
 /.nb-gradle/
+build/
+
+### VS Code ###
+.vscode/
+
+### DS_Store ###
+.DS_Store
+*/.DS_Store

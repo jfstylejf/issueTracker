@@ -3,20 +3,21 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <!--parent的pom中指定了GroupID,子模块就不要-->
-    <artifactId>project-service</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-    <packaging>jar</packaging>
-
-    <name>project-manager</name>
-    <description>Demo project for Spring Boot</description>
-
     <!-- 子模块的parent要使用顶层的父模块-->
     <parent>
         <groupId>cn.edu.fudan</groupId>
         <artifactId>issueTracker</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
+
+    <!--parent的pom中指定了GroupID,子模块就不要-->
+    <artifactId>project-service</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <name>project-service</name>
+    <description>Demo project for Spring Boot</description>
+
     <properties>
         <brave.version>3.16.0</brave.version>
         <zipkin-reporter.version>0.6.9</zipkin-reporter.version>
@@ -39,11 +40,13 @@
             <groupId>org.springframework.kafka</groupId>
             <artifactId>spring-kafka</artifactId>
         </dependency>
+
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
+
         <dependency>
             <groupId>org.mybatis.spring.boot</groupId>
             <artifactId>mybatis-spring-boot-starter</artifactId>
@@ -94,16 +97,6 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- Sleuth automatically adds trace interceptors when in the classpath -->
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-sleuth</artifactId>
-        </dependency>
-        <!-- Sends trace data to zipkin over http (defaults to http://localhost:9411/api/v2/spans) -->
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-sleuth-zipkin</artifactId>
-        </dependency>
 
         <dependency>
             <groupId>org.xerial.snappy</groupId>
@@ -123,6 +116,22 @@
             <version>RELEASE</version>
         </dependency>
 
+        <!-- swagger2 配置 -->
+        <dependency>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-swagger2</artifactId>
+            <version>2.9.2</version>
+        </dependency>
+        <dependency>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-swagger-ui</artifactId>
+            <version>2.9.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.xiaoymin</groupId>
+            <artifactId>swagger-bootstrap-ui</artifactId>
+            <version>1.6</version>
+        </dependency>
 
     </dependencies>
 
@@ -160,5 +169,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>

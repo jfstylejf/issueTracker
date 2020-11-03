@@ -1,5 +1,7 @@
 package cn.edu.fudan.projectmanager.component;
 
+import cn.edu.fudan.projectmanager.domain.ResponseBean;
+import cn.edu.fudan.projectmanager.domain.dto.UserInfoDTO;
 import cn.edu.fudan.projectmanager.exception.AuthException;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
@@ -16,26 +18,16 @@ public class RestInterfaceManager {
 
     @Value("${account.service.path}")
     private String accountServicePath;
-    @Value("${issue.service.path}")
-    private String issueServicePath;
-    @Value("${scan.service.path}")
-    private String scanServicePath;
-    @Value("${event.service.path}")
-    private String eventServicePath;
     @Value("${repository.service.path}")
     private String repoServicePath;
-    @Value("${tag.service.path}")
-    private String tagServicePath;
-    @Value("${measure.service.path}")
-    private String measureServicePath;
-    @Value("${bug.recommendation.service.path}")
-    private String bugRecommendationServicePath;
-    @Value("${codeTracker.service.path}")
-    private String codeTrackerServicePath;
     @Value("${commit.service.path}")
     private String commitServicePath;
     @Value("${clone.service.path}")
     private String cloneServicePath;
+    @Value("${tag.service.path}")
+    private String tagServicePath;
+    @Value("${codeTracker.service.path}")
+    private String codeTrackerServicePath;
 
     private RestTemplate restTemplate;
 
@@ -52,11 +44,11 @@ public class RestInterfaceManager {
     public String getAccountId(String userToken){
         Map<String,String> urlParameters=new HashMap<>();
         urlParameters.put("userToken",userToken);
-        return restTemplate.getForObject(accountServicePath+"/user/accountId?userToken={userToken}",String.class,urlParameters);
+        return restTemplate.getForObject(accountServicePath+"/user/accountUuid?userToken={userToken}",String.class,urlParameters);
     }
 
     public String getAccountName(String accountId){
-        return restTemplate.getForObject(accountServicePath+"/user/accountName?accountId="+accountId,String.class);
+        return restTemplate.getForObject(accountServicePath+"/user/accountName?accountUuid="+accountId,String.class);
     }
 
     public boolean userAuth(String userToken)throws AuthException {
@@ -68,40 +60,28 @@ public class RestInterfaceManager {
         return true;
     }
 
-    //--------------------------------issue service----------------------------------------------------------
+    @SuppressWarnings("unchecked")
+    public UserInfoDTO getUserInfoByToken(String token) {
+        ResponseBean result = restTemplate.getForObject(accountServicePath + "/user/right/" + token, ResponseBean.class);
+        if (result == null) {
+            log.error("Response is null");
+            return null;
+        }
 
-    public void deleteIssuesOfRepo(String repoId,String category){
-        restTemplate.delete(issueServicePath + "/inner/issue/" +category+"/"+ repoId);
+        if (result.getCode() != 200) {
+            log.error(result.getMsg());
+            return null;
+        }
+        Map<String,Object> data =  (Map<String, Object>) result.getData();
+        return new UserInfoDTO(token, (String) data.get("uuid"), (Integer) data.get("right"));
     }
 
-    public void deleteRawIssueOfRepo(String repoId,String category){
-        restTemplate.delete(issueServicePath + "/inner/raw-issue/" +category+"/"+ repoId);
-    }
-
-    public void deleteScanResultOfRepo(String repoId,String category){
-        restTemplate.delete(issueServicePath + "/inner/issue/scan-results/" +category+"/"+ repoId);
-    }
-
-    //------------------------------------bug-recommendation service-------------------------------------------
-
-    //-------------------------------scan service--------------------------------------------------------------
-    public void deleteScanOfRepo(String repoId,String category){
-        restTemplate.delete(scanServicePath+"/inner/scan/" +category+"/"+ repoId);
-    }
-
-    //-----------------------------event service---------------------------------------------------------------
-    public void deleteEventOfRepo(String repoId,String category){
-        restTemplate.delete(eventServicePath+"/inner/event/" +category+"/"+ repoId);
-    }
-
-    public void deleteRepoMeasure(String repoId){
-        restTemplate.delete(measureServicePath+"/measure/repo-information?repo_id=" + repoId);
-    }
 
     //-----------------------------------repo service--------------------------------------------------------
     public JSONObject getRepoById(String repoId){
         return restTemplate.getForObject(repoServicePath + "/" + repoId, JSONObject.class);
     }
+
 
     public void deleteIgnoreRecord(String account_id, String repoId) {
         restTemplate.delete(tagServicePath + "/inner/tags/ignore?repo-id=" + repoId + "&account-id=" + account_id);
