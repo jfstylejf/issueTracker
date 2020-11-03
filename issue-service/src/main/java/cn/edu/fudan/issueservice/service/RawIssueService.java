@@ -1,9 +1,10 @@
 package cn.edu.fudan.issueservice.service;
 
-import cn.edu.fudan.issueservice.domain.Location;
-import cn.edu.fudan.issueservice.domain.RawIssue;
+import cn.edu.fudan.issueservice.domain.dbo.Location;
+import cn.edu.fudan.issueservice.domain.dbo.RawIssue;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author WZY
@@ -11,21 +12,11 @@ import java.util.List;
  **/
 public interface RawIssueService {
 
-    void insertRawIssueList(List<RawIssue> list);
-
-    void deleteRawIssueByRepoIdAndCategory(String repoId,String category);
-
-    void batchUpdateIssueId(List<RawIssue> list);
-
-    List<RawIssue> getRawIssueByCommitIDAndCategory(String repo_id,String commit_id,String category);
+    void deleteRawIssueByRepoIdAndTool(String repoId,String tool);
 
     List<RawIssue> getRawIssueByIssueId(String issueId);
 
-    Object getCode(String project_id, String commit_id, String file_path);
-
-    List<Location> getLocationsByRawIssueId(String raw_issue_id);
-
-    List<RawIssue> getRawIssueByCommitAndFile(String repo_id,String commit_id,String category,String filePath);
+    Map<String, Object> getCode(String project_id, String commit_id, String file_path);
 
     Object getRawIssueList(String issue_id,Integer page,Integer size,String status);
 }

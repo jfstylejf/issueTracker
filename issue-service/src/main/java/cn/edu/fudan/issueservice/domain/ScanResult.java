@@ -1,11 +1,14 @@
 package cn.edu.fudan.issueservice.domain;
 
+import lombok.Data;
+
 import java.util.Date;
 
 /**
  * @author WZY
  * @version 1.0
  **/
+@Data
 public class ScanResult {
 
     private int id;
@@ -34,83 +37,4 @@ public class ScanResult {
         this.remaining_count = remaining_count;
     }
 
-    public String getCommit_id() {
-        return commit_id;
-    }
-
-    public void setCommit_id(String commit_id) {
-        this.commit_id = commit_id;
-    }
-
-    public String getDeveloper() {
-        return developer;
-    }
-
-    public void setDeveloper(String developer) {
-        this.developer = developer;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getCategory() {
-        return category;
-    }
-
-    public void setCategory(String category) {
-        this.category = category;
-    }
-
-    public String getRepo_id() {
-        return repo_id;
-    }
-
-    public void setRepo_id(String repo_id) {
-        this.repo_id = repo_id;
-    }
-
-    public Date getScan_date() {
-        return scan_date;
-    }
-
-    public void setScan_date(Date scan_date) {
-        this.scan_date = scan_date;
-    }
-
-    public Date getCommit_date() {
-        return commit_date;
-    }
-
-    public void setCommit_date(Date commit_date) {
-        this.commit_date = commit_date;
-    }
-
-    public int getNew_count() {
-        return new_count;
-    }
-
-    public void setNew_count(int new_count) {
-        this.new_count = new_count;
-    }
-
-    public int getEliminated_count() {
-        return eliminated_count;
-    }
-
-    public void setEliminated_count(int eliminated_count) {
-        this.eliminated_count = eliminated_count;
-    }
-
-    public int getRemaining_count() {
-        return remaining_count;
-    }
-
-    public void setRemaining_count(int remaining_count) {
-        this.remaining_count = remaining_count;
-    }
 }

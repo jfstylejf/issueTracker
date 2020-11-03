@@ -1,7 +1,7 @@
 package cn.edu.fudan.issueservice.service.impl;
 
 import cn.edu.fudan.issueservice.dao.IssueTypeDao;
-import cn.edu.fudan.issueservice.domain.IssueType;
+import cn.edu.fudan.issueservice.domain.dbo.IssueType;
 import cn.edu.fudan.issueservice.service.IssueTypeService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +22,7 @@ public class IssueTypeServiceImpl implements IssueTypeService {
     }
 
     @Override
-    public void insertIssueList(List<IssueType> list) {
+    public void insertIssueTypeList(List<IssueType> list) {
         issueTypeDao.insertIssueTypeList(list);
     }
 

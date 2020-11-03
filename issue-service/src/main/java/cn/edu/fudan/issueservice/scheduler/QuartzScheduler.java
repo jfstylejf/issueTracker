@@ -1,12 +1,14 @@
 package cn.edu.fudan.issueservice.scheduler;
 
 import cn.edu.fudan.issueservice.component.RestInterfaceManager;
+import cn.edu.fudan.issueservice.service.IssueMeasureInfoService;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+
 import java.util.List;
 
 @Component
@@ -27,18 +29,28 @@ public class QuartzScheduler {
         this.stringRedisTemplate = stringRedisTemplate;
     }
 
+    @Autowired
+    private IssueMeasureInfoService issueMeasureInfoService;
 
-    @Scheduled(cron = "0 50 23 * * *")
+    /**
+     * 每天凌晨两点清楚缓存数据
+     */
+    @Scheduled(cron = "0 0 2 * * ?")
+    public void refreshCache() {
+        issueMeasureInfoService.clearCache();
+    }
+
+    //@Scheduled(cron = "0 50 23 * * *")
     public void perDay() {
        durationUpdate("day");
     }
 
-    @Scheduled(cron = "0 55 23 * * SUN")
+    //@Scheduled(cron = "0 55 23 * * SUN")
     public void perWeek() {
         durationUpdate("week");
     }
 
-    @Scheduled(cron = "0 10 0 1 * *")
+    //@Scheduled(cron = "0 10 0 1 * *")
     public void perMonth() {
         JSONArray projects = restInterfaceManager.getProjectList(null);//所有用户的所有project
         if (projects == null||projects.isEmpty()) {
@@ -99,5 +111,8 @@ public class QuartzScheduler {
             perMonth();
         }
     }
+
+
+
 
 }

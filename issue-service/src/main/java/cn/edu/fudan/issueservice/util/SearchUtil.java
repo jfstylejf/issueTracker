@@ -2,10 +2,6 @@ package cn.edu.fudan.issueservice.util;
 
 public class SearchUtil {
 
-//    public static <T extends Comparable> int dichotomy(T[] array,){
-//
-//    }
-
     public static  int dichotomy(String[] strings, String value){
         int middle;
         int start =0;

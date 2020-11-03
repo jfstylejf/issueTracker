@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.edu.fudan.issueservice.mapper.CommitViewMapper">
+
+    <resultMap id="commit" type="cn.edu.fudan.issueservice.domain.dbo.Commit">
+        <id property="commitId" column="commit_id"/>
+        <result property="message" column="message"/>
+        <result property="developer" column="developer"/>
+        <result property="commit_time" column="commit_time"/>
+        <result property="repoId" column="repo_id"/>
+        <result property="developerEmail" column="developer_email"/>
+    </resultMap>
+
+    <select id="getCommitCount"  resultType="int">
+        select count(*) from commit_view
+        <where>
+            <trim  prefixOverrides="and | or" >
+                <if test="repo_id != null  and repo_id !=''">
+                    and repo_id= #{repo_id}
+                </if>
+                <if test="start_commit_time != null  and start_commit_time !=''">
+                    and <![CDATA[ commit_time > #{start_commit_time} ]]>
+                </if>
+            </trim>
+
+        </where>
+    </select>
+
+    <select id="getCommits" parameterType="String" resultMap="commit">
+        SELECT commit_id,message,developer,commit_time,repo_id,developer_email FROM commit_view
+        <where>
+            <trim  prefixOverrides="and | or" >
+                <if test="repo_id != null  and repo_id !=''">
+                    and repo_id= #{repo_id}
+                </if>
+                <if test="start_commit_time != null  and start_commit_time !=''">
+                    and <![CDATA[ commit_time > #{start_commit_time} ]]>
+                </if>
+            </trim>
+
+        </where>
+            ORDER BY commit_time DESC
+    </select>
+
+    <select id="getDevelopersByRepoIdList" parameterType="List" resultType="String">
+        select distinct developer_unique_name from commit_view
+        where 1 = 1
+        <if test="repoIdList != null and repoIdList.size > 0">
+            and repo_id in
+            <foreach collection="repoIdList" separator="," open="(" close=")" item="repo_id">
+                #{repo_id}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="getCommitViewInfoByCommitId" parameterType="String" resultType="java.util.HashMap">
+        select uuid, commit_id, message, developer, commit_time, repo_id, developer_email, self_index, parent_commit, developer_unique_name from commit_view
+        where 1 = 1
+
+        <if test="repo_id != null and repo_id != '' ">
+            and repo_id = #{repo_id}
+        </if>
+
+        <if test="commit_id != null and commit_id != '' ">
+            and commit_id = #{commit_id}
+        </if>
+
+        limit 1
+    </select>
+
+</mapper>

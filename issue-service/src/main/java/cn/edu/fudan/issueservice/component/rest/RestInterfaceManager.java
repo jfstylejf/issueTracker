@@ -1,10 +1,8 @@
 package cn.edu.fudan.issueservice.component.rest;
 
-import cn.edu.fudan.issueservice.domain.RestServiceEnum;
+import cn.edu.fudan.issueservice.domain.enums.RestServiceEnum;
 import com.alibaba.fastjson.JSONObject;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import java.lang.reflect.Method;

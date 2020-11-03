@@ -1,6 +1,6 @@
 package cn.edu.fudan.issueservice.dao;
 
-import cn.edu.fudan.issueservice.domain.Location;
+import cn.edu.fudan.issueservice.domain.dbo.Location;
 import cn.edu.fudan.issueservice.mapper.LocationMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -25,8 +25,15 @@ public class LocationDao {
         locationMapper.insertLocationList(list);
     }
 
-    public void deleteLocationByRepoIdAndCategory(String repoId,String category) {
-        locationMapper.deleteLocationByRepoIdAndCategory(repoId,category);
+    public void deleteLocationByRepoIdAndCategory(String repoId,String tool) {
+        locationMapper.deleteLocationByRepoIdAndTool(repoId,tool);
+    }
+
+    public void deleteLocationByRawIssueIds(List<String> rawIssueIds) {
+        if(rawIssueIds == null || rawIssueIds.isEmpty ()){
+            return;
+        }
+        locationMapper.deleteLocationByRawIssueIds(rawIssueIds);
     }
 
     public List<Location> getLocations(String rawIssueId) {

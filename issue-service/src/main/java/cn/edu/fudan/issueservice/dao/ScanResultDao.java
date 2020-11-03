@@ -1,7 +1,7 @@
 package cn.edu.fudan.issueservice.dao;
 
 import cn.edu.fudan.issueservice.domain.IssueCountDeveloper;
-import cn.edu.fudan.issueservice.domain.IssueCountPo;
+import cn.edu.fudan.issueservice.domain.dto.IssueCountPo;
 import cn.edu.fudan.issueservice.domain.ScanResult;
 import cn.edu.fudan.issueservice.mapper.ScanResultMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -103,7 +104,7 @@ public class ScanResultDao {
             return scanResultMapper.getScanResultByCondition(repoId, since,until,category,developer);
         }catch (Exception e){
             logger.error(e.getMessage());
-            return null;
+            return new ArrayList<>(0);
         }
     }
 

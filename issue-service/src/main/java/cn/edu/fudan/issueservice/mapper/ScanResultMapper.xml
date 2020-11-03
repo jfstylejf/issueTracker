@@ -95,7 +95,7 @@
                 and commit_date &lt;= #{end}
             </if>
             <if test="start != null">
-                and commit_date &gt;= #{start}
+                and commit_date &gt; #{start}
             </if>
         </where>
         GROUP BY `commit_date`
@@ -167,9 +167,9 @@
 
     <select id="getScanResultByCondition" resultMap="scanResultForQuality">
         select * from scan_result
-        where repo_id = #{repo_id}
-        <if test="category != null">
-            and category = #{category}
+        where category = #{category}
+        <if test="repo_id != null">
+            and repo_id = #{repo_id}
         </if>
         <if test="since != null">
             and <![CDATA[ commit_date >= #{since} ]]>
@@ -180,7 +180,6 @@
         <if test="developer != null">
             and developer = #{developer}
         </if>
-
     </select>
 
 
@@ -202,8 +201,6 @@
         GROUP BY `date`
 
     </select>
-
-
 
 
 </mapper>

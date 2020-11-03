@@ -1,7 +1,7 @@
 package cn.edu.fudan.issueservice.mapper;
 
 import cn.edu.fudan.issueservice.domain.IssueCountDeveloper;
-import cn.edu.fudan.issueservice.domain.IssueCountPo;
+import cn.edu.fudan.issueservice.domain.dto.IssueCountPo;
 import cn.edu.fudan.issueservice.domain.ScanResult;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;

@@ -5,9 +5,11 @@
  **/
 package cn.edu.fudan.issueservice.service.impl;
 
+import cn.edu.fudan.issueservice.annotation.FreeResourceWithException;
 import cn.edu.fudan.issueservice.component.RestInterfaceManager;
 import cn.edu.fudan.issueservice.dao.IssueDao;
 import cn.edu.fudan.issueservice.dao.RawIssueDao;
+import cn.edu.fudan.issueservice.domain.dto.RepoResourceDTO;
 import cn.edu.fudan.issueservice.service.IssueRankService;
 import cn.edu.fudan.issueservice.util.ExecuteShellUtil;
 import com.alibaba.fastjson.JSON;
@@ -57,16 +59,8 @@ public class IssueRankServiceImpl implements IssueRankService {
         this.stringRedisTemplate = stringRedisTemplate;
     }
 
-
-    // 参与开发者最多的文件排名（？）	周，月	文件，项目	看项目的参与者的多少 ???? 单独放在另外的服务中
     @Override
-    public Map rankOfFileBaseDeveloperQuantity(String repoId, String duration, String spaceType, String detail) {
-
-        return null;
-    }
-
-    @Override
-    public Object rankOfFileBaseIssueQuantity(String repoId, String commitId) {
+    public Map<String, String> rankOfFileBaseIssueQuantity(String repoId, String commitId) {
         Map<String, String> map = new WeakHashMap<>();
         for (Map<String, String> m : rawIssueDao.getRankOfFileBaseIssueQuantity(repoId, commitId)) {
             map.put(m.get("key"), m.get("value"));
@@ -77,7 +71,7 @@ public class IssueRankServiceImpl implements IssueRankService {
 
     // 需要文件的代码行数 需要提前入库
     @Override
-    public Map rankOfFileBaseDensity(String repoId, String commitId) {
+    public Map<String, String> rankOfFileBaseDensity(String repoId, String commitId) {
         Map<String, String> map = new WeakHashMap<>();
         for (Map<String, String> m : rawIssueDao.getRankOfFileBaseDensity(repoId, commitId)) {
             map.put(m.get("key"), m.get("value"));
@@ -87,54 +81,47 @@ public class IssueRankServiceImpl implements IssueRankService {
 
     // 开发人员在某段时间内贡献的代码行数 除以 产生的新Issue数量
     // 平均每多少行代码会产生一个新的Issue
+    @FreeResourceWithException
     @Override
-    public Map rankOfDeveloper(String repoId, String start,String end) {
+    public Map<String,Integer> rankOfDeveloper(RepoResourceDTO repoResourceDTO, String start, String end) {
+        String repoId = repoResourceDTO.getRepoId ();
         // duration: 2018.01.01-2018.12.12
-        String repoPath =null;
+        String repoPath =repoResourceDTO.getRepoPath ();
         Map<String,Integer> usersCodeLine=null;
-        try{
-            repoPath = restInterfaceManager.getRepoPath(repoId);
-            //commitId 单个commit所对应的引入Issue数量
-            Map<String, Integer> commitNewIssue = issueDao.getCommitNewIssue(start, end, repoId);
-            // 某段时间内的commit列表以及对应的Issue数量 commitId developer-email
-            // 一个开发人员可能对应多个commit
-            Map<String, String> commitDeveloper = restInterfaceManager.getDeveloperByCommits(commitNewIssue.keySet());
 
-            // 某段时间内开发人员列表
-            Set<String> developers = new HashSet<>(commitDeveloper.values());
+        //commitId 单个commit所对应的引入Issue数量
+        Map<String, Integer> commitNewIssue = issueDao.getCommitNewIssue(start, end, repoId);
+        // 某段时间内的commit列表以及对应的Issue数量 commitId developer-email
+        // 一个开发人员可能对应多个commit
+        Map<String, String> commitDeveloper = restInterfaceManager.getDeveloperByCommits(commitNewIssue.keySet());
 
-            // 开发人员 代码行数
-            usersCodeLine  = executeShellUtil.developersLinesOfCode(start, end , repoPath, developers);
+        // 某段时间内开发人员列表
+        Set<String> developers = new HashSet<>(commitDeveloper.values());
 
-            // 开发人员 issue数量
-            Map<String, Integer> developerNewIssue = new ConcurrentHashMap<>(16);
-            for (String commitId : commitDeveloper.keySet()) {
-                String developer = commitDeveloper.get(commitId);
-                int newIssue = commitNewIssue.get(commitId);
-                if (developerNewIssue.containsKey(developer)) {
-                    newIssue += developerNewIssue.get(developer);
-                }
-                developerNewIssue.put(developer, newIssue);
+        // 开发人员 代码行数
+        usersCodeLine  = executeShellUtil.developersLinesOfCode(start, end , repoPath, developers);
+
+        // 开发人员 issue数量
+        Map<String, Integer> developerNewIssue = new ConcurrentHashMap<>(16);
+        for (String commitId : commitDeveloper.keySet()) {
+            String developer = commitDeveloper.get(commitId);
+            int newIssue = commitNewIssue.get(commitId);
+            if (developerNewIssue.containsKey(developer)) {
+                newIssue += developerNewIssue.get(developer);
             }
-
-            for (String developer : developerNewIssue.keySet()) {
-                usersCodeLine.put(developer, usersCodeLine.get(developer) / developerNewIssue.get(developer) );
-            }
-
-
-
-        }catch(Exception e){
-            throw e;
-        }finally {
-            if(repoPath != null){
-                restInterfaceManager.freeRepoPath(repoId,repoPath);
-            }
+            developerNewIssue.put(developer, newIssue);
         }
+
+        for (String developer : developerNewIssue.keySet()) {
+            usersCodeLine.put(developer, usersCodeLine.get(developer) / developerNewIssue.get(developer) );
+        }
+
         //排序
         return sortByValue(usersCodeLine);
     }
 
     //基于目前最新版本的排名
+    @Deprecated
     @Override
     @SuppressWarnings("unchecked")
     public Map rankOfRepoBaseDensity(String token) {

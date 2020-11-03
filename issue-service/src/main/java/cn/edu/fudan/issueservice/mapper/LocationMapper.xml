@@ -51,8 +51,20 @@
         </foreach>
     </insert>
 
-    <delete id="deleteLocationByRepoIdAndCategory" parameterType="String">
-        DELETE a FROM location a INNER JOIN rawIssue c ON a.rawIssue_id= c.uuid WHERE c.repo_id=#{repo_id} and c.category = #{category};
+    <delete id="deleteLocationByRepoIdAndTool" parameterType="String">
+        DELETE a FROM location a INNER JOIN rawIssue c ON a.rawIssue_id= c.uuid WHERE c.repo_id=#{repo_id} and c.tool = #{tool};
+
+    </delete>
+
+
+    <delete id="deleteLocationByRawIssueIds" >
+        DELETE from location
+        <where>
+            rawIssue_id in
+            <foreach collection="list" separator="," open="(" close=")" item="rawIssueId">
+                #{rawIssueId}
+            </foreach>
+        </where>
 
     </delete>
 

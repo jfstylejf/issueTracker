@@ -1,5 +1,7 @@
 package cn.edu.fudan.issueservice.util;
 
+import cn.edu.fudan.issueservice.domain.ResponseBean;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -16,6 +18,8 @@ import java.util.Date;
  * @version 1.0
  **/
 public class DateTimeUtil {
+
+    public static DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     private static DateTimeFormatter Y_M_D_H_M_S_formatter = new DateTimeFormatterBuilder()
             .appendValue(ChronoField.YEAR)
@@ -131,6 +135,32 @@ public class DateTimeUtil {
 
         return utcDate;
 
+    }
+
+    public static String UTCTimeToBeijingTime(String UTCTimeString){
+        LocalDateTime date = stringToLocalDateTime(UTCTimeString);
+        date = date.plusHours (8);
+        return date.format (dateTimeFormatter);
+    }
+
+    public  static LocalDateTime stringToLocalDateTime(String dateString){
+        return LocalDateTime.parse(dateString,dateTimeFormatter);
+    }
+
+    public static String timeFormatIsLegal(String time, boolean isUntil){
+        if(time == null){
+            return null;
+        }
+
+        if(!time.matches("([0-9]+)-([0-9]{2})-([0-9]{2})")){
+            return "time format error";
+        }
+
+        if(isUntil){
+            time = DateTimeUtil.stringToLocalDate(time).plusDays(1).toString();
+        }
+
+        return time;
     }
 
 }

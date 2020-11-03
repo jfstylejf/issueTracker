@@ -1,6 +1,6 @@
 package cn.edu.fudan.issueservice.dao;
 
-import cn.edu.fudan.issueservice.domain.IssueType;
+import cn.edu.fudan.issueservice.domain.dbo.IssueType;
 import cn.edu.fudan.issueservice.mapper.IssueTypeMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;

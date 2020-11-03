@@ -6,19 +6,27 @@
     <resultMap id="issueType" type="IssueType">
         <id property="uuid" column="uuid"/>
         <result property="type" column="type"/>
-        <result property="tool" column="tool"/>
+        <result property="specificationSource" column="specification_source"/>
         <result property="category" column="category"/>
         <result property="description" column="description"/>
+    </resultMap>
+
+    <resultMap id="issueTypeWithoutDescription" type="IssueType">
+        <id property="uuid" column="uuid"/>
+        <result property="type" column="type"/>
+        <result property="specificationSource" column="specification_source"/>
+        <result property="category" column="category"/>
         <result property="language" column="language"/>
+
     </resultMap>
 
 
     <insert id="insertIssueTypeList" parameterType="List">
-        insert into issueType
+        insert into issue_type
         (
         uuid,
         type,
-        tool,
+        specification_source,
         category,
         description,
         language
@@ -28,7 +36,7 @@
             (
             #{item.uuid},
             #{item.type},
-            #{item.tool},
+            #{item.specificationSource},
             #{item.category},
             #{item.description},
             #{item.language}
@@ -36,8 +44,8 @@
         </foreach>
     </insert>
 
-    <select id="getIssueTypeByTypeName" parameterType="String" resultMap="issueType">
-        select * from issueType where type =#{type}
+    <select id="getIssueTypeByTypeName" parameterType="String" resultMap="issueTypeWithoutDescription">
+        select uuid,type,specification_source,category,language from issue_type where type =#{type}
     </select>
 
 </mapper>

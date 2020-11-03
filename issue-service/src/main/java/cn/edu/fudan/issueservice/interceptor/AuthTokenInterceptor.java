@@ -1,16 +1,12 @@
 package cn.edu.fudan.issueservice.interceptor;
 
 import cn.edu.fudan.issueservice.component.RestInterfaceManager;
+import cn.edu.fudan.issueservice.domain.enums.ToolEnum;
 import cn.edu.fudan.issueservice.exception.AuthException;
-import com.alibaba.fastjson.JSONObject;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.util.HtmlUtils;
@@ -22,7 +18,7 @@ import javax.servlet.http.HttpServletResponse;
  * @author WZY
  * @version 1.0
  **/
-
+@Slf4j
 public class AuthTokenInterceptor implements HandlerInterceptor {
 
     private RestInterfaceManager restInterfaceManager;
@@ -46,9 +42,25 @@ public class AuthTokenInterceptor implements HandlerInterceptor {
             httpServletResponse.setStatus(HttpStatus.OK.value());
             return false;
         }
+
+
+        String url = httpServletRequest.getRequestURI ();
+        boolean requestSwitch = false;
+        for(ToolEnum toolEnum : ToolEnum.values ()){
+            String toolName = toolEnum.getType ();
+            if(url.matches ("^/issue/" + toolName +".*")){
+                requestSwitch = true;
+                break;
+            }
+        }
+
+        if(requestSwitch){
+            return true;
+        }
+
         String userToken = httpServletRequest.getHeader("token");
         if (userToken == null) {
-            throw new AuthException("need user token!");
+            log.warn("need user token");
         }
         restInterfaceManager.userAuth(userToken);
         return true;

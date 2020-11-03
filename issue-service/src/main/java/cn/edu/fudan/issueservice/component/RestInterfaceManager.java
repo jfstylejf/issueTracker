@@ -4,6 +4,8 @@ import cn.edu.fudan.issueservice.exception.AuthException;
 import cn.edu.fudan.issueservice.util.RegexUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.annotation.JsonAlias;
+import io.netty.util.internal.StringUtil;
 import org.apache.kafka.common.protocol.types.Field;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
@@ -50,6 +53,8 @@ public class RestInterfaceManager {
     private String sonarServicePath;
     @Value("${measure.service.path}")
     private String measureServicePath;
+    @Value("${test.repo.path}")
+    private String testProjectPath;
 
     private RestTemplate restTemplate;
 
@@ -102,104 +107,100 @@ public class RestInterfaceManager {
     public JSONArray getSpecificTaggedIssueIds(List<String> tagIds){
         return restTemplate.postForObject(tagServicePath +  "/inner/tags" + "/item-ids", tagIds, JSONArray.class);
     }
-    public JSONArray getSpecificTaggedIssueIdsByTagIdsAndRepoId(JSONObject requestParms){
-        return restTemplate.postForObject(tagServicePath +  "/inner/tags" + "/required-item-ids", requestParms, JSONArray.class);
-    }
-
 
     public JSONArray getSolvedIssueIds(List<String> tag_ids){
         return restTemplate.postForObject(tagServicePath +  "/inner/tags" + "/item-ids", tag_ids, JSONArray.class);
     }
 
-    public void modifyTags(List<JSONObject> tags){
-        restTemplate.postForObject(tagServicePath +  "/inner/tags"+"/tagged-modify", tags, JSONObject.class);
-    }
-
-    public void addTags(List<JSONObject> tags){
-        restTemplate.postForObject(tagServicePath +  "/inner/tags",tags, JSONObject.class);
-    }
-
-    public JSONArray  getIgnoreTypesOfRepo(String repoId){
-        return restTemplate.getForObject(tagServicePath +  "/inner/tags" + "/ignore/types?repo-id=" + repoId, JSONArray.class);
-    }
-
-
-    public JSONArray  getTagByScope(String scope,String token){
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("token",token);
-        HttpEntity request = new HttpEntity(headers);
-
-
-        String url = tagServicePath + "/tags/scope?scope=" + scope;
-        ResponseEntity responseEntity = restTemplate.exchange(url , HttpMethod.GET,request,JSONArray.class);
-        String body = responseEntity.getBody().toString();
-        JSONArray result = JSONArray.parseObject(body,JSONArray.class);
-
-        return result;
-    }
-
-    public String  getTagIdByItemIdAndScope(String issueId , String scope){
-        return restTemplate.getForObject(tagServicePath +  "/inner/tags" + "/scope?scope=" + scope + "&item_id=" + issueId, String.class);
-    }
-
-
-    public JSONArray  getTagByCondition(String tagId , String name , String scope){
-        HttpHeaders headers = new HttpHeaders();
-        HttpEntity request = new HttpEntity(headers);
-        StringBuilder urlBuilder = new StringBuilder();
-        boolean isFirstPram =true;
-        urlBuilder.append(tagServicePath + "/tags/condition?");
-        if(tagId != null){
-            if(!isFirstPram){
-                urlBuilder.append("&");
-            }else{
-                isFirstPram=false;
-            }
-            urlBuilder.append("uuid=" + tagId);
-        }
-        if(name != null){
-            if(!isFirstPram){
-                urlBuilder.append("&");
-            }else{
-                isFirstPram=false;
-            }
-            urlBuilder.append("name=" + name);
-        }
-        if(scope != null){
-            if(!isFirstPram){
-                urlBuilder.append("&");
-            }else{
-                isFirstPram=false;
-            }
-            urlBuilder.append("scope=" + scope);
-        }
-        String url = urlBuilder.toString();
-
-        ResponseEntity responseEntity = restTemplate.exchange(url , HttpMethod.GET,request,JSONObject.class);
-        String body = responseEntity.getBody().toString();
-        JSONObject result = JSONArray.parseObject(body,JSONObject.class);
-
-        return result.getJSONArray("data");
-
-    }
 
     //----------------------------------------------------end--------------------------------------------------------
 
     //-----------------------------------------------project service-------------------------------------------------
+
     public JSONArray getRepoIdsOfAccount(String account_id,String type) {
         return restTemplate.getForObject(projectServicePath + "/inner/project/repo-ids?account_id=" + account_id+"&type="+type, JSONArray.class);
     }
 
     public String getRepoIdOfProject(String projectId) {
-        return restTemplate.getForObject(projectServicePath + "/inner/project/repo-id?project-id=" + projectId, String.class);
+        return restTemplate.getForObject(projectServicePath + "/inner/project/repo-uuid?project_uuid=" + projectId, String.class);
     }
 
+    /**
+     * 根据account_id查找参与的项目信息
+     * @param account_id 用户登录帐号Id
+     * @return  参与的项目信息
+     */
     public JSONArray getProjectList(String account_id) {
-        return restTemplate.getForObject(projectServicePath + "/inner/projects?account_id=" + account_id,JSONArray.class);
+        JSONArray projectInfo = restTemplate.getForObject(projectServicePath + "/inner/projects?account_uuid=" + account_id, JSONArray.class);
+
+        return restTemplate.getForObject(projectServicePath + "/inner/projects?account_uuid=" + account_id,JSONArray.class);
     }
 
-    public JSONObject getProjectByRepoId(String repo_id) {
-        return restTemplate.getForObject(projectServicePath + "/inner/project?repo_id=" + repo_id, JSONObject.class);
+
+    /**
+     * 根据repo_uuid查找对应的project
+     * @param repo_id 代码库uuid
+     * @return Map<String,String> 项目名 代码库名 分支名 代码库uuid
+     */
+    public Map<String, String> getProjectByRepoId(String repo_id) {
+
+        JSONObject projectInfo = restTemplate.getForObject(projectServicePath + "/inner/project?repo_uuid=" + repo_id, JSONObject.class);
+
+        Map<String,String> result = new HashMap<>();
+
+        result.put("projectName", projectInfo.getString("projectName"));
+        result.put("repoName", projectInfo.getString("repoName"));
+        result.put("branch", projectInfo.getString("branch"));
+        result.put("repoUuid", projectInfo.getString("repoUuid"));
+
+        return result;
+    }
+
+    /**
+     * 获取所有project下所有repo uuid和name
+     * @param userToken
+     * @return
+     */
+    public JSONObject getAllRepo(String userToken){
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("token", userToken);
+        HttpEntity request = new HttpEntity(headers);
+        ResponseEntity responseEntity = restTemplate.exchange(projectServicePath  + "/project/all",HttpMethod.GET,request,JSONObject.class);
+        String body = responseEntity.getBody().toString();
+        JSONObject result = JSONObject.parseObject(body);
+
+        return result;
+    }
+
+    /**
+     * 根据url返回repoUuid
+     * @param url
+     * @param userToken
+     * @return repoUuid
+     */
+    public String getRepoUuidByUrl(String url, String userToken){
+
+        if (StringUtils.isEmpty(url)) {
+            return null;
+        }
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("token", userToken);
+        HttpEntity request = new HttpEntity(headers);
+        ResponseEntity responseEntity = restTemplate.exchange(projectServicePath  + "/project",HttpMethod.GET,request,JSONObject.class);
+        String body = responseEntity.getBody().toString();
+        JSONObject result = JSONObject.parseObject(body);
+        JSONArray reposDetail = result.getJSONArray("data");
+
+        for(int i = 0;i < reposDetail.size();i++){
+            JSONObject repoDetail = reposDetail.getJSONObject(i);
+            if(url.equals(repoDetail.get("url").toString())){
+                return repoDetail.get("repoUuid").toString();
+            }
+        }
+
+        return null;
     }
 
     //-------------------------------------------------end-------------------------------------------------------------
@@ -281,9 +282,10 @@ public class RestInterfaceManager {
             }
         }
         return result;
+    }
 
-
-
+    public JSONObject getFirstCommitDate(String developerName){
+        return restTemplate.getForObject(commitServicePath+"/first-commit?author="+ developerName,JSONObject.class).getJSONObject("data");
     }
 
     //----------------------------------------------end-----------------------------------------------------------------
@@ -296,7 +298,7 @@ public class RestInterfaceManager {
 
             try{
                 JSONObject response = restTemplate.getForObject(codeServicePath + "?repo_id=" + repoId + "&commit_id=" + commit_id, JSONObject.class);
-                if (response != null) {
+                if (response != null ) {
                     repoPath = response;
                 } else {
                     logger.error("code service response null!");
@@ -317,8 +319,53 @@ public class RestInterfaceManager {
 
     }
 
+    public String getRepoPath(String repoId){
+        if (testProjectPath != null && !testProjectPath.equals ("false")) {
+            return testProjectPath;
+        }
+
+        String repoPath = null;
+        int tryCount = 0;
+        while (tryCount < 5) {
+
+            try{
+                String urlPath = codeServicePath + "?repo_id=" + repoId;
+                logger.debug(urlPath);
+                JSONObject response = restTemplate.getForObject(urlPath , JSONObject.class);
+                if (response != null && response.getJSONObject("data") != null && "Successful".equals(response.getJSONObject ("data").getString ("status"))) {
+                    repoPath = response.getJSONObject("data").getString ("content");
+                } else {
+                    logger.error("code service response null!");
+                }
+                break;
+            }catch (Exception e){
+                e.printStackTrace();
+                try{
+                    TimeUnit.SECONDS.sleep(20);
+                }catch(Exception sleepException){
+                    e.printStackTrace();
+                }
+
+                tryCount++;
+            }
+        }
+        return repoPath;
+
+    }
+
     public JSONObject freeRepoPath(String repoId,String repoPath){
-        return restTemplate.getForObject(codeServicePath + "/free?repo_id=" + repoId+"&path="+repoPath, JSONObject.class);
+        try{
+            if (testProjectPath != null && !testProjectPath.equals ("false")) {
+                return null;
+            }
+            if(repoPath == null || repoId == null){
+                return null;
+            }
+            restTemplate.getForObject(codeServicePath + "/free?repo_id=" + repoId+"&path="+repoPath, JSONObject.class);
+        }catch (Exception e){
+            logger.error(e.getMessage());
+        }
+        return null;
     }
 
     //-----------------------------------recommendation service---------------------------------------------------------
@@ -334,12 +381,7 @@ public class RestInterfaceManager {
         return restTemplate.getForObject(repoServicePath + "/" + repoId, JSONObject.class);
     }
 
-    public String getRepoPath(String repoId) {
-        MultiValueMap<String, String> requestEntity = new LinkedMultiValueMap<>(1);
-        requestEntity.add("query", "uuid=\"" + repoId + "\"");
-        JSONObject jsonObject = restTemplate.postForObject(repoServicePath, requestEntity,JSONObject.class);
-        return jsonObject.getJSONArray("data").getJSONObject(0).getString("local_addr");
-    }
+
 
     public Map<String, String> getDeveloperByCommits(Set<String> keySet) {
         //restTemplate.postForObject(repoServicePath + "/developerListsByCommits", keySet ,HashMap.class);
@@ -569,6 +611,25 @@ public class RestInterfaceManager {
 
     }
 
+    public JSONObject getProjectAnalysesVersion(String projectName, int pageSize, int page) {
+        Map<String, Object> map = new HashMap<>();
+        StringBuilder urlBuilder = new StringBuilder();
+        urlBuilder.append(sonarServicePath + "/api/project_analyses/search?project={projectName}&p={p}&ps={ps}");
+        map.put("projectName",projectName);
+        map.put("p",page);
+        map.put("ps",pageSize);
+
+        try {
+            ResponseEntity entity = restTemplate.getForEntity(urlBuilder.toString(), JSONObject.class,map);
+            JSONObject result  = JSONObject.parseObject(entity.getBody().toString());
+            return result;
+        }catch (RuntimeException e) {
+            logger.error("projectName : {}  ----> request sonar api failed", projectName);
+            throw e;
+        }
+
+    }
+
     //------------------------------------------------------scan api ---------------------------------------------
 
 
@@ -691,6 +752,40 @@ public class RestInterfaceManager {
             logger.error("request /measure/repository/duration failed");
         }
         return result;
+    }
+
+    public JSONArray getDeveloperWorkload(String developerName,String since ,String until,String repoIdList){
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("token",null);
+        HttpEntity request = new HttpEntity(headers);
+        StringBuilder urlBuilder = new StringBuilder();
+        if (StringUtil.isNullOrEmpty(developerName)){
+            developerName="";
+        }
+        urlBuilder.append(measureServicePath).append("/measure/developer/work-load?developer=").append(developerName);
+
+        if (repoIdList!=null && repoIdList.length()>0){
+            urlBuilder.append("&repoId=").append(repoIdList);
+        }
+        if (since!=null && since.length()>0){
+            urlBuilder.append("&since=").append(since);
+        }
+        if (until!=null && until.length()>0){
+            urlBuilder.append("&until=").append(until);
+        }
+
+        String url = urlBuilder.toString();
+        ResponseEntity responseEntity = restTemplate.exchange(url , HttpMethod.GET,request,JSONObject.class);
+        String body = responseEntity.getBody().toString();
+        JSONObject result = JSONObject.parseObject(body,JSONObject.class);
+        if(result.getIntValue("code") != 200){
+            logger.error("request /measure/developer/workLoad failed");
+            return null;
+        }
+        if (result.getJSONArray("data").isEmpty()){
+            return null;
+        }
+        return result.getJSONArray("data");
     }
 
 

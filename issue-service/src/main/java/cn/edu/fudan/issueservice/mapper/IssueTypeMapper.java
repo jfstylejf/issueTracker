@@ -1,6 +1,6 @@
 package cn.edu.fudan.issueservice.mapper;
 
-import cn.edu.fudan.issueservice.domain.IssueType;
+import cn.edu.fudan.issueservice.domain.dbo.IssueType;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 

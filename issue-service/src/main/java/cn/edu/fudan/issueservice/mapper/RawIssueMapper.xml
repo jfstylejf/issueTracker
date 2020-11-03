@@ -6,7 +6,7 @@
     <resultMap id="rawIssue" type="RawIssue">
         <id property="uuid" column="uuid"/>
         <result property="type" column="type"/>
-        <result property="category" column="category"/>
+        <result property="tool" column="tool"/>
         <result property="detail" column="detail"/>
         <result property="file_name" column="file_name"/>
         <result property="scan_id" column="scan_id"/>
@@ -24,7 +24,7 @@
     <resultMap id="rawIssue2" type="RawIssue">
         <id property="uuid" column="uuid"/>
         <result property="type" column="type"/>
-        <result property="category" column="category"/>
+        <result property="tool" column="tool"/>
         <result property="detail" column="detail"/>
         <result property="file_name" column="file_name"/>
         <result property="scan_id" column="scan_id"/>
@@ -39,7 +39,7 @@
     <resultMap id="rawIssue3" type="RawIssue">
         <id property="uuid" column="uuid"/>
         <result property="type" column="type"/>
-        <result property="category" column="category"/>
+        <result property="tool" column="tool"/>
         <result property="detail" column="detail"/>
         <result property="file_name" column="file_name"/>
         <result property="scan_id" column="scan_id"/>
@@ -53,18 +53,33 @@
                     select="cn.edu.fudan.issueservice.mapper.LocationMapper.getLocations"/>
     </resultMap>
 
+    <resultMap id="rawIssue4" type="RawIssue">
+        <id property="uuid" column="uuid"/>
+        <result property="type" column="type"/>
+        <result property="tool" column="tool"/>
+        <result property="detail" column="detail"/>
+        <result property="file_name" column="file_name"/>
+        <result property="scan_id" column="scan_id"/>
+        <result property="issue_id" column="issue_id"/>
+        <result property="commit_id" column="commit_id"/>
+        <result property="repo_id" column="repo_id"/>
+        <result property="code_lines" column="code_lines"/>
+    </resultMap>
+
+
 
     <insert id="insertRawIssueList" parameterType="List">
         insert into rawIssue
         (
         uuid,
         type,
-        category,
+        tool,
         detail,
         file_name,
         scan_id,
         issue_id,
         commit_id,
+        developer,
         repo_id,
         code_lines,
         status
@@ -75,12 +90,13 @@
             (
             #{item.uuid},
             #{item.type},
-            #{item.category},
+            #{item.tool},
             #{item.detail},
             #{item.file_name},
             #{item.scan_id},
             #{item.issue_id},
             #{item.commit_id},
+            #{item.developerName},
             #{item.repo_id},
             #{item.code_lines},
             #{item.status}
@@ -88,15 +104,22 @@
         </foreach>
     </insert>
 
-    <delete id="deleteRawIssueByRepoIdAndCategory" parameterType="String">
-        delete from rawIssue  where repo_id = #{repo_id} and category = #{category}
+    <delete id="deleteRawIssueByRepoIdAndTool" parameterType="String">
+        delete from rawIssue  where repo_id = #{repo_id} and tool = #{tool}
     </delete>
 
-    <select id="getRawIssueById" parameterType="String" resultMap="rawIssue">
-        select * from rawIssue where uuid = #{uuid}
-    </select>
+    <delete id="deleteRawIssueByIds">
+        delete from rawIssue
+        <where>
+            uuid in
+            <foreach collection="list" separator="," open="(" close=")" item="rawIssueId">
+                #{rawIssueId}
+            </foreach>
+        </where>
 
-    <update id="batchUpdateIssueIdAndStatus" parameterType="java.util.List">
+    </delete>
+
+    <update id="batchUpdateIssueId" parameterType="java.util.List">
         update rawIssue
         <trim prefix="set" suffixOverrides=",">
             <trim prefix="issue_id =case" suffix="end,">
@@ -133,88 +156,93 @@
     </select>
 
 
-    <select id="getRawIssueByCommitIDAndCategory" parameterType="String" resultMap="rawIssue2">
-        select * from rawIssue where repo_id = #{repo_id} and category = #{category} and commit_id = #{commit_id} and status != 'solved'
+    <select id="getRawIssueByCommitIDAndTool" parameterType="String" resultMap="rawIssue2">
+        select uuid,type,tool,detail,file_name,scan_id,issue_id,commit_id,repo_id,code_lines,status
+        from rawIssue where repo_id = #{repo_id} and tool = #{tool} and commit_id = #{commit_id} and status != 'solved' and status != 'merge solved'
     </select>
 
     <select id="getRawIssueByCommitIDAndFile" resultMap="rawIssue3">
-        select * from rawIssue where repo_id = #{repo_id} and commit_id = #{commit_id} and category = #{category} and file_name like CONCAT('%',#{file},'%') and status != 'solved'
+        select uuid,type,tool,detail,file_name,scan_id,issue_id,commit_id,repo_id,code_lines,status
+        from rawIssue
+        <where>
+            repo_id = #{repo_id}
+            <if test="commit_id != null  and commit_id != ''">
+                and commit_id = #{commit_id}
+            </if>
+            <if test="tool != null  and tool != ''">
+                and tool = #{tool}
+            </if>
+            <if test="file_name != null  and file_name != ''">
+                and file_name = #{file_name}
+            </if>
+        </where>
     </select>
 
     <select id="getRawIssueByIssueId" parameterType="String" resultMap="rawIssue">
-        select distinct a.* ,b.commit_time as commit_time , b.developer_email as developer_email
+        select distinct a.uuid,a.type,a.tool,a.detail,a.file_name,a.scan_id,a.issue_id,a.commit_id,a.repo_id,a.code_lines,a.status,b.commit_time as commit_time, b.developer_email as developer_email
         from rawIssue as a
         inner join commit as b
         on a.commit_id = b.commit_id
-        where a.issue_id=#{issueId} and a.status != 'solved'
+        where a.issue_id=#{issueId}
+        and status != "default"
         order by commit_time desc ;
     </select>
 
    <select id="getTypesByCommit" resultType="string">
        select distinct type as types
        from rawIssue
-       where category = #{category} and commit_id = #{commit_id} and status != 'solved'
+       where tool = #{tool} and commit_id = #{commit_id}
        order by types
    </select>
 
     <select id="getNumberOfRemainingIssue" parameterType="String" resultType="Integer">
-        select count(*) from rawIssue where repo_id = #{repo_id} and commit_id = #{commit_id} and status != 'solved';
+        select count(*) from rawIssue where repo_id = #{repo_id} and commit_id = #{commit_id};
     </select>
 
     <select id="getNumberOfRemainingIssueBaseFile" resultType="Integer">
-        select count(*) from rawIssue where repo_id = #{repo_id} and commit_id = #{commit_id} and file_name = #{file_name} and status != 'solved'
+        select count(*) from rawIssue where repo_id = #{repo_id} and commit_id = #{commit_id} and file_name =   #{file_name}
     </select>
 
     <select id="getNumberOfRemainingIssueBasePackage" resultType="Integer">
         select count(*) from location where rawIssue_id in
-        (select uuid from rawIssue where repo_id = #{repo_id} and commit_id = #{commit_id} and status != 'solved')
+        (select uuid from rawIssue where repo_id = #{repo_id} and commit_id = #{commit_id})
         and file_path like #{package_name}
     </select>
 
     <select id="getRankOfFileBaseIssueQuantity" resultType="java.util.WeakHashMap">
         select file_name as 'key',count(file_name) as 'value'
         from rawIssue
-        where commit_id = #{commit_id} and repo_id = #{repo_id} and status != 'solved'
+        where commit_id = #{commit_id} and repo_id = #{repo_id}
         group by file_name order by value ;
     </select>
 
     <select id="getRankOfFileBaseDensity" resultType="java.util.WeakHashMap">
         select file_name as 'key',code_lines/count(file_name) as 'value'
         from rawIssue
-        where commit_id = #{commit_id} and repo_id = #{repo_id} and status != 'solved'
+        where commit_id = #{commit_id} and repo_id = #{repo_id}
         group by file_name order by value ;
     </select>
 
-    <select id="getNumberOfRawIssuesByIssueIdAndStatus" resultType="Integer">
-        select count(*) from rawIssue where issue_id = #{issueId}
-        <if test="list != null || list.size != 0">
-            <trim prefix="and (" prefixOverrides="or" suffix=")">
-
-                <foreach collection="list"  item="status">
-                      or status = #{status}
-                </foreach>
-
-            </trim>
-        </if>
-        ;
+    <select id="getNumberOfRawIssuesByIssueId" resultType="Integer">
+        select count(*) from rawIssue where issue_id = #{issueId};
     </select>
 
     <select id="getRawIssueListByIssueId" resultMap="rawIssue">
-        select distinct a.* ,b.commit_time as commit_time , b.developer_email as developer_email
+        select distinct a.uuid,a.type,a.tool,a.detail,a.file_name,a.scan_id,a.issue_id,a.commit_id,a.repo_id,a.code_lines,a.status ,b.commit_time as commit_time , b.developer_email as developer_email
         from rawIssue as a
         inner join commit as b
         on a.commit_id = b.commit_id
         where a.issue_id = #{issue_id}
-        <if test="list != null and list.size != 0">
+
+        <if test="statusList != null || statusList.size != 0">
             <trim prefix="and (" prefixOverrides="or" suffix=")">
 
-                <foreach collection="list"  item="status">
+                <foreach collection="statusList"  item="status">
                     or status = #{status}
                 </foreach>
 
             </trim>
         </if>
-
         order by commit_time desc
         <if test="start != null  and size != null ">
             limit #{start},#{size}
@@ -223,20 +251,20 @@
     </select>
 
     <select id="getChangedRawIssues" resultMap="rawIssue">
-        select distinct a.* ,b.commit_time as commit_time , b.developer_email as developer_email from
+        select distinct a.uuid,a.type,a.tool,a.detail,a.file_name,a.scan_id,a.issue_id,a.commit_id,a.repo_id,a.code_lines,a.status ,b.commit_time as commit_time , b.developer_email as developer_email from
         rawIssue as a
         inner join commit as b
         on a.commit_id = b.commit_id
         where a.uuid in
         (select distinct rawIssue_id from location where rawIssue_id in
-          (select uuid from rawIssue where issue_id = #{issueId}) and status != 'solved'
+          (select uuid from rawIssue where issue_id = #{issueId})
         )
         order by commit_time desc
     </select>
 
-    <select id="getRawIssueCommitTimeByRepoIdAndCategory" resultType="String">
+    <select id="getRawIssueCommitTimeByRepoIdAndTool" resultType="String">
         select  distinct(b.commit_time) as commit_time from
-         (select commit_id from rawIssue where repo_id = #{repo_id} and category = #{category} and status != 'solved' group by commit_id) as a
+         (select commit_id from rawIssue where repo_id = #{repo_id} and tool = #{tool} group by commit_id) as a
          inner join
          commit as b
          on a.commit_id=b.commit_id  where a.commit_id = #{commit_id} order by b.commit_time;
@@ -244,18 +272,187 @@
 
     <select id="getCommitIdWhichBeforeDesignatedTime" resultType="String">
         select  distinct(a.commit_id) as commit_id from
-        (select commit_id from rawIssue where repo_id = #{repo_id} and category = #{category}  and status != 'solved' group by commit_id) as a
+        (select commit_id from rawIssue where repo_id = #{repo_id} and tool = #{tool} group by commit_id) as a
         inner join
         commit as b
         on a.commit_id=b.commit_id where  <![CDATA[ b.commit_time < #{commit_time} ]]> order by b.commit_time desc limit 1
     </select>
 
     <select id="getRawIssueIdByCommitId" resultType="String">
-        select uuid from rawIssue where commit_id = #{commit_id} and repo_id = #{repo_id} and category = #{category} and status != 'solved';
+        select uuid from rawIssue where commit_id = #{commit_id} and repo_id = #{repo_id} and tool = #{tool};
     </select>
 
     <select id="getLatestScannedCommitId" parameterType="String" resultType="String">
-        select commit_id from scan where repo_id = #{repo_id} and category = #{category} and commit_time = (select max(commit_time) from scan where
-        repo_id = #{repo_id} and category = #{category} and status = "done");
+        select commit_id from scan where repo_id = #{repo_id} and tool = #{tool} and commit_time = (select max(commit_time) from scan where
+        repo_id = #{repo_id} and tool = #{tool} and status = "done");
+    </select>
+
+    <select id="getNumberOfRawIssuesByIssueIdAndStatus" resultType="Integer">
+        select count(*) from rawIssue where issue_id = #{issueId}
+        <if test="list != null || list.size != 0">
+            <trim prefix="and (" prefixOverrides="or" suffix=")">
+
+                <foreach collection="list"  item="status">
+                    or status = #{status}
+                </foreach>
+
+            </trim>
+        </if>
+        ;
+    </select>
+
+    <select id="getRawIssueByRepoIdAndTool" resultMap="rawIssue4">
+        select uuid,type,tool,detail,file_name,scan_id,issue_id,commit_id,repo_id,code_lines,status
+        from rawIssue
+        <where>
+            repo_id = #{repo_id}
+            <if test="tool != null  and tool != ''">
+                and tool = #{tool}
+            </if>
+        </where>
+    </select>
+
+    <select id="getRawIssuesByCondition" parameterType="String" resultType="java.util.HashMap">
+        SELECT
+        a.tool, a.issue_id, a.commit_id, a.repo_id, a.`status`, b.developer_unique_name, b.commit_time
+        FROM
+        rawIssue as a
+        INNER JOIN commit_view as b
+        ON a.repo_id = b.repo_id AND a.commit_id = b.commit_id
+        <where>
+            <if test="repo_id != null  and repo_id != ''">
+                and a.repo_id = #{repo_id}
+            </if>
+
+            <if test="status != null  and status != ''">
+                and a.`status` = #{status}
+            </if>
+
+            <if test="developer != null  and developer != ''">
+                and b.developer_unique_name = #{developer}
+            </if>
+
+            <if test="tool != null  and tool != ''">
+                and a.tool = #{tool}
+            </if>
+
+            <if test="type != null  and type != ''">
+                and a.type = #{type}
+            </if>
+
+            <if test="since != null and since != '' ">
+                and <![CDATA[ b.commit_time >= #{since} ]]>
+            </if>
+
+            <if test="until != null and until != '' ">
+                and <![CDATA[ b.commit_time <= #{until} ]]>
+            </if>
+        </where>
+
+    </select>
+
+    <select id="getIssueIdAndGroupCountFromRawIssue" parameterType="String" resultType="java.util.HashMap">
+        SELECT
+        a.issue_id, count(a.issue_id) as issueCount
+        FROM
+        rawIssue as a
+        INNER JOIN commit_view as b
+        ON a.repo_id = b.repo_id AND a.commit_id = b.commit_id
+        <where>
+            <if test="repo_id != null  and repo_id != ''">
+                and a.repo_id = #{repo_id}
+            </if>
+
+            <if test="status != null  and status != ''">
+                and a.`status` = #{status}
+            </if>
+
+            <if test="developer != null  and developer != ''">
+                and b.developer_unique_name = #{developer}
+            </if>
+
+            <if test="tool != null  and tool != ''">
+                and a.tool = #{tool}
+            </if>
+
+            <if test="since != null and since != '' ">
+                and <![CDATA[ b.commit_time >= #{since} ]]>
+            </if>
+
+            <if test="until != null and until != '' ">
+                and <![CDATA[ b.commit_time <= #{until} ]]>
+            </if>
+        </where>
+
+        GROUP BY a.issue_id
+
+    </select>
+
+    <select id="getAdderOfOneIssue" parameterType="String" resultType="String">
+        SELECT DISTINCT b.developer_unique_name
+        FROM
+        rawIssue as a
+        INNER JOIN commit_view as b
+        ON a.repo_id = b.repo_id AND a.commit_id = b.commit_id
+        <where>
+            a.`status` = "add"
+            AND a.issue_id = #{issue_id}
+        </where>
+
+    </select>
+
+    <select id="getLastSolverOfOneIssue" parameterType="String" resultType="String">
+        SELECT b.developer_unique_name
+        FROM
+        rawIssue as a
+        INNER JOIN commit_view as b
+        ON a.repo_id = b.repo_id AND a.commit_id = b.commit_id
+        <where>
+            a.`status` = "solved"
+            AND a.issue_id = #{issue_id}
+        </where>
+        ORDER BY b.commit_time DESC
+        LIMIT 1
+    </select>
+
+    <select id="getLastSolvedInfoOfOneIssue" parameterType="String" resultType="java.util.HashMap">
+        SELECT a.issue_id, b.developer_unique_name as lastSolver, b.commit_id, b.commit_time
+        FROM
+        rawIssue as a
+        INNER JOIN commit_view as b
+        ON a.repo_id = b.repo_id AND a.commit_id = b.commit_id
+        <where>
+            a.`status` = "solved"
+            AND a.issue_id = #{issue_id}
+        </where>
+        ORDER BY b.commit_time DESC
+        LIMIT 1
+    </select>
+
+    <select id="getIssueIntroducers" resultType="String">
+        SELECT distinct developer
+        FROM
+        rawIssue
+        <where>
+            `status` = "add"
+            <if test="repoUuids != null and repoUuids.size > 0">
+                AND repo_id IN
+                <foreach collection="repoUuids" separator="," open="(" close=")" item="repoUuid">
+                    #{repoUuid}
+                </foreach>
+            </if>
+        </where>
+        ORDER BY developer
+    </select>
+
+    <select id="getRawIssueUuidByIssueUuidAndCommit" resultType="String">
+        SELECT a.uuid FROM rawIssue AS a INNER JOIN commit_view AS b ON a.commit_id = b.commit_id AND a.repo_id = b.repo_id
+        <where>
+            a.issue_id = #{issueUuid}
+            <if test="commit != null and commit != ''">
+                AND a.commit_id = #{commit}
+            </if>
+        </where>
+        ORDER BY b.commit_time DESC LIMIT 1
     </select>
 </mapper>

@@ -1,10 +1,11 @@
 package cn.edu.fudan.issueservice.dao;
 
-import cn.edu.fudan.issueservice.domain.RawIssue;
+import cn.edu.fudan.issueservice.domain.dbo.RawIssue;
 import cn.edu.fudan.issueservice.mapper.RawIssueMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -27,36 +28,39 @@ public class RawIssueDao {
         rawIssueMapper.insertRawIssueList(list);
     }
 
-    public RawIssue getRawIssueById(String rawIssueId) {
-        return rawIssueMapper.getRawIssueById(rawIssueId);
+    public void deleteRawIssueByRepoIdAndTool(String repoId,String tool) {
+        rawIssueMapper.deleteRawIssueByRepoIdAndTool(repoId,tool);
     }
 
-    public void deleteRawIssueByRepoIdAndCategory(String repoId,String category) {
-        rawIssueMapper.deleteRawIssueByRepoIdAndCategory(repoId,category);
+    public void deleteRawIssueByIds(List<String> rawIssueIds) {
+        if(rawIssueIds == null || rawIssueIds.isEmpty ()){
+            return;
+        }
+        rawIssueMapper.deleteRawIssueByIds(rawIssueIds);
     }
 
-    public void batchUpdateIssueIdAndStatus(List<RawIssue> list) {
-        rawIssueMapper.batchUpdateIssueIdAndStatus(list);
+    public void batchUpdateIssueId(List<RawIssue> list) {
+        rawIssueMapper.batchUpdateIssueId(list);
     }
 
     public Integer getIssueCountBeforeSpecificTime(String account_id, String specificTime) {
         return rawIssueMapper.getIssueCountBeforeSpecificTime(account_id, specificTime);
     }
 
-    public List<RawIssue> getRawIssueByCommitIDAndCategory(String repo_id,String category,String commit_id) {
-        return rawIssueMapper.getRawIssueByCommitIDAndCategory(repo_id,category, commit_id);
+    public List<RawIssue> getRawIssueByCommitIDAndTool(String repo_id,String tool,String commit_id) {
+        return rawIssueMapper.getRawIssueByCommitIDAndTool(repo_id,tool, commit_id);
     }
 
     public List<RawIssue> getRawIssueByIssueId(String issueId) {
         return rawIssueMapper.getRawIssueByIssueId(issueId);
     }
 
-    public List<String> getTypesByCommit(String category,String commit_id){
-        return rawIssueMapper.getTypesByCommit(category, commit_id);
+    public List<String> getTypesByCommit(String tool,String commit_id){
+        return rawIssueMapper.getTypesByCommit(tool, commit_id);
     }
 
-    public List<RawIssue> getRawIssueByCommitIDAndFile(String repo_id,String commit_id,String category,String file){
-        return rawIssueMapper.getRawIssueByCommitIDAndFile(repo_id,commit_id, category, file);
+    public List<RawIssue> getRawIssueByCommitIDAndFile(String repo_id,String commit_id,String tool,String file){
+        return rawIssueMapper.getRawIssueByCommitIDAndFile(repo_id,commit_id, tool, file);
     }
 
     public Integer getNumberOfRemainingIssue(String repoId, String commit) {
@@ -83,20 +87,20 @@ public class RawIssueDao {
         return rawIssueMapper.getNumberOfRemainingIssueBasePackage(repoId, commit, packageName);
     }
 
-    public int getNumberOfRawIssuesByIssueIdAndStatus(String issueId,List status) {
-        return rawIssueMapper.getNumberOfRawIssuesByIssueIdAndStatus(issueId,status);
+    public int getNumberOfRawIssuesByIssueId(String issueId) {
+        return rawIssueMapper.getNumberOfRawIssuesByIssueId(issueId);
     }
 
     public List<RawIssue> getRawIssueListByIssueId(Map<String, Object> map) {
         return rawIssueMapper.getRawIssueListByIssueId(map);
     }
 
-    public List<String> getRawIssueIdByCommitId(String repoId, String commit, String category){
-        return rawIssueMapper.getRawIssueIdByCommitId(repoId,commit,category);
+    public List<String> getRawIssueIdByCommitId(String repoId, String commit, String tool){
+        return rawIssueMapper.getRawIssueIdByCommitId(repoId,commit,tool);
     }
 
-    public String getLatestScannedCommitId(String repoId, String category){
-        return rawIssueMapper.getLatestScannedCommitId(repoId,category);
+    public String getLatestScannedCommitId(String repoId, String tool){
+        return rawIssueMapper.getLatestScannedCommitId(repoId,tool);
     }
 
     /**
@@ -112,12 +116,52 @@ public class RawIssueDao {
     /**
      * 获取rawIssue 表中指定commit的前一条commit id
      * @param repoId
-     * @param category
+     * @param tool
      * @param currentCommitId
      * @return
      */
-    public String getPreCommitIdByCurrentCommitId(String repoId,String category,String currentCommitId){
-        String commitTime = rawIssueMapper.getRawIssueCommitTimeByRepoIdAndCategory(repoId,currentCommitId,category);
-        return rawIssueMapper.getCommitIdWhichBeforeDesignatedTime(repoId,commitTime,category);
+    public String getPreCommitIdByCurrentCommitId(String repoId,String tool,String currentCommitId){
+        String commitTime = rawIssueMapper.getRawIssueCommitTimeByRepoIdAndTool(repoId,currentCommitId,tool);
+        return rawIssueMapper.getCommitIdWhichBeforeDesignatedTime(repoId,commitTime,tool);
+    }
+
+    public int getNumberOfRawIssuesByIssueIdAndStatus(String issueId,List status) {
+        return rawIssueMapper.getNumberOfRawIssuesByIssueIdAndStatus(issueId,status);
+    }
+
+    public List<RawIssue> getRawIssueByRepoIdAndTool(String repoId,String tool) {
+        return rawIssueMapper.getRawIssueByRepoIdAndTool(repoId,tool);
+    }
+
+    public List<Map<String, Object>> getRawIssuesByCondition(String developer, String repoId, String since, String until, String tool, String status, String type){
+        return rawIssueMapper.getRawIssuesByCondition(developer, repoId, since, until, tool, status, type);
+    }
+
+    public List<Map<String, Object>> getIssueIdAndGroupCountFromRawIssue(String developer, String repoId, String since, String until, String tool, String status){
+        return rawIssueMapper.getIssueIdAndGroupCountFromRawIssue(developer, repoId, since, until, tool, status);
+    }
+
+    public String getAdderOfOneIssue(String issueId){
+        return rawIssueMapper.getAdderOfOneIssue(issueId);
+    }
+
+    public String getLastSolverOfOneIssue(String issueId){
+        return rawIssueMapper.getLastSolverOfOneIssue(issueId);
+    }
+
+    public Map<String, Object> getLastSolvedInfoOfOneIssue(String issueId){
+        return rawIssueMapper.getLastSolvedInfoOfOneIssue(issueId);
+    }
+
+    public List<String> getIssueIntroducers(List<String> repoUuids) {
+        return rawIssueMapper.getIssueIntroducers(repoUuids);
+    }
+
+    public String getRawIssueUuidByIssueUuidAndCommit(String issueUuid, String commit){
+        return rawIssueMapper.getRawIssueUuidByIssueUuidAndCommit(issueUuid, commit);
+    }
+
+    public List<RawIssue> getRawIssueByRepoIdFileNameTool(String repoId, List<String> preFiles, String toolName) {
+        return new ArrayList<>(0);
     }
 }

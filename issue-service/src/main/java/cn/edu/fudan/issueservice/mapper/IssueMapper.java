@@ -1,6 +1,7 @@
 package cn.edu.fudan.issueservice.mapper;
 
-import cn.edu.fudan.issueservice.domain.Issue;
+import cn.edu.fudan.issueservice.domain.dbo.Issue;
+import org.apache.ibatis.annotations.MapKey;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
@@ -22,10 +23,10 @@ public interface IssueMapper {
     /**
      * delete issue by repo id and category
      *
-     * @param repo_id get issue repo id
-     * @param category get issue category
+     * @param repoId get issue repo id
+     * @param tool get issue tool
      */
-    void deleteIssueByRepoIdAndCategory(@Param("repo_id")String repo_id,@Param("category")String category);
+    void deleteIssueByRepoIdAndTool(@Param("repo_id")String repoId,@Param("tool")String tool);
 
     /**
      * batch update issue
@@ -64,17 +65,36 @@ public interface IssueMapper {
      * @param map get issue map
      * @return Integer
      */
-    Integer getIssueCount(Map<String, Object> map);
+
+    List<Map<String, Object>> getIssueCount(Map<String, Object> map);
+
+    /**
+     * get issue count
+     *
+     * @param map get issue map
+     * @return Integer
+     */
+
+    List<Map<String, Object>> getIssuesCount(Map<String, Object> map);
+
 
     /**
      * get issues by end commit
      *
      * @param repo_id get issue repo id
-     * @param category get issue category
+     * @param tool get issue category
      * @param commit_id get issue commit id
      * @return List<Issue>
      */
-    List<Issue> getIssuesByEndCommit(@Param("repo_id") String repo_id, @Param("category")String category,@Param("commit_id") String commit_id);
+    List<Issue> getIssuesByEndCommit(@Param("repo_id") String repo_id, @Param("tool")String tool,@Param("commit_id") String commit_id);
+
+    /**
+     *
+     * @param developer 开发者
+     * @return 返回开发者参与并且有引入过issue的项目的repo_id
+     */
+    List<String> getRepoWithIssues(@Param("developer") String developer);
+
 
     /**
      * get issue list
@@ -85,41 +105,49 @@ public interface IssueMapper {
     List<Issue> getIssueList(Map<String, Object> map);
 
     /**
+     * get issue with more info list
+     *
+     * @param map get issue map
+     * @return List<Map<String, Object>>
+     */
+    List<Map<String, Object>> getIssueWithAdder(Map<String, Object> map);
+
+    /**
      * get exist issue types
      *
-     * @param category get issue category
+     * @param tool get issue tool
      * @return List<Issue>
      */
-    List<String> getExistIssueTypes(@Param("category")String category);
+    List<String> getExistIssueTypes(@Param("tool")String tool);
 
     /**
      * get issue ids by repo id and category
      *
-     * @param repo_id get issue repo id
-     * @param category get issue category
+     * @param repoId get issue repo id
+     * @param tool get issue category
      * @return List<Issue>
      */
-    List<String> getIssueIdsByRepoIdAndCategory(@Param("repo_id")String repo_id,@Param("category")String category);
+    List<String> getIssueIdsByRepoIdAndTool(@Param("repo_id")String repoId,@Param("tool")String tool);
 
     /**
      * get avg eliminated time
      *
      * @param list get issue repo list
-     * @param repo_id get issue repo id
-     * @param category get issue category
+     * @param repoId get issue repo id
+     * @param tool get issue category
      * @return Double
      */
-    Double getAvgEliminatedTime(@Param("list")List<String> list, @Param("repo_id")String repo_id, @Param("category")String category);
+    Double getAvgEliminatedTime(@Param("list")List<String> list, @Param("repo_id")String repoId, @Param("tool")String tool);
 
     /**
      * get max dlive time
      *
      * @param list get issue repo list
-     * @param repo_id get issue repo id
-     * @param category get issue category
+     * @param repoId get issue repo id
+     * @param tool get issue category
      * @return Long
      */
-    Long getMaxAliveTime(@Param("list")List<String> list, @Param("repo_id")String repo_id, @Param("category")String category);
+    Long getMaxAliveTime(@Param("list")List<String> list, @Param("repo_id")String repoId, @Param("tool")String tool);
 
     /**
      * update one issue priority
@@ -137,12 +165,7 @@ public interface IssueMapper {
      */
     void updateOneIssueStatus(@Param("uuid")String issueId,@Param("status")String status, @Param("manual_status") String manualStatus);
 
-    /**
-     * get issue id and priority
-     *
-     * @return List<Map<String, String>>
-     */
-    List<Map<String, String>> getIssueIdAndPriority();
+
 
     /**
      * get max issue display id
@@ -193,35 +216,16 @@ public interface IssueMapper {
      * @param type get issue type
      * @return List<String>
      */
-    List<String> getNotSolvedAndNotMisinformationIssueListByTypeAndRepoId(@Param("repo_id") String repoId,@Param("type")  String type,@Param("category")  String tool);
-
-    /**
-     * get issue list by condition
-     * @param repoId
-     * @param type
-     * @param status
-     * @param tool
-     * @return
-     */
-    List<String> getIssueUuidListByCondition(@Param("repo_id") String repoId,@Param("type")  String type,@Param("status")  String status,@Param("category")  String tool);
-
-
-    /**
-     * get issue info by issueId
-     * @param issueId
-     * @return
-     */
-    Issue getIssueByIssueId(@Param("issue_id") String issueId);
-
+    List<String> getNotSolvedIssueListByTypeAndRepoId(@Param("repo_id") String repoId,@Param("type")  String type);
 
     /**
      * get not solved issue all list by category and repo id
      *
      * @param repoId get issue repo id
-     * @param type get issue type
+     * @param tool get issue type
      * @return List<Issue>
      */
-    List<Issue> getNotSolvedIssueAllListByCategoryAndRepoId(@Param("repo_id") String repoId,@Param("type")  String type);
+    List<Issue> getNotSolvedIssueAllListByToolAndRepoId(@Param("repo_id") String repoId,@Param("tool")  String tool);
 
     /**
      * batch update issue list priority
@@ -232,15 +236,7 @@ public interface IssueMapper {
     void batchUpdateIssueListPriority(@Param("list")List<String> issueUuid,@Param("priority") int priority);
 
     /**
-     * batch update issue list status
-     * @param issueUuid
-     * @param status
-     */
-    void batchUpdateIssueListStatus(@Param("list")List<String> issueUuid,@Param("status") String status);
-
-
-    /**
-     * get number of new issue by duration
+     * get number newInstance new issue by duration
      *
      * @param repoId get issue repo id
      * @param start get issue start
@@ -250,7 +246,7 @@ public interface IssueMapper {
     int getNumberOfNewIssueByDuration(@Param("repo_id") String repoId,@Param("start") String start,@Param("end") String end);
 
     /**
-     * get number of eliminate issue by duration
+     * get number newInstance eliminate issue by duration
      *
      * @param repoId get issue repo id
      * @param start get issue start
@@ -269,31 +265,10 @@ public interface IssueMapper {
      */
     List<WeakHashMap<Object, Object>> getCommitNewIssue(@Param("start") String start, @Param("end") String end, @Param("repo_id") String repoId);
 
-    /**
-     * get sonar issue by repo id
-     *
-     * @param repoId get issue repo id
-     * @param category get issue category
-     * @return List<Issue>
-     */
-    List<Issue> getSonarIssueByRepoId(@Param("repo_id") String repoId,@Param("category")String category);
-
-    /**
-     * get issue by sonar issue key
-     *
-     * @param sonar_issue_id get sonar issue id
-     * @return Issue
-     */
-    Issue getIssueBySonarIssueKey(@Param("sonar_issue_id")String sonar_issue_id);
 
     List<Issue> getIssuesByIssueIds(List<String> issueIds);
 
-    /**
-     * batch update sonar issues
-     *
-     * @param list get issue list
-     */
-    void batchUpdateSonarIssues(List<Issue> list);
+
 
     /**
      * get all commit by repo id
@@ -306,10 +281,132 @@ public interface IssueMapper {
     /**
      * 获取指定repo 与 category 存在无效消除的 issue 列表
      * @param repoId
-     * @param category
+     * @param tool
      * @return
      */
-    List<Issue> getHaveNotAdoptEliminateIssuesByCategoryAndRepoId(@Param("repo_id") String repoId,@Param("category")String category);
+    List<Issue> getHaveNotAdoptEliminateIssuesByToolAndRepoId(@Param("repo_id") String repoId,@Param("tool")String tool);
+
+    /**
+     * 获取指定repo category的 issue 列表， 且status不等于statusList 中任何一个。
+     * @param repoId
+     * @param tool
+     * @param statusList
+     * @return
+     */
+    List<Issue> getIssueByRepoIdAndToolAndStatusList(@Param("repo_id")String repoId, @Param("tool")String tool,
+                                                         @Param("status_list")List<String> statusList);
+
+    /**
+     * 获取指定缺陷id列表的 缺陷集
+     * @param issueIdList
+     * @return
+     */
+    List<Issue> getIssuesByIds(@Param("issueId_list")List<String> issueIdList);
 
 
+    /**
+     *
+     * @param repoIdList repoIdList
+     * @param type 缺陷类型
+     * @param tool 缺陷检测工具
+     * @param since 起始时间
+     * @param until 结束时间
+     * @param developer 开发者
+     * @param rawIssueStatus 开发者对rawIssue的操作状态
+     * @param issueStatus issue表的status
+     * @return 根据rawIssue、commit_view、issue  三表来查询issue信息
+     */
+    List<Map<String, Object>> getIssueByRawIssueCommitViewIssueTable(@Param("repoIdList")List<String> repoIdList,@Param("type")String type,@Param("tool")String tool,@Param("since")String since,@Param("until")String until,@Param("developer")String developer,@Param("rawIssueStatus")String rawIssueStatus,@Param("issueStatus")String issueStatus);
+
+
+    /**
+     *
+     * @param repoIdList repoIdList
+     * @param type 缺陷类型
+     * @param tool 缺陷检测工具
+     * @param since 起始时间
+     * @param until 结束时间
+     * @param developer 开发者
+     * @param rawIssueStatus 开发者对rawIssue的操作状态
+     * @return 如果status为solved，表示这个developer所解决的(在RawIssue中解决)issue  并且issue的最终状态为Solved
+     */
+    List<Map<String, Object>> getSolvedIssueLifeCycle(@Param("repoIdList")List<String> repoIdList,@Param("type")String type,@Param("tool")String tool,@Param("since")String since,@Param("until")String until,@Param("developer")String developer,@Param("status")String rawIssueStatus);
+
+    /**
+     *
+     * @param repoIdList repoIdList
+     * @param type 缺陷类型
+     * @param tool 缺陷检测工具
+     * @param since 起始时间
+     * @param until 结束时间
+     * @param developer 开发者
+     * @param rawIssueStatus 开发者对rawIssue的操作状态
+     * @return 如果status为solved，表示这个developer以外的其他开发者所解决的(在RawIssue中解决)issue 并且issue的最终状态为Solved
+     */
+    List<Map<String, Object>> getSolvedIssueLifeCycleByOtherSolved(@Param("repoIdList")List<String> repoIdList,@Param("type")String type,@Param("tool")String tool,@Param("since")String since,@Param("until")String until,@Param("developer")String developer,@Param("status")String rawIssueStatus);
+
+    /**
+     *
+     * @param repoIdList repoIdList
+     * @param type 缺陷类型
+     * @param tool 缺陷检测工具
+     * @param since 起始时间
+     * @param until 结束时间
+     * @param developer 开发者
+     * @param rawIssueStatus 开发者对rawIssue的操作状态
+     * @param issueStatus issue表的status
+     * @return 根据rawIssue、commit_view、issue  三表来查询issue信息
+     */
+    List<Map<String, Object>> getOpenIssueLifeCycle(@Param("repoIdList")List<String> repoIdList,@Param("type")String type,@Param("tool")String tool,@Param("since")String since,@Param("until")String until,@Param("developer")String developer,@Param("rawIssueStatus")String rawIssueStatus,@Param("issueStatus")String issueStatus);
+
+
+    /**
+     *
+     * @param issueIdList issueid list
+     * @return 获取issue统计 包括 quantity lifecycle
+     */
+    List<Map<String, Object>> getIssueStatisticByIssueIdList(@Param("issueId_list")List<String> issueIdList,@Param("order")String order,@Param("asc")String asc);
+
+    /**
+     * 根据所有issue uuid查所有引入者
+     *
+     * @param repoList
+     * @param tool
+     * @param since
+     * @param until
+     * @param status
+     * @return
+     */
+    List<String> getAdderByIssue(@Param("repoList")List<String> repoList,@Param("tool") String tool,@Param("since") String since,@Param("until") String until,@Param("status") String status);
+
+    /**
+     * 返回所有解决的issueId
+     * @param repoList
+     * @param tool
+     * @param since
+     * @param until
+     * @param status
+     * @return
+     */
+    List<String> getSolvedIssue(List<String> repoList, String tool, String since, String until, String status);
+
+    /**
+     * 返回筛选后issues数量
+     * @param query
+     * @return
+     */
+    int getIssueFilterListCount(Map<String, Object> query);
+
+    /**
+     * 根据条件筛选issue
+     * @param query
+     * @return issue列表
+     */
+    List<Map<String, Object>> getIssueFilterList(Map<String, Object> query);
+
+
+
+    void test(String uuid, String s);
+
+    List<String> getIssuetest();
 }

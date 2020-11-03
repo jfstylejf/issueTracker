@@ -1,22 +1,25 @@
-/**
- * @description:
- * @author: fancying
- * @create: 2019-06-05 17:16
- **/
 package cn.edu.fudan.issueservice.util;
 
+import lombok.Getter;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.jgit.api.BlameCommand;
 import org.eclipse.jgit.api.CheckoutCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.blame.BlameResult;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.DiffFormatter;
-import org.eclipse.jgit.lib.*;
+import org.eclipse.jgit.diff.RenameDetector;
+import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.ObjectReader;
+import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.treewalk.CanonicalTreeParser;
+import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.util.io.DisabledOutputStream;
 
 import java.io.File;
@@ -29,6 +32,11 @@ import java.util.stream.Stream;
 
 import static cn.edu.fudan.issueservice.util.DateTimeUtil.timeTotimeStamp;
 
+/**
+ * @description:
+ * @author: fancying
+ * @create: 2019-06-05 17:16
+ **/
 @SuppressWarnings("Duplicates")
 @Slf4j
 public class JGitHelper {
@@ -40,14 +48,18 @@ public class JGitHelper {
     private Repository repository;
     private RevWalk revWalk;
     private Git git;
+    @Getter
+    private String repoPath;
 
+    private final String format = "yyyy-MM-dd HH:mm:ss";
     /**
      *
      * repoPath 加上了 .git 目录
      *
      */
     public JGitHelper(String repoPath) {
-        String gitDir =  IS_WINDOWS ? repoPath + "\\.git" : repoPath + "/.git";
+        this.repoPath = repoPath + (IS_WINDOWS ? "\\" : "/");
+        String gitDir = this.repoPath  + ".git";
         FileRepositoryBuilder builder = new FileRepositoryBuilder();
         try {
             repository = builder.setGitDir(new File(gitDir))
@@ -60,6 +72,15 @@ public class JGitHelper {
             log.error(e.getMessage());
         }
     }
+
+    public static Integer getConflictValue() {
+        return MERGE_WITH_CONFLICT;
+    }
+
+    public static Integer getWithoutConflictValue() {
+        return MERGE_WITHOUT_CONFLICT;
+    }
+
 
     public void checkout(String commit) {
         try {
@@ -88,16 +109,24 @@ public class JGitHelper {
 
     public String getCommitTime(String commit) {
         String time = null;
-        final String format = "yyyy-MM-dd HH:mm:ss";
         try {
             RevCommit revCommit = revWalk.parseCommit(ObjectId.fromString(commit));
             int t = revCommit.getCommitTime() ;
             long timestamp = Long.parseLong(String.valueOf(t)) * 1000;
-            time = new java.text.SimpleDateFormat(format).format(new java.util.Date(timestamp));
+            Date date = new java.util.Date(timestamp);
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime (date);
+            calendar.add (Calendar.HOUR_OF_DAY, -8);
+            time = new java.text.SimpleDateFormat(format).format(calendar.getTime ());
         }catch (Exception e) {
             e.printStackTrace();
         }
         return time;
+    }
+
+    @SneakyThrows
+    public Date getCommitDateTime(String commit) {
+        return new SimpleDateFormat(format).parse(getCommitTime(commit));
     }
 
     private Long getLongCommitTime(String version) {
@@ -105,7 +134,7 @@ public class JGitHelper {
             RevCommit revCommit = revWalk.parseCommit(ObjectId.fromString(version));
             return revCommit.getCommitTime() * 1000L;
         }catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
             return 0L;
         }
     }
@@ -180,12 +209,13 @@ public class JGitHelper {
     }
 
     /**
+     * todo 抽到公共方法中
      * 由小到大排序
      * st.sorted((e1, e2) -> e2.getValue().compareTo(e1.getValue())).forEach(e -> result.put(e.getKey(), e.getValue()));
      * 默认由大到小排序
      * 类型 V 必须实现 Comparable 接口，并且这个接口的类型是 V 或 V 的任一父类。这样声明后，V 的实例之间，V 的实例和它的父类的实例之间，可以相互比较大小。
      */
-    private static <K, V extends Comparable<? super V>> Map<K, V> sortByValue(Map<K, V> map) {
+    public static <K, V extends Comparable<? super V>> Map<K, V> sortByValue(Map<K, V> map) {
         Map<K, V> result = new LinkedHashMap<>();
         Stream<Map.Entry<K, V>> st = map.entrySet().stream();
         st.sorted(Comparator.comparing(Map.Entry::getValue)).forEach(e -> result.put(e.getKey(), e.getValue()));
@@ -345,31 +375,146 @@ public class JGitHelper {
                 break;
             }
         }
-
         return result;
 
     }
 
 
-    public static void main(String[] args) throws ParseException {
-        //gitCheckout("E:\\Lab\\project\\IssueTracker-Master", "f8263335ef380d93d6bb93b2876484e325116ac2");
-        //String repoPath = "E:\\Lab\\iec-wepm-develop";
-        String repoPath = "E:\\school\\laboratory\\test-samples\\maven-surefire";
-//        String commitId = "75c6507e2139e9bb663abf35037b31478e44c616";
-        JGitHelper jGitHelper = new JGitHelper(repoPath);
-        jGitHelper.checkout(null);
-        String authorName = jGitHelper.getAuthorName("733d92f6141a91c54ffa92f5d2f1c87528972f36");
-        List<RevCommit> list = jGitHelper.getAggregationCommit("2019-1-1 00:00:00");
-        list.stream().forEach(System.out::println);
-
-        //String s[] = jGitHelper.getCommitParents(commitId);
-//        int m = jGitHelper.mergeJudgment(commitId);
-//        System.out.println(m);
-//        String t = jGitHelper.getCommitTime("f61e34233aa536cf5e698b502099e12d1caf77e4");
-//        for (String s : jGitHelper.getCommitListByBranchAndDuration("zhonghui20191012", "2019.10.12-2019.12.16")) {
-//            System.out.println(s);
-//            jGitHelper.checkout(s);
-//        }
+    @SneakyThrows
+    private List<DiffEntry> getDiffEntry(RevCommit parentCommit, RevCommit currCommit) {
+        parentCommit = revWalk.parseCommit(ObjectId.fromString(parentCommit.getName()));
+        TreeWalk tw = new TreeWalk(repository);
+        tw.addTree(parentCommit.getTree());
+        tw.addTree(currCommit.getTree());
+        tw.setRecursive(true);
+        RenameDetector rd = new RenameDetector(repository);
+        rd.addAll(DiffEntry.scan(tw));
+        rd.setRenameScore(100);
+        return rd.compute();
     }
 
+
+
+    @SneakyThrows
+    public RevCommit getRevCommit(String commitId){
+        return revWalk.parseCommit(repository.resolve(commitId));
+    }
+
+    @SneakyThrows
+    public List<DiffEntry> getConflictDiffEntryList (String commit) {
+        RevCommit currCommit = revWalk.parseCommit(ObjectId.fromString(commit));
+        RevCommit[] parentCommits = currCommit.getParents();
+        if (parentCommits.length != 2) {
+            return null;
+        }
+
+        List<DiffEntry> parent1 = getDiffEntry(parentCommits[0], currCommit);
+        List<DiffEntry> parent2 = getDiffEntry(parentCommits[1], currCommit);
+        List<DiffEntry> result = new ArrayList<>();
+        if (isParent2(parentCommits[0], parentCommits[1], currCommit)) {
+            List<DiffEntry> tmp = parent1;
+            parent1 = parent2;
+            parent2 = tmp;
+        }
+
+        // oldPath 相同
+        for (DiffEntry diffEntry1 : parent1) {
+            for (DiffEntry diffEntry2 :parent2) {
+                // todo 暂未考虑重命名的情况 或者无需考虑重命名的情况
+                //  如 p1 a=a1  p2 a=>a2 是否冲突待验证
+                boolean isSame = diffEntry1.getOldPath().equals(diffEntry2.getOldPath()) &&
+                        diffEntry1.getNewPath().equals(diffEntry2.getNewPath());
+
+                if (isSame) {
+                    result.add(diffEntry1);
+                }
+            }
+        }
+        return result;
+    }
+
+
+    private boolean isParent2(RevCommit parent1, RevCommit parent2, RevCommit currCommit) {
+        String author1 = parent1.getAuthorIdent().getName();
+        String author2 = parent2.getAuthorIdent().getName();
+        String author = currCommit.getAuthorIdent().getName();
+        if (author.equals(author2) && !author.equals(author1)) {
+            return true;
+        }
+
+        if (!author.equals(author2) && author.equals(author1)) {
+            return false;
+        }
+
+        return parent2.getCommitTime() > parent1.getCommitTime();
+    }
+
+    /**
+     * 得到所有的DiffEntry
+     */
+    @SneakyThrows
+    public List<DiffEntry> getDiffEntry(String commitId) {
+        RevCommit revCommit = getRevCommit(commitId);
+        RevCommit[] parentCommits = revCommit.getParents();
+        if (parentCommits.length == 0) {
+            return new ArrayList<>(0);
+        }
+        List<DiffEntry> diffEntryList = new ArrayList<>();
+        for (RevCommit p : parentCommits) {
+            diffEntryList.addAll(getDiffEntry(p, revCommit));
+        }
+        return diffEntryList;
+    }
+
+    @SneakyThrows
+    public RevCommit getBlameCommit(String commitId, String filePath, int start, int end ){
+        RevCommit revCommit = getRevCommit(commitId);
+        ObjectId curCommitId = repository.resolve(commitId);
+        BlameCommand blamer = new BlameCommand(repository);
+        blamer.setStartCommit(curCommitId);
+        blamer.setFilePath(filePath);
+        BlameResult blame = blamer.call();
+        RevCommit result = revCommit;
+        int time = 0;
+        for(int i = start; i <= end; i++){
+            RevCommit sourceCommit = blame.getSourceCommit(i);
+            if (time < sourceCommit.getCommitTime()) {
+                time = sourceCommit.getCommitTime();
+                result = sourceCommit;
+            }
+        }
+        return result;
+    }
+
+    /**
+     * 获取指定文件在指定的两个commit之间的改动次数  不含首，含尾
+     * @param startCommitId 开始的commit id  如果startCommitId有改动该文件，不计入改动次数
+     * @param endCommitId 终止的commit id  如果endCommitId有改动该文件，计入改动次数
+     * @param filePath 此处的filePath 表示该文件在项目中的相对路径，且文件路径一定要使用 / 进行分隔
+     * @return
+     */
+    @SneakyThrows
+    public int getFileChangedCount(String startCommitId, String endCommitId, String filePath){
+        int result = 0;
+        ObjectId startCommit = repository.resolve(startCommitId);
+        ObjectId endCommit = repository.resolve(endCommitId);
+        Iterable<RevCommit> revCommits = git.log ().addPath(filePath).addRange (startCommit, endCommit).call ();
+        Iterator<RevCommit> iterator = revCommits.iterator ();
+        while (iterator.hasNext ()) {
+            iterator.next ();
+            result++;
+        }
+        return result;
+    }
+
+    /**
+     * 根据两个commit id 来diff两个
+     * @param preCommitId 前一个版本的commit id
+     * @param commitId 当前版本的commit id
+     * @return add : a, delete: ,a   change a,a   英文逗号 ， 区分 add delete change
+     */
+    public List<String> getDiffFilePair(String preCommitId, String commitId) {
+        List<String> result = new ArrayList<>();
+        return result;
+    }
 }

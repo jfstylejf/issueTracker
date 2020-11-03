@@ -1,49 +1,29 @@
 package cn.edu.fudan.issueservice.domain;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.*;
+
 import java.io.Serializable;
 
 /**
  * @author WZY
  * @version 1.0
  **/
-public class ResponseBean implements Serializable {
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+@ApiModel(value = "API返回的结构体", description = "所有API返回形式都以这个为准")
+public class ResponseBean<T> implements Serializable {
 
+    @ApiModelProperty(value = "自定义状态码", name = "code")
     private int code;
 
+    @ApiModelProperty(value = "此次请求返回的消息描述", name = "msg")
     private String msg;
 
-    private Object data;
+    @ApiModelProperty(value = "此次请求返回的具体数据", name = "data")
+    private T data;
 
-    public ResponseBean() {
-    }
-
-    public ResponseBean(int code, String msg, Object data) {
-        this.code = code;
-        this.msg = msg;
-        this.data = data;
-    }
-
-    public int getCode() {
-        return code;
-    }
-
-    public void setCode(int code) {
-        this.code = code;
-    }
-
-    public String getMsg() {
-        return msg;
-    }
-
-    public void setMsg(String msg) {
-        this.msg = msg;
-    }
-
-    public Object getData() {
-        return data;
-    }
-
-    public void setData(Object data) {
-        this.data = data;
-    }
 }
