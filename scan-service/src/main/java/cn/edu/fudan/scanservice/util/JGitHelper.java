@@ -19,20 +19,25 @@ import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.treewalk.CanonicalTreeParser;
 import org.eclipse.jgit.util.io.DisabledOutputStream;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static cn.edu.fudan.scanservice.util.DateTimeUtil.timeTotimeStamp;
-import static org.eclipse.jgit.revwalk.RevSort.REVERSE;
 
 @SuppressWarnings("Duplicates")
 @Slf4j
-public class JGitHelper {
+public class JGitHelper implements Closeable {
+
+
 
     private static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().contains("win");
     private static final int MERGE_WITH_CONFLICT = -1;
@@ -129,7 +134,7 @@ public class JGitHelper {
         return message;
     }
 
-
+    @Override
     public void close() {
         if (repository != null) {
             repository.close();
@@ -310,10 +315,11 @@ public class JGitHelper {
         return aggregationCommits;
     }
 
-    public List<RevCommit> getAggregationCommit(String startTime){
+    public List<RevCommit> getAggregationCommit(LocalDateTime startTime){
         List<RevCommit> aggregationCommits = new ArrayList<>();
+        String startTimeString = DateTimeUtil.localDateTimeToString(startTime);
         try {
-            int startTimeStamp = Integer.valueOf(timeTotimeStamp(startTime));
+            int startTimeStamp = Integer.valueOf(timeTotimeStamp(startTimeString));
             int branch = 0;
             Iterable<RevCommit> commits = git.log().call();
             List<RevCommit> commitList = new ArrayList<>();
@@ -354,7 +360,6 @@ public class JGitHelper {
         return null;
     }
 
-
     public String getFirstCommitId(){
         List<RevCommit> commitList = new ArrayList<>();
         try {
@@ -380,31 +385,24 @@ public class JGitHelper {
     }
 
 
+
     public static void main(String[] args) throws ParseException {
         //gitCheckout("E:\\Lab\\project\\IssueTracker-Master", "f8263335ef380d93d6bb93b2876484e325116ac2");
         //String repoPath = "E:\\Lab\\iec-wepm-develop";
-        String repoPath = "E:\\school\\laboratory\\scan-service-rebuild\\IssueTracker-Master";
+        String repoPath = "E:\\school\\laboratory\\gitlab";
 //        String commitId = "75c6507e2139e9bb663abf35037b31478e44c616";
         JGitHelper jGitHelper = new JGitHelper(repoPath);
-        String commitId = jGitHelper.getFirstCommitId();
-        List<RevCommit> list = jGitHelper.getAggregationCommit("2019-8-12 00:00:00");
-        for(RevCommit rev : list){
-            System.out.println(rev.getCommitTime());
+
+        List<RevCommit> allAggregationCommit = jGitHelper.getAllAggregationCommit ();
+
+        allAggregationCommit = allAggregationCommit.stream ().sorted (Comparator.comparing (RevCommit :: getCommitTime)).collect (Collectors.toList ());
+
+        for(RevCommit a :  allAggregationCommit){
+            System.out.println (a.getName () + "-----" + jGitHelper.getCommitTime(a.getName ()));
         }
 
 
-        jGitHelper.checkout("5e8ee4f41fc02d8356875d0a8f252246ef814528");
 
-//        jGitHelper.revWalk.sort(REVERSE);
-        try {
-            ObjectId obj = jGitHelper.repository.resolve("HEAD");
-            System.out.println(obj.name());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-
-        list.stream().forEach(System.out::println);
 
 
 

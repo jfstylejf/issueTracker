@@ -1,6 +1,7 @@
 package cn.edu.fudan.scanservice.util;
 
 import cn.edu.fudan.scanservice.component.rest.RestInterfaceManager;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,6 +18,10 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
+/**
+ * @author fancying
+ */
+@Slf4j
 public class DateTimeUtil {
 
 
@@ -74,13 +79,19 @@ public class DateTimeUtil {
     }
 
     public  static LocalDateTime stringToLocalDate(String dateString){
-        return LocalDateTime.parse(dateString,dateTimeFormatter);
+        try {
+            return LocalDateTime.parse(dateString, dateTimeFormatter);
+        }catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        return LocalDateTime.now();
     }
 
     public static String UTCTimeToBeijingTime(String UTCTimeString){
         LocalDateTime date = stringToLocalDate(UTCTimeString);
         return date.plusHours(8).toString().replace('T',' ');
     }
+
 
 
     /**
@@ -146,6 +157,17 @@ public class DateTimeUtil {
 
         return utcDate;
 
+    }
+
+    public static String localDateTimeToString(LocalDateTime dateTime) {
+        return dateTime.format(dateTimeFormatter);
+    }
+
+
+    public static void main(String[] args){
+        String sD = "2020-08-03 13:07:19";
+        LocalDateTime date = stringToLocalDate(sD);
+        System.out.println(date.plusHours(8).toString().replace('T',' '));
     }
 
 

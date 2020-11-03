@@ -1,6 +1,6 @@
 package cn.edu.fudan.scanservice.dao;
 
-import cn.edu.fudan.scanservice.domain.Scan;
+import cn.edu.fudan.scanservice.domain.dbo.Scan;
 import cn.edu.fudan.scanservice.mapper.ScanMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -20,49 +20,20 @@ public class ScanDao {
         this.scanMapper = scanMapper;
     }
 
-    public void insertOneScan(Scan scan) {
-        scanMapper.insertOneScan(scan);
+
+    public void deleteScanByRepoId(String repoId){
+        scanMapper.deleteScanByRepoId (repoId);
     }
 
-    public void deleteScanByRepoIdAndCategory(String repoId,String category) {
-        scanMapper.deleteScanByRepoIdAndCategory(repoId,category);
+    public void insertOneScan(Scan scan){
+        scanMapper.insertOneScan (scan);
     }
 
-    public void updateOneScan(Scan scan) {
-        scanMapper.updateOneScan(scan);
+    public void updateOneScan(Scan scan){
+        scanMapper.updateOneScan (scan);
     }
 
-    public String getLatestScannedCommitId(String repo_id,String category) {
-        return scanMapper.getLatestScannedCommitId(repo_id,category);
-    }
-
-    public Date getLastScannedCommitTime(String repo_id, String category){
-        return scanMapper.getLastScannedCommitTime(repo_id, category);
-    }
-
-    public boolean isScanned(String repoId,String commit_id,String category) {
-        Integer count = scanMapper.getScanCountByCommitIdAndCategory(repoId,commit_id,category);
-        return count != null && count > 0;
-    }
-
-    public List<String> getScannedCommits(String repo_id,String category) {
-        List<Scan> scans = scanMapper.getScannedCommits(repo_id,category);
-        List<String> list = new ArrayList<>();
-        for (Scan scan : scans) {
-            list.add(scan.getCommit_id());
-        }
-        return list;
-    }
-
-    public List<Scan> getScans(String repo_id,String category) {
-        return scanMapper.getScannedCommits(repo_id,category);
-    }
-
-    public Scan  getScanByCategoryAndRepoIdAndCommitId(String repo_id,String category,String commit_id){
-        return scanMapper.getScanByCategoryAndRepoIdAndCommitId(repo_id,category,commit_id);
-    }
-
-    public List<Scan> getScanByRepoIdAndStatusAndCategory(String repoId,String status,String category) {
-        return scanMapper.getScanByRepoIdAndStatusAndCategory(repoId,status,category);
+    public Scan getScanByRepoId(String repoId){
+        return scanMapper.getScanByRepoId (repoId);
     }
 }

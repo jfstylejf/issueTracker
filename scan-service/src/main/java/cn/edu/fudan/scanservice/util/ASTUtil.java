@@ -83,8 +83,7 @@ public class ASTUtil {
             while ((s = bufferedReader.readLine()) != null) {
                 if (lines.contains(String.valueOf(line))) {
                     code.append(s);
-//                    code.append("\n");
-                    code.append("#");
+                    code.append("\n");
                 }
                 line++;
             }

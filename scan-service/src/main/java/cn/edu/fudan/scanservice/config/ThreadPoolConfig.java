@@ -15,7 +15,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 @Configuration
 public class ThreadPoolConfig {
 
-    @Value("${core.pool.size}")
+    @Value("${dto.pool.size}")
     private int corePoolSize;
     @Value("${max.pool.size}")
     private int maxPoolSize;

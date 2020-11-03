@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.edu.fudan.scanservice.mapper.ToolMapper">
+
+    <resultMap id="tool" type="Tool">
+        <id property="id" column="id"/>
+        <result property="toolType" column="tool_type"/>
+        <result property="toolName" column="tool_name"/>
+        <result property="description" column="description"/>
+        <result property="enabled" column="is_enabled"/>
+        <result property="installed" column="is_installed"/>
+    </resultMap>
+
+    <select id="getAllTools" resultMap="tool">
+        SELECT id,tool_type,tool_name,description,is_enabled,is_installed FROM tool ;
+    </select>
+
+
+</mapper>

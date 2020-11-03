@@ -17,7 +17,6 @@ import java.util.List;
 @Configuration
 public class MvcConfig implements WebMvcConfigurer {
 
-    //将拦截器配置为bean
     @Bean
     public AuthTokenInterceptor authTokenInterceptor() {
         return new AuthTokenInterceptor();
