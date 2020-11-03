@@ -92,4 +92,10 @@ public class DateTimeUtil {
         }
         return false;
     }
+
+    public static LocalDate stringToLocalDate(String date){
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDate localDate = LocalDate.parse(date, fmt);
+        return localDate;
+    }
 }

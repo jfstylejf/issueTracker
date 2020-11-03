@@ -144,13 +144,6 @@ public class MeasureRepoServiceImpl implements MeasureRepoService {
         return repoMeasureMapper.getRepoMeasureByCommit(repoId,commitId);
     }
 
-    @Override
-    public void deleteRepoMeasureByRepoId(String repoId) {
-        logger.info("measurement info start to delete");
-        repoMeasureMapper.delRepoMeasureByRepoId(repoId);
-        repoMeasureMapper.delFileMeasureByRepoId(repoId);
-        logger.info("measurement delete completed");
-    }
 
     @Override
     public CommitBase getCommitBaseInformation(String repo_id, String commit_id) {
@@ -168,6 +161,7 @@ public class MeasureRepoServiceImpl implements MeasureRepoService {
         String untilDay = dateFormatChange(until);
 
         List<CommitInfoDeveloper> commitInfoDeveloper = repoMeasureMapper.getCommitInfoDeveloperListByDuration(repo_id, sinceDay, untilDay, developer_name);
+        commitInfoDeveloper.removeIf(info -> info.getAuthor() == null || "".equals(info.getAuthor()));
         int addLines = repoMeasureMapper.getAddLinesByDuration(repo_id, sinceDay, untilDay, "");
         int delLines = repoMeasureMapper.getDelLinesByDuration(repo_id, sinceDay, untilDay, "");
         int sumCommitCounts = repoMeasureMapper.getCommitCountsByDuration(repo_id, sinceDay, untilDay,null);
@@ -180,92 +174,7 @@ public class MeasureRepoServiceImpl implements MeasureRepoService {
         return commitBaseInfoDuration;
     }
 
-    @Override
-    public List<CommitBaseInfoGranularity> getCommitBaseInfoGranularity(String repo_id, String granularity, String since, String until, String developer_name){
-        //用于从数据库获取数据
-        CommitBaseInfoDuration commitBaseInfoDuration;
-        List<CommitBaseInfoGranularity> result=new ArrayList<>();
 
-        //获取查询时的日期 也就是今天的日期,也作为查询时间段中的截止日期（如果until合法，就把untilDay的值赋值给today）
-        LocalDate today = LocalDate.now();
-
-        //获取最早一次提交的commit信息
-        String startDateStr = repoMeasureMapper.getStartDateOfRepo(repo_id).substring(0,10);
-
-        //最早一次commit日期
-        LocalDate startDay=LocalDate.parse(startDateStr,DateTimeUtil.Y_M_D_formatter);
-
-        //定义用于循环中不断更新的indexDay,也作为查询时间段中的开始日期（如果since合法，就把sinceDay的值赋值给indexDay）
-        LocalDate indexDay = startDay;
-        //以下是请求参数中的两个日期点
-        if (since != null){
-            LocalDate sinceDay = LocalDate.parse(dateFormatChange(since),DateTimeUtil.Y_M_D_formatter);
-            if (startDay.isBefore(sinceDay)){
-                indexDay = sinceDay;
-            }
-        }
-        if (until != null){
-            LocalDate untilDay = LocalDate.parse(dateFormatChange(until),DateTimeUtil.Y_M_D_formatter);
-            if (today.isAfter(untilDay)){
-                today = untilDay;
-            }
-        }
-        if (indexDay.isAfter(today)){
-            throw new RuntimeException("please input correct date!");
-        }
-        if (indexDay.equals(today)){
-            commitBaseInfoDuration = getCommitBaseInformationByDuration(repo_id, today.toString(), today.toString(), developer_name);
-            result.add(getCommitBaseInfoGranularityData(today.toString().substring(0,10), commitBaseInfoDuration));
-            return result;
-        }else{
-            switch (granularity){
-                case "day":
-                    while(today.isAfter(indexDay)){
-                        //after 为 参数indexDay这天的后一天
-                        LocalDate after = indexDay.plusDays(1);
-//                        System.out.println(after);
-                        commitBaseInfoDuration = getCommitBaseInformationByDuration(repo_id, indexDay.toString(), indexDay.toString(), developer_name);
-                        result.add(getCommitBaseInfoGranularityData(indexDay.toString().substring(0,10), commitBaseInfoDuration));
-                        //indexDay 变成后一天
-                        indexDay = after;
-                    }
-                    break;
-                case "week":
-                    while(today.isAfter(indexDay)){
-                        //after 为 参数indexDay这天的后一周（后七天的那一天）
-                        LocalDate after = indexDay.plusWeeks(1);
-                        if(after.isAfter(today)){
-                            commitBaseInfoDuration = getCommitBaseInformationByDuration(repo_id, indexDay.toString(), today.toString(), developer_name);
-                            result.add(getCommitBaseInfoGranularityData(indexDay.toString().substring(0,10), commitBaseInfoDuration));
-                            break;
-                        }
-                        commitBaseInfoDuration = getCommitBaseInformationByDuration(repo_id, indexDay.toString(), after.toString(), developer_name);
-                        result.add(getCommitBaseInfoGranularityData(indexDay.toString().substring(0,10), commitBaseInfoDuration));
-                        //indexDay 变成后七天
-                        indexDay = after;
-                    }
-                    break;
-                case "month":
-                    while(today.isAfter(indexDay)){
-                        //after 为 参数indexDay这天的下个月的这一天
-                        LocalDate after = indexDay.plusMonths(1);
-                        if(after.isAfter(today)){
-                            commitBaseInfoDuration = getCommitBaseInformationByDuration(repo_id, indexDay.toString(), today.toString(), developer_name);
-                            result.add(getCommitBaseInfoGranularityData(indexDay.toString().substring(0,10), commitBaseInfoDuration));
-                            break;
-                        }
-                        commitBaseInfoDuration = getCommitBaseInformationByDuration(repo_id, indexDay.toString(), after.toString(), developer_name);
-                        result.add(getCommitBaseInfoGranularityData(indexDay.toString().substring(0,10), commitBaseInfoDuration));
-                        //indexDay 变成indexDay这天的下个月的这一天
-                        indexDay = after;
-                    }
-                    break;
-                default:
-                    throw new RuntimeException("please input correct granularity type: day or week or month");
-            }
-        }
-        return result;
-    }
 
     private CommitBaseInfoGranularity getCommitBaseInfoGranularityData(String time, CommitBaseInfoDuration commitBaseInfoDuration){
         CommitBaseInfoGranularity commitBaseInfoGranularity = new CommitBaseInfoGranularity();
@@ -296,119 +205,6 @@ public class MeasureRepoServiceImpl implements MeasureRepoService {
 
 
 
-    @Override
-    public double getQuantityByCommitAndCategory(String repo_id, String commit_id, String category,String token ) {
-        //代码质量指数：代码行数/问题数 若问题数为0，则返回-1
-        double ratio = -1;
-
-        //获取代码行数
-        RepoMeasure repoMeasure = getRepoMeasureByRepoIdAndCommitId(repo_id,commit_id);
-        if(repoMeasure != null){
-            int lineCounts = repoMeasure.getNcss();
-            //获取缺陷数量
-            int remainIssues = restInterfaceManager.getNumberOfRemainingIssue(repo_id,commit_id,"project",null,token);
-
-            if(remainIssues != 0){
-                ratio = lineCounts*1.0/ remainIssues;
-            }
-
-        }
-        return ratio;
-    }
-
-    @Override
-    public Object getQuantityChangesByCommitAndCategory(String repo_id, String commit_id,String category,String token) {
-        String spaceType = "project";
-        category = "bug";
-        Map<String,Object> changes = new HashMap<>();
-        CommitBase commitBase = getCommitBaseInformation(repo_id,commit_id);
-        if(commitBase != null){
-            double changeLines = commitBase.getAddLines() + commitBase.getDelLines();
-
-            int addedIssues = restInterfaceManager.getNumberOfNewIssueByCommit(repo_id,commit_id,category,spaceType,token);
-//            System.out.println("addedIssues:" + addedIssues);
-            if (addedIssues != -1){
-                if (addedIssues != 0 ){
-                    //新增问题质量指数：每改变100行代码，新增的问题数量
-                    changes.put("addedQuantity", addedIssues*100*1.0/changeLines);
-                }else{
-                    changes.put("addedQuantity", -1);
-                }
-            }else{
-                changes.put("未取得结果","ScanResult 未记录该commit");
-                logger.error("ScanResult 未记录该commit");
-            }
-
-            int eliminatedIssues = restInterfaceManager.getNumberOfEliminateIssueByCommit(repo_id,commit_id,category,spaceType,token);
-//            System.out.println("eliminatedIssues:" + eliminatedIssues);
-            if(eliminatedIssues != -1){
-                if(eliminatedIssues != 0){
-                    //消除问题质量指数：每改变100行代码，消除的问题数量
-                    changes.put("eliminatedQuantity", eliminatedIssues*100*1.0/changeLines);
-                }else{
-                    changes.put("eliminatedQuantity", -1);
-                }
-            }else{
-                changes.put("未取得结果","ScanResult 未记录该commit");
-                logger.error("ScanResult 未记录该commit");
-            }
-
-        }else {
-            changes.put("未取得结果","未取得repo_measure记录");
-            logger.error("not get repo path!");
-        }
-
-
-
-        return changes;
-    }
-
-    @Override
-    public String getActivityByRepoId(String repo_id) {
-        String active = null;
-        LocalDate nowDate = LocalDate.now();
-        int nowYear = nowDate.getYear();
-        int nowMonth = nowDate.getMonthValue();
-        int nowDay = nowDate.getDayOfMonth();
-        LocalDate startDate = nowDate.minusDays(90);
-        int startYear = startDate.getYear();
-        int startMonth = startDate.getMonthValue();
-        int startDay = startDate.getDayOfMonth();
-        String startMonthStr = String.valueOf(startMonth);
-        String startDayStr = String.valueOf(startDay);
-        String nowMonthStr = String.valueOf(nowMonth);
-        String nowDayStr = String.valueOf(nowDay);
-        if (startMonth<10){
-            startMonthStr = "0" + startMonth;
-        }
-        if (startDay<10){
-            startDayStr = "0" + startDay;
-        }
-        if (nowMonth<10){
-            nowMonthStr = "0" + nowMonth;
-        }
-        if (nowDay<10){
-            nowDayStr = "0" + nowDay;
-        }
-
-        String start = startYear+"."+startMonthStr+"."+startDayStr;
-        String now = nowYear+"."+nowMonthStr+"."+nowDayStr;
-//        System.out.println(start);
-//        System.out.println(now);
-        int commitCount = getCommitCountsByDuration(repo_id,start,now);
-        if(commitCount != -1){
-            if(commitCount <= inactive){
-                active = "inactive";
-            }else if(commitCount <= lessActive){
-                active = "lessActive";
-            }else if(commitCount <= relativelyActive){
-                active = "relativelyActive";
-            }else{
-                active = "active";
-            }
-        }
-        return active;
-    }
 
     @Override
     public Object getDeveloperRankByCommitCount(String repo_id, String since, String until){
@@ -443,50 +239,9 @@ public class MeasureRepoServiceImpl implements MeasureRepoService {
         return result;
     }
 
-    @Override
-    public Object getCommitCountsDaily(String repo_id, String since, String until){
-        since = dateFormatChange(since);
-        until = dateFormatChange(until);
-        List<Map<String, Object>> result = new ArrayList<>();
 
-        LocalDate indexDay = LocalDate.parse(since,DateTimeUtil.Y_M_D_formatter);
-        LocalDate untilDay = LocalDate.parse(until,DateTimeUtil.Y_M_D_formatter);
-        while(untilDay.isAfter(indexDay) || untilDay.isEqual(indexDay)){
-            Map<String, Object> map = new HashMap<>();
-            int CommitCounts = repoMeasureMapper.getCommitCountsByDuration(repo_id, indexDay.toString(), indexDay.toString(),null);
-            map.put("commit_date", indexDay.toString());
-            map.put("commit_count", CommitCounts);
-            result.add(map);
-            indexDay = indexDay.plusDays(1);
-        }
-        return result;
-    }
 
-    @Override
-    public Object getRepoLOCByDuration(String repo_id, String since, String until){
-        since = dateFormatChange(since);
-        until = dateFormatChange(until);
-        return repoMeasureMapper.getRepoLOCByDuration(repo_id, since, until, null);
-    }
 
-    @Override
-    public Object getLOCDaily(String repo_id, String since, String until){
-        since = dateFormatChange(since);
-        until = dateFormatChange(until);
-        List<Map<String, Object>> result = new ArrayList<>();
-
-        LocalDate indexDay = LocalDate.parse(since,DateTimeUtil.Y_M_D_formatter);
-        LocalDate untilDay = LocalDate.parse(until,DateTimeUtil.Y_M_D_formatter);
-        while(untilDay.isAfter(indexDay) || untilDay.isEqual(indexDay)){
-            Map<String, Object> map = new HashMap<>();
-            int LOC = repoMeasureMapper.getRepoLOCByDuration(repo_id, indexDay.toString(), indexDay.toString(),null);
-            map.put("commit_date", indexDay.toString());
-            map.put("LOC", LOC);
-            result.add(map);
-            indexDay = indexDay.plusDays(1);
-        }
-        return result;
-    }
 
     @Override
     public Object getCommitCountLOCDaily(String repo_id, String since, String until){
@@ -517,9 +272,6 @@ public class MeasureRepoServiceImpl implements MeasureRepoService {
         return result;
     }
 
-    @Override
-    public Object getDeveloperListByRepoId(String repo_id) {
-        return repoMeasureMapper.getDeveloperListByRepoId(repo_id);
-    }
+
 
 }

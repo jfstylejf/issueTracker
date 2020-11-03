@@ -2,11 +2,12 @@ package cn.edu.fudan.measureservice.service.impl;
 
 import cn.edu.fudan.measureservice.analyzer.JavaNcss;
 import cn.edu.fudan.measureservice.annotation.RepoResource;
-import cn.edu.fudan.measureservice.domain.*;
 import cn.edu.fudan.measureservice.domain.Objects;
+import cn.edu.fudan.measureservice.domain.*;
 import cn.edu.fudan.measureservice.domain.core.FileMeasure;
 import cn.edu.fudan.measureservice.domain.core.MeasureScan;
 import cn.edu.fudan.measureservice.domain.dto.RepoResourceDTO;
+import cn.edu.fudan.measureservice.mapper.AccountMapper;
 import cn.edu.fudan.measureservice.mapper.FileMeasureMapper;
 import cn.edu.fudan.measureservice.mapper.MeasureScanMapper;
 import cn.edu.fudan.measureservice.mapper.RepoMeasureMapper;
@@ -17,6 +18,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.revwalk.RevCommit;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -46,9 +48,16 @@ public class MeasureScanServiceImpl implements MeasureScanService {
         this.measureScanMapper = measureScanMapper;
     }
 
+    @Autowired
+    private AccountMapper accountMapper;
+
     @Override
     public Object getScanStatus(String repoId) {
         List<Map<String, Object>> result = measureScanMapper.getScanStatus(repoId);
+        if(result.size()==0) {
+            log.error("scan result is null");
+            return null;
+        }
         Map<String, Object> map = result.get(0);
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         //将数据库中timeStamp/dateTime类型转换成指定格式的字符串 map.get("commit_time") 这个就是数据库中dateTime类型
@@ -135,6 +144,7 @@ public class MeasureScanServiceImpl implements MeasureScanService {
     }
 
 
+
     private void updateMeasureScan(MeasureScan measureScan, String endCommit, int scannedCommitCount,
                                           int scanTime, String status, Date endScanTime){
         measureScan.setEndCommit(endCommit);
@@ -153,13 +163,22 @@ public class MeasureScanServiceImpl implements MeasureScanService {
         RevCommit revCommit = jGitHelper.getRevCommit(commitId);
         
         Total total = measure.getTotal();
+        // 以下是人员聚合的入库
+        RepoMeasure repoMeasure = RepoMeasure.builder().uuid(UUID.randomUUID().toString()).files(total.getFiles()).ncss(total.getNcss()).classes(total.getClasses())
+                .functions(total.getFunctions()).ccn(measure.getFunctions().getFunctionAverage().getNcss())
+                .java_docs(total.getJavaDocs()).java_doc_lines(total.getJavaDocsLines())
+                .single_comment_lines(total.getSingleCommentLines()).multi_comment_lines(total.getMultiCommentLines())
+                .commit_id(commitId).commit_time(commitTime).repo_id(repoId)
+                .developer_name(accountMapper.getAccountName(revCommit.getAuthorIdent().getName()) == null ? revCommit.getAuthorIdent().getName() : accountMapper.getAccountName(revCommit.getAuthorIdent().getName())).developer_email(revCommit.getAuthorIdent().getEmailAddress())
+                .commit_message(revCommit.getShortMessage()).build();
+       /* // 以下是非人员聚合的入库
         RepoMeasure repoMeasure = RepoMeasure.builder().uuid(UUID.randomUUID().toString()).files(total.getFiles()).ncss(total.getNcss()).classes(total.getClasses())
                 .functions(total.getFunctions()).ccn(measure.getFunctions().getFunctionAverage().getNcss())
                 .java_docs(total.getJavaDocs()).java_doc_lines(total.getJavaDocsLines())
                 .single_comment_lines(total.getSingleCommentLines()).multi_comment_lines(total.getMultiCommentLines())
                 .commit_id(commitId).commit_time(commitTime).repo_id(repoId)
                 .developer_name(revCommit.getAuthorIdent().getName()).developer_email(revCommit.getAuthorIdent().getEmailAddress())
-                .commit_message(revCommit.getShortMessage()).build();
+                .commit_message(revCommit.getShortMessage()).build();*/
 
         boolean isMerge = false;
         int parentNum = revCommit.getParentCount();

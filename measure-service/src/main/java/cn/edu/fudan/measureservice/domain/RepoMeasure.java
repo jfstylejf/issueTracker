@@ -38,4 +38,6 @@ public class RepoMeasure {
     private String commit_message;
     private String first_parent_commit_id;
     private String second_parent_commit_id;
+
+
 }

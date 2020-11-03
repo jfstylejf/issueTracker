@@ -1,15 +1,20 @@
 package cn.edu.fudan.measureservice.service.impl;
 
 import cn.edu.fudan.measureservice.component.RestInterfaceManager;
-import cn.edu.fudan.measureservice.domain.*;
+import cn.edu.fudan.measureservice.domain.CodeQuality;
+import cn.edu.fudan.measureservice.domain.CommitBase;
+import cn.edu.fudan.measureservice.domain.CommitInfoDeveloper;
+import cn.edu.fudan.measureservice.domain.RepoMeasure;
 import cn.edu.fudan.measureservice.mapper.RepoMeasureMapper;
 import cn.edu.fudan.measureservice.portrait.*;
+import cn.edu.fudan.measureservice.portrait2.Contribution;
 import cn.edu.fudan.measureservice.service.MeasureDeveloperService;
 import cn.edu.fudan.measureservice.util.DateTimeUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
+import org.eclipse.jgit.util.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -29,17 +34,17 @@ import java.util.regex.Pattern;
 //@CacheConfig(cacheNames = "portrait")
 public class MeasureDeveloperServiceImpl implements MeasureDeveloperService {
 
-    @Value("${inactive}")
-    private int inactive;
-    @Value("${lessActive}")
-    private int lessActive;
-    @Value("${relativelyActive}")
-    private int relativelyActive;
+
+    private final RestInterfaceManager restInterfaceManager;
+    private final RepoMeasureMapper repoMeasureMapper;
 
 
-    private RestInterfaceManager restInterfaceManager;
-    private RepoMeasureMapper repoMeasureMapper;
+    @Autowired
+    public void setMeasureDeveloperService(MeasureDeveloperServiceImpl measureDeveloperService) {
+        this.measureDeveloperService = measureDeveloperService;
+    }
 
+    private MeasureDeveloperServiceImpl measureDeveloperService;
 
     public MeasureDeveloperServiceImpl(RestInterfaceManager restInterfaceManager, RepoMeasureMapper repoMeasureMapper) {
         this.restInterfaceManager = restInterfaceManager;
@@ -47,375 +52,130 @@ public class MeasureDeveloperServiceImpl implements MeasureDeveloperService {
     }
 
     @Override
-    public int getCommitCountsByDuration(String repo_id, String since, String until) {
-        if (since.compareTo(until)>0 || since.length()>10 || until.length()>10){
-            throw new RuntimeException("please input correct date");
+    public Object getDeveloperWorkLoad(String developer, String since, String until, String repoUuid) {
+        Map<String,Object> developerWorkLoad = new HashMap<>(0);
+        List<String> repoUuidList = new ArrayList<>();
+        List<String> developerList = new ArrayList<>();
+        if(StringUtils.isEmptyOrNull(repoUuid)) {
+            repoUuidList = null;
+        }else {
+            String[] repoIdArray = repoUuid.split(",");
+            //先把前端给的repo加入到repoList
+            repoUuidList.addAll(Arrays.asList(repoIdArray));
         }
-        String sinceday = dateFormatChange(since);
-        String untilday = dateFormatChange(until);
-
-        return repoMeasureMapper.getCommitCountsByDuration(repo_id,sinceday, untilday,null);
+        if(developer!=null && !"".equals(developer)) {
+            developerList.add(developer);
+        }else {
+            developerList = repoMeasureMapper.getDeveloperList(repoUuidList,since,until);
+        }
+        for (String member : developerList) {
+            if(member == null || "".equals(member)) {
+                continue;
+            }
+            Map<String, Object> workLoadList = repoMeasureMapper.getWorkLoadByCondition(repoUuidList, member, since, until);
+            developerWorkLoad.put(member,workLoadList);
+        }
+        return developerWorkLoad;
     }
 
-    //把日期格式从“2010.10.10转化为2010-10-10”
-    private String dateFormatChange(String dateStr){
-        return dateStr.replace('.','-');
-    }
+
+
 
     @Override
-    public String getActivityByRepoId(String repo_id) {
-        String active = null;
-        LocalDate nowDate = LocalDate.now();
-        int nowYear = nowDate.getYear();
-        int nowMonth = nowDate.getMonthValue();
-        int nowDay = nowDate.getDayOfMonth();
-        LocalDate startDate = nowDate.minusDays(90);
-        int startYear = startDate.getYear();
-        int startMonth = startDate.getMonthValue();
-        int startDay = startDate.getDayOfMonth();
-        String startMonthStr = String.valueOf(startMonth);
-        String startDayStr = String.valueOf(startDay);
-        String nowMonthStr = String.valueOf(nowMonth);
-        String nowDayStr = String.valueOf(nowDay);
-        if (startMonth<10){
-            startMonthStr = "0" + startMonth;
+    public Object getStatementByCondition(String repoIdList, String developer, String beginDate, String endDate) throws ParseException {
+        List<String> repoList = new ArrayList<>();
+        if(StringUtils.isEmptyOrNull(repoIdList)) {
+            repoList = null;
+        }else {
+            String[] repoIdArray = repoIdList.split(",");
+            //先把前端给的repo加入到repoList
+            repoList.addAll(Arrays.asList(repoIdArray));
         }
-        if (startDay<10){
-            startDayStr = "0" + startDay;
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        if ("".equals(beginDate) || beginDate == null){
+            String dateString = repoMeasureMapper.getFirstCommitDateByCondition(repoList,developer);
+            beginDate = dateString.substring(0,10);
         }
-        if (nowMonth<10){
-            nowMonthStr = "0" + nowMonth;
+        if ("".equals(endDate) || endDate == null){
+            endDate = sdf.format(new Date());
         }
-        if (nowDay<10){
-            nowDayStr = "0" + nowDay;
-        }
-
-        String start = startYear+"."+startMonthStr+"."+startDayStr;
-        String now = nowYear+"."+nowMonthStr+"."+nowDayStr;
-//        System.out.println(start);
-//        System.out.println(now);
-        int commitCount = getCommitCountsByDuration(repo_id,start,now);
-        if(commitCount != -1){
-            if(commitCount <= inactive){
-                active = "inactive";
-            }else if(commitCount <= lessActive){
-                active = "lessActive";
-            }else if(commitCount <= relativelyActive){
-                active = "relativelyActive";
-            }else{
-                active = "active";
+        //获取开发者该情况下增、删、change逻辑行数
+        int totalStatement =0;
+        JSONObject developerStatements = restInterfaceManager.getStatements(repoIdList,beginDate,endDate,developer);
+        if(developerStatements != null ) {
+            JSONObject developerTotalStatements = developerStatements.getJSONObject("developer");
+            if( developerTotalStatements!=null && !developerTotalStatements.isEmpty()) {
+                totalStatement = developerTotalStatements.getJSONObject(developer).getIntValue("total");
             }
         }
-        return active;
+        double totalDays =  ( sdf.parse(endDate).getTime()-sdf.parse(beginDate).getTime() ) / (1000*60*60*24);
+        int workDays =  ((int)totalDays)*5/7;
+        double dayAvgStatement = totalStatement*1.0/workDays;
+
+        Map<String,Object> map = new HashMap<>();
+        map.put("totalStatement",totalStatement);
+        map.put("workDays",workDays);
+        map.put("dayAvgStatement",dayAvgStatement);
+        return map;
     }
-
-    @Override
-    public Object getCodeChangesByDurationAndDeveloperName(String developer_name, String since, String until, String token, String category,String repoId) {
-        CommitBase commitBase = new CommitBase();
-        int lineAdds = 0;
-        int lineDels = 0;
-        if(repoId == null || repoId.isEmpty()){
-            if(category == null || category.isEmpty()){
-                return " The category should not be null when  repo id is null";
-            }
-            List<JSONObject> projectList = restInterfaceManager.getProjectListByCategory(token,category);
-            for(Object project:projectList){
-                JSONObject protectJson = (JSONObject)project;
-                if(protectJson.get("download_status").toString().equals("Downloading")){
-                    continue;
-                }
-                String eachRepoId = protectJson.get("repo_id").toString();
-                List<RepoMeasure> repoMeasures = repoMeasureMapper.getRepoMeasureByDeveloperAndRepoId(eachRepoId,developer_name,0,since,until);
-                for(RepoMeasure repoMeasure : repoMeasures){
-                    lineAdds += repoMeasure.getAdd_lines();
-                    lineDels += repoMeasure.getDel_lines();
-                }
-
-//                try{
-//                    repoPath=restInterfaceManager.getRepoPath(repo_id,"");
-//                    if(repoPath!=null){
-//
-//                        //获取repo一段时间内行数变化值
-//                        lineChanges = gitUtil.getRepoLineChanges(repoPath,since,until,developer_name);
-//                        lineAdds += lineChanges[0];
-//                        lineDels += lineChanges[1];
-//
-//                    }
-//                }finally {
-//                    if(repoPath!=null) {
-//                        restInterfaceManager.freeRepoPath(repo_id,repoPath);
-//                    }
-//                }
-
-            }
-        }else{
-            List<RepoMeasure> repoMeasures = repoMeasureMapper.getRepoMeasureByDeveloperAndRepoId(repoId,developer_name,0,since,until);
-            for(RepoMeasure repoMeasure : repoMeasures){
-                lineAdds += repoMeasure.getAdd_lines();
-                lineDels += repoMeasure.getDel_lines();
-            }
-        }
-
-        commitBase.setAddLines(lineAdds);
-        commitBase.setDelLines(lineDels);
-
-        return commitBase;
-    }
-
-    @Override
-    public int getCommitCountByDurationAndDeveloperName(String developerName, String since, String until, String token, String category,String repoId) {
-        int commitTotalCount = 0;
-        if(repoId != null && !repoId.isEmpty()){
-            return repoMeasureMapper.getCommitCountsByDuration(repoId,since,until,developerName);
-        }else{
-            List<JSONObject> projectList = restInterfaceManager.getProjectListByCategory(token,category);
-            for(Object project:projectList){
-                JSONObject protectJson = (JSONObject)project;
-                if(protectJson.get("download_status").toString().equals("Downloading")){
-                    continue;
-                }
-                String repo_id = protectJson.get("repo_id").toString();
-
-                int commitCount = repoMeasureMapper.getCommitCountsByDuration(repo_id,since,until,developerName);
-                commitTotalCount += commitCount;
-
-            }
-        }
-
-        return commitTotalCount;
-    }
-
-    @Override
-    public Object getRepoListByDeveloperName(String developer_name, String token, String category) {
-//        String repoPath=null;
-//        // 这里配合脚本的判断分支，将since以及until设置为值为null的字符串；
-//        String since = "null";
-//        String until = "null";
-//        int commitCount ;
-//        Map<String,String> result = new HashMap<>();
-//        List<JSONObject> projectList = restInterfaceManager.getProjectListByCategory(token,category);
-//        if(projectList != null){
-//            for(Object project:projectList){
-//                JSONObject protectJson = (JSONObject)project;
-//                if(protectJson.get("download_status").toString().equals("Downloading")){
-//                    continue;
-//                }
-//                String repo_id = protectJson.get("repo_id").toString();
-//                String repo_name = protectJson.get("name").toString();
-//                try{
-//                    repoPath=restInterfaceManager.getRepoPath(repo_id,"");
-//                    if(repoPath!=null){
-//                        commitCount = gitUtil.getCommitCount(repoPath,since,until,developer_name);
-//                        if(commitCount != 0){
-//                            String active = getActivityByRepoId(repo_id);
-//                            result.put(repo_name,active);
-//                        }
-//                    }
-//                }finally {
-//                    if(repoPath!=null) {
-//                        restInterfaceManager.freeRepoPath(repo_id,repoPath);
-//                    }
-//                }
-//            }
-//        }
-//
-//        return result;
-        return null;
-    }
-
-    @Override
-    public Object getQualityChangesByDeveloperName(String developer_name, String token, String category, int counts, String project_name) {
-        String spaceType= "project";
-        //判断count是否合法
-        if(counts<0){
-            throw new RuntimeException("counts can not be  negative");
-        }
-
-        List<RepoMeasure> repoMeasures;
-        //如果projectName的名字为null则表示用户在所有project列表中最近30次commit的代码质量信息
-        if(project_name==null){
-            repoMeasures = repoMeasureMapper.getRepoMeasureByDeveloperAndRepoId(null,developer_name,counts,null,null);
-        }else{
-            JSONObject result = restInterfaceManager.getProjectListByCondition(token,category,project_name,null);
-            int code =result.getIntValue("code");
-            if(code != 200){
-                log.error("request project api failed  ---> {}",project_name);
-                throw new RuntimeException("request project api failed  ---> "+ project_name);
-            }
-            JSONArray projects = result.getJSONArray("data");
-            if(projects.size() == 0){
-                log.info("do not have this project --> {}",project_name );
-                throw new RuntimeException("do not have this project --> "+project_name);
-            }
-            if (projects.size() > 1){
-                // 这一段的方法待优化 可以在多个project中取最近counts 次数的commits的度量
-                log.info("more than one project named --> {}",project_name );
-                throw new RuntimeException("more than one project named --> "+project_name);
-            }
-            JSONObject project =  projects.getJSONObject(0);
-            String repoId = project.getString("repo_id");
-            repoMeasures = repoMeasureMapper.getRepoMeasureByDeveloperAndRepoId(repoId,developer_name,counts,null,null);
-
-        }
-
-
-        List<CodeQuality> queries = new ArrayList<>();
-
-        CodeQuality codeQuality;
-        String projectName = null;
-        for(RepoMeasure repoMeasure :repoMeasures){
-            int newIssueCounts = restInterfaceManager.getNumberOfNewIssueByCommit(repoMeasure.getRepo_id(),repoMeasure.getCommit_id(),category,spaceType,token);
-            codeQuality = new CodeQuality(repoMeasure.getAdd_lines(),repoMeasure.getDel_lines(),newIssueCounts,repoMeasure.getCommit_time());
-            JSONArray projects = restInterfaceManager.getProjectsOfRepo(repoMeasure.getRepo_id());
-            if(projects.size()==0){
-                log.error("can not find project by repo_id --->{}",repoMeasure.getRepo_id());
-            }else {
-                projectName = projects.getJSONObject(0).getString("name");
-            }
-            codeQuality.setCommitId(repoMeasure.getCommit_id());
-            codeQuality.setProjectName(projectName);
-            if(newIssueCounts == -1){
-                log.info("this commit --> {} can not be compiled",repoMeasure.getCommit_id());
-                codeQuality.setExpression("this commit can not be compiled!");
-            }
-
-            queries.add(codeQuality);
-        }
-
-        return queries;
-    }
-
-    @Override
-    public Object getDeveloperActivenessByDuration(String repo_id, String since, String until, String developer_name) {
-        since = dateFormatChange(since);
-        until = dateFormatChange(until);
-        List<Map<String, Object>> result = new ArrayList<>();
-
-        LocalDate indexDay = LocalDate.parse(since,DateTimeUtil.Y_M_D_formatter);
-        LocalDate untilDay = LocalDate.parse(until,DateTimeUtil.Y_M_D_formatter);
-        while(untilDay.isAfter(indexDay) || untilDay.isEqual(indexDay)){
-            Map<String, Object> map = new HashMap<>();
-
-            List<CommitInfoDeveloper> CommitInfoDeveloper = repoMeasureMapper.getCommitInfoDeveloperListByDuration(repo_id, indexDay.toString(), indexDay.toString(), developer_name);
-            if (CommitInfoDeveloper.size()==1){
-                int add = CommitInfoDeveloper.get(0).getAdd();
-                int del = CommitInfoDeveloper.get(0).getDel();
-                //还差缺陷数量，计算E/L N/L
-//                int newIssues = 0;
-//                int elliminateIssues = 0;
-
-//                double newIssuesQuality = newIssues*100.0 / (add+del);
-//                double elliminateIssuesQuality = elliminateIssues*100.0 / (add+del);
-
-                map.put("commit_date", indexDay.toString());
-                map.put("add", add);
-                map.put("del", del);
-//                map.put("E/L", newIssuesQuality);
-                result.add(map);
-            }
-
-            indexDay = indexDay.plusDays(1);
-        }
-        return result;
-
-    }
-
-    @Override
-    public Object getDeveloperActivenessByGranularity(String repo_id, String granularity, String developer_name) {
-        //获取查询时的日期 也就是今天的日期,也作为查询时间段中的截止日期
-        LocalDate today = LocalDate.now();
-        List<Map<String, Object>> result = new ArrayList<>();
-
-
-        //此为“week”的情况
-        LocalDate sinceDay = today.minusWeeks(1);
-        String since = sinceDay.toString();
-        String until = today.toString();
-
-        switch (granularity){
-            case "week":
-                return getDeveloperActivenessByDuration(repo_id, since, until, developer_name);
-            case "month":
-                sinceDay = today.minusMonths(1);
-                since = sinceDay.toString();
-                return getDeveloperActivenessByDuration(repo_id, since, until, developer_name);
-            case "year":
-                sinceDay = today.minusYears(1);
-                LocalDate indexDay = sinceDay;
-                while(today.isAfter(indexDay)){
-                    Map<String, Object> map = new HashMap<>();
-                    List<CommitInfoDeveloper> list = repoMeasureMapper.getCommitInfoDeveloperListByDuration(repo_id, indexDay.toString(), indexDay.plusMonths(1).toString(), developer_name);
-
-                    if (list.size()>0){
-                        int add = list.get(0).getAdd();
-                        int del = list.get(0).getDel();
-                        map.put("commit_date", indexDay.toString().substring(0,7));
-                        map.put("add", add);
-                        map.put("del", del);
-                        result.add(map);
-                    }
-
-                    //indexDay 变成indexDay这天的下个月的这一天
-                    indexDay = indexDay.plusMonths(1);
-                }
-                break;
-            default:
-                throw new RuntimeException("please input correct granularity type: week or month or year");
-        }
-        return result;
-
-    }
-
-    @Override
-    public Object getLOCByCondition(String repoId, String developer, String beginDate, String endDate, String type) {
-        int totalLOC = repoMeasureMapper.getLOCByCondition(repoId,developer,beginDate,endDate);
-        if (type.equals("total")){
-            return totalLOC;
-        }
-        if (type.equals("dayAverage")){
-            List<Map<String, Object>> commitDays = repoMeasureMapper.getCommitDays(repoId,developer,beginDate,endDate);
-            int days = commitDays.size();
-            return totalLOC/days;
-        }
-        return ("please input correct type: total or dayAverage !");
-    }
-
 
     @Override
     @Cacheable(cacheNames = {"developerMetrics"})
     public DeveloperMetrics getPortrait(String repoId, String developer, String beginDate, String endDate, String token, String tool) throws ParseException {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        List<String> repoList = new ArrayList<>();
+        repoList.add(repoId);
         if ("".equals(beginDate) || beginDate == null){
-            beginDate = repoMeasureMapper.getFirstCommitDateByCondition(repoId,null);
+            beginDate = repoMeasureMapper.getFirstCommitDateByCondition(repoList,null).substring(0,10);
         }
         if ("".equals(endDate) || endDate == null){
-            LocalDate today = LocalDate.now();
-            DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            endDate = df.format(today);
+            Date nowDate = new Date();
+            endDate = sdf.format(nowDate);
         }
-        List<Map<String, Object>> developerList = repoMeasureMapper.getDeveloperListByRepoId(repoId);
+        List<Map<String, Object>> developerList = repoMeasureMapper.getDeveloperListByRepoIdList(repoList);
         int developerNumber = developerList.size();
-        JSONArray projects = restInterfaceManager.getProjectsOfRepo(repoId);
-        String branch = projects.getJSONObject(0).getString("branch");
-        String repoName = projects.getJSONObject(0).getString("name");
+        JSONObject projects = restInterfaceManager.getProjectByRepoId(repoId,token);
+        if(projects == null) {
+            log.error("projects is empty,repoId:{}",repoId);
+            return null;
+        }
 
+        String branch = null;
+        if(projects.getString("branch")!=null) {
+            branch = projects.getString("branch");
+        }
+        String repoName =null;
+        if(projects.getString("repoName")!=null) {
+            repoName = projects.getString("repoName").substring(1);
+        }
         //获取程序员在本项目中第一次提交commit的日期
         LocalDateTime firstCommitDateTime;
         LocalDate firstCommitDate = null;
         JSONObject firstCommitDateData = restInterfaceManager.getFirstCommitDate(developer);
-        JSONArray repoDateList = firstCommitDateData.getJSONArray("repos");
-        for(int i=0;i<repoDateList.size();i++) {
-            if (repoDateList.getJSONObject(i).get("repo_id").equals(repoId)){
-                String dateString = repoDateList.getJSONObject(i).getString("first_commit_time");
-                DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-                firstCommitDateTime = LocalDateTime.parse(dateString, fmt);
-                firstCommitDateTime = firstCommitDateTime.plusHours(8);
-                firstCommitDate = firstCommitDateTime.toLocalDate();
-                break;
+        if("Successful".equals(firstCommitDateData.getString("status"))){
+            JSONArray repoDateList = firstCommitDateData.getJSONArray("repos");
+            for(int i=0;i<repoDateList.size();i++) {
+                if (repoDateList.getJSONObject(i).get("repo_id").equals(repoId)){
+                    String dateString = repoDateList.getJSONObject(i).getString("first_commit_time");
+                    DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                    firstCommitDateTime = LocalDateTime.parse(dateString, fmt);
+                    firstCommitDateTime = firstCommitDateTime.plusHours(8);
+                    firstCommitDate = firstCommitDateTime.toLocalDate();
+                    break;
+                }
             }
+        } else {//commit接口返回有问题时，通过repo_measure表来查看commit日期
+            String dateString = repoMeasureMapper.getFirstCommitDateByCondition(repoList,developer);
+            dateString = dateString.substring(0,19);
+            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            firstCommitDateTime = LocalDateTime.parse(dateString, fmt);
+            firstCommitDate = firstCommitDateTime.toLocalDate();
         }
+        int developerStatement = restInterfaceManager.getStatements(repoId,beginDate,endDate,developer).getIntValue("total");
 
         //----------------------------------开发效率相关指标-------------------------------------
         Efficiency efficiency = getDeveloperEfficiency(repoId, beginDate, endDate, developer, branch, developerNumber);
+        log.info(efficiency.toString());
         int totalLOC = efficiency.getTotalLOC();
         int developerAddStatement = efficiency.getDeveloperAddStatement();
         int totalAddStatement = efficiency.getTotalAddStatement();
@@ -426,44 +186,49 @@ public class MeasureDeveloperServiceImpl implements MeasureDeveloperService {
 
         //----------------------------------代码质量相关指标-------------------------------------
         Quality quality = getDeveloperQuality(repoId,developer,beginDate,endDate,tool,token,developerNumber,totalLOC);
+        log.info(quality.toString());
 
         //----------------------------------开发能力相关指标-------------------------------------
         Competence competence = getDeveloperCompetence(repoId,beginDate,endDate,developer,developerNumber,developerAddStatement,totalAddStatement,developerValidLine,totalValidLine);
+        log.info(competence.toString());
 
-        return new DeveloperMetrics(firstCommitDate, developerLOC, developerCommitCount, repoName, developer, efficiency, quality, competence);
+        return new DeveloperMetrics(firstCommitDate, developerStatement, developerCommitCount, repoName, repoId, developer, efficiency, quality, competence);
     }
 
-    private Efficiency getDeveloperEfficiency(String repoId,String beginDate, String endDate, String developer, String branch,
+    private Efficiency getDeveloperEfficiency(String repoId, String beginDate, String endDate, String developer, String branch,
                                               int developerNumber){
         //提交频率指标
-        int totalCommitCount = repoMeasureMapper.getCommitCountsByDuration(repoId, beginDate, endDate,null);
+        int totalCommitCount = repoMeasureMapper.getCommitCountsByDuration(repoId, beginDate, endDate, null);
         int developerCommitCount = repoMeasureMapper.getCommitCountsByDuration(repoId, beginDate, endDate, developer);
         //代码量指标
         int developerLOC = repoMeasureMapper.getRepoLOCByDuration(repoId, beginDate, endDate, developer);
         int totalLOC = repoMeasureMapper.getRepoLOCByDuration(repoId, beginDate, endDate, "");
         //获取代码新增、删除逻辑行数数据
-        JSONObject statements = restInterfaceManager.getStatements(repoId, beginDate, endDate, branch);
+        JSONObject allDeveloperStatements = restInterfaceManager.getStatements(repoId,beginDate,endDate,"");
         int developerAddStatement = 0;
         int totalAddStatement = 0;
         int developerDelStatement = 0;
         int totalDelStatement = 0;
-        for(String str:statements.keySet()){
-            if (str.equals(developer)){
-                developerAddStatement = statements.getJSONObject(str).getIntValue("ADD");
-                developerDelStatement = statements.getJSONObject(str).getIntValue("DELETE");
-            }
-            totalAddStatement += statements.getJSONObject(str).getIntValue("ADD");
-            totalDelStatement += statements.getJSONObject(str).getIntValue("DELETE");
-        }
-        JSONObject validLines = restInterfaceManager.getValidLine(repoId, beginDate, endDate, branch);
         int developerValidLine = 0;
         int totalValidLine = 0;
-        for(String key:validLines.keySet()){
-            if (key.equals(developer)){
-                developerValidLine = validLines.getIntValue(key);
-            }
-            totalValidLine += validLines.getIntValue(key);
+        JSONObject repoStatements = allDeveloperStatements.getJSONObject("repo");
+        if(repoStatements!=null && !repoStatements.isEmpty()) {
+            totalAddStatement = repoStatements.getJSONObject(repoId).getIntValue("add");
+            totalDelStatement = repoStatements.getJSONObject(repoId).getIntValue("delete");
+            totalValidLine = repoStatements.getJSONObject(repoId).getIntValue("current");
         }
+        JSONObject developerStatements = allDeveloperStatements.getJSONObject("developer");
+        if(developerStatements!=null && !developerStatements.isEmpty()) {
+            for(String member : developerStatements.keySet()) {
+                if(member.equals(developer)) {
+                    developerAddStatement = developerStatements.getJSONObject(developer).getIntValue("add");
+                    developerDelStatement = developerStatements.getJSONObject(developer).getIntValue("delete");
+                    developerValidLine = developerStatements.getJSONObject(developer).getIntValue("current");
+                    break;
+                }
+            }
+        }
+
         return Efficiency.builder()
                 .developerNumber(developerNumber)
                 .totalCommitCount(totalCommitCount)
@@ -489,16 +254,17 @@ public class MeasureDeveloperServiceImpl implements MeasureDeveloperService {
         JSONArray issueList = restInterfaceManager.getNewElmIssueCount(repoId, beginDate, endDate, tool, token);
         int developerNewIssueCount = 0;//个人新增缺陷数
         int totalNewIssueCount = 0;//总新增缺陷数
-        for (int i = 0; i < issueList.size(); i++){
-            JSONObject each = issueList.getJSONObject(i);
-            String developerName = each.getString("developer");
-            int newIssueCount = each.getIntValue("newIssueCount");
-            if (developer.equals(developerName)){
-                developerNewIssueCount = newIssueCount;
+        if (!issueList.isEmpty()){
+            for (int i = 0; i < issueList.size(); i++){
+                JSONObject each = issueList.getJSONObject(i);
+                String developerName = each.getString("developer");
+                int newIssueCount = each.getIntValue("newIssueCount");
+                if (developer.equals(developerName)){
+                    developerNewIssueCount = newIssueCount;
+                }
+                totalNewIssueCount += newIssueCount;
             }
-            totalNewIssueCount += newIssueCount;
         }
-
         return Quality.builder()
                 .developerNumber(developerNumber)
                 .developerNewIssueCount(developerNewIssueCount)
@@ -525,7 +291,33 @@ public class MeasureDeveloperServiceImpl implements MeasureDeveloperService {
             eliminateCloneLines = Integer.parseInt(cloneMeasure.getString("eliminateCloneLines"));
             allEliminateCloneLines = Integer.parseInt(cloneMeasure.getString("allEliminateCloneLines"));
         }
-        JSONObject focusMeasure = restInterfaceManager.getFocusFilesCount(repoId, beginDate, endDate);
+        JSONObject developerCodeLifeCycle = restInterfaceManager.getCodeLifeCycle(repoId,developer,beginDate,endDate);
+        double changedCodeAVGAge = 0;
+        int changedCodeMAXAge = 0;
+        double deletedCodeAVGAge = 0;
+        int deletedCodeMAXAge = 0;
+        if(developerCodeLifeCycle!=null) {
+            JSONObject change = developerCodeLifeCycle.getJSONObject("change");
+            JSONObject delete = developerCodeLifeCycle.getJSONObject("delete");
+            if(change!=null && change.getJSONObject("developer")!=null && !change.getJSONObject("developer").isEmpty())  {
+                if(change.getJSONObject("developer").getJSONObject(developer) != null && !change.getJSONObject("developer").getJSONObject(developer).isEmpty()) {
+                    changedCodeAVGAge = change.getJSONObject("developer").getJSONObject(developer).getDoubleValue("average");
+                }
+                if(change.getJSONObject("developer").getJSONObject(developer) != null && !change.getJSONObject("developer").getJSONObject(developer).isEmpty()) {
+                    changedCodeAVGAge = change.getJSONObject("developer").getJSONObject(developer).getIntValue("max");
+                }
+            }
+            if(delete!=null && delete.getJSONObject("developer")!=null && !delete.getJSONObject("developer").isEmpty()) {
+                if(delete.getJSONObject("developer").getJSONObject(developer) != null && !delete.getJSONObject("developer").getJSONObject(developer).isEmpty()) {
+                    changedCodeAVGAge = change.getJSONObject("developer").getJSONObject(developer).getDoubleValue("average");
+                }
+                if(delete.getJSONObject("developer").getJSONObject(developer) != null && !delete.getJSONObject("developer").getJSONObject(developer).isEmpty()) {
+                    changedCodeAVGAge = change.getJSONObject("developer").getJSONObject(developer).getIntValue("max");
+                }
+            }
+        }
+
+        JSONObject focusMeasure = restInterfaceManager.getFocusFilesCount(repoId,null,beginDate,endDate);
         int totalChangedFile = 0;
         int developerFocusFile = 0;
         if (focusMeasure != null){
@@ -533,22 +325,8 @@ public class MeasureDeveloperServiceImpl implements MeasureDeveloperService {
             developerFocusFile = focusMeasure.getJSONObject("developer").getIntValue(developer);
         }
 
-        JSONObject changedCodeInfo = restInterfaceManager.getChangedCodeAge(repoId, beginDate, endDate, developer);
-        double changedCodeAVGAge = 0;
-        int changedCodeMAXAge = 0;
-        if (changedCodeInfo != null){
-            changedCodeAVGAge = changedCodeInfo.getDoubleValue("average");
-            changedCodeMAXAge = changedCodeInfo.getIntValue("max");
-        }
+        int repoAge = repoMeasureMapper.getRepoAge(repoId);
 
-        JSONObject deletedCodeInfo = restInterfaceManager.getDeletedCodeAge(repoId, beginDate, endDate, developer);
-        double deletedCodeAVGAge = 0;
-        int deletedCodeMAXAge = 0;
-        if (deletedCodeInfo != null){
-            deletedCodeAVGAge = deletedCodeInfo.getDoubleValue("average");
-            deletedCodeMAXAge = deletedCodeInfo.getIntValue("max");
-        }
-        int repoAge = restInterfaceManager.getRepoAge(repoId, endDate);
 
         return Competence.builder()
                 .developerNumber(developerNumber)
@@ -571,205 +349,492 @@ public class MeasureDeveloperServiceImpl implements MeasureDeveloperService {
                 .build();
     }
 
-
-    @CacheEvict(cacheNames = {"portraitLevel","developerMetrics"})
-    public void reloadCache() {
-    }
-
-    @Cacheable(cacheNames = {"portraitLevel"}, key = "#developer")
+    @Cacheable(cacheNames = {"portraitLevel"})
     @Override
-    public Object getPortraitLevel(String developer, String token) throws ParseException {
+    public Object getPortraitLevel(String developer, String since, String until, String token) throws ParseException {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        Date nowDate = new Date();
+        String tool = "sonarqube";
         //获取developerMetricsList
-        List<String> repoList = repoMeasureMapper.getRepoListByDeveloper(developer);
+        List<String> repoList = repoMeasureMapper.getRepoListByDeveloper(developer,since,until);
+        if (repoList.size()==0){
+            return "选定时间段内无参与项目！";
+        }
         List<DeveloperMetrics> developerMetricsList = new ArrayList<>();
-        LocalDate today = LocalDate.now();
-        DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        String endDate = df.format(today);
+        if(until==null) {
+            until = sdf.format(nowDate);
+        }
         for (String repoId : repoList) {
-            JSONArray projects = restInterfaceManager.getProjectsOfRepo(repoId);
-            for (int i = 0; i < projects.size(); i++){
-                String tool = projects.getJSONObject(i).getString("type");
-                String repoName = projects.getJSONObject(i).getString("name");
-                log.info("Current repo is : " + repoName + ", the issue_scan_type is " + tool);
-                //只添加被sonarqube扫描过的项目，findbugs之后会逐渐被废弃
-                if ("sonarqube".equals(tool)){
-                    String beginDate = repoMeasureMapper.getFirstCommitDateByCondition(repoId,null);
-//                    String endDate = repoMeasureMapper.getLastCommitDateOfOneRepo(repoId);
-                    log.info("Start to get portrait of " + developer + " in repo : " + repoName);
-                    DeveloperMetrics metrics = getPortrait(repoId, developer, beginDate, endDate, token, tool);
-                    developerMetricsList.add(metrics);
-                    log.info("Successfully get portrait of " + developer + " in repo : " + repoName);
-                }
+            JSONObject projects = restInterfaceManager.getProjectByRepoId(repoId,token);
+            String repoName = projects.getString("repoName").substring(1);
+            if (StringUtils.isEmptyOrNull(since)){
+                List<String> repoIdList = new ArrayList<>();
+                repoIdList.add(repoId);
+                since = repoMeasureMapper.getFirstCommitDateByCondition(repoIdList,null).substring(0,10);
             }
+            log.info("Start to get portrait of " + developer + " in repo : " + repoName);
+            DeveloperMetrics metrics = measureDeveloperService.getPortrait(repoId, developer, since, until, token, tool);
+            developerMetricsList.add(metrics);
+            log.info("Successfully get portrait of " + developer + " in repo : " + repoName);
+
         }
         log.info("Get portrait of " + developer + " complete!" );
         //获取第一次提交commit的日期
+        Date firstCommitDate = sdf.parse(restInterfaceManager.getFirstCommitDate(developer).getJSONObject("repos_summary").getString("first_commit_time_summary"));
+        String firstDate = sdf.format(firstCommitDate);
+        int totalCommitCount = repoMeasureMapper.getCommitCountsByDuration(null, null, null, developer);
+        log.info("totalCommitCount:"+ totalCommitCount);
+        int totalStatement = restInterfaceManager.getStatements("",null,null,developer).getIntValue("total");
+        log.info("totalStatement:"+totalStatement);
+        int days = ((int) ((nowDate.getTime()-firstCommitDate.getTime()) / (1000 * 60 * 60 *24)) )* 5/7 ;
+        int dayAverageStatement = totalStatement/days;
+        //todo 日后需要添加程序员类型接口 目前统一认为是java后端工程师
+        String index = repoMeasureMapper.getDeveloperType(developer);
+        String developerType = null ;
+        if("L".equals(index)) {
+            developerType = "项目负责人";
+        }else if("P".equals(index)) {
+            developerType = "JAVA后端工程师";
+        }else if ("M".equals(index)) {
+            developerType= "开发经理";
+        }
+        return new DeveloperPortrait(firstDate,totalStatement,dayAverageStatement,totalCommitCount,developer,developerType,developerMetricsList);
+    }
+
+
+    @Cacheable(cacheNames = {"developerMetricsNew"})
+    public cn.edu.fudan.measureservice.portrait2.DeveloperMetrics getDeveloperMetrics(String repoId, String developer, String beginDate, String endDate, String token, String tool) {
+        if ("".equals(beginDate) || beginDate == null){
+            List<String> repoIdList = new ArrayList<>();
+            repoIdList.add(repoId);
+            beginDate = repoMeasureMapper.getFirstCommitDateByCondition(repoIdList,null).substring(0,10);
+        }
+        if ("".equals(endDate) || endDate == null){
+            LocalDate today = LocalDate.now();
+            DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            endDate = df.format(today);
+        }
+
+        JSONObject projects = restInterfaceManager.getProjectByRepoId(repoId,token);
+        String branch = null;
+        String repoName = null;
+        if(projects!=null) {
+            branch = projects.getString("branch");
+            repoName = projects.getString("repoName").substring(1);
+        }
+        //获取程序员在本项目中第一次提交commit的日期
         LocalDateTime firstCommitDateTime;
         LocalDate firstCommitDate = null;
         JSONObject firstCommitDateData = restInterfaceManager.getFirstCommitDate(developer);
-        JSONObject repoDateList = firstCommitDateData.getJSONObject("repos_summary");
-        String dateString = repoDateList.getString("first_commit_time_summary");
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        firstCommitDateTime = LocalDateTime.parse(dateString, fmt);
-        firstCommitDateTime = firstCommitDateTime.plusHours(8);
-        firstCommitDate = firstCommitDateTime.toLocalDate();
+        if("Successful".equals(firstCommitDateData.getString("status"))){
+            JSONArray repoDateList = firstCommitDateData.getJSONArray("repos");
+            for(int i=0;i<repoDateList.size();i++) {
+                if (repoDateList.getJSONObject(i).get("repo_id").equals(repoId)){
+                    String dateString = repoDateList.getJSONObject(i).getString("first_commit_time");
+                    DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                    firstCommitDateTime = LocalDateTime.parse(dateString, fmt);
+                    firstCommitDateTime = firstCommitDateTime.plusHours(8);
+                    firstCommitDate = firstCommitDateTime.toLocalDate();
+                    break;
+                }
+            }
+        } else {//commit接口返回有问题时，通过repo_measure表来查看commit日期
+            List<String> repoIdList = new ArrayList<>();
+            repoIdList.add(repoId);
+            String dateString = repoMeasureMapper.getFirstCommitDateByCondition(repoIdList,developer);
+            dateString = dateString.substring(0,19);
+            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            firstCommitDateTime = LocalDateTime.parse(dateString, fmt);
+            firstCommitDate = firstCommitDateTime.toLocalDate();
+        }
 
-        int totalCommitCount = repoMeasureMapper.getCommitCountsByDuration(null, null, null, developer);
-        int totalLOC = repoMeasureMapper.getLOCByCondition(null,developer,null,null);
-        List<Map<String, Object>> commitDays = repoMeasureMapper.getCommitDays(null,developer,null,null);
-        int days = commitDays.size();
-        int dayAverageLOC = totalLOC/days;
-        //todo 日后需要添加程序员类型接口 目前统一认为是java后端工程师
-        String developerType = "Java后端工程师";
-        return new DeveloperPortrait(firstCommitDate,totalLOC,dayAverageLOC,totalCommitCount,developer,developerType,developerMetricsList);
+        int developerLOC = repoMeasureMapper.getLOCByCondition(repoId,developer,beginDate,endDate);
+        int developerCommitCount = repoMeasureMapper.getCommitCountsByDuration(repoId, beginDate, endDate, developer);
+        int developerValidCommitCount = repoMeasureMapper.getDeveloperValidCommitCount(repoId,beginDate,endDate,developer);
+        //获取代码新增、删除,change逻辑行数数据
+        int developerTotalStatement =0;
+        int developerAddStatement = 0;
+        int developerDelStatement = 0;
+        int developerChangeStatement = 0;
+        int developerValidStatement = 0;
+        int totalAddStatement = 0;
+        int totalValidStatement = 0;
+        JSONObject developerStatements = restInterfaceManager.getStatements(repoId, beginDate, endDate, developer);
+        JSONObject allDeveloperStatements = restInterfaceManager.getStatements(repoId,beginDate,endDate,"");
+        if  (developerStatements != null){
+            developerTotalStatement = developerStatements.getIntValue("total");
+            if(developerStatements.getJSONObject("developer")!= null && !developerStatements.getJSONObject("developer").isEmpty()) {
+                developerAddStatement = developerStatements.getJSONObject("developer").getJSONObject(developer).getIntValue("add");
+                developerDelStatement = developerStatements.getJSONObject("developer").getJSONObject(developer).getIntValue("delete");
+                developerChangeStatement = developerStatements.getJSONObject("developer").getJSONObject(developer).getIntValue("change");
+                developerValidStatement = developerStatements.getJSONObject("developer").getJSONObject(developer).getIntValue("current");
+            }
+        }
+        if(allDeveloperStatements != null && (allDeveloperStatements.getJSONObject("developer") !=null) ) {
+            for (String member : allDeveloperStatements.getJSONObject("developer").keySet()) {
+                totalAddStatement += allDeveloperStatements.getJSONObject("developer").getJSONObject(member).getIntValue("add");
+                totalValidStatement += allDeveloperStatements.getJSONObject("developer").getJSONObject(member).getIntValue("current");
+            }
+        }
+
+        //开发效率相关指标
+        cn.edu.fudan.measureservice.portrait2.Efficiency efficiency = getEfficiency(repoId, beginDate, endDate, developer, tool, token);
+
+        //代码质量相关指标
+        cn.edu.fudan.measureservice.portrait2.Quality quality = getQuality(repoId,developer,beginDate,endDate,tool,token,developerLOC,developerValidCommitCount);
+
+        //贡献价值相关指标
+        cn.edu.fudan.measureservice.portrait2.Contribution contribution = getContribution(repoId,beginDate,endDate,developer,developerLOC,branch,developerAddStatement,developerChangeStatement,developerValidStatement,totalAddStatement,totalValidStatement);
+
+        return new cn.edu.fudan.measureservice.portrait2.DeveloperMetrics(firstCommitDate, developerTotalStatement, developerCommitCount, repoName, repoId, branch, developer, efficiency, quality, contribution);
     }
 
-    @Override
-    public Object getCommitMsgByCondition(String repoId, String developer, String beginDate, String endDate) {
-        List<Map<String, Object>> commitMsgList = repoMeasureMapper.getCommitMsgByCondition(repoId, developer, beginDate, endDate);
-        for (Map<String, Object> map : commitMsgList) {
-            //将数据库中timeStamp/dateTime类型转换成指定格式的字符串 map.get("commit_time") 这个就是数据库中dateTime类型
-            String commit_time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(map.get("commit_time"));
-            map.put("commit_time", commit_time);
-        }
-        return commitMsgList;
-    }
+    private cn.edu.fudan.measureservice.portrait2.Efficiency getEfficiency(String repoId,String beginDate, String endDate, String developer, String tool, String token){
 
-    @Override
-    public Object getJiraMeasureInfo(String repoId, String developer, String beginDate, String endDate) throws ParseException {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        Date startDay = new Date();
-        Date end = new Date();
-        if ("".equals(beginDate) || beginDate == null){
-            beginDate = repoMeasureMapper.getFirstCommitDateByCondition(repoId,developer);
-            startDay = sdf.parse(beginDate);
-        }
-        else
-            startDay = sdf.parse(beginDate);
-        if ("".equals(endDate) || endDate == null){
-            endDate = repoMeasureMapper.getLastCommitDateOfOneRepo(repoId,developer);
-            end = sdf.parse(endDate);
-        }
-        else
-            end = sdf.parse(endDate);
-        List<String> repoList = new ArrayList<>();
-        if ("".equals(repoId) || repoId == null){
-            repoList = repoMeasureMapper.getRepoListByDeveloper(developer);
-        }else {
-            repoList.add(repoId);
-        }
-
-        // 遍历所有repo，进行jira度量统计
-        int total_jiraNum =0;
-        int withinDays_jiraNum =0;
         int commitNum = 0;
-        for (String repo : repoList) {
-            // 0. 获取开发者完成的jira任务列表 即jira的ID列表
-            List<String> commit_msg = repoMeasureMapper.getCommitMsgByRepoId(repo, developer);
-            //找到包含jira单号的所有commit信息
-            List<String> includingJiraCommit_msg = null;
-            int legalCommitNum = 0;
-            for(String str:commit_msg) {
-                String temp = getJiraIDFromCommitMsg(str);
-                if(temp.equals("noJiraID"))
-                    continue;
-                else {
-                    includingJiraCommit_msg.add(str);
-                    legalCommitNum++;
-                }
-            }
+        int completedJiraNum = 0;
+        int jiraBug = 0;
+        int jiraFeature = 0;
+        int solvedSonarIssue = 0;
+        int days = 0;
 
-            if( includingJiraCommit_msg==null ) {
-                return null;
-            }
-            //获取单个repo下的一个jiraID来查找所有jira任务
-            String first_msg = includingJiraCommit_msg.get(0);
-            String keyword = getJiraIDFromCommitMsg(first_msg);
-            JSONArray jiraKeyResponse = restInterfaceManager.getJiraInfoByKey("key", keyword);
-            JSONObject keydata = (JSONObject) jiraKeyResponse.get(0);
-            JSONObject fields = keydata.getJSONObject("fields");
-            JSONObject project = fields.getJSONObject("project");
-            String key = project.getString("key");
-            //获取单个repo下的总jira任务
-            JSONArray jiraProjectResponse = restInterfaceManager.getJiraInfoByKey("project", key);
-            int jiraNum = 0;
-            for (int i = 0; i < jiraProjectResponse.size(); i++) {
-                JSONObject projectdata = (JSONObject) jiraProjectResponse.get(i);
-                //获取status状态
-                fields = projectdata.getJSONObject("fields");
-                JSONObject Status = fields.getJSONObject("status");
-                String status = Status.getString("name");
-                //获取创建时间
-                String str = fields.getString("resolutiondate");
-                String createDay =null;
-                if(str!=null){
-                    String result[] = str.split("T");
-                    createDay = result[0];
-                }
-                //获取开发员姓名
-                JSONObject Assignee = fields.getJSONObject("assignee");
-                if (Assignee != null) {
-                    String assignee = Assignee.getString("name");
-                    //统计jira任务数,并统计是不是在指定时间段完成的
-                    if (status.equals("done") && assignee.equals(developer)) {
-                        jiraNum++;
-                        if(createDay!=null&&createDay.compareTo(beginDate)>0&&createDay.compareTo(endDate)<0)
-                            withinDays_jiraNum++;
-                    }
-                }
-            }
-            // 1. 获取完成jira任务需要的commit数量
-            if (jiraNum != 0) {
-                commitNum += legalCommitNum;
-                total_jiraNum += jiraNum;
-            }
-         }
-        List<Map<String,Object>> response = new ArrayList<>();
-         double average;
-         if (total_jiraNum != 0) {
-             average = commitNum * 1.0 / total_jiraNum;
-             Map map = new HashMap();
-             map.put("CommitPerJira",average);
-             response.add(map);
-         }
-         else {
-             Map map =new HashMap();
-             map.put("CommitPerJira",-1);
-             response.add(map);
-         }
-
-         // 2. 获取时间段内平均完成的JIRA任务
-        Long total_Days = (end.getTime()-startDay.getTime())/(1000*60*60*24);
-        if(withinDays_jiraNum !=0 ) {
-            average = withinDays_jiraNum*1.0/total_Days;
-            Map map = new HashMap();
-            map.put("JiraPerDay",average);
-            response.add(map);
-        }
-        else {
-            Map map = new HashMap();
-            map.put("JiraPerDay",-1);
-            response.add(map);
+        JSONArray jiraResponse = restInterfaceManager.getJiraMsgOfOneDeveloper(developer, repoId);
+        if (jiraResponse != null){
+            JSONObject commitPerJiraData = jiraResponse.getJSONObject(0);
+            JSONObject jiraBugData = jiraResponse.getJSONObject(4);
+            JSONObject jiraFeatureData = jiraResponse.getJSONObject(5);
+            commitNum = commitPerJiraData.getIntValue("commitNum");
+            completedJiraNum = commitPerJiraData.getIntValue("completedJiraNum");
+            jiraBug = jiraBugData.getIntValue("completedBugNum");
+            jiraFeature = jiraFeatureData.getIntValue("completedFeatureNum");
         }
 
-        return response;
+        JSONObject sonarResponse = restInterfaceManager.getDayAvgSolvedIssue(developer,repoId,beginDate,endDate,tool,token);
+        if (sonarResponse != null){
+            solvedSonarIssue = sonarResponse.getIntValue("solvedIssuesCount");
+            days = (int) sonarResponse.getDoubleValue("days");
+        }
+        return cn.edu.fudan.measureservice.portrait2.Efficiency.builder()
+                .jiraBug(jiraBug)
+                .jiraFeature(jiraFeature)
+                .solvedSonarIssue(solvedSonarIssue)
+                .days(days)
+                .commitNum(commitNum)
+                .completedJiraNum(completedJiraNum)
+                .build();
+    }
+    private cn.edu.fudan.measureservice.portrait2.Quality getQuality(String repoId, String developer, String beginDate, String endDate, String tool, String token, int developerLOC, int developerCommitCount){
+        //个人引入规范类issue数
+        int developerStandardIssueCount = restInterfaceManager.getIssueCountByConditions(developer, repoId, beginDate, endDate, tool, "standard", token);
+        //个人引入issue总数
+        int developerNewIssueCount = restInterfaceManager.getIssueCountByConditions(developer, repoId, beginDate, endDate, tool, null, token);
+        //团队引入规范类issue数
+        int totalStandardIssueCount = restInterfaceManager.getIssueCountByConditions(null, repoId, beginDate, endDate, tool, "standard", token);
+        //团队引入issue总数
+        int totalNewIssueCount = restInterfaceManager.getIssueCountByConditions(null, repoId, beginDate, endDate, tool, null, token);
+
+        int developerJiraCount = repoMeasureMapper.getJiraCount(developer,repoId,beginDate,endDate);
+        int developerJiraBugCount = 0;
+        int totalJiraBugCount = 0;
+        JSONObject jiraBugData = restInterfaceManager.getDefectRate(developer,repoId,beginDate,endDate);
+        if (jiraBugData!=null){
+            developerJiraBugCount = jiraBugData.getIntValue("individual_bugs");
+            totalJiraBugCount = jiraBugData.getIntValue("team_bugs");
+        }
+        return cn.edu.fudan.measureservice.portrait2.Quality.builder()
+                .developerStandardIssueCount(developerStandardIssueCount)
+                .totalStandardIssueCount(totalStandardIssueCount)
+                .developerNewIssueCount(developerNewIssueCount)
+                .totalNewIssueCount(totalNewIssueCount)
+                .developerLOC(developerLOC)
+                .developerValidCommitCount(developerCommitCount)
+                .developerJiraCount(developerJiraCount)
+                .developerJiraBugCount(developerJiraBugCount)
+                .totalJiraBugCount(totalJiraBugCount)
+                .build();
     }
 
+    private cn.edu.fudan.measureservice.portrait2.Contribution getContribution(String repoId, String beginDate, String endDate, String developer,
+                                                                               int developerLOC, String branch, int developerAddStatement,
+                                                                               int developerChangeStatement, int developerValidStatement,
+                                                                               int totalAddStatement, int totalValidStatement){
+        int totalLOC = repoMeasureMapper.getLOCByCondition(repoId,null,beginDate,endDate);
+        int developerAddLine = repoMeasureMapper.getAddLinesByDuration(repoId, beginDate, endDate, developer);
+
+        JSONObject cloneMeasure = restInterfaceManager.getCloneMeasure(repoId, developer, beginDate, endDate);
+        int increasedCloneLines = 0;
+        if (cloneMeasure != null){
+            increasedCloneLines = Integer.parseInt(cloneMeasure.getString("increasedCloneLines"));
+        }
+
+        int developerAssignedJiraCount = 0;//个人被分配到的jira任务个数（注意不是次数）
+        int totalAssignedJiraCount = 0;//团队被分配到的jira任务个数（注意不是次数）
+        int developerSolvedJiraCount = 0;//个人解决的jira任务个数（注意不是次数）
+        int totalSolvedJiraCount = 0;//团队解决的jira任务个数（注意不是次数）
+
+        JSONObject assignedJiraData = restInterfaceManager.getAssignedJiraRate(developer,repoId,beginDate,endDate);
+        if (assignedJiraData!=null){
+            developerAssignedJiraCount = assignedJiraData.getIntValue("individual_assigned_jira_num");
+            totalAssignedJiraCount = assignedJiraData.getIntValue("team_assigned_jira_num");
+        }
+        JSONObject solvedAssignedJiraData = restInterfaceManager.getSolvedAssignedJiraRate(developer,repoId,beginDate,endDate);
+        if (solvedAssignedJiraData!=null){
+            developerSolvedJiraCount = solvedAssignedJiraData.getIntValue("individual_solved_assigned_jira_num");
+            totalSolvedJiraCount = solvedAssignedJiraData.getIntValue("team_solved_assigned_jira_num");
+        }
+        return Contribution.builder()
+                .developerAddLine(developerAddLine)
+                .developerLOC(developerLOC)
+                .totalLOC(totalLOC)
+                .developerAddStatement(developerAddStatement)
+                .developerChangeStatement(developerChangeStatement)
+                .developerValidLine(developerValidStatement)
+                .totalAddStatement(totalAddStatement)
+                .totalValidLine(totalValidStatement)
+                .increasedCloneLines(increasedCloneLines)
+                .developerAssignedJiraCount(developerAssignedJiraCount)
+                .totalAssignedJiraCount(totalAssignedJiraCount)
+                .developerSolvedJiraCount(developerSolvedJiraCount)
+                .totalSolvedJiraCount(totalSolvedJiraCount)
+                .build();
+    }
+
+
+    @Cacheable(cacheNames = {"portraitCompetence"})
+    @Override
+    public Object getPortraitCompetence(String developer,String repoIdList,String since,String until, String token) throws ParseException {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        //这里是获取开发者在给定时间段内所有参与的项目
+        List<String> filterdRepoList = repoMeasureMapper.getRepoListByDeveloper(developer,since,until);
+        //repoList是最后用于计算画像的所有项目
+        List<String> repoList = new ArrayList<>();
+        if(StringUtils.isEmptyOrNull(repoIdList)) {
+            repoList = filterdRepoList;
+        }else {
+            String[] repoIdArray = repoIdList.split(",");
+            //先把前端给的repo加入到repoList
+            repoList.addAll(Arrays.asList(repoIdArray));
+            for (int i = repoList.size() - 1; i >= 0; i--){//注意需要倒序删除
+                //如果前端给的参数里的repoId 不在筛选后的list里 就去掉这个repo
+                if (!filterdRepoList.contains(repoList.get(i))){
+                    repoList.remove(i);
+                }
+            }
+        }
+        if (repoList.size()==0){
+            return "选定时间段内无参与项目！";
+        }
+        List<String> developerList = new ArrayList<>();
+        if( developer == null || "".equals(developer)) {
+            developerList = repoMeasureMapper.getDeveloperList(repoList,since,until);
+        }else {
+            developerList.add(developer);
+        }
+        //获取developerMetricsList
+        Map<String,List<cn.edu.fudan.measureservice.portrait2.DeveloperMetrics>> developerMetricMap = new HashMap<>();
+        LocalDate today = LocalDate.now();
+        if (StringUtils.isEmptyOrNull(until)){
+            DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            until = df.format(today);
+        }
+        for( String member : developerList) {
+            List<cn.edu.fudan.measureservice.portrait2.DeveloperMetrics> developerMetricsList = new ArrayList<>();
+            for (String repo : repoList) {
+                JSONObject projects = restInterfaceManager.getProjectByRepoId(repo,token);
+                for (int i = 0; i < projects.size(); i++){
+                    String tool = "sonarqube";
+                    String repoName = projects.getString("repoName").substring(1);
+                    if(StringUtils.isEmptyOrNull(since)){
+                        List<String> repoIdList1 = new ArrayList<>();
+                        repoIdList1.add(repo);
+                        since = repoMeasureMapper.getFirstCommitDateByCondition(repoIdList1,null).substring(0,10);
+                    }
+                    since = sdf.format(sdf.parse(since));
+                    //String endDate = repoMeasureMapper.getLastCommitDateOfOneRepo(repoId);
+                    log.info("Start to get portrait of " + developer + " in repo : " + repoName);
+                    cn.edu.fudan.measureservice.portrait2.DeveloperMetrics metrics = measureDeveloperService.getDeveloperMetrics(repo, member, since, until, token, tool);
+                    developerMetricsList.add(metrics);
+                    log.info("Successfully get portrait of " +member + " in repo : " + repoName);
+                }
+
+            }
+            developerMetricMap.put(member,developerMetricsList);
+            log.info("Get portrait of " + member + " complete!" );
+        }
+        log.info("Get portrait complete!" );
+        //获取第一次提交commit的日期
+        LocalDateTime firstCommitDateTime;
+        LocalDate firstCommitDate = null;
+        List<cn.edu.fudan.measureservice.portrait2.DeveloperPortrait> developerPortraitList = new ArrayList<>();
+        for(String key : developerMetricMap.keySet()) {
+            JSONObject firstCommitDateData = restInterfaceManager.getFirstCommitDate(key);
+            if("Successful".equals(firstCommitDateData.getString("status"))){
+                JSONObject repoDateList = firstCommitDateData.getJSONObject("repos_summary");
+                String dateString = repoDateList.getString("first_commit_time_summary");
+                DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                firstCommitDateTime = LocalDateTime.parse(dateString, fmt);
+                firstCommitDateTime = firstCommitDateTime.plusHours(8);
+                firstCommitDate = firstCommitDateTime.toLocalDate();
+            }else {
+                //commit接口返回有问题时，通过repo_measure表来查看commit日期
+                String dateString = repoMeasureMapper.getFirstCommitDateByCondition(null,key);
+                dateString = dateString.substring(0,19);
+                DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                firstCommitDateTime = LocalDateTime.parse(dateString, fmt);
+                firstCommitDate = firstCommitDateTime.toLocalDate();
+            }
+            int totalCommitCount = repoMeasureMapper.getCommitCountsByDuration(null, null, null, key);
+            //todo 日后需要添加程序员类型接口 目前统一认为是java后端工程师
+            String index = repoMeasureMapper.getDeveloperType(key);
+            String developerType = null ;
+            if("L".equals(index)) {
+                developerType = "项目负责人";
+            }else if("P".equals(index)) {
+                developerType = "JAVA后端工程师";
+            }else if ("M".equals(index)) {
+                developerType= "开发经理";
+            }
+            // 获取开发者在所有项目中的整个的用户画像
+            cn.edu.fudan.measureservice.portrait2.DeveloperMetrics totalDeveloperMetrics = getTotalDeveloperMetrics(developerMetricMap.get(key),key,firstCommitDate);
+            int totalStatement = totalDeveloperMetrics.getTotalStatement();
+            int totalDays = (int) (today.toEpochDay()-firstCommitDate.toEpochDay());
+            int workDays =  totalDays*5/7;
+            int dayAverageStatement = totalStatement/workDays;
+            developerPortraitList.add(new cn.edu.fudan.measureservice.portrait2.DeveloperPortrait(firstCommitDate,totalStatement,dayAverageStatement,totalCommitCount,key,developerType,developerMetricMap.get(key),totalDeveloperMetrics));
+        }
+        return developerPortraitList;
+    }
+
+    /**
+     *
+     * @param developerMetricsList 每个项目的画像数据
+     * @param developer 开发者
+     * @return 返回开发者在所有项目当中的整体画像数据
+     */
+    private cn.edu.fudan.measureservice.portrait2.DeveloperMetrics getTotalDeveloperMetrics(List<cn.edu.fudan.measureservice.portrait2.DeveloperMetrics> developerMetricsList, String developer, LocalDate firstCommitDate){
+        int totalStatement = 0;
+        int totalCommitCount = 0;
+
+        //efficiency
+        int totalDays = (int) (LocalDate.now().toEpochDay()-firstCommitDate.toEpochDay());
+        int workDays =  totalDays*5/7;
+        int jiraBug = 0;
+        int jiraFeature = 0;
+        int solvedSonarIssue = 0;
+        int commitNum = 0;
+        int completedJiraNum = 0;
+
+        //quality
+        int developerStandardIssueCount = 0;
+        int totalStandardIssueCount = 0;
+        int developerNewIssueCount = 0;//个人引入问题
+        int totalNewIssueCount = 0;//团队引入问题
+        int developerLOC = 0;//个人addLines+delLines
+        int developerValidCommitCount = 0;//个人提交的commit总数
+        int developerJiraCount = 0;//个人提交的commit当中 关联有jira的个数
+        int developerJiraBugCount = 0;//个人jira任务中属于bug类型的数量
+        int totalJiraBugCount = 0;//团队jira任务中属于bug类型的数量
+
+        //contribution
+        int developerAddLine = 0;
+        //int developerLOC
+        int totalLOC = 0;
+        int developerAddStatement = 0;
+        int developerChangeStatement = 0;
+        int developerValidLine = 0;//个人存活语句
+        int totalAddStatement = 0;//团队新增语句
+        int totalValidLine = 0;//团队存活语句
+        int increasedCloneLines = 0;//个人新增重复代码行数
+        int developerAssignedJiraCount = 0;//个人被分配到的jira任务个数（注意不是次数）
+        int totalAssignedJiraCount = 0;//团队被分配到的jira任务个数（注意不是次数）
+        int developerSolvedJiraCount = 0;//个人解决的jira任务个数（注意不是次数）
+        int totalSolvedJiraCount = 0;//团队解决的jira任务个数（注意不是次数）
+
+        //对每个项目的数据进行累加，便于求整体的画像数据
+        for (int i = 0; i < developerMetricsList.size(); i++){
+            cn.edu.fudan.measureservice.portrait2.DeveloperMetrics metric = developerMetricsList.get(i);
+            cn.edu.fudan.measureservice.portrait2.Efficiency efficiency = metric.getEfficiency();
+            cn.edu.fudan.measureservice.portrait2.Quality quality = metric.getQuality();
+            Contribution contribution = metric.getContribution();
+
+            totalStatement += metric.getTotalStatement();
+            totalCommitCount += metric.getTotalCommitCount();
+
+            jiraBug += efficiency.getJiraBug();
+            jiraFeature += efficiency.getJiraFeature();
+            solvedSonarIssue += efficiency.getSolvedSonarIssue();
+            commitNum += efficiency.getCommitNum();
+            completedJiraNum += efficiency.getCompletedJiraNum();
+
+            developerStandardIssueCount += quality.getDeveloperStandardIssueCount();
+            totalStandardIssueCount += quality.getTotalStandardIssueCount();
+            developerNewIssueCount += quality.getDeveloperNewIssueCount();
+            totalNewIssueCount += quality.getTotalNewIssueCount();
+            developerLOC += quality.getDeveloperLOC();
+            developerValidCommitCount += quality.getDeveloperValidCommitCount();
+            developerJiraCount += quality.getDeveloperJiraCount();
+            developerJiraBugCount += quality.getDeveloperJiraBugCount();
+            totalJiraBugCount += quality.getTotalJiraBugCount();
+
+            totalLOC += contribution.getTotalLOC();
+            developerAddStatement += contribution.getDeveloperAddStatement();
+            developerChangeStatement += contribution.getDeveloperChangeStatement();
+            totalAddStatement += contribution.getTotalAddStatement();
+            developerAddLine += contribution.getDeveloperAddLine();
+            developerValidLine += contribution.getDeveloperValidLine();
+            totalValidLine += contribution.getTotalValidLine();
+            increasedCloneLines += contribution.getIncreasedCloneLines();
+            developerAssignedJiraCount += contribution.getDeveloperAssignedJiraCount();
+            totalAssignedJiraCount += contribution.getTotalAssignedJiraCount();
+            developerSolvedJiraCount += contribution.getDeveloperSolvedJiraCount();
+            totalSolvedJiraCount += contribution.getTotalSolvedJiraCount();
+        }
+        cn.edu.fudan.measureservice.portrait2.Efficiency totalEfficiency = cn.edu.fudan.measureservice.portrait2.Efficiency.builder()
+                .jiraBug(jiraBug).jiraFeature(jiraFeature).solvedSonarIssue(solvedSonarIssue).days(workDays)
+                .commitNum(commitNum).completedJiraNum(completedJiraNum).build();
+
+        cn.edu.fudan.measureservice.portrait2.Quality totalQuality = cn.edu.fudan.measureservice.portrait2.Quality.builder()
+                .developerStandardIssueCount(developerStandardIssueCount).totalStandardIssueCount(totalStandardIssueCount)
+                .developerNewIssueCount(developerNewIssueCount).totalNewIssueCount(totalNewIssueCount)
+                .developerLOC(developerLOC).developerValidCommitCount(developerValidCommitCount).developerJiraCount(developerJiraCount)
+                .developerJiraBugCount(developerJiraBugCount).totalJiraBugCount(totalJiraBugCount).build();
+
+        Contribution totalContribution = Contribution.builder().developerLOC(developerLOC).totalLOC(totalLOC)
+                .developerAddStatement(developerAddStatement).developerChangeStatement(developerChangeStatement)
+                .totalAddStatement(totalAddStatement).developerAddLine(developerAddLine)
+                .developerValidLine(developerValidLine).totalValidLine(totalValidLine)
+                .increasedCloneLines(increasedCloneLines).developerAssignedJiraCount(developerAssignedJiraCount)
+                .totalAssignedJiraCount(totalAssignedJiraCount).developerSolvedJiraCount(developerSolvedJiraCount)
+                .totalSolvedJiraCount(totalSolvedJiraCount).build();
+
+        return new cn.edu.fudan.measureservice.portrait2.DeveloperMetrics(totalStatement, totalCommitCount, totalEfficiency,totalQuality,totalContribution);
+
+    }
+
+
+    @Cacheable(cacheNames = {"developerRecentNews"})
     @Override
     public Object getDeveloperRecentNews(String repoId, String developer, String beginDate, String endDate) {
+        if (endDate != null) {
+            endDate = DateTimeUtil.stringToLocalDate(endDate).plusDays(1).toString();
+        }
         List<Map<String, Object>> commitMsgList = repoMeasureMapper.getCommitMsgByCondition(repoId, developer, beginDate, endDate);
         for (Map<String, Object> map : commitMsgList) {
             //将数据库中timeStamp/dateTime类型转换成指定格式的字符串 map.get("commit_time") 这个就是数据库中dateTime类型
-            String commit_time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(map.get("commit_time"));
-            map.put("commit_time", commit_time);
+            String commitTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(map.get("commit_time"));
+            map.put("commit_time", commitTime);
             //以下操作是为了获取jira信息
-            String commitMessage = map.get("commit_message").toString();
+            String commitMessage = map.get("message").toString();
             String jiraID = getJiraIDFromCommitMsg(commitMessage);
-            JSONArray jiraResponse = restInterfaceManager.getJiraInfoByKey("key",jiraID);
-            if (jiraResponse == null || jiraResponse.isEmpty()){
+            if("noJiraID".equals(jiraID)) {
                 map.put("jira_info", "本次commit不含jira单号");
             }else {
-                map.put("jira_info", jiraResponse.get(0));
+                JSONArray jiraResponse = restInterfaceManager.getJiraInfoByKey("key",jiraID);
+                if (jiraResponse == null || jiraResponse.isEmpty()){
+                    map.put("jira_info", "jira单号内容为空");
+                }else {
+                    map.put("jira_info", jiraResponse.get(0));
+                }
             }
         }
         return commitMsgList;
@@ -791,6 +856,93 @@ public class MeasureDeveloperServiceImpl implements MeasureDeveloperService {
             return matcher.group();
         }
         return "noJiraID" ;
+    }
+
+    @Cacheable(cacheNames = {"developerList"})
+    @Override
+    public Object getDeveloperList(String repoIdList, String token) throws ParseException {
+        List<String> repoList = new ArrayList<>();
+        if(repoIdList!=null && !"".equals(repoIdList)) {
+            String[] repoArray = repoIdList.split(",");
+            repoList.addAll(Arrays.asList(repoArray));
+        }else {
+            repoList = null;
+        }
+        List<Map<String, Object>> result = new ArrayList<>();
+        List<Map<String, Object>> developerList = repoMeasureMapper.getDeveloperDutyTypeListByRepoId(repoList);
+        for (int i = 0; i < developerList.size(); i++){
+            Map<String,Object> dev = new HashMap<>();
+            Map<String,Object> map = developerList.get(i);
+            String developerName = map.get("name").toString();
+            dev.put("developer_name",developerName);
+            String developerDutyType = map.get("account_status").toString();
+            if("1".equals(developerDutyType)) {
+                dev.put("DutyType","在职");
+            } else{
+                dev.put("DutyType","离职");
+            }
+            int involvedRepoCount = (int) getDeveloperInvolvedRepoCount(developerName);
+            dev.put("involvedRepoCount",involvedRepoCount);
+            DeveloperPortrait portrait = (DeveloperPortrait) measureDeveloperService.getPortraitLevel(developerName,null,null,token);
+            double totalLevel = portrait.getLevel();
+            double value = portrait.getValue();
+            double quality = portrait.getQuality();
+            double efficiency = portrait.getEfficiency();
+            dev.put("totalLevel",totalLevel);
+            dev.put("value",value);
+            dev.put("quality",quality);
+            dev.put("efficiency",efficiency);
+            result.add(dev);
+        }
+        log.info("Successfully return developerList!");
+        return result;
+    }
+
+
+    private Object getDeveloperInvolvedRepoCount(String developer) {
+        List<String> repoList = repoMeasureMapper.getRepoListByDeveloper(developer,null,null);
+        return repoList.size();
+    }
+
+    @Override
+    public List<Map<String,Object>> getCommitStandard(String developer, String repoUuid, String since, String until, String token ,String condition) {
+        List<Map<String,Object>> list = new ArrayList<>();
+        String split = ",";
+        List<String> repoUuidList;
+        List<String> developerList ;
+        if(repoUuid!=null && !"".equals(repoUuid)) {
+            repoUuidList = Arrays.asList(repoUuid.split(split));
+        }else {
+            repoUuidList = repoMeasureMapper.getRepoListByDeveloper(developer,since,until);
+        }
+        if("1".equals(condition)) {
+            developerList = repoMeasureMapper.getDeveloperList(repoUuidList,since,until);
+            for(String member : developerList) {
+                Map<String,Object> map = new HashMap<>();
+                int developerValidCommitCount = repoMeasureMapper.getValidCommitCountsByAllRepo(repoUuidList,since,until,member);
+                int developerJiraCount = repoMeasureMapper.getJiraCountByCondition(repoUuidList,since,until,member);
+                map.put("developer",member);
+                map.put("developerJiraCount",developerJiraCount);
+                map.put("developerCommitCount",developerValidCommitCount);
+                if(developerValidCommitCount!=0) {
+                    map.put("commitStandard",developerJiraCount*1.0/developerValidCommitCount);
+                }else {
+                    map.put("commitStandard",0);
+                }
+                list.add(map);
+            }
+            return list;
+        }else if("2".equals(condition)) {
+            return repoMeasureMapper.getInvalidCommitMsg(repoUuidList,since,until,developer);
+        }
+        return null;
+    }
+
+
+    @Override
+    @CacheEvict(cacheNames = {"portraitLevel","developerMetrics","developerMetricsNew","portraitCompetence","developerRecentNews","developerList","jiraInfoByJiraID"}, allEntries=true, beforeInvocation = true)
+    public void clearCache() {
+        log.info("Successfully clear redis cache in db6.");
     }
 
 }

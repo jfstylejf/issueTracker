@@ -1,248 +1,262 @@
 package cn.edu.fudan.measureservice.controller;
 
 import cn.edu.fudan.measureservice.domain.ResponseBean;
+import cn.edu.fudan.measureservice.portrait.DeveloperMetrics;
+import cn.edu.fudan.measureservice.portrait.DeveloperPortrait;
 import cn.edu.fudan.measureservice.service.MeasureDeveloperService;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+
 import javax.servlet.http.HttpServletRequest;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 public class MeasureDeveloperController {
 
 
-    private MeasureDeveloperService measureDeveloperService;
+    private final MeasureDeveloperService measureDeveloperService;
+
 
     public MeasureDeveloperController(MeasureDeveloperService measureDeveloperService) {
         this.measureDeveloperService = measureDeveloperService;
     }
 
+/**
+ *   @ApiOperation注解 value添加该api的说明，用note表示该api的data返回类型，httpMethod表示请求方式
+ *   @ApiImplicitParams 参数列表集合注解
+ *   @ApiImplicitParam 参数说明接口 对应api中@RequestParam作解释说明 可显示在swagger2-ui页面上
+ *   name表示参数名 value表示对参数的中文解释 dataType表示该参数类型 required表示该参数是否必须 defaultValue提供测试样例
+ *   具体@ApiImplicitParam其他属性ctrl+click 点进源码
+ */
 
-    /**
-     * 中汇需要
-     */
-    @GetMapping("/measure/developer/code-change")
+    @ApiOperation(value = "开发者工作量数据接口", notes = "@return Map<String, Object> key : delLines, changedFiles, addLines, commitCount, developerName", httpMethod = "GET")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "developer", value = "开发人员姓名", dataType = "String",  defaultValue = "yuping"),
+            @ApiImplicitParam(name = "repo_uuid", value = "repo_uuid", dataType = "String", defaultValue = "" ),
+            @ApiImplicitParam(name = "since", value = "起始时间（yyyy-MM-dd）", dataType = "String", defaultValue = "2019-02-20"),
+            @ApiImplicitParam(name = "until", value = "截止时间（yyyy-MM-dd）", dataType = "String", defaultValue = "当前时间"),
+    })
+
+    @SuppressWarnings("unchecked")
+    @GetMapping("/measure/developer/work-load")
     @CrossOrigin
-    public ResponseBean getCodeChangesByDurationAndDeveloperName(
-                                                                 @RequestParam(value="developer_name", required = false)String developer_name,
-                                                                 @RequestParam(value="since",required = false)String since,
-                                                                 @RequestParam(value="until",required = false)String until,
-                                                                 @RequestParam(value="category",required = false)String category,
-                                                                 @RequestParam(value ="repo_id" ,required = false)String repoId,
-                                                                 HttpServletRequest request
+    public ResponseBean<Map<String, Object>> getDeveloperWorkLoad(
+            @RequestParam(value="developer",required = false)String developer,
+            @RequestParam(value="since",required = false)String since,
+            @RequestParam(value="until",required = false)String until,
+            @RequestParam(value ="repo_uuid" ,required = false)String repoUuid
     ){
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        if(until==null || "".equals(until)) {
+            until = dtf.format(LocalDateTime.now());
+        }
         try{
-            String token = request.getHeader("token");
-            return new ResponseBean(200,"success",measureDeveloperService.getCodeChangesByDurationAndDeveloperName(developer_name,since,until,token,category,repoId));
+            return new ResponseBean<>(200,"success",(Map<String, Object>) measureDeveloperService.getDeveloperWorkLoad(developer,since,until,repoUuid));
         }catch (Exception e){
             e.printStackTrace();
-            return new ResponseBean(401,"failed",null);
+            return new ResponseBean<>(401,"failed" + e.getMessage(),null);
         }
     }
 
-    /**
-     * 中汇需要
-     */
-    @GetMapping("/measure/developer/commit-count")
-    @CrossOrigin
-    public ResponseBean getCommitCountByDurationAndDeveloperName(
-                                                                 @RequestParam("developer_name")String developerName,
-                                                                 @RequestParam("since")String since,
-                                                                 @RequestParam("until")String until,
-                                                                 @RequestParam("category")String category,
-                                                                 @RequestParam(value="repo_id",required=false)String repoId,
-                                                                 HttpServletRequest request
-    ){
-        try{
-            String token = request.getHeader("token");
-            return new ResponseBean(200,"success",measureDeveloperService.getCommitCountByDurationAndDeveloperName(developerName,since,until,token,category,repoId));
-        }catch (Exception e){
-            e.printStackTrace();
-            return new ResponseBean(401,"failed",null);
-        }
-    }
 
-//    /**
-//     * 中汇需要
-//     */
-//    @GetMapping("/measure/developer/repository-list")
-//    @CrossOrigin
-//    public ResponseBean getRepoListByDeveloperName(
-//                                                    @RequestParam("developer_name")String developer_name,
-//                                                    @RequestParam("category")String category,
-//                                                    HttpServletRequest request
-//    ){
-//        try{
-//            String token = request.getHeader("token");
-//            return new ResponseBean(200,"success",measureDeveloperService.getRepoListByDeveloperName(developer_name,token,category));
-//        }catch (Exception e){
-//            e.printStackTrace();
-//            return new ResponseBean(401,"failed",null);
-//        }
-//    }
+    @ApiOperation(value = "开发者雷达图度量基础数据接口 , 需要废弃", notes = "@return DeveloperMetrics", httpMethod = "GET")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "developer", value = "开发人员姓名", dataType = "String",required = true, defaultValue = "yuping"),
+            @ApiImplicitParam(name = "repo_uuids", value = "repo_uuid", dataType = "String", required = true, defaultValue = "3ecf804e-0ad6-11eb-bb79-5b7ba969027e" ),
+            @ApiImplicitParam(name = "since", value = "起始时间（yyyy-MM-dd）", dataType = "String", defaultValue = "2019-02-20"),
+            @ApiImplicitParam(name = "until", value = "截止时间（yyyy-MM-dd）", dataType = "String", defaultValue = "当前时间"),
+            @ApiImplicitParam(name = "tool", value = "扫描工具", dataType = "String", defaultValue = "sonarqube"),
+            @ApiImplicitParam(name = "token", value = "token", dataType = "String",required = true,defaultValue = "ec15d79e36e14dd258cfff3d48b73d35")
+    })
 
-    /**
-     * 中汇需要
-     */
-    @GetMapping("/measure/developer/quality-changes")
-    @CrossOrigin
-    public ResponseBean getQualityChangesByDeveloperName(
-            @RequestParam("developer_name")String developerName,
-            @RequestParam("category")String category,
-            @RequestParam(value="counts" ,required =false,defaultValue = "0")int counts,
-            @RequestParam(value="project_name" ,required =false )String projectName,
-            HttpServletRequest request
-    ){
-        try{
-            String token = request.getHeader("token");
-            return new ResponseBean(200,"success",measureDeveloperService.getQualityChangesByDeveloperName(developerName,token,category,counts,projectName));
-        }catch (Exception e){
-            e.printStackTrace();
-            return new ResponseBean(401,"failed",e.getMessage());
-        }
-    }
-
-    /**
-     *     根据时间粒度获取程序员活跃度画像
-     */
-    @GetMapping("/measure/repository/developer-activeness-granularity")
-    @CrossOrigin
-    public ResponseBean getDeveloperActivenessByGranularity(@RequestParam("repo_id")String repo_id,
-                                               @RequestParam(name = "granularity")String granularity,
-                                               @RequestParam(name = "developer_name")String developer_name){
-
-        try{
-            return new ResponseBean(200,"success",measureDeveloperService.getDeveloperActivenessByGranularity(repo_id, granularity, developer_name));
-        }catch (Exception e){
-            e.printStackTrace();
-            return new ResponseBean(401,"failed",e.getMessage());
-        }
-    }
-
-    /**
-     *     根据时间段获取程序员活跃度画像
-     */
-    @GetMapping("/measure/repository/developer-activeness-duration")
-    @CrossOrigin
-    public ResponseBean getDeveloperActivenessByDuration(@RequestParam("repo_id")String repo_id,
-                                                         @RequestParam(name = "since")String since,
-                                                         @RequestParam(name = "until")String until,
-                                               @RequestParam(name = "developer_name")String developer_name){
-
-        try{
-            return new ResponseBean(200,"success",measureDeveloperService.getDeveloperActivenessByDuration(repo_id, since, until, developer_name));
-        }catch (Exception e){
-            e.printStackTrace();
-            return new ResponseBean(401,"failed",e.getMessage());
-        }
-    }
-
-    /**
-     *
-     * @return 获取开发者雷达图度量基础数据
-     */
     @GetMapping("/measure/portrait")
-    @CrossOrigin
-    public ResponseBean getPortrait(@RequestParam(value = "repo-id")String repoId,
-                                    @RequestParam(value = "developer")String developer,
-                                    @RequestParam(value = "begin-date", required = false, defaultValue = "")String beginDate,
-                                    @RequestParam(value = "end-date", required = false, defaultValue = "")String endDate,
-                                    @RequestParam(value = "tool", required = false, defaultValue = "sonarqube")String tool,
-                                    HttpServletRequest request){
+    @Deprecated
+    public ResponseBean<DeveloperMetrics> getPortrait(@RequestParam(value = "repo_uuids")String repoUuidList,
+                                                      @RequestParam(value = "developer")String developer,
+                                                      @RequestParam(value = "since", required = false, defaultValue = "")String since,
+                                                      @RequestParam(value = "until", required = false, defaultValue = "")String until,
+                                                      @RequestParam(value = "tool", required = false, defaultValue = "sonarqube")String tool,
+                                                      HttpServletRequest request){
 
         try{
             String token = request.getHeader("token");
-            return new ResponseBean(200,"success",measureDeveloperService.getPortrait(repoId,developer,beginDate,endDate,token,tool));
+            return new ResponseBean<>(200,"success",(DeveloperMetrics) measureDeveloperService.getPortrait(repoUuidList,developer,since,until,token,tool));
         }catch (Exception e){
             e.printStackTrace();
-            return new ResponseBean(401,"failed",e.getMessage());
+            return new ResponseBean<>(401,"failed "+ e.getMessage() ,null);
         }
     }
+
+    @ApiOperation(value = "获取开发者所参与所有库的画像", notes = "@return DeveloperPortrait", httpMethod = "GET")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "developer", value = "开发人员姓名", dataType = "String",required = true,defaultValue = "yuping"),
+            @ApiImplicitParam(name = "since", value = "起始时间（yyyy-MM-dd）", dataType = "String", defaultValue = "2019-02-20"),
+            @ApiImplicitParam(name = "until", value = "截止时间（yyyy-MM-dd）", dataType = "String", defaultValue = "当前时间"),
+            @ApiImplicitParam(name = "token", value = "token", dataType = "String", required = true,defaultValue = "ec15d79e36e14dd258cfff3d48b73d35")
+    })
 
     @GetMapping("/measure/portrait-level")
-    @CrossOrigin
-    public ResponseBean getPortraitLevel(@RequestParam("developer")String developer,
-                                    HttpServletRequest request){
+    public ResponseBean<DeveloperPortrait> getPortraitLevel(@RequestParam("developer")String developer,
+                                                            @RequestParam(value = "since", required = false)String since,
+                                                            @RequestParam(value = "until", required = false)String until,
+                                                            HttpServletRequest request){
 
         try{
             String token = request.getHeader("token");
-            return new ResponseBean(200,"success",measureDeveloperService.getPortraitLevel(developer,token));
+            return new ResponseBean<>(200,"success",(DeveloperPortrait) measureDeveloperService.getPortraitLevel(developer,since,until,token));
         }catch (Exception e){
             e.printStackTrace();
-            return new ResponseBean(401,"failed",e.getMessage());
+            return new ResponseBean<>(401,"failed "+e.getMessage(),null);
         }
     }
 
-    /**
-     *
-     *返回用户画像页面得代码行数数据，包括所有项目和单个项目的
-     */
-    @GetMapping("/measure/LOC")
+    @ApiOperation(value = "获取开发者能力：质量，效率，贡献等相关数据", notes = "@return List<cn.edu.fudan.measureservice.portrait2.DeveloperPortrait>", httpMethod = "GET")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "developer", value = "开发者姓名", dataType = "String", required = true, defaultValue = "yuping"),
+            @ApiImplicitParam(name = "repo_uuids", value = "多个repo_uuid之间用‘，’分割", dataType = "String",required = true, defaultValue = "3ecf804e-0ad6-11eb-bb79-5b7ba969027e"),
+            @ApiImplicitParam(name = "since", value = "起始时间（yyyy-MM-dd）", dataType = "String", defaultValue = "2019-02-20"),
+            @ApiImplicitParam(name = "until", value = "截止时间（yyyy-MM-dd）", dataType = "String", defaultValue = "当前时间"),
+            @ApiImplicitParam(name = "token", value = "token", dataType = "String", required = true, defaultValue = "ec15d79e36e14dd258cfff3d48b73d35")
+    })
+
+    @SuppressWarnings("unchecked")
+    @GetMapping("/measure/portrait/competence")
     @CrossOrigin
-    public ResponseBean getLOCByCondition(@RequestParam(value = "repo-id", required = false)String repoId,
-                                          @RequestParam(value = "developer", required = false)String developer,
-                                          @RequestParam(value = "begin-date", required = false)String beginDate,
-                                          @RequestParam(value = "end-date", required = false)String endDate,
-                                          @RequestParam(value = "type", required = false, defaultValue = "total")String type){
+    public ResponseBean<List<cn.edu.fudan.measureservice.portrait2.DeveloperPortrait>> getPortraitCompetence(@RequestParam(value = "developer" )String developer,
+                                              @RequestParam(value = "repo_uuids",required = false)String repoUuidList,
+                                              @RequestParam(value = "since", required = false)String since,
+                                              @RequestParam(value = "until", required = false)String until,
+                                              HttpServletRequest request){
 
         try{
-            return new ResponseBean(200,"success",measureDeveloperService.getLOCByCondition(repoId,developer,beginDate,endDate,type));
+            String token = request.getHeader("token");
+            return new ResponseBean<>(200,"success",(List<cn.edu.fudan.measureservice.portrait2.DeveloperPortrait>) measureDeveloperService.getPortraitCompetence(developer,repoUuidList,since,until,token));
         }catch (Exception e){
             e.printStackTrace();
-            return new ResponseBean(401,"failed",e.getMessage());
+            return new ResponseBean<>(401,"failed "+ e.getMessage(),null);
         }
     }
 
-    /**
-     *
-     *返回用户commit msg
-     */
-    @GetMapping("/measure/commit-msg")
+    @ApiOperation(value = "开发者提交规范性", notes = "@return Object", httpMethod = "GET")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "developer", value = "开发人员姓名，传入developer返回该开发者不规范明细，不传时返回所有开发者提交规范性", dataType = "String",defaultValue = "yuping"),
+            @ApiImplicitParam(name = "since", value = "起始时间（yyyy-MM-dd）", dataType = "String", defaultValue = "2019-02-20"),
+            @ApiImplicitParam(name = "until", value = "截止时间（yyyy-MM-dd）", dataType = "String", defaultValue = "当前时间"),
+            @ApiImplicitParam(name = "repo_uuids", value = "多个repo_uuid之间用‘，’分割", dataType = "String", defaultValue = "3ecf804e-0ad6-11eb-bb79-5b7ba969027e"),
+            @ApiImplicitParam(name = "page", value = "页数,仅在查看不规范明细时需传入page", dataType = "int", defaultValue = "1"),
+            @ApiImplicitParam(name = "ps", value = "每页显示个数,仅在查看不规范明细时需传入size", dataType = "int", defaultValue = "10"),
+    })
+
+    @GetMapping("/measure/commit-standard")
     @CrossOrigin
-    public ResponseBean getCommitMsgByCondition(@RequestParam(value = "repo-id", required = false)String repoId,
-                                          @RequestParam(value = "developer", required = false)String developer,
-                                          @RequestParam(value = "begin-date", required = false)String beginDate,
-                                          @RequestParam(value = "end-date", required = false)String endDate){
+    public ResponseBean<Object> getCommitStandard(@RequestParam(value = "developer",required = false)String developer,
+                                          @RequestParam(value = "repo_uuids",required = false)String repoUuidList,
+                                          @RequestParam(value = "since", required = false)String since,
+                                          @RequestParam(value = "until", required = false)String until,
+                                          @RequestParam(required = false, defaultValue = "1")int page,
+                                          @RequestParam(required = false, defaultValue = "10")int ps,
+                                          HttpServletRequest request){
 
         try{
-            return new ResponseBean(200,"success",measureDeveloperService.getCommitMsgByCondition(repoId,developer,beginDate,endDate));
+            String token = request.getHeader("token");
+            String condition ;
+            if(developer==null) {
+                condition = "1";
+                return new ResponseBean<>(200,"success", measureDeveloperService.getCommitStandard(null,repoUuidList,since,until,token,condition));
+            }else {
+                condition = "2";
+                List<Map<String,Object>> invalidCommitList = measureDeveloperService.getCommitStandard(developer,repoUuidList,since,until,token,condition);
+                Map<String,Object> map = new HashMap<>();
+                map.put("totalCount",invalidCommitList.size());
+                map.put("invalidCommitList",invalidCommitList.subList((page - 1) * ps , page * ps > invalidCommitList.size() ? invalidCommitList.size() : page * ps ));
+                return  new ResponseBean<>(200,"success",map);
+            }
         }catch (Exception e){
             e.printStackTrace();
-            return new ResponseBean(401,"failed",e.getMessage());
+            return new ResponseBean<>(401,"failed",e.getMessage());
         }
     }
 
-    @GetMapping("/measure/jira")
-    @CrossOrigin
-    public ResponseBean getJiraMeasure(@RequestParam(value = "repo-id", required = false)String repoId,
+    @ApiOperation(value = "返回用户画像页面得代码行数数据，包括所有项目和单个项目的 To codeTracker", notes = "@return Map<String,Object>", httpMethod = "GET")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "developer", value = "开发人员姓名", dataType = "String",defaultValue = "yuping"),
+            @ApiImplicitParam(name = "repo_uuids", value = "多个repo_uuid之间用‘，’分割", dataType = "String",defaultValue = "3ecf804e-0ad6-11eb-bb79-5b7ba969027e"),
+            @ApiImplicitParam(name = "since", value = "起始时间（yyyy-MM-dd）", dataType = "String", defaultValue = "2019-02-20"),
+            @ApiImplicitParam(name = "until", value = "截止时间（yyyy-MM-dd）", dataType = "String", defaultValue = "当前时间")
+    })
+
+    @SuppressWarnings("unchecked")
+    @GetMapping("/measure/statement")
+    @Deprecated
+    public ResponseBean<Map<String,Object>> getStatementByCondition(@RequestParam(value = "repo_uuids", required = false)String repUuidList,
                                                 @RequestParam(value = "developer", required = false)String developer,
-                                                @RequestParam(value = "begin-date", required = false)String beginDate,
-                                                @RequestParam(value = "end-date", required = false)String endDate){
+                                                @RequestParam(value = "since", required = false)String since,
+                                                @RequestParam(value = "until", required = false)String until){
 
         try{
-            return new ResponseBean(200,"success",measureDeveloperService.getJiraMeasureInfo(repoId,developer,beginDate,endDate));
+            return new ResponseBean<>(200,"success",(Map<String,Object>) measureDeveloperService.getStatementByCondition(repUuidList,developer,since,until));
         }catch (Exception e){
             e.printStackTrace();
-            return new ResponseBean(401,"failed",e.getMessage());
+            return new ResponseBean<>(401,"failed "+e.getMessage(),null);
         }
     }
 
-    @GetMapping("/measure/developer/recentNews")
+
+    @ApiOperation(value = "开发者最新动态", notes = "@return List<Map<String, Object>> key : repo_id,jira_info,commit_time,message,developer_unique_name,commit_id", httpMethod = "GET")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "developer", value = "开发人员姓名", dataType = "String",required = true,defaultValue = "yuping"),
+            @ApiImplicitParam(name = "repo_uuids", value = "多个repo_uuid之间用‘，’分割", dataType = "String",defaultValue = "3ecf804e-0ad6-11eb-bb79-5b7ba969027e"),
+            @ApiImplicitParam(name = "since", value = "起始时间（yyyy-MM-dd）", dataType = "String", defaultValue = "2019-02-20"),
+            @ApiImplicitParam(name = "until", value = "截止时间（yyyy-MM-dd）", dataType = "String", defaultValue = "当前时间")
+    })
+
+    @SuppressWarnings("unchecked")
+    @GetMapping("/measure/developer/recent-news")
     @CrossOrigin
-    public ResponseBean getDeveloperRecentNews(@RequestParam(value = "repo-id", required = false)String repoId,
-                                       @RequestParam(value = "developer", required = false)String developer,
-                                       @RequestParam(value = "begin-date", required = false)String beginDate,
-                                       @RequestParam(value = "end-date", required = false)String endDate){
+    public ResponseBean<List<Map<String, Object>>> getDeveloperRecentNews(@RequestParam(value = "repo_uuids", required = false)String repoUuidList,
+                                               @RequestParam(value = "developer")String developer,
+                                               @RequestParam(value = "since", required = false)String since,
+                                               @RequestParam(value = "until", required = false)String until){
 
         try{
-            return new ResponseBean(200,"success",measureDeveloperService.getDeveloperRecentNews(repoId,developer,beginDate,endDate));
+            return new ResponseBean<>(200,"success",(List<Map<String, Object>>)measureDeveloperService.getDeveloperRecentNews(repoUuidList,developer,since,until));
         }catch (Exception e){
             e.printStackTrace();
-            return new ResponseBean(401,"failed",e.getMessage());
+            return new ResponseBean<>(401,"failed "+e.getMessage(),null);
         }
     }
+
+    @ApiOperation(value = "人员列表", notes = "@return List<Map<String, Object>> key: involveRepoCount, totalLevel, efficiency, developer_name, DutyType, value, quality", httpMethod = "GET")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "repo_uuids", value = "多个repo_uuid之间用‘，’分割", dataType = "String",defaultValue = "3ecf804e-0ad6-11eb-bb79-5b7ba969027e"),
+            @ApiImplicitParam(name = "token", value = "token", dataType = "String",required = true,defaultValue = "ec15d79e36e14dd258cfff3d48b73d35")
+    })
+
+    @SuppressWarnings("unchecked")
+    @GetMapping("/measure/developer-list")
+    @CrossOrigin
+    public ResponseBean<List<Map<String, Object>>> getDeveloperList(@RequestParam(value = "repo_uuids", required = false)String repoUuidList,
+                                         HttpServletRequest request){
+
+        try{
+            String token = request.getHeader("token");
+            return new ResponseBean<>(200,"success",(List<Map<String, Object>>) measureDeveloperService.getDeveloperList(repoUuidList,token));
+        }catch (Exception e){
+            e.printStackTrace();
+            return new ResponseBean<>(401,"failed "+ e.getMessage(),null);
+        }
+    }
+
 
 
 

@@ -1,13 +1,9 @@
 package cn.edu.fudan.measureservice.portrait;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Date;
 
 /**
  * description: 开发者指标
@@ -19,26 +15,21 @@ import java.util.Date;
 public class DeveloperMetrics implements Serializable {
 
     private LocalDate firstCommitDate;
-    private int totalLine;
+    private int totalStatement;//需要改成逻辑行statement
     private int totalCommitCount;
     private String repoName;
+    private String repoId;
     private String developer;
     private Efficiency efficiency;
     private Quality quality;
     private Competence competence;
 
-    public DeveloperMetrics(LocalDate firstCommitDate, int totalLine, int totalCommitCount, String repoName, String developer, Efficiency efficiency, Quality quality, Competence competence) {
+    public DeveloperMetrics(LocalDate firstCommitDate, int totalStatement, int totalCommitCount, String repoName, String repoId, String developer, Efficiency efficiency, Quality quality, Competence competence) {
         this.firstCommitDate = firstCommitDate;
-        this.totalLine = totalLine;
+        this.totalStatement = totalStatement;
         this.totalCommitCount = totalCommitCount;
         this.repoName = repoName;
-        this.developer = developer;
-        this.efficiency = efficiency;
-        this.quality = quality;
-        this.competence = competence;
-    }
-
-    public DeveloperMetrics(String developer, Efficiency efficiency, Quality quality, Competence competence) {
+        this.repoId = repoId;
         this.developer = developer;
         this.efficiency = efficiency;
         this.quality = quality;

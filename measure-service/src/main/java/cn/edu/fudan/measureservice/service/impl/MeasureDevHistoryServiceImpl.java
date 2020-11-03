@@ -19,7 +19,7 @@ import java.util.Map;
 @Service
 public class MeasureDevHistoryServiceImpl implements MeasureDevHistoryService {
 
-    private FileMeasureMapper fileMeasureMapper;
+    private final FileMeasureMapper fileMeasureMapper;
 
     public MeasureDevHistoryServiceImpl(FileMeasureMapper fileMeasureMapper) {
         this.fileMeasureMapper = fileMeasureMapper;

@@ -2,10 +2,6 @@ package cn.edu.fudan.measureservice.service;
 
 import cn.edu.fudan.measureservice.domain.dto.RepoResourceDTO;
 
-
-/**
- * @author fancying
- */
 public interface MeasureScanService {
 
 
@@ -36,5 +32,6 @@ public interface MeasureScanService {
      * @param repoId repo的唯一标识
      */
     void delete(String repoId);
+
 
 }

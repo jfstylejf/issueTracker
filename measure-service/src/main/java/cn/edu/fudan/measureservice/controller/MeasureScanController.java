@@ -2,11 +2,18 @@ package cn.edu.fudan.measureservice.controller;
 
 import cn.edu.fudan.measureservice.domain.ResponseBean;
 import cn.edu.fudan.measureservice.domain.dto.RepoResourceDTO;
+import cn.edu.fudan.measureservice.domain.dto.ScanDTO;
 import cn.edu.fudan.measureservice.service.MeasureScanService;
 import com.alibaba.fastjson.JSONObject;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * description:
@@ -21,24 +28,25 @@ public class MeasureScanController {
 
     private MeasureScanService measureScanService;
 
+    @ApiOperation(value = "接收请求开始扫描 servicePath + toolName + \"/scan\", jsonObject, JSONObject.class 接收scan服务的请求进行扫描", httpMethod = "PUT")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "scanDTO", value = "repoUuid branch beginCommit", dataType = "String",required = true),
+    })
     /**
      * description 接收请求开始扫描 servicePath + toolName + "/scan", jsonObject, JSONObject.class 接收scan服务的请求进行扫描
      * @param jsonObject : repoId branch beginCommit
      */
     @PostMapping(value = {"/measure/{toolName}"})
-    public ResponseBean scan(@RequestBody JSONObject jsonObject,@PathVariable String toolName) {
-        String repoId = "repoId";
-        String branch = "branch";
-        String beginCommit = "beginCommit";
-        repoId = jsonObject.getString(repoId);
-        branch = jsonObject.getString(branch);
-        beginCommit = jsonObject.getString(beginCommit);
+    public ResponseBean scan(@RequestBody ScanDTO scanDTO, @PathVariable String toolName) {
+        String repoUuid = scanDTO.getRepoUuid();
+        String branch = scanDTO.getBranch();
+        String beginCommit = scanDTO.getBeginCommit();
 
         // TODO 调用 tool scan 流程
         try {
             // 调用javancss工具进行扫描 目前measure服务只有这个扫描工具
             if (toolName.equals("javancss")){
-                measureScanService.scan(RepoResourceDTO.builder().repoId(repoId).build(), branch, beginCommit, toolName);
+                measureScanService.scan(RepoResourceDTO.builder().repoId(repoUuid).build(), branch, beginCommit, toolName);
             }
             return ResponseBean.builder().code(200).build();
         }catch (Exception e) {
@@ -47,25 +55,35 @@ public class MeasureScanController {
         }
     }
 
-
+    @ApiOperation(value = "获取扫描状态 PathVariable:javancss",notes = "@return Map<String, Object>", httpMethod = "GET")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "repo_uuid", value = "参与库", dataType = "String",required = true,defaultValue = "3ecf804e-0ad6-11eb-bb79-5b7ba969027e"),
+    })
+    @SuppressWarnings("unchecked")
     @GetMapping(value = {"/measure/{toolName}/scan-status"})
-    public ResponseBean getScanStatus(@RequestParam String repoId,@PathVariable String toolName) {
+    public ResponseBean<Map<String, Object>> getScanStatus(@RequestParam("repo_uuid") String repoUuid, @PathVariable String toolName) {
 
         try {
             //目前measure服务只有这个扫描工具
-            Object result = null;
-            if (toolName.equals("javancss")){
-                result = measureScanService.getScanStatus(repoId);
+            Map<String, Object> result = null;
+            if ("javancss".equals(toolName)){
+                result = (Map<String, Object>) measureScanService.getScanStatus(repoUuid);
             }
-            return ResponseBean.builder().code(200).data(result).build();
+            return new ResponseBean<>(200,"success", result);
         }catch (Exception e) {
+            e.printStackTrace();
             log.error("get scan status failed! message is {}", e.getMessage());
-            return ResponseBean.builder().code(500).data(e.getMessage()).build();
+            return new ResponseBean<>(500,"failed "+e.getMessage(),null);
         }
     }
 
+    @ApiOperation(value = "删除扫描状态", httpMethod = "DELETE")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "repo_uuid", value = "参与库", dataType = "String",required = true,defaultValue = "3ecf804e-0ad6-11eb-bb79-5b7ba969027e"),
+    })
+    @SuppressWarnings("unchecked")
     @DeleteMapping("/measure/{repoId}")
-    public ResponseBean deleteRepoMeasureByRepoId(@PathVariable("repoId")String repoId){
+    public ResponseBean deleteRepoMeasureByRepoId(@PathVariable("repo_uuid")String repoId){
         try{
             measureScanService.delete(repoId);
             return new ResponseBean(200,"success",null);
@@ -74,6 +92,7 @@ public class MeasureScanController {
             return new ResponseBean(401,"failed",null);
         }
     }
+
 
     @Autowired
     public void setMeasureScanService(MeasureScanService measureScanService) {
