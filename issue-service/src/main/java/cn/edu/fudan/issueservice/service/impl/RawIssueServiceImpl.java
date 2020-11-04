@@ -145,7 +145,6 @@ public class RawIssueServiceImpl implements RawIssueService {
             }
         }
 
-
         result.put("rawIssueList",rawIssues);
         return result;
     }

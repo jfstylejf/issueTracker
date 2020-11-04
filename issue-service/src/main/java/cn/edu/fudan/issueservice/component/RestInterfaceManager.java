@@ -754,39 +754,33 @@ public class RestInterfaceManager {
         return result;
     }
 
-    public JSONArray getDeveloperWorkload(String developerName,String since ,String until,String repoIdList){
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("token",null);
-        HttpEntity request = new HttpEntity(headers);
-        StringBuilder urlBuilder = new StringBuilder();
-        if (StringUtil.isNullOrEmpty(developerName)){
-            developerName="";
-        }
-        urlBuilder.append(measureServicePath).append("/measure/developer/work-load?developer=").append(developerName);
+    public Map<String, Integer> getDeveloperWorkload(Map<String, Object> query){
 
-        if (repoIdList!=null && repoIdList.length()>0){
-            urlBuilder.append("&repoId=").append(repoIdList);
-        }
-        if (since!=null && since.length()>0){
-            urlBuilder.append("&since=").append(since);
-        }
-        if (until!=null && until.length()>0){
-            urlBuilder.append("&until=").append(until);
-        }
+        HttpEntity request = new HttpEntity(new HttpHeaders(){{
+            add("token",null);
+        }});
 
-        String url = urlBuilder.toString();
+        String url = new StringBuilder().append(measureServicePath).append("/measure/developer/work-load?developer=")
+                .append(StringUtils.isEmpty(query.get("developer")) ? "" : query.get("developer").toString())
+                .append("&repo_uuid=").append(StringUtils.isEmpty(query.get("repoList")) ? "" : query.get("repoList").toString())
+                .append("&since=").append(StringUtils.isEmpty(query.get("since")) ? "" : query.get("since").toString())
+                .append("&until=").append(StringUtils.isEmpty(query.get("until")) ? "" : query.get("until").toString())
+                .toString();
+
         ResponseEntity responseEntity = restTemplate.exchange(url , HttpMethod.GET,request,JSONObject.class);
-        String body = responseEntity.getBody().toString();
-        JSONObject result = JSONObject.parseObject(body,JSONObject.class);
-        if(result.getIntValue("code") != 200){
+        JSONObject result = JSONObject.parseObject(responseEntity.getBody().toString(),JSONObject.class);
+
+        if(result.getIntValue("code") != 200 || result.getJSONObject("data").isEmpty()){
             logger.error("request /measure/developer/workLoad failed");
             return null;
         }
-        if (result.getJSONArray("data").isEmpty()){
-            return null;
-        }
-        return result.getJSONArray("data");
+
+        Map<String, Integer> developerWorkLoad = new HashMap<>(16);
+
+        JSONObject data = result.getJSONObject("data");
+
+        data.keySet().forEach(r -> developerWorkLoad.put(r,developerWorkLoad.getOrDefault(r + data.getJSONObject(r).getInteger("delLines") + data.getJSONObject(r).getInteger("addLines"), data.getJSONObject(r).getInteger("delLines") + data.getJSONObject(r).getInteger("addLines"))));
+
+        return developerWorkLoad;
     }
-
-
 }

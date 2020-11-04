@@ -6,6 +6,7 @@ import cn.edu.fudan.issueservice.domain.statistics.CodeQualityResponse;
 import cn.edu.fudan.issueservice.service.IssueMeasureInfoService;
 import cn.edu.fudan.issueservice.service.IssueRankService;
 import cn.edu.fudan.issueservice.util.DateTimeUtil;
+import cn.edu.fudan.issueservice.util.SegmentationUtil;
 import com.alibaba.fastjson.JSONObject;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -217,13 +219,22 @@ public class IssueMeasurementController {
             @ApiImplicitParam(name = "tool", value = "工具名", allowableValues = "sonarqube", defaultValue = "sonarqube"),
     })
     @GetMapping(value = {"/codewisdom/issue/developer/code-quality"})
-    public ResponseBean<Map<String, Object>> getDeveloperCodeQuality(@RequestParam(value = "repo_uuids",required = false)String repoIdList,
+    public ResponseBean<Map<String, JSONObject>> getDeveloperCodeQuality(@RequestParam(value = "repo_uuids",required = false)String repoList,
                                                 @RequestParam(value = "developer",required = false)String developer,
                                                 @RequestParam(value = "tool",required = false,defaultValue = "sonarqube")String tool,
-                                                        @RequestParam(value = "since",required = false)String since,
-                                                        @RequestParam(value = "until",required = false)String until){
+                                                @RequestParam(value = "since",required = false)String since,
+                                                @RequestParam(value = "until",required = false)String until){
+
+        Map<String, Object> query = new HashMap<>(10);
+
+        query.put("since", DateTimeUtil.timeFormatIsLegal(since, false));
+        query.put("until", DateTimeUtil.timeFormatIsLegal(until, true));
+        query.put("developer", developer);
+        query.put("tool", tool);
+        query.put("repoList", repoList);
+
         try {
-            return new ResponseBean(200, "success!", issueMeasureInfoService.getDeveloperCodeQuality(repoIdList, developer, tool, since, until));
+            return new ResponseBean(200, "success!", issueMeasureInfoService.getDeveloperCodeQuality(query));
         } catch (Exception e) {
             e.printStackTrace();
             return new ResponseBean(401, "failed!" + e.getMessage(), null);
@@ -235,7 +246,7 @@ public class IssueMeasurementController {
      */
     @Deprecated
     @ApiIgnore
-    @ApiOperation(value = "获取开发者open或solved缺陷数量", notes = "@return ap<String, Integer>", httpMethod = "GET")
+    @ApiOperation(value = "获取开发者open或solved缺陷数量", notes = "@return Map<String, Integer>", httpMethod = "GET")
     @GetMapping(value = {"/codewisdom/issue/developer/quantity"})
     public ResponseBean<Map<String, Integer>> getDeveloperQuantity(@RequestParam(value = "repo-id-list",required = false)String repoIdList,
                                                 @RequestParam(value = "tool",required = false,defaultValue = "sonarqube")String tool,

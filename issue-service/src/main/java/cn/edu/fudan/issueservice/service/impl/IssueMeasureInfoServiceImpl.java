@@ -22,6 +22,7 @@ import cn.edu.fudan.issueservice.domain.statistics.TimeQuality;
 import cn.edu.fudan.issueservice.service.IssueMeasureInfoService;
 import cn.edu.fudan.issueservice.util.DateTimeUtil;
 import cn.edu.fudan.issueservice.util.JGitHelper;
+import cn.edu.fudan.issueservice.util.SegmentationUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +31,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -545,15 +547,23 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
         }
 
         //开发者曾经解决过的缺陷的数量（不一定是最终解决的）
-        Map<String,Object> map =(Map<String,Object>) getDeveloperCodeQuality(repoId,developer,"sonarqube",since,until);
-        int solvedIssuesCount = (int) map.get("solvedIssueCount");
-        LocalDate sinceDay = DateTimeUtil.stringToLocalDate(since);
-        LocalDate untilDay = DateTimeUtil.stringToLocalDate(until);
-        double days = (untilDay.toEpochDay()-sinceDay.toEpochDay())*5.0/7;
-        Map<String,Object> resultMap = new HashMap<>();
-        resultMap.put("solvedIssuesCount",solvedIssuesCount);
-        resultMap.put("days",days);
-        resultMap.put("dayAvgSolvedIssue",solvedIssuesCount/days);
+        Map<String, Object> query = new HashMap(10);
+        query.put("repoList", repoId == null ? null : new ArrayList(){{
+            add(repoId);
+        }});
+        query.put("developer", developer);
+        query.put("tool", "sonarqube");
+        query.put("since", since);
+        query.put("until", until);
+
+        JSONObject developerDetail = getDeveloperCodeQuality(query).get(developer);
+
+        double days = (DateTimeUtil.stringToLocalDate(until).toEpochDay()-DateTimeUtil.stringToLocalDate(since).toEpochDay()) * 5.0 / 7;
+        Map<String,Object> resultMap = new HashMap(){{
+            put("solvedIssuesCount",developerDetail.getInteger("solvedIssueCount"));
+            put("days",days);
+            put("dayAvgSolvedIssue",developerDetail.getInteger("solvedIssueCount")/days);
+        }};
         return resultMap;
     }
 
@@ -1061,122 +1071,31 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
         return Double.valueOf(list.get(idx));
     }
 
-    @Cacheable(cacheNames = {"developerCodeQuality"})
     @Override
-    public Map<String, Object>  getDeveloperCodeQuality(String repoIdList, String developer, String tool, String since, String until) {
-        List<String> repoList = new ArrayList<>();
-        if(StringUtils.isEmpty(repoIdList)) {
-            repoList = null;
-        }else {
-            String[] repoIdArray = repoIdList.split(",");
-            //先把前端给的repo加入到repoList
-            repoList.addAll(Arrays.asList(repoIdArray));
-        }
+    public Map<String, JSONObject> getDeveloperCodeQuality(Map<String, Object> query) {
 
-        if (since != null){
-            if(!since.matches(dateRegex)){
-                throw new RuntimeException("date format error! please input date like this: 2020-05-01");
-            }
-        }
-        if (until != null){
-            if(!until.matches(dateRegex)){
-                throw new RuntimeException("date format error! please input date like this: 2020-05-01");
-            }
-            until = DateTimeUtil.stringToLocalDate(until).plusDays(1).toString();
-        }
+        Map<String, Integer> developerWorkload = restInterfaceManager.getDeveloperWorkload(query);
 
-        List<Map<String, Object>> addedIssueLife = issueDao.getIssueByRawIssueCommitViewIssueTable(repoList,null,tool,since,until,developer,RawIssueStatus.ADD.getType (),null);
-        int addedIssueCount = addedIssueLife.size();
-        int solvedIssueCount = 0;
-        Map<String, Object> result = new HashMap<>();
-        if (!StringUtils.isEmpty(developer)){
-            //查询某个开发者的解决的issue
-            List<Map<String, Object>> selfSolvedIssueLife = issueDao.getSolvedIssueLifeCycle(repoList,null,tool,since,until,developer,RawIssueStatus.SOLVED.getType ());
-            for (int i = selfSolvedIssueLife.size()-1; i >= 0; i--) {
-                Map<String, Object> map = selfSolvedIssueLife.get(i);
-                //判断最终状态是否已解决
-                if (!map.get("status").equals("Solved")){
-                    selfSolvedIssueLife.remove(i);
-                    continue;
-                }
-                //获取状态为Solved的问题的最后一次被解决的developer（lastSolver）
-                String lastSolver = rawIssueDao.getLastSolverOfOneIssue(map.get("uuid").toString());
-                if (!StringUtils.isEmpty(lastSolver) && !lastSolver.equals(developer)) {
-                    selfSolvedIssueLife.remove(i);
-                    continue;
-                }
-                //lastSolver（lastSolver），默认看作lastSolver为他人，而不是自己
-                if (StringUtils.isEmpty(lastSolver)) {
-                    selfSolvedIssueLife.remove(i);
-                    log.warn("issue/lifecycle api: Self-add & self-solved: Can't find the lastSolver newInstance issue_id :{}, so we assume this issue is solved by other people, not by {}",map.get("uuid").toString(),developer);
-                }
-            }
-            solvedIssueCount = selfSolvedIssueLife.size();
-        }else{//查询所有人的，不针对某一个开发者
-            List<Map<String, Object>> allSolvedIssueLife = issueDao.getIssueByRawIssueCommitViewIssueTable(repoList,null,tool,since,until,null,RawIssueStatus.ADD.getType (),IssueStatusEnum.OPEN.getName());
-            solvedIssueCount = allSolvedIssueLife.size();
-            //todo issue-uuid -> rawIssue to find commitId -> commit_view to find developer   result:Map<developer,Object:add+solve>
-            List<String> adders = issueDao.getAdderByIssue(repoList, tool, since, until, RawIssueStatus.ADD.getType());
-            List<String> solvedIssues = issueDao.getSolvedIssue(repoList, tool, since, until, IssueStatusEnum.SOLVED.getName());
-            Map<String, Object> developers = new HashMap<>();
-            List<String> developersByRepoIdList = commitDao.getDevelopersByRepoIdList(repoList);
-            for(String str : developersByRepoIdList){
-                if(str != null) {
-                    JSONObject o = new JSONObject();
-                    o.put("add", 0);
-                    o.put("solve", 0);
-                    developers.put(str, o);
-                }
-            }
-            for(String adder : adders){
-                if(adder == null) {
-                    continue;
-                }
-                JSONObject o = (JSONObject) developers.get(adder);
-                if(o == null){
-                    o = new JSONObject(){{
-                        put("add", 1);
-                        put("solve", 0);
-                    }};
-                    developers.put(adder, o);
-                    continue;
-                }
-                o.put("add", Integer.parseInt(o.get("add").toString()) + 1);
-                developers.put(adder, o);
-            }
-            for(String solvedIssue : solvedIssues){
-                String lastSolverOfOneIssue = rawIssueDao.getLastSolverOfOneIssue(solvedIssue);
-                if(lastSolverOfOneIssue != null) {
-                    JSONObject o = (JSONObject) developers.get(lastSolverOfOneIssue);
-                    if(o != null) {
-                        o.put("solve", Integer.parseInt(o.get("solve").toString()) + 1);
-                        developers.put(lastSolverOfOneIssue, o);
-                    }
-                }
-            }
-            result.put("developersDetail", developers);
-        }
+        Map<String, JSONObject> developersDetail = new HashMap<>(32);
 
-        JSONArray workload = restInterfaceManager.getDeveloperWorkload(developer, since, until, repoIdList);
-        int loc = 0;
-        if (workload != null){
-            for (int i = 0; i < workload.size(); i++){
-                loc += workload.getJSONObject(i).getIntValue("addLines");
-                loc += workload.getJSONObject(i).getIntValue("delLines");
-            }
-        }
-        double addQuality = 0;
-        double solveQuality = 0;
-        if (loc > 0){
-            addQuality = addedIssueCount*100.0/loc;
-            solveQuality = solvedIssueCount*100.0/loc;
-        }
-        result.put("addedIssueCount",addedIssueCount);
-        result.put("solvedIssueCount",solvedIssueCount);
-        result.put("loc",loc);
-        result.put("addQuality",addQuality);
-        result.put("solveQuality",solveQuality);
-        return result;
+        query.put("repoList", SegmentationUtil.splitStringList(query.get("repoList") == null ? null : query.get("repoList").toString()));
+        developerWorkload.keySet().forEach(r -> {
+            query.put("solver", null);
+            query.put("developer", r);
+            int developerAddIssueCount = issueDao.getIssueFilterListCount(query);
+            query.put("developer", null);
+            query.put("solver", r);
+            int developerSolvedIssueCount = issueDao.getIssueFilterListCount(query);
+            developersDetail.put(r, new JSONObject(){{
+                put("addedIssueCount", developerAddIssueCount);
+                put("solvedIssueCount", developerSolvedIssueCount);
+                put("loc", developerWorkload.get(r));
+                put("addQuality", developerWorkload.get(r) == 0 ? 0 : developerAddIssueCount * 100.0 / developerWorkload.get(r));
+                put("solveQuality", developerWorkload.get(r) == 0 ? 0 : developerSolvedIssueCount * 100.0 / developerWorkload.get(r));
+            }});
+        });
+
+        return developersDetail;
     }
 
     @Override

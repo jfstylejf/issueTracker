@@ -15,7 +15,6 @@ import java.util.Map;
 
 @Slf4j
 @RestController
-@ApiIgnore
 public class RawIssueController {
 
     private RawIssueService rawIssueService;
@@ -35,7 +34,7 @@ public class RawIssueController {
      * @return 返回rawIssue列表
      */
     @ApiOperation(value = "获取rawIssue列表接口", notes = "@return Object", httpMethod = "GET")
-    @GetMapping(value = {"/raw-issueList"})
+    @GetMapping(value = {"/raw-issue-list"})
     @Deprecated
     public ResponseBean<Object> getOnePageRawIssueList(
             @RequestParam("issue_id") String issue_id ,
@@ -59,6 +58,7 @@ public class RawIssueController {
      * @param file_path file_path
      * @return 文件的源代码
      */
+    @ApiIgnore
     @ApiOperation(value = "获取文件的源代码接口", notes = "@return Map<String, Object>", httpMethod = "GET")
     @GetMapping(value = {"/raw-issue/code"})
     @Deprecated
@@ -73,9 +73,9 @@ public class RawIssueController {
         }
     }
 
-    @Deprecated
     @GetMapping(value = {"/raw-issue"})
-    public ResponseBean getRawIssueList(@RequestParam("issue_id") String issue_id) {
+    @ApiOperation(value = "根据issue_uuid筛选rawIssue", notes = "@return List<RawIssue>", httpMethod = "GET")
+    public ResponseBean<List<RawIssue>> getRawIssueList(@RequestParam("issue_uuid") String issue_id) {
         try {
             List<RawIssue> data = rawIssueService.getRawIssueByIssueId(issue_id);
             return new ResponseBean(200, "success", data);
@@ -87,6 +87,7 @@ public class RawIssueController {
 
 
     //下面的接口都是其他服务调用的内部接口
+    @ApiIgnore
     @ApiOperation(value = "删除rawIssue表记录接口", notes = "@return null", httpMethod = "DELETE")
     @DeleteMapping(value = {"/inner/raw-issue/{category}/{repoId}"})
     @Deprecated

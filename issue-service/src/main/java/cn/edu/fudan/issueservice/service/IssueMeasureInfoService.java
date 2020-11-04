@@ -111,14 +111,10 @@ public interface IssueMeasureInfoService {
 
     /**
      *
-     * @param repoIdList repoIdList
-     * @param developer developer
-     * @param tool  缺陷检测工具
-     * @param since 开始时间
-     * @param until  结束时间
-     * @return 开发者的新增缺陷数量，消除缺陷数量，E/L N/L
+     * @param query
+     * @return
      */
-    Map<String, Object>  getDeveloperCodeQuality(String repoIdList,String developer,String tool,String since,String until);
+    Map<String, JSONObject>  getDeveloperCodeQuality(Map<String, Object> query);
 
     /**
      *

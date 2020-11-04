@@ -232,4 +232,8 @@ public class IssueDao {
     public List<String> getIssuetest() {
         return issueMapper.getIssuetest();
     }
+
+    public List<Map<String, Object>> getIssuesByRawIssueCommitViewIssueTable(Map<String, Object> query) {
+        return issueMapper.getIssueByRawIssuesCommitViewIssueTable(query);
+    }
 }

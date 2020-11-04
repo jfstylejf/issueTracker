@@ -577,7 +577,6 @@
         </if>
     </select>
 
-
     <select id="getHaveNotAdoptEliminateIssuesByToolAndRepoId" parameterType="String" resultMap="issue4">
         select * from issue
         where  repo_id = #{repo_id} and tool = #{tool} and resolution is not null and  resolution != '0';
@@ -604,6 +603,48 @@
                 </foreach>
             </if>
         </where>
+    </select>
+
+    <select id="getIssueByRawIssuesCommitViewIssueTable" resultType="java.util.HashMap">
+        select uuid, type, status, start_commit_date, end_commit_date, now() as now_date, datediff(now(),start_commit_date) as lifeCycle
+        from issue
+        where uuid in
+        (SELECT a.issue_id
+        FROM
+        rawIssue as a
+        INNER JOIN commit_view as b
+        ON a.repo_id = b.repo_id AND a.commit_id = b.commit_id
+        <trim prefix="where" prefixOverrides="and">
+            <if test="repoUuids != null and repoUuids.size > 0">
+                and a.repo_id in
+                <foreach collection="repoUuids" separator="," open="(" close=")" item="repo_uuid">
+                    #{repo_uuid}
+                </foreach>
+            </if>
+            <if test="rawIssueStatus != null  and rawIssueStatus != ''">
+                and a.status = #{rawIssueStatus}
+            </if>
+            <if test="type != null  and type != ''">
+                and a.type = #{type}
+            </if>
+            <if test="developer != null  and developer != ''">
+                and b.developer_unique_name = #{developer}
+            </if>
+            <if test="tool != null  and tool != ''">
+                and a.tool = #{tool}
+            </if>
+            <if test="since != null and since != '' ">
+                and <![CDATA[ b.commit_time >= #{since} ]]>
+            </if>
+            <if test="until != null and until != '' ">
+                and <![CDATA[ b.commit_time <= #{until} ]]>
+            </if>
+        </trim>
+        GROUP BY a.issue_id)
+        <if test="issueStatus != null  and issueStatus != ''">
+            and status = #{issueStatus}
+        </if>
+        order by lifeCycle desc
     </select>
 
     <select id="getIssueByRawIssueCommitViewIssueTable" resultType="java.util.HashMap">
