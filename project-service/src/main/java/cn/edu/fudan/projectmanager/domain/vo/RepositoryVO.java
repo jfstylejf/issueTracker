@@ -46,6 +46,7 @@ public class RepositoryVO implements Serializable {
         projectName = repository.getProjectName();
         scanStart = repository.getScanStart();
         repoName = StringUtils.isEmpty(repository.getRepoName()) ?
-                url.substring(url.lastIndexOf("/")) : repository.getRepoName();
+                url.substring(url.lastIndexOf("/") + 1) : repository.getRepoName();
     }
+
 }
