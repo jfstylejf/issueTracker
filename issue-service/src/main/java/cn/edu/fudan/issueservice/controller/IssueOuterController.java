@@ -255,6 +255,7 @@ public class IssueOuterController {
         query.put("detail", detail);
         query.put("order", order);
 
+        //fixme end_commit 改为 solve_commit 有误差
         //step1 ps = 0 only return total(because fetch time --)  or  ps != 0 do select;
         Map<String, Object> issueFilterList = issueService.getIssueFilterListCount(query);
         if(ps == 0){

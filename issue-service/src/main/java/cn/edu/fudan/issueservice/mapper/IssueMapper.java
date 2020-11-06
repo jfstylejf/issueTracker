@@ -416,4 +416,8 @@ public interface IssueMapper {
      * @return 根据rawIssue、commit_view、issue  三表来查询issue信息
      */
     List<Map<String, Object>> getIssueByRawIssuesCommitViewIssueTable(Map<String, Object> query);
+
+    int getSolvedIssueFilterListCount(Map<String, Object> query);
+
+    List<Map<String, Object>> getSolvedIssueFilterList(Map<String, Object> query);
 }

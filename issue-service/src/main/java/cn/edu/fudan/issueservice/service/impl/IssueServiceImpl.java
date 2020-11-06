@@ -995,9 +995,7 @@ public class IssueServiceImpl implements IssueService {
          */
         Map<String, Object> issueFilterList = new HashMap<>(16);
 
-        int total = issueDao.getIssueFilterListCount(query);
-
-        issueFilterList.put("total", total);
+        issueFilterList.put("total", query.get("developer") != null ? issueDao.getIssueFilterListCount(query) : query.get("solver") != null ? issueDao.getSolvedIssueFilterListCount(query) : issueDao.getIssueFilterListCount(query));
 
         return issueFilterList;
     }
@@ -1005,7 +1003,7 @@ public class IssueServiceImpl implements IssueService {
     @Override
     public Map<String, Object> getIssueFilterList(Map<String, Object> query, Map<String, Object> issueFilterList){
 
-        List<Map<String, Object>> issues = issueDao.getIssueFilterList(query);
+        List<Map<String, Object>> issues = query.get("developer") != null ? issueDao.getIssueFilterList(query) : query.get("solver") != null ? issueDao.getSolvedIssueFilterList(query) : issueDao.getIssueFilterList(query);
 
         for(Map<String, Object> issue : issues){
             String issueId = (String) issue.get("uuid");
@@ -1065,7 +1063,7 @@ public class IssueServiceImpl implements IssueService {
         query.put("start", null);
         query.put("ps", null);
 
-        List<Map<String, Object>> allIssueFilterList = issueDao.getIssueFilterList(query);
+        List<Map<String, Object>> allIssueFilterList = query.get("developer") != null ? issueDao.getIssueFilterList(query) : query.get("solver") != null ? issueDao.getSolvedIssueFilterList(query) : issueDao.getIssueFilterList(query);
 
         Map<String, JSONObject> allIssueTypeInfo = new HashMap<>(64);
 

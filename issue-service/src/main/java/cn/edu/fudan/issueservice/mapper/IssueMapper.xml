@@ -910,56 +910,56 @@
         select * from issue where status = 'Solved'
     </select>
 
-    <select id="getIssueFilterListCount" parameterType="Map" resultType="Integer">
-        SELECT COUNT(*) FROM issue
+    <select id="getSolvedIssueFilterListCount" parameterType="Map" resultType="Integer">
+        SELECT COUNT(*) FROM issue AS a INNER JOIN commit_view AS b ON a.repo_id = b.repo_id AND a.end_commit = b.commit_id
         <trim prefix="where" prefixOverrides="and">
             <if test="developer != null">
-                AND producer = #{developer}
+                AND a.producer = #{developer}
             </if>
             <if test="priority != null">
-                AND priority = #{priority}
+                AND a.priority = #{priority}
             </if>
             <if test="solver !=null">
-                AND solver = #{solver}
+                AND a.solver = #{solver}
             </if>
             <if test="filesPath != null and filesPath.size > 0">
-                AND target_files IN
+                AND a.target_files IN
                 <foreach collection="filesPath" separator="," open="(" close=")" item="filePath">
                     #{filePath}
                 </foreach>
             </if>
             <if test="types != null and types.size > 0">
-                AND type IN
+                AND a.type IN
                 <foreach collection="types" separator="," open="(" close=")" item="type">
                     #{type}
                 </foreach>
             </if>
             <if test="status != null and status.size > 0">
-                AND status IN
+                AND a.status IN
                 <foreach collection="status" separator="," open="(" close=")" item="state">
                     #{state}
                 </foreach>
             </if>
             <if test="since != null and since != '' ">
-                AND <![CDATA[ start_commit_date >= #{since} ]]>
+                AND <![CDATA[ b.commit_time >= #{since} ]]>
             </if>
             <if test="until != null and until != '' ">
-                AND <![CDATA[ end_commit_date <= #{until} ]]>
+                AND <![CDATA[ b.commit_time <= #{until} ]]>
             </if>
             <if test="toolName != null">
-                AND tool = #{toolName}
+                AND a.tool = #{toolName}
             </if>
             <if test="repoList != null and repoList.size > 0">
-                AND repo_id IN
+                AND a.repo_id IN
                 <foreach collection="repoList" separator="," open="(" close=")" item="repo_id">
                     #{repo_id}
                 </foreach>
             </if>
             <if test="category != null">
-                AND issue_category = #{category}
+                AND a.issue_category = #{category}
             </if>
             <if test="issueUuids != null and issueUuids.size > 0">
-                AND uuid IN
+                AND a.uuid IN
                 <foreach collection="issueUuids" separator="," open="(" close=")" item="issueUuid">
                     #{issueUuid}
                 </foreach>
@@ -967,64 +967,186 @@
         </trim>
     </select>
 
-    <select id="getIssueFilterList" parameterType="Map" resultType="java.util.HashMap">
-        SELECT uuid, type, tool, start_commit AS startCommit, start_commit_date AS startCommitDate, end_commit AS endCommit,
-        end_commit_date AS endCommitDate, repo_id AS repoId, target_files AS targetFiles, create_time AS creatTime, priority,
-        display_id AS displayId, status, issue_category AS issueCategory, producer, solver FROM issue
+    <select id="getIssueFilterListCount" parameterType="Map" resultType="Integer">
+        SELECT COUNT(*) FROM issue AS a INNER JOIN commit_view AS b ON a.repo_id = b.repo_id AND a.start_commit = b.commit_id
         <trim prefix="where" prefixOverrides="and">
             <if test="developer != null">
-                AND producer = #{developer}
-            </if>
-            <if test="solver !=null">
-                AND solver = #{solver}
+                AND a.producer = #{developer}
             </if>
             <if test="priority != null">
-                AND priority = #{priority}
+                AND a.priority = #{priority}
+            </if>
+            <if test="solver !=null">
+                AND a.solver = #{solver}
             </if>
             <if test="filesPath != null and filesPath.size > 0">
-                AND target_files IN
+                AND a.target_files IN
                 <foreach collection="filesPath" separator="," open="(" close=")" item="filePath">
                     #{filePath}
                 </foreach>
             </if>
             <if test="types != null and types.size > 0">
-                AND type IN
+                AND a.type IN
                 <foreach collection="types" separator="," open="(" close=")" item="type">
                     #{type}
                 </foreach>
             </if>
             <if test="status != null and status.size > 0">
-                AND status IN
+                AND a.status IN
                 <foreach collection="status" separator="," open="(" close=")" item="state">
                     #{state}
                 </foreach>
             </if>
             <if test="since != null and since != '' ">
-                AND <![CDATA[ start_commit_date >= #{since} ]]>
+                AND <![CDATA[ b.commit_time >= #{since} ]]>
             </if>
             <if test="until != null and until != '' ">
-                AND <![CDATA[ end_commit_date <= #{until} ]]>
+                AND <![CDATA[ b.commit_time <= #{until} ]]>
             </if>
             <if test="toolName != null">
-                AND tool = #{toolName}
+                AND a.tool = #{toolName}
             </if>
             <if test="repoList != null and repoList.size > 0">
-                AND repo_id IN
+                AND a.repo_id IN
                 <foreach collection="repoList" separator="," open="(" close=")" item="repo_id">
                     #{repo_id}
                 </foreach>
             </if>
             <if test="category != null">
-                AND issue_category = #{category}
+                AND a.issue_category = #{category}
             </if>
             <if test="issueUuids != null and issueUuids.size > 0">
-                AND uuid IN
+                AND a.uuid IN
                 <foreach collection="issueUuids" separator="," open="(" close=")" item="issueUuid">
                     #{issueUuid}
                 </foreach>
             </if>
         </trim>
-        order by priority , end_commit_date desc , start_commit_date desc , display_id
+    </select>
+
+    <select id="getSolvedIssueFilterList" parameterType="Map" resultType="java.util.HashMap">
+        SELECT a.uuid, a.type, a.tool, a.start_commit AS startCommit, a.start_commit_date AS startCommitDate, a.end_commit AS endCommit,
+        a.end_commit_date AS endCommitDate, a.repo_id AS repoId, a.target_files AS targetFiles, a.create_time AS creatTime, a.priority,
+        a.display_id AS displayId, a.status, a.issue_category AS issueCategory, a.producer, a.solver FROM issue AS a INNER JOIN commit_view
+        AS b ON a.repo_id = b.repo_id AND a.end_commit = b.commit_id
+        <trim prefix="where" prefixOverrides="and">
+            <if test="developer != null">
+                AND a.producer = #{developer}
+            </if>
+            <if test="solver !=null">
+                AND a.solver = #{solver}
+            </if>
+            <if test="priority != null">
+                AND a.priority = #{priority}
+            </if>
+            <if test="filesPath != null and filesPath.size > 0">
+                AND a.target_files IN
+                <foreach collection="filesPath" separator="," open="(" close=")" item="filePath">
+                    #{filePath}
+                </foreach>
+            </if>
+            <if test="types != null and types.size > 0">
+                AND a.type IN
+                <foreach collection="types" separator="," open="(" close=")" item="type">
+                    #{type}
+                </foreach>
+            </if>
+            <if test="status != null and status.size > 0">
+                AND a.status IN
+                <foreach collection="status" separator="," open="(" close=")" item="state">
+                    #{state}
+                </foreach>
+            </if>
+            <if test="since != null and since != '' ">
+                AND <![CDATA[ b.commit_time >= #{since} ]]>
+            </if>
+            <if test="until != null and until != '' ">
+                AND <![CDATA[ b.commit_time <= #{until} ]]>
+            </if>
+            <if test="toolName != null">
+                AND a.tool = #{toolName}
+            </if>
+            <if test="repoList != null and repoList.size > 0">
+                AND a.repo_id IN
+                <foreach collection="repoList" separator="," open="(" close=")" item="repo_id">
+                    #{repo_id}
+                </foreach>
+            </if>
+            <if test="category != null">
+                AND a.issue_category = #{category}
+            </if>
+            <if test="issueUuids != null and issueUuids.size > 0">
+                AND a.uuid IN
+                <foreach collection="issueUuids" separator="," open="(" close=")" item="issueUuid">
+                    #{issueUuid}
+                </foreach>
+            </if>
+        </trim>
+        order by a.priority , a.end_commit_date desc , a.start_commit_date desc , a.display_id
+        <if test="start != null  and ps != null ">
+            limit #{start},#{ps}
+        </if>
+    </select>
+
+    <select id="getIssueFilterList" parameterType="Map" resultType="java.util.HashMap">
+        SELECT a.uuid, a.type, a.tool, a.start_commit AS startCommit, a.start_commit_date AS startCommitDate, a.end_commit AS endCommit,
+        a.end_commit_date AS endCommitDate, a.repo_id AS repoId, a.target_files AS targetFiles, a.create_time AS creatTime, a.priority,
+        a.display_id AS displayId, a.status, a.issue_category AS issueCategory, a.producer, a.solver FROM issue AS a INNER JOIN commit_view
+        AS b ON a.repo_id = b.repo_id AND a.start_commit = b.commit_id
+        <trim prefix="where" prefixOverrides="and">
+            <if test="developer != null">
+                AND a.producer = #{developer}
+            </if>
+            <if test="solver !=null">
+                AND a.solver = #{solver}
+            </if>
+            <if test="priority != null">
+                AND a.priority = #{priority}
+            </if>
+            <if test="filesPath != null and filesPath.size > 0">
+                AND a.target_files IN
+                <foreach collection="filesPath" separator="," open="(" close=")" item="filePath">
+                    #{filePath}
+                </foreach>
+            </if>
+            <if test="types != null and types.size > 0">
+                AND a.type IN
+                <foreach collection="types" separator="," open="(" close=")" item="type">
+                    #{type}
+                </foreach>
+            </if>
+            <if test="status != null and status.size > 0">
+                AND a.status IN
+                <foreach collection="status" separator="," open="(" close=")" item="state">
+                    #{state}
+                </foreach>
+            </if>
+            <if test="since != null and since != '' ">
+                AND <![CDATA[ b.commit_time >= #{since} ]]>
+            </if>
+            <if test="until != null and until != '' ">
+                AND <![CDATA[ b.commit_time <= #{until} ]]>
+            </if>
+            <if test="toolName != null">
+                AND a.tool = #{toolName}
+            </if>
+            <if test="repoList != null and repoList.size > 0">
+                AND a.repo_id IN
+                <foreach collection="repoList" separator="," open="(" close=")" item="repo_id">
+                    #{repo_id}
+                </foreach>
+            </if>
+            <if test="category != null">
+                AND a.issue_category = #{category}
+            </if>
+            <if test="issueUuids != null and issueUuids.size > 0">
+                AND a.uuid IN
+                <foreach collection="issueUuids" separator="," open="(" close=")" item="issueUuid">
+                    #{issueUuid}
+                </foreach>
+            </if>
+        </trim>
+        order by a.priority , a.end_commit_date desc , a.start_commit_date desc , a.display_id
         <if test="start != null  and ps != null ">
             limit #{start},#{ps}
         </if>

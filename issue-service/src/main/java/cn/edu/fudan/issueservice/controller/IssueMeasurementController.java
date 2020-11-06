@@ -234,6 +234,7 @@ public class IssueMeasurementController {
         query.put("repoList", repoList);
 
         try {
+            //fixme end_commit 改为 solve_commit 有误差
             return new ResponseBean(200, "success!", issueMeasureInfoService.getDeveloperCodeQuality(query));
         } catch (Exception e) {
             e.printStackTrace();

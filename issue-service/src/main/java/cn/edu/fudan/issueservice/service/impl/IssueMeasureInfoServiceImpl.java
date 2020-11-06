@@ -1085,7 +1085,7 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
             int developerAddIssueCount = issueDao.getIssueFilterListCount(query);
             query.put("developer", null);
             query.put("solver", r);
-            int developerSolvedIssueCount = issueDao.getIssueFilterListCount(query);
+            int developerSolvedIssueCount = issueDao.getSolvedIssueFilterListCount(query);
             developersDetail.put(r, new JSONObject(){{
                 put("addedIssueCount", developerAddIssueCount);
                 put("solvedIssueCount", developerSolvedIssueCount);
