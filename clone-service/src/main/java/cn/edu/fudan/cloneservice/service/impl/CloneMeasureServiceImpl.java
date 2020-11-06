@@ -171,11 +171,11 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
         return cloneMessage;
     }
 
-    @Override
-    public void deleteCloneMeasureByRepoId(String repoId) {
-        cloneMeasureDao.deleteCloneMeasureByRepoId(repoId);
-        cloneInfoDao.deleteCloneInfo(repoId);
-    }
+//    @Override
+//    public void deleteCloneMeasureByRepoId(String repoId) {
+//        cloneMeasureDao.deleteCloneMeasureByRepoId(repoId);
+//        cloneInfoDao.deleteCloneInfo(repoId);
+//    }
 
     /**
      * 获取某个版本的clone行数
@@ -278,33 +278,6 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
         return cloneInfoList;
     }
 
-    @Async("forRequest")
-    @Override
-    public void scanCloneMeasure(String repoId, String startCommitId) {
-        log.info("start clone measure scan");
-        String repoPath = null;
-        List<String> commitList = null;
-        try {
-            repoPath = restInterfaceManager.getRepoPath1(repoId);
-            log.info("repoPath:{}", repoPath);
-            JGitUtil jGitHelper = new JGitUtil(repoPath);
-            commitList = jGitHelper.getCommitListByBranchAndBeginCommit(startCommitId);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            if (repoPath != null) {
-                restInterfaceManager.freeRepoPath(repoId, repoPath);
-            }
-        }
-        if (commitList != null) {
-            log.info("need scan {} commits", commitList.size());
-            for (String commitId : commitList) {
-                insertCloneMeasure(repoId, commitId, repoPath);
-            }
-        }
-
-    }
 
     @Override
     public CloneMeasure getLatestCloneMeasure(String repoId) {

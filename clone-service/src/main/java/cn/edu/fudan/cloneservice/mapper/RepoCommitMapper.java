@@ -23,7 +23,7 @@ public interface RepoCommitMapper {
      */
     @Select("SELECT distinct(repo_id) FROM issueTracker.commit_view " +
             "WHERE developer = #{author} AND repo_id " +
-            "IN (SELECT repo_id FROM issueTracker.project);")
+            "IN (SELECT repo_uuid FROM issueTracker.sub_repository);")
     List<String> getrepoIdList(String author);
 
 

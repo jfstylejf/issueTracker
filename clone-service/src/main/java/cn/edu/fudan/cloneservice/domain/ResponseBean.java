@@ -13,10 +13,10 @@ import java.io.Serializable;
 @Data
 @Builder
 @AllArgsConstructor
-public class ResponseBean implements Serializable {
+public class ResponseBean<T> implements Serializable {
 
     private int code;
     private String msg;
-    private Object data;
+    private T data;
 
 }

@@ -32,19 +32,6 @@ public interface CloneMeasureService {
     List<CloneMessage> getCloneMeasure(String repoId, String developer, String start, String end);
 
     /**
-     * 删除clone度量结果
-     * @param repoId repo id
-     */
-    void deleteCloneMeasureByRepoId(String repoId);
-
-    /**
-     * 触发度量，异步，非多线程
-     * @param repoId repo id
-     * @param startCommitId start commit id
-     */
-    void scanCloneMeasure(String repoId, String startCommitId);
-
-    /**
      * 获取最新版本的clone行数
      * @param repoId repo id
      * @return

@@ -1,8 +1,12 @@
 package cn.edu.fudan.cloneservice.controller;
 
+import cn.edu.fudan.cloneservice.domain.CloneMeasure;
 import cn.edu.fudan.cloneservice.domain.CloneMessage;
 import cn.edu.fudan.cloneservice.domain.ResponseBean;
 import cn.edu.fudan.cloneservice.service.CloneMeasureService;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
@@ -10,8 +14,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * @author znj
- * @date 2020/5/25
+ * @author znj yp wgc
+ * @date 2020/10/23
  */
 @CrossOrigin
 @RestController
@@ -20,19 +24,12 @@ public class CloneMeasureController {
     @Autowired
     CloneMeasureService cloneMeasureService;
 
-//    @GetMapping(value = {"/cloneMeasure/insertMeasureClone"})
-//    public ResponseBean insertMeasureClone(@RequestParam("repo_id") String repoId, @RequestParam("commit_id") String commitId){
-//
-//        try{
-//            return new ResponseBean(200,"success",cloneMeasureService.insertCloneMeasure(repoId, commitId));
-//        }catch (Exception e){
-//            e.printStackTrace();
-//            return new ResponseBean(401,"failed",null);
-//        }
-//    }
-
+    @ApiOperation(value = "最新版本克隆行数信息", notes = "@return cloneMeasure", httpMethod = "GET")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name="repo_uuid", value = "repo_uuid", dataType = "String")
+    })
     @GetMapping(value = {"/cloneMeasure/latestCloneLines"})
-    public ResponseBean getLatestCloneLines(@RequestParam("repo_id") String repoId){
+    public ResponseBean<CloneMeasure> getLatestCloneLines(@RequestParam("repo_uuid") String repoId){
 
         try{
             return new ResponseBean(200,"success",cloneMeasureService.getLatestCloneMeasure(repoId));
@@ -45,8 +42,15 @@ public class CloneMeasureController {
     /**
      * fixme 暂时只有一个用户没有做鉴权操作
      */
-    @GetMapping(value = {"/cloneMeasure/getMeasureClone"})
-    public ResponseBean getMeasureCloneData(@RequestParam(value = "repo_id", required = false, defaultValue = "") String repoId,
+    @ApiOperation(value = "获得克隆信息有关的度量", notes = "@return cloneMeasure", httpMethod = "GET")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name="repo_uuid", value = "repo_uuid", dataType = "String",required = false,defaultValue = ""),
+            @ApiImplicitParam(name = "developer", value = "developer",required = false),
+            @ApiImplicitParam(name = "start", value = "开始时间"),
+            @ApiImplicitParam(name = "end", value = "结束时间")
+    })
+    @GetMapping(value = {"/cloneMeasure"})
+    public ResponseBean<Object> getMeasureCloneData(@RequestParam(value = "repo_uuid", required = false, defaultValue = "") String repoId,
                                             @RequestParam(value = "developer", required = false) String developer,
                                             @RequestParam("start") String start,
                                             @RequestParam("end") String end){
@@ -63,27 +67,5 @@ public class CloneMeasureController {
         }
     }
 
-    @DeleteMapping(value = {"/cloneMeasure/{repoId}"})
-    public Object deleteScans(@PathVariable("repoId") String repoId) {
-        try {
-            cloneMeasureService.deleteCloneMeasureByRepoId(repoId);
-            return new ResponseBean(200, "clone measure delete success!", null);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new ResponseBean(401, "clone measure delete failed", null);
-        }
-    }
-
-    @GetMapping(value = {"/cloneMeasure/scan"})
-    public ResponseBean scan(@RequestParam("repoId") String repoId,
-                             @RequestParam("startCommitId") String commitId){
-        try{
-            cloneMeasureService.scanCloneMeasure(repoId,commitId);
-            return new ResponseBean(200,"success",null);
-        }catch (Exception e){
-            e.printStackTrace();
-            return new ResponseBean(401,"failed",null);
-        }
-    }
 
 }

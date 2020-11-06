@@ -1,10 +1,7 @@
 package cn.edu.fudan.cloneservice.service.impl;
 
 import cn.edu.fudan.cloneservice.component.RestInterfaceManager;
-import cn.edu.fudan.cloneservice.dao.CloneMeasureDao;
-import cn.edu.fudan.cloneservice.dao.CloneLocationDao;
-import cn.edu.fudan.cloneservice.dao.CloneRepoDao;
-import cn.edu.fudan.cloneservice.dao.CloneScanDao;
+import cn.edu.fudan.cloneservice.dao.*;
 import cn.edu.fudan.cloneservice.domain.ScanStatus;
 import cn.edu.fudan.cloneservice.domain.clone.CloneRepo;
 import cn.edu.fudan.cloneservice.service.CloneMeasureService;
@@ -33,6 +30,7 @@ public class ScanServiceImpl implements ScanService {
     private ScanTask scanTask;
 
     private CloneScanDao cloneScanDao;
+    private CloneInfoDao cloneInfoDao;
     private CloneMeasureDao cloneMeasureDao;
     private RestInterfaceManager rest;
     private CloneLocationDao cloneLocationDao;
@@ -155,10 +153,15 @@ public class ScanServiceImpl implements ScanService {
         return cloneRepo;
     }
 
+    /**
+     * @param repoId
+     */
     @Override
     public void deleteCloneScan(String repoId) {
         cloneScanDao.deleteCloneScan(repoId);
         cloneLocationDao.deleteCloneLocations(repoId);
+        cloneMeasureDao.deleteCloneMeasureByRepoId(repoId);
+        cloneInfoDao.deleteCloneInfo(repoId);
     }
 
     @Override

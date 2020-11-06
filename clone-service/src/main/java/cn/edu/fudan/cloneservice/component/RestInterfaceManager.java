@@ -77,7 +77,7 @@ public class RestInterfaceManager {
 
     public int getAddLines(String repoId, String start, String end, String developer){
         int addLines = 0;
-        JSONObject response = restTemplate.getForObject(measureServicePath + "/repository/duration?repo_id=" + repoId +
+        JSONObject response = restTemplate.getForObject(measureServicePath + "/repository/duration?repo_uuid=" + repoId +
                 "&since=" + start + "&until=" + end, JSONObject.class);
         List<CommitInfo> list = response.getJSONObject("data").getJSONArray("commitInfoList").toJavaList(CommitInfo.class);
         for(CommitInfo commitInfo : list){
