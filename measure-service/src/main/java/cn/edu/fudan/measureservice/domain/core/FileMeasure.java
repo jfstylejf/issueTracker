@@ -14,7 +14,7 @@ import lombok.*;
 @AllArgsConstructor
 public class FileMeasure{
     String uuid;
-    String repoId;
+    String repoUuid;
     String commitId;
     String commitTime;
     String filePath;

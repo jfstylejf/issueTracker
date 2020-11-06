@@ -21,7 +21,7 @@ public interface PackageMeasureMapper {
     /**
      *
      */
-    int samePackageMeasureExist(@Param("repo_id")String repoId,@Param("commit_id")String commitId,@Param("name")String name);
+    int samePackageMeasureExist(@Param("repo_id")String repoUuid,@Param("commit_id")String commitId,@Param("name")String name);
 
-    List<Package> getPackageMeasureByRepoIdAndCommit(@Param("repo_id")String repo_id,@Param("commit_id")String commit_id);
+    List<Package> getPackageMeasureByrepoUuidAndCommit(@Param("repo_id")String repo_id,@Param("commit_id")String commit_id);
 }

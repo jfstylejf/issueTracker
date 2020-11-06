@@ -67,7 +67,7 @@ public class RestInterfaceManager {
     //------------project-service--------------------------------------------------------------------------------------
 
     @CachePut("projects")
-    public JSONObject getProjectByRepoId(String repoUuid,String token){
+    public JSONObject getProjectByrepoUuid(String repoUuid,String token){
         HttpHeaders headers = new HttpHeaders();
         headers.add("token",token);
         HttpEntity request = new HttpEntity(headers);
@@ -80,10 +80,10 @@ public class RestInterfaceManager {
     }
 
     //---------------------------------------------code service---------------------------------------------------------
-    public String getRepoPath(String repoId,String commit_id){
+    public String getRepoPath(String repoUuid,String commit_id){
         String repoPath=null;
         StringBuilder url = new StringBuilder();
-        url.append(codeServicePath).append("?repo_id=").append(repoId);
+        url.append(codeServicePath).append("?repo_id=").append(repoUuid);
         if (commit_id != null){
             url.append("&commit_id=").append(commit_id);
         }
@@ -92,10 +92,10 @@ public class RestInterfaceManager {
             if (response != null ){
                 if(response.getString("status").equals("Successful")) {
                     repoPath = response.getString("content");
-                logger.info("repoHome -> {} , repoId -->{} , commit_id -->{}" ,repoPath,repoId,commit_id);
+                logger.info("repoHome -> {} , repoUuid -->{} , commit_id -->{}" ,repoPath,repoUuid,commit_id);
                 }else{
                     logger.error("get repoHome fail -> {}",response.getString("content"));
-                    logger.error("repoId -> {} commitId -> {}",repoId,commit_id);
+                    logger.error("repoUuid -> {} commitId -> {}",repoUuid,commit_id);
                 }
             } else {
                 logger.error("code service response null!");
@@ -107,8 +107,8 @@ public class RestInterfaceManager {
         return repoPath;
     }
 
-    public JSONObject freeRepoPath(String repoId,String repoPath){
-        JSONObject response=restTemplate.getForObject(codeServicePath + "/free?repo_id=" + repoId+"&path="+repoPath, JSONObject.class);
+    public JSONObject freeRepoPath(String repoUuid,String repoPath){
+        JSONObject response=restTemplate.getForObject(codeServicePath + "/free?repo_id=" + repoUuid+"&path="+repoPath, JSONObject.class);
         if(response!=null&&response.getJSONObject("data").getString("status").equals("Successful")){
             logger.info("{} -> free success",repoPath);
         }else {
@@ -119,12 +119,12 @@ public class RestInterfaceManager {
 
 
     //---------------------------------------------repo service---------------------------------------------------------
-    public JSONObject getRepoById(String repoId){
-        return restTemplate.getForObject(repoServicePath + "/" + repoId, JSONObject.class);
+    public JSONObject getRepoById(String repoUuid){
+        return restTemplate.getForObject(repoServicePath + "/" + repoUuid, JSONObject.class);
     }
 
-    public int getRepoAge(String repoId, String endDate){
-        JSONObject response = restTemplate.getForObject(repoServicePath + "/repository_year" + "?repo_id=" + repoId + "&end_date=" + endDate, JSONObject.class);
+    public int getRepoAge(String repoUuid, String until){
+        JSONObject response = restTemplate.getForObject(repoServicePath + "/repository_year" + "?repo_id=" + repoUuid + "&end_date=" + until, JSONObject.class);
         if (response.containsKey("data")){
             return response.getJSONObject("data").getIntValue("commit_time");
         }
@@ -136,79 +136,73 @@ public class RestInterfaceManager {
 
     //---------------------------------------------issue service---------------------------------------------------------
 
-    public int getNumberOfNewIssueByCommit(String repoId,String commit,String category,String spaceType,String token){
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("token",token);
-        HttpEntity request = new HttpEntity(headers);
-
-        ResponseEntity responseEntity = restTemplate.exchange(issueServicePath  + "/measurement/newIssue/"+ repoId + "/" + commit + "?spaceType=" + spaceType + "&category=" + category ,HttpMethod.GET,request,Object.class);
-        int result = Integer.valueOf(responseEntity.getBody().toString());
-        return result;
-    }
-
-    public int getNumberOfEliminateIssueByCommit(String repoId,String commit,String category,String spaceType,String token){
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("token",token);
-        HttpEntity request = new HttpEntity(headers);
-
-        ResponseEntity responseEntity = restTemplate.exchange(issueServicePath  + "/measurement/eliminateIssue/"+ repoId + "/" + commit + "?spaceType=" + spaceType + "&category=" + category ,HttpMethod.GET,request,Object.class);
-        int result = Integer.valueOf(responseEntity.getBody().toString());
-        return result;
-    }
-
-    public int getNumberOfRemainingIssue(String repoId,String commit,String spaceType ,String detail,String token){
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("token",token);
-        HttpEntity request = new HttpEntity(headers);
-
-        ResponseEntity responseEntity = restTemplate.exchange(issueServicePath  + "/measurement/remainingIssue/"+ repoId + "/" + commit + "?spaceType=" + spaceType ,HttpMethod.GET,request,Object.class);
-        int result = Integer.valueOf(responseEntity.getBody().toString());
-        return result;
-    }
-
-    public int getIssueCountByConditions(String developer, String repoId, String since, String until, String tool, String general_category, String token){
+    public int getIssueCountByConditions(String developer, String repoUuid, String since, String until, String tool, String category, String token){
         HttpHeaders headers = new HttpHeaders();
         headers.add("token",token);
         HttpEntity request = new HttpEntity(headers);
         StringBuilder url = new StringBuilder();
-        url.append(issueServicePath).append("/measurement/issueCount").append("?repoId=").append(repoId).append("&since=").append(since).append("&until=").append(until).append("&tool=").append(tool);
-        if (developer != null && !developer.equals("")){
-            url.append("&developer=").append(developer);
+        url.append(issueServicePath).append("/issue/filter").append("?repo_uuids=").append(repoUuid).append("&ps=").append(0);
+        if(since !=null && !"".equals(since)) {
+            url.append("&since=").append(since);
         }
-        if (general_category != null && !general_category.equals("")){
-            url.append("&general_category=").append(general_category);
+        if(until !=null && !"".equals(until)) {
+            url.append("&until=").append(until);
+        }
+        if(tool != null && !"".equals(tool)) {
+            url.append("&tool=").append(tool);
+        }
+        if (developer != null && !"".equals(developer)){
+            url.append("&introducer=").append(developer);
+        }
+        if (category != null && !"".equals(category)){
+            url.append("&category=").append(category);
         }
         ResponseEntity responseEntity = restTemplate.exchange(url.toString(), HttpMethod.GET, request, JSONObject.class);
         String body = responseEntity.getBody().toString();
         JSONObject result = JSONObject.parseObject(body);
         if(result.getIntValue("code") == 200){
-            return result.getIntValue("data");
+            return result.getJSONObject("data").getIntValue("total");
         }
         return 0;
     }
 
 
-    public JSONArray getNewElmIssueCount(String repoId, String since, String until, String tool, String token){
+    public int getAddIssueCount(String repoUuid, String developer,String since, String until, String tool, String token){
         HttpHeaders headers = new HttpHeaders();
         headers.add("token",token);
         HttpEntity request = new HttpEntity(headers);
         StringBuilder url = new StringBuilder();
-        url.append(issueServicePath).append("/measurement/issue/developer").append("?repo_id=").append(repoId).append("&since=").append(since).append("&until=").append(until).append("&category=").append(tool);
+        url.append(issueServicePath).append("/issue/filter").append("?repo_uuid=").append(repoUuid).append("&ps=").append(0);
+        if(since !=null && !"".equals(since)) {
+            url.append("&since=").append(since);
+        }
+        if(until !=null && !"".equals(until)) {
+            url.append("&until=").append(until);
+        }
+        if(tool != null && !"".equals(tool)) {
+            url.append("&tool=").append(tool);
+        }
+        if (developer != null && !"".equals(developer)){
+            url.append("&introducer=").append(developer);
+        }
         ResponseEntity responseEntity = restTemplate.exchange(url.toString(), HttpMethod.GET, request, JSONObject.class);
         String body = responseEntity.getBody().toString();
         JSONObject result = JSONObject.parseObject(body);
-        return result.getJSONArray("data");
+        if(result.getIntValue("code") == 200){
+            return result.getJSONObject("data").getIntValue("total");
+        }
+        return 0;
     }
 
-    public JSONObject getDayAvgSolvedIssue(String developer, String repoId, String since, String until, String tool, String token){
+    public JSONObject getDayAvgSolvedIssue(String developer, String repoUuid, String since, String until, String tool, String token){
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("token",token);
         HttpEntity request = new HttpEntity(headers);
         StringBuilder url = new StringBuilder();
-        url.append(uniformServicePath).append("/measurement/developer/dayAvgSolvedIssue?developer=").append(developer);
-        if (repoId != null && repoId.length()>0){
-            url.append("&repoId=").append(repoId);
+        url.append(uniformServicePath).append("/measurement/developer/day-avg-solved-issue?developer=").append(developer);
+        if (repoUuid != null && repoUuid.length()>0){
+            url.append("&repo_uuid=").append(repoUuid);
         }
         if (since != null && since.length()>0){
             url.append("&since=").append(since);
@@ -231,14 +225,14 @@ public class RestInterfaceManager {
 
     //--------------------------------code-tracker service------------------------------------------------
 
-    public JSONObject getStatements(String repoUuid, String beginDate, String endDate, String developer){
+    public JSONObject getStatements(String repoUuid, String since, String until, String developer){
         StringBuilder url = new StringBuilder();
         url.append(uniformServicePath).append("/codewisdom/code/line-count?repo_uuids=").append(repoUuid);
-        if(beginDate!=null) {
-            url.append("&since=").append(beginDate);
+        if(since!=null) {
+            url.append("&since=").append(since);
         }
-        if(endDate!=null) {
-            url.append("&until=").append(endDate);
+        if(until!=null) {
+            url.append("&until=").append(until);
         }
         if(developer!=null && !"".equals(developer)) {
             url.append("&developer=").append(developer);
@@ -293,88 +287,108 @@ public class RestInterfaceManager {
 
     //-------------------------------------------clone service---------------------------------------
     public JSONObject getCloneMeasure(String repo_id, String developer, String start, String end){
-        return restTemplate.getForObject(uniformServicePath+"/cloneMeasure/getMeasureClone"  + "?repo_id=" + repo_id + "&developer=" + developer + "&start=" + start + "&end=" + end, JSONObject.class).getJSONObject("data");
+        return restTemplate.getForObject(uniformServicePath+"/cloneMeasure"  + "?repo_uuid=" + repo_id + "&developer=" + developer + "&start=" + start + "&end=" + end, JSONObject.class).getJSONObject("data");
     }
 
     //-------------------------------------------jira API-------------------------------------------
     @Cacheable(cacheNames = {"jiraInfoByJiraID"})
     public JSONArray getJiraInfoByKey(String type, String keyword){
-        JSONObject response = restTemplate.getForObject(uniformServicePath+"/jira/jql"  + "?keyword=" + keyword +  "&type=" + type, JSONObject.class);
-        if(response.getIntValue("code") == 200){
-            return response.getJSONArray("data");
+        try {
+            JSONObject response = restTemplate.getForObject(uniformServicePath+"/jira/jql"  + "?keyword=" + keyword +  "&type=" + type, JSONObject.class);
+            if(response.getIntValue("code") == 200){
+                return response.getJSONArray("data");
+            }
+        }catch (Exception e) {
+            log.error(e.getMessage());
         }
         return null;
     }
 
-    public JSONArray getJiraMsgOfOneDeveloper(String developer, String repoId){
-        StringBuilder url = new StringBuilder();
-        url.append(uniformServicePath).append("/jira/developer_msg?developer=").append(developer);
-        if (repoId != null && repoId.length()>0){
-            url.append("&repo-id=").append(repoId);
-        }
-        JSONObject response = restTemplate.getForObject(url.toString(), JSONObject.class);
-        if(response.getIntValue("code") == 200){
-            return response.getJSONArray("data");
-        }
-        return null;
-    }
-
-    public JSONObject getSolvedAssignedJiraRate(String developer, String repoId, String since, String until){
-        StringBuilder url = new StringBuilder();
-        url.append(uniformServicePath).append("/jira/getSolvedAssignedJiraRate?developer=").append(developer);
-        if (repoId != null && repoId.length()>0){
-            url.append("&repo_id=").append(repoId);
-        }
-        if (since != null && since.length()>0){
-            url.append("&begin_date=").append(since);
-        }
-        if (until != null && until.length()>0){
-            url.append("&end_date=").append(until);
-        }
-
-        JSONObject response = restTemplate.getForObject(url.toString(), JSONObject.class);
-        if(response.getIntValue("code") == 200){
-            return response.getJSONObject("data");
+    public JSONArray getJiraMsgOfOneDeveloper(String developer, String repoUuid){
+        try {
+            StringBuilder url = new StringBuilder();
+            url.append(uniformServicePath).append("/jira/developer_msg?developer=").append(developer);
+            if (repoUuid != null && repoUuid.length()>0){
+                url.append("&repo-id=").append(repoUuid);
+            }
+            JSONObject response = restTemplate.getForObject(url.toString(), JSONObject.class);
+            if(response.getIntValue("code") == 200){
+                return response.getJSONArray("data");
+            }
+        }catch (Exception e) {
+            log.error(e.getMessage());
         }
         return null;
     }
 
-    public JSONObject getAssignedJiraRate(String developer, String repoId, String since, String until){
-        StringBuilder url = new StringBuilder();
-        url.append(uniformServicePath).append("/jira/getAssignedJiraRate?developer=").append(developer);
-        if (repoId != null && repoId.length()>0){
-            url.append("&repo_id=").append(repoId);
-        }
-        if (since != null && since.length()>0){
-            url.append("&begin_date=").append(since);
-        }
-        if (until != null && until.length()>0){
-            url.append("&end_date=").append(until);
-        }
+    public JSONObject getSolvedAssignedJiraRate(String developer, String repoUuid, String since, String until){
+        try {
+            StringBuilder url = new StringBuilder();
+            url.append(uniformServicePath).append("/jira/getSolvedAssignedJiraRate?developer=").append(developer);
+            if (repoUuid != null && repoUuid.length()>0){
+                url.append("&repo_id=").append(repoUuid);
+            }
+            if (since != null && since.length()>0){
+                url.append("&begin_date=").append(since);
+            }
+            if (until != null && until.length()>0){
+                url.append("&end_date=").append(until);
+            }
 
-        JSONObject response = restTemplate.getForObject(url.toString(), JSONObject.class);
-        if(response.getIntValue("code") == 200){
-            return response.getJSONObject("data");
+            JSONObject response = restTemplate.getForObject(url.toString(), JSONObject.class);
+            if(response.getIntValue("code") == 200){
+                return response.getJSONObject("data");
+            }
+        }catch (Exception e) {
+            log.error(e.getMessage());
         }
         return null;
     }
 
-    public JSONObject getDefectRate(String developer, String repoId, String since, String until){
-        StringBuilder url = new StringBuilder();
-        url.append(uniformServicePath).append("/jira/getDefectRate?developer=").append(developer);
-        if (repoId != null && repoId.length()>0){
-            url.append("&repo_id=").append(repoId);
-        }
-        if (since != null && since.length()>0){
-            url.append("&begin_date=").append(since);
-        }
-        if (until != null && until.length()>0){
-            url.append("&end_date=").append(until);
-        }
+    public JSONObject getAssignedJiraRate(String developer, String repoUuid, String since, String until){
+        try {
+            StringBuilder url = new StringBuilder();
+            url.append(uniformServicePath).append("/jira/getAssignedJiraRate?developer=").append(developer);
+            if (repoUuid != null && repoUuid.length()>0){
+                url.append("&repo_id=").append(repoUuid);
+            }
+            if (since != null && since.length()>0){
+                url.append("&begin_date=").append(since);
+            }
+            if (until != null && until.length()>0){
+                url.append("&end_date=").append(until);
+            }
 
-        JSONObject response = restTemplate.getForObject(url.toString(), JSONObject.class);
-        if(response.getIntValue("code") == 200){
-            return response.getJSONObject("data");
+            JSONObject response = restTemplate.getForObject(url.toString(), JSONObject.class);
+            if(response.getIntValue("code") == 200){
+                return response.getJSONObject("data");
+            }
+        }catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        return null;
+    }
+
+    public JSONObject getDefectRate(String developer, String repoUuid, String since, String until){
+        try {
+            StringBuilder url = new StringBuilder();
+            url.append(uniformServicePath).append("/jira/getDefectRate?developer=").append(developer);
+            if (repoUuid != null && repoUuid.length()>0){
+                url.append("&repo_id=").append(repoUuid);
+            }
+            if (since != null && since.length()>0){
+                url.append("&begin_date=").append(since);
+            }
+            if (until != null && until.length()>0){
+                url.append("&end_date=").append(until);
+            }
+
+            JSONObject response = restTemplate.getForObject(url.toString(), JSONObject.class);
+            if(response.getIntValue("code") == 200){
+                return response.getJSONObject("data");
+            }
+        }catch (Exception e) {
+            log.error(e.getMessage());
         }
         return null;
     }

@@ -34,7 +34,7 @@ public class MeasureScanController {
     })
     /**
      * description 接收请求开始扫描 servicePath + toolName + "/scan", jsonObject, JSONObject.class 接收scan服务的请求进行扫描
-     * @param jsonObject : repoId branch beginCommit
+     * @param jsonObject : repoUuid branch beginCommit
      */
     @PostMapping(value = {"/measure/{toolName}"})
     public ResponseBean scan(@RequestBody ScanDTO scanDTO, @PathVariable String toolName) {
@@ -46,7 +46,7 @@ public class MeasureScanController {
         try {
             // 调用javancss工具进行扫描 目前measure服务只有这个扫描工具
             if (toolName.equals("javancss")){
-                measureScanService.scan(RepoResourceDTO.builder().repoId(repoUuid).build(), branch, beginCommit, toolName);
+                measureScanService.scan(RepoResourceDTO.builder().repoUuid(repoUuid).build(), branch, beginCommit, toolName);
             }
             return ResponseBean.builder().code(200).build();
         }catch (Exception e) {
@@ -82,10 +82,10 @@ public class MeasureScanController {
             @ApiImplicitParam(name = "repo_uuid", value = "参与库", dataType = "String",required = true,defaultValue = "3ecf804e-0ad6-11eb-bb79-5b7ba969027e"),
     })
     @SuppressWarnings("unchecked")
-    @DeleteMapping("/measure/{repoId}")
-    public ResponseBean deleteRepoMeasureByRepoId(@PathVariable("repo_uuid")String repoId){
+    @DeleteMapping("/measure/{repoUuid}")
+    public ResponseBean deleteRepoMeasureByrepoUuid(@PathVariable("repo_uuid")String repoUuid){
         try{
-            measureScanService.delete(repoId);
+            measureScanService.delete(repoUuid);
             return new ResponseBean(200,"success",null);
         }catch (Exception e){
             e.printStackTrace();

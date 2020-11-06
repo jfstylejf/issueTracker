@@ -13,7 +13,7 @@ import java.util.Date;
 @NoArgsConstructor
 public class MeasureScan {
     String uuid;
-    String repoId;
+    String repoUuid;
     String tool;
     String startCommit;
     String endCommit;

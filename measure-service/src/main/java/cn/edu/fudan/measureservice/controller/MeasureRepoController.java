@@ -34,12 +34,12 @@ public class MeasureRepoController {
 
     @GetMapping("/measure/repository")
     @CrossOrigin
-    public ResponseBean<List<RepoMeasure>> getMeasureDataByRepoId(@RequestParam("repo_uuid")String repoUuid,
+    public ResponseBean<List<RepoMeasure>> getMeasureDataByrepoUuid(@RequestParam("repo_uuid")String repoUuid,
                                                                   @RequestParam(name="since",required = false)String since,
                                                                   @RequestParam("until")String until,
                                                                   @RequestParam("granularity") Granularity granularity){
         try{
-            return new ResponseBean<>(200,"success", measureRepoService.getRepoMeasureByRepoId(repoUuid,since,until,granularity));
+            return new ResponseBean<>(200,"success", measureRepoService.getRepoMeasureByrepoUuid(repoUuid,since,until,granularity));
         }catch (Exception e){
             e.printStackTrace();
             return new ResponseBean<>(401,"failed "+ e.getMessage(),null);

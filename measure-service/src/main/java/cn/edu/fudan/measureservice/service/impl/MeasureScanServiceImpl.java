@@ -52,8 +52,8 @@ public class MeasureScanServiceImpl implements MeasureScanService {
     private AccountMapper accountMapper;
 
     @Override
-    public Object getScanStatus(String repoId) {
-        List<Map<String, Object>> result = measureScanMapper.getScanStatus(repoId);
+    public Object getScanStatus(String repoUuid) {
+        List<Map<String, Object>> result = measureScanMapper.getScanStatus(repoUuid);
         if(result.size()==0) {
             log.error("scan result is null");
             return null;
@@ -77,9 +77,9 @@ public class MeasureScanServiceImpl implements MeasureScanService {
         final String scanning = "scanning";
         final String complete = "complete";
         String repoPath = repoResource.getRepoPath();
-        String repoId = repoResource.getRepoId();
+        String repoUuid = repoResource.getRepoUuid();
         if (StringUtils.isEmpty(repoPath)){
-            log.error("repoId:[{}] path is empty", repoId);
+            log.error("repoUuid:[{}] path is empty", repoUuid);
             return;
         }
         //1. 判断beginCommit是否为空,为空则表示此次为update，不为空表示此次为第一次扫描
@@ -87,7 +87,7 @@ public class MeasureScanServiceImpl implements MeasureScanService {
         boolean isUpdate = false;
         if (StringUtils.isEmpty(beginCommit)){
             isUpdate = true;
-            beginCommit = repoMeasureMapper.getLastScannedCommitId(repoId);
+            beginCommit = repoMeasureMapper.getLastScannedCommitId(repoUuid);
         }
 
         jGitHelperT.remove();
@@ -103,7 +103,7 @@ public class MeasureScanServiceImpl implements MeasureScanService {
         //初始化本次扫描状态信息
         Date startScanTime = new Date();
         MeasureScan measureScan = MeasureScan.builder()
-                .uuid(UUID.randomUUID().toString()).repoId(repoId).tool(toolName)
+                .uuid(UUID.randomUUID().toString()).repoUuid(repoUuid).tool(toolName)
                 .startScanTime(startScanTime).endScanTime(startScanTime)
                 .totalCommitCount(commitList.size()).scannedCommitCount(0)
                 .scanTime(0).status(scanning)
@@ -114,11 +114,11 @@ public class MeasureScanServiceImpl implements MeasureScanService {
         // 遍历列表 进行扫描
         for (String commit : commitList) {
             jGitHelper.checkout(commit);
-            log.info("Start to scan repoId is {} commit is {}", repoId, commit );
+            log.info("Start to scan repoUuid is {} commit is {}", repoUuid, commit );
             String commitTime = jGitHelper.getCommitTime(commit);
             Measure measure = JavaNcss.analyse(repoPath);
-            saveRepoLevelMeasureData(measure, repoId, commit, commitTime);
-            saveFileMeasureData(repoId, commit, commitTime, measure.getObjects(), repoPath);
+            saveRepoLevelMeasureData(measure, repoUuid, commit, commitTime);
+            saveFileMeasureData(repoUuid, commit, commitTime, measure.getObjects(), repoPath);
             //更新本次扫描状态信息
             Date currentTime = new Date();
             int scanTime = (int) (currentTime.getTime() - startScanTime.getTime()) / 1000;
@@ -130,16 +130,16 @@ public class MeasureScanServiceImpl implements MeasureScanService {
     }
 
     @Override
-    public void stop(String repoId) {
+    public void stop(String repoUuid) {
         // todo
     }
 
     @Override
     @SneakyThrows
-    public void delete(String repoId) {
+    public void delete(String repoUuid) {
         log.info("measurement info start to delete");
-        repoMeasureMapper.delRepoMeasureByRepoId(repoId);
-        repoMeasureMapper.delFileMeasureByRepoId(repoId);
+        repoMeasureMapper.delRepoMeasureByrepoUuid(repoUuid);
+        repoMeasureMapper.delFileMeasureByrepoUuid(repoUuid);
         log.info("measurement delete completed");
     }
 
@@ -158,7 +158,7 @@ public class MeasureScanServiceImpl implements MeasureScanService {
     /**
      * 保存某个项目某个commit项目级别的度量
      */
-    private void saveRepoLevelMeasureData(Measure measure,String repoId,String commitId,String commitTime){
+    private void saveRepoLevelMeasureData(Measure measure,String repoUuid,String commitId,String commitTime){
         JGitHelper jGitHelper = jGitHelperT.get();
         RevCommit revCommit = jGitHelper.getRevCommit(commitId);
         
@@ -168,7 +168,7 @@ public class MeasureScanServiceImpl implements MeasureScanService {
                 .functions(total.getFunctions()).ccn(measure.getFunctions().getFunctionAverage().getNcss())
                 .java_docs(total.getJavaDocs()).java_doc_lines(total.getJavaDocsLines())
                 .single_comment_lines(total.getSingleCommentLines()).multi_comment_lines(total.getMultiCommentLines())
-                .commit_id(commitId).commit_time(commitTime).repo_id(repoId)
+                .commit_id(commitId).commit_time(commitTime).repo_id(repoUuid)
                 .developer_name(accountMapper.getAccountName(revCommit.getAuthorIdent().getName()) == null ? revCommit.getAuthorIdent().getName() : accountMapper.getAccountName(revCommit.getAuthorIdent().getName())).developer_email(revCommit.getAuthorIdent().getEmailAddress())
                 .commit_message(revCommit.getShortMessage()).build();
        /* // 以下是非人员聚合的入库
@@ -176,7 +176,7 @@ public class MeasureScanServiceImpl implements MeasureScanService {
                 .functions(total.getFunctions()).ccn(measure.getFunctions().getFunctionAverage().getNcss())
                 .java_docs(total.getJavaDocs()).java_doc_lines(total.getJavaDocsLines())
                 .single_comment_lines(total.getSingleCommentLines()).multi_comment_lines(total.getMultiCommentLines())
-                .commit_id(commitId).commit_time(commitTime).repo_id(repoId)
+                .commit_id(commitId).commit_time(commitTime).repo_id(repoUuid)
                 .developer_name(revCommit.getAuthorIdent().getName()).developer_email(revCommit.getAuthorIdent().getEmailAddress())
                 .commit_message(revCommit.getShortMessage()).build();*/
 
@@ -225,7 +225,7 @@ public class MeasureScanServiceImpl implements MeasureScanService {
         }
         
         try{
-            if(repoMeasureMapper.sameMeasureOfOneCommit(repoId,commitId)==0) {
+            if(repoMeasureMapper.sameMeasureOfOneCommit(repoUuid,commitId)==0) {
                 repoMeasureMapper.insertOneRepoMeasure(repoMeasure);
             }
         } catch (Exception e) {
@@ -241,7 +241,7 @@ public class MeasureScanServiceImpl implements MeasureScanService {
      * fixme 未考虑rename的情况 目前先在jgitHelper {@link JGitHelper# getDiffEntry} 中修改了rename处理
      */
     @SneakyThrows
-    private void saveFileMeasureData(String repoId, String commitId, String commitTime, Objects objects, String repoPath) {
+    private void saveFileMeasureData(String repoUuid, String commitId, String commitTime, Objects objects, String repoPath) {
         JGitHelper jGitHelper = jGitHelperT.get();
 
         //得到变更文件list
@@ -291,7 +291,7 @@ public class MeasureScanServiceImpl implements MeasureScanService {
                 }
             }
 
-            FileMeasure fileMeasure = FileMeasure.builder().uuid(UUID.randomUUID().toString()).repoId(repoId).commitId(commitId).commitTime(commitTime)
+            FileMeasure fileMeasure = FileMeasure.builder().uuid(UUID.randomUUID().toString()).repoUuid(repoUuid).commitId(commitId).commitTime(commitTime)
                     .addLine(addLines).deleteLine(deleteLines).totalLine(totalLine)
                     .ccn(ccn).diffCcn(0).filePath(filePath).build();
             fileMeasureList.add(fileMeasure);

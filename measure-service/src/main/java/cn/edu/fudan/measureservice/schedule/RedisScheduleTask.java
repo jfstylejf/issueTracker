@@ -38,7 +38,7 @@ public class RedisScheduleTask {
     private void configureTasks() throws ParseException {
         measureDeveloperService.clearCache();
         measureDeveloperService.getDeveloperList(null,token);
-        List<Map<String, Object>> developerList = repoMeasureMapper.getDeveloperListByRepoIdList(null);
+        List<Map<String, Object>> developerList = repoMeasureMapper.getDeveloperListByrepoUuidList(null);
         for (int i = 0; i < developerList.size(); i++){
             Map<String,Object> map = developerList.get(i);
             String developerName = map.get("developer_name").toString();

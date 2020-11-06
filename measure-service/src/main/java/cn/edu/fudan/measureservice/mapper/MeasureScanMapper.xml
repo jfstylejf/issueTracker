@@ -5,7 +5,7 @@
 
     <resultMap id="measureScan" type="MeasureScan">
         <id property="uuid" column="uuid"/>
-        <result property="repoId" column="repo_id"/>
+        <result property="repoUuid" column="repo_id"/>
         <result property="tool" column="tool"/>
         <result property="startCommit" column="start_commit"/>
         <result property="endCommit" column="end_commit"/>
@@ -35,7 +35,7 @@
         values
            (
               #{uuid},
-              #{repoId},
+              #{repoUuid},
               #{tool},
               #{startCommit},
               #{endCommit},

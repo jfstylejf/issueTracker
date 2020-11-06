@@ -72,16 +72,16 @@ public interface RepoMeasureMapper {
 
     void insertOneRepoMeasure(RepoMeasure repoMeasure);
 
-    void delRepoMeasureByRepoId(@Param("repo_id")String repo_id);
+    void delRepoMeasureByrepoUuid(@Param("repo_id")String repo_id);
 
-    void delFileMeasureByRepoId(@Param("repo_id")String repo_id);
+    void delFileMeasureByrepoUuid(@Param("repo_id")String repo_id);
 
     /**
      * 根据 开发者名字与repo id获取项目度量列表，都可以为null
      *
      *
      */
-    List<RepoMeasure> getRepoMeasureByDeveloperAndRepoId(@Param("repo_id")String repo_id,@Param("developer_name")String developer_name,@Param("counts")int counts,@Param("since")String since,@Param("until")String until);
+    List<RepoMeasure> getRepoMeasureByDeveloperAndrepoUuid(@Param("repo_id")String repo_id,@Param("developer_name")String developer_name,@Param("counts")int counts,@Param("since")String since,@Param("until")String until);
 
     List<Map<String, Object>> getDeveloperRankByCommitCount(@Param("repo_id")String repo_id, @Param("since")String since, @Param("until")String until);
 
@@ -89,25 +89,25 @@ public interface RepoMeasureMapper {
 
     int getRepoLOCByDuration(@Param("repo_id")String repo_id,@Param("since")String since,@Param("until")String until,@Param("developer_name")String developerName);
 
-    List<Map<String, Object>> getDeveloperListByRepoIdList(@Param("repoIdList")List<String> repoIdList);
+    List<Map<String, Object>> getDeveloperListByrepoUuidList(@Param("repoUuidList")List<String> repoUuidList);
 
-    List<Map<String, Object>> getDeveloperDutyTypeListByRepoId(@Param("repoIdList")List<String> repoIdList);
+    List<Map<String, Object>> getDeveloperDutyTypeListByrepoUuid(@Param("repoUuidList")List<String> repoUuidList);
 
-    String getLastScannedCommitId(@Param("repo_id")String repoId);
+    String getLastScannedCommitId(@Param("repo_id")String repoUuid);
 
-    int getLOCByCondition(@Param("repo_id")String repoId,@Param("developer_name")String developerName,@Param("since")String beginDate,@Param("until")String endDate);
+    int getLOCByCondition(@Param("repo_id")String repoUuid,@Param("developer_name")String developerName,@Param("since")String since,@Param("until")String until);
 
-    List<Map<String, Object>> getCommitDays(@Param("repo_id")String repoId,@Param("developer_name")String developerName,@Param("since")String beginDate,@Param("until")String endDate);
+    List<Map<String, Object>> getCommitDays(@Param("repo_id")String repoUuid,@Param("developer_name")String developerName,@Param("since")String since,@Param("until")String until);
 
-    List<String> getRepoListByDeveloper(@Param("developer_name")String developerName,@Param("since")String beginDate,@Param("until")String endDate);
+    List<String> getRepoListByDeveloper(@Param("developer_name")String developerName,@Param("since")String since,@Param("until")String until);
 
-    String getFirstCommitDateByCondition(@Param("repoIdList")List<String> repoIdList,@Param("developer")String developerName);
+    String getFirstCommitDateByCondition(@Param("repoUuidList")List<String> repoUuidList,@Param("developer")String developerName);
 
-    List<Map<String, Object>> getCommitMsgByCondition(@Param("repo_id")String repoId,@Param("developer_name")String developerName,@Param("since")String beginDate,@Param("until")String endDate);
+    List<Map<String, Object>> getCommitMsgByCondition(@Param("repo_id")String repoUuid,@Param("developer_name")String developerName,@Param("since")String since,@Param("until")String until);
 
-    Map<String, Object> getWorkLoadByCondition(@Param("repoIdList")List<String> repoIdList,@Param("developer_name")String developerName,@Param("since")String beginDate,@Param("until")String endDate);
+    Map<String, Object> getWorkLoadByCondition(@Param("repoUuidList")List<String> repoUuidList,@Param("developer_name")String developerName,@Param("since")String since,@Param("until")String until);
 
-    int getRepoAge(@Param("repo_id")String repoId);
+    int getRepoAge(@Param("repo_id")String repoUuid);
 
     /**
      * 根据developer查询对应的accout_role

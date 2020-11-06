@@ -8,21 +8,21 @@ public interface MeasureRepoService {
 
     /**
      * 获取一个项目在某个时间段特定时间单位的项目级别的所有度量信息
-     * @param repoId repo的唯一标识
+     * @param repoUuid repo的唯一标识
      * @param since 起始时间
      * @param until 终止时间
      * @param granularity 时间段的单位day,week,month
      * @return 每个时间点上的项目级度量信息
      */
-    List<RepoMeasure> getRepoMeasureByRepoId(String repoId, String since, String until, Granularity granularity);
+    List<RepoMeasure> getRepoMeasureByrepoUuid(String repoUuid, String since, String until, Granularity granularity);
 
     /**
      * 获取一个项目在某个commit的所有度量信息
-     * @param repoId repo的唯一标识
+     * @param repoUuid repo的唯一标识
      * @param commitId commit的唯一标志
      * @return 每个时间点上的项目级度量信息
      */
-    RepoMeasure getRepoMeasureByRepoIdAndCommitId(String repoId, String commitId);
+    RepoMeasure getRepoMeasureByrepoUuidAndCommitId(String repoUuid, String commitId);
 
 
     /**

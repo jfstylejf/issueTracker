@@ -18,18 +18,18 @@ public class DeveloperMetrics implements Serializable {
     private int totalStatement;//需要改成逻辑行statement
     private int totalCommitCount;
     private String repoName;
-    private String repoId;
+    private String repoUuid;
     private String developer;
     private Efficiency efficiency;
     private Quality quality;
     private Competence competence;
 
-    public DeveloperMetrics(LocalDate firstCommitDate, int totalStatement, int totalCommitCount, String repoName, String repoId, String developer, Efficiency efficiency, Quality quality, Competence competence) {
+    public DeveloperMetrics(LocalDate firstCommitDate, int totalStatement, int totalCommitCount, String repoName, String repoUuid, String developer, Efficiency efficiency, Quality quality, Competence competence) {
         this.firstCommitDate = firstCommitDate;
         this.totalStatement = totalStatement;
         this.totalCommitCount = totalCommitCount;
         this.repoName = repoName;
-        this.repoId = repoId;
+        this.repoUuid = repoUuid;
         this.developer = developer;
         this.efficiency = efficiency;
         this.quality = quality;

@@ -5,7 +5,7 @@
 
     <resultMap id="fileMeasure" type="FileMeasure">
         <id property="uuid" column="uuid"/>
-        <result property="repoId" column="repo_id"/>
+        <result property="repoUuid" column="repo_id"/>
         <result property="commitId" column="commit_id"/>
         <result property="commitTime" column="commit_time"/>
         <result property="filePath" column="file_path"/>
@@ -33,7 +33,7 @@
         values
            (
               #{uuid},
-              #{repoId},
+              #{repoUuid},
               #{commitId},
               #{commitTime},
               #{filePath},
@@ -96,7 +96,7 @@
         <foreach collection="fileMeasureList" item="item" index="index" separator=",">
             (
             #{item.uuid},
-            #{item.repoId},
+            #{item.repoUuid},
             #{item.commitId},
             #{item.commitTime},
             #{item.filePath},

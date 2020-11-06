@@ -27,7 +27,7 @@ paths:
         - "项目度量API"
       summary: "获取一段时间内最新的项目度量列表"
       description: "根据时间粒度，获取每天或者每周最新的项目度量信息。"
-      operationId: "getMeasureDataByRepoId"
+      operationId: "getMeasureDataByrepoUuid"
       parameters:
         - in: "query"
           name: "repo_id"
@@ -390,7 +390,7 @@ paths:
       tags:
       - "项目度量API"
       summary: "获取repo活跃度"
-      description: "根据repoID获取repo的活跃度--活跃度根据过去90天的commit次数进行判定"
+      description: "根据repoUuid获取repo的活跃度--活跃度根据过去90天的commit次数进行判定"
       operationId: "getRepoActivityByCommit"
       parameters:
       - in: "query"

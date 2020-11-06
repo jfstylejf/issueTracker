@@ -62,7 +62,7 @@
     </select>
 
 
-    <select id="getPackageMeasureByRepoIdAndCommit" resultMap="package">
+    <select id="getPackageMeasureByrepoUuidAndCommit" resultMap="package">
         select * from package_measure
         where repo_id = #{repo_id} and commit_id = #{commit_id}
         order by name;

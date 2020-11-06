@@ -394,17 +394,17 @@
         order by commit_time;
     </select>
 
-    <delete id="delRepoMeasureByRepoId" parameterType="String">
+    <delete id="delRepoMeasureByrepoUuid" parameterType="String">
         delete from repo_measure
         where repo_id = #{repo_id} ;
     </delete>
 
-    <delete id="delFileMeasureByRepoId" parameterType="String">
+    <delete id="delFileMeasureByrepoUuid" parameterType="String">
         delete from file_measure
         where repo_id = #{repo_id} ;
     </delete>
 
-    <select id="getRepoMeasureByDeveloperAndRepoId"  resultMap="repoMeasureWithDate">
+    <select id="getRepoMeasureByDeveloperAndrepoUuid"  resultMap="repoMeasureWithDate">
         select
             *
         from
@@ -482,16 +482,16 @@
         </if>
     </select>
 
-    <select id="getDeveloperListByRepoIdList" resultType="java.util.HashMap">
+    <select id="getDeveloperListByrepoUuidList" resultType="java.util.HashMap">
         SELECT
             developer_name
         FROM
             repo_measure
         <where>
             <trim prefixOverrides="and">
-                <if test="repoIdList != null and repoIdList.size > 0">
+                <if test="repoUuidList != null and repoUuidList.size > 0">
                     and repo_id in
-                    <foreach collection="repoIdList" separator="," open="(" close=")" item="repo_id">
+                    <foreach collection="repoUuidList" separator="," open="(" close=")" item="repo_id">
                         #{repo_id}
                     </foreach>
                 </if>
@@ -503,16 +503,16 @@
             developer_name
     </select>
 
-    <select id="getDeveloperDutyTypeListByRepoId" parameterType="String" resultType="java.util.HashMap">
+    <select id="getDeveloperDutyTypeListByrepoUuid" parameterType="String" resultType="java.util.HashMap">
         SELECT DISTINCT a.name , a.account_status
         FROM account as a
         WHERE
         a.name IN
         (SELECT DISTINCT developer_unique_name FROM commit_view
         <where>
-            <if test="repoIdList != null and repoIdList.size > 0">
+            <if test="repoUuidList != null and repoUuidList.size > 0">
                and repo_id in
-                <foreach collection="repoIdList" separator="," open="(" close=")" item="repo_id">
+                <foreach collection="repoUuidList" separator="," open="(" close=")" item="repo_id">
                     #{repo_id}
                 </foreach>
             </if>
@@ -622,9 +622,9 @@
         select commit_time from commit_view
         <where>
             <trim prefixOverrides="and">
-                <if test="repoIdList != null and repoIdList.size > 0">
+                <if test="repoUuidList != null and repoUuidList.size > 0">
                     and repo_id in
-                    <foreach collection="repoIdList" separator="," open="(" close=")" item="repo_id">
+                    <foreach collection="repoUuidList" separator="," open="(" close=")" item="repo_id">
                         #{repo_id}
                     </foreach>
                 </if>
@@ -693,9 +693,9 @@
                     and developer_name = #{developer_name}
                 </if>
 
-                <if test="repoIdList != null and repoIdList.size > 0">
+                <if test="repoUuidList != null and repoUuidList.size > 0">
                     and repo_id in
-                    <foreach collection="repoIdList" separator="," open="(" close=")" item="repo_id">
+                    <foreach collection="repoUuidList" separator="," open="(" close=")" item="repo_id">
                         #{repo_id}
                     </foreach>
                 </if>

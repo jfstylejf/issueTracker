@@ -8,7 +8,7 @@ package cn.edu.fudan.measureservice.domain.core;
  **/
 public class CommonInfo {
 
-    String repoId;
+    String repoUuid;
     String commitId;
 
 }

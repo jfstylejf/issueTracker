@@ -41,7 +41,7 @@ public class MeasureRepoServiceImpl implements MeasureRepoService {
     }
 
     @Override
-    public List<RepoMeasure> getRepoMeasureByRepoId(String repoId,String since,String until,Granularity granularity) {
+    public List<RepoMeasure> getRepoMeasureByrepoUuid(String repoUuid,String since,String until,Granularity granularity) {
         List<RepoMeasure> result=new ArrayList<>();
         LocalDate preTimeLimit= DateTimeUtil.parse(until).plusDays(1);
         //until查询往后推一天，例如输入的是2020-03-31，不往后推一天，接口只能返回03-30这一天及以前的数据。推一天后，就能返回03-31这一天的数据
@@ -51,7 +51,7 @@ public class MeasureRepoServiceImpl implements MeasureRepoService {
         if(since == null || since.isEmpty()){
             count = 10;
         }
-        List<RepoMeasure> repoMeasures=repoMeasureMapper.getRepoMeasureByDeveloperAndRepoId(repoId,null,count,since,until);
+        List<RepoMeasure> repoMeasures=repoMeasureMapper.getRepoMeasureByDeveloperAndrepoUuid(repoUuid,null,count,since,until);
         if(repoMeasures==null||repoMeasures.isEmpty()) {
             return Collections.emptyList();
         }
@@ -140,8 +140,8 @@ public class MeasureRepoServiceImpl implements MeasureRepoService {
     }
 
     @Override
-    public RepoMeasure getRepoMeasureByRepoIdAndCommitId(String repoId, String commitId) {
-        return repoMeasureMapper.getRepoMeasureByCommit(repoId,commitId);
+    public RepoMeasure getRepoMeasureByrepoUuidAndCommitId(String repoUuid, String commitId) {
+        return repoMeasureMapper.getRepoMeasureByCommit(repoUuid,commitId);
     }
 
 

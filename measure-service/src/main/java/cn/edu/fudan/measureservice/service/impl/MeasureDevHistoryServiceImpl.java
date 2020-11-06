@@ -26,9 +26,9 @@ public class MeasureDevHistoryServiceImpl implements MeasureDevHistoryService {
     }
 
     @Override
-    public Object getDevHistoryCommitInfo(String repoId, String beginDate, String endDate) {
+    public Object getDevHistoryCommitInfo(String repoUuid, String since, String until) {
         List<Map<String, Object>> result;
-        result = fileMeasureMapper.getDevHistoryCommitInfo(repoId,beginDate,endDate);
+        result = fileMeasureMapper.getDevHistoryCommitInfo(repoUuid,since,until);
         for (Map<String, Object> stringObjectMap : result) {
             Map<String, Object> map;
             map = stringObjectMap;
