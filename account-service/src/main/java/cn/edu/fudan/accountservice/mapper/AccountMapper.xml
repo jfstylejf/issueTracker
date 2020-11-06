@@ -140,8 +140,8 @@
         select * from tool
     </select>
 
-    <select id="getRightByAccountName" parameterType="String" resultType="java.util.HashMap">
-        select uuid,account_right from account where account_name = #{accountName}
+    <select id="getOldAccountGitname"  resultType="String">
+        select account_gitname from account_author;
     </select>
 
 </mapper>

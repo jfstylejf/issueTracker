@@ -93,16 +93,7 @@ public class AccountController {
 
     @ApiOperation(value="用户注册",httpMethod = "POST")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "account", value = "开发人员信息列表", dataType = "Account", required = true,defaultValue = "{\n" +
-                    "    \"accountName\":\"zwj\",\n" +
-                    "    \"password\":\"123456\",\n" +
-                    "    \"name\":\"周玮杰\",\n" +
-                    "    \"email\":\"zwj@163.com\",\n" +
-                    "    \"dep\":\"工程开发部\",\n" +
-                    "    \"gitname\":\"zwj\",\n" +
-                    "    \"status\":1,\n" +
-                    "    \"role\":\"P\"\n" +
-                    "}"),
+            @ApiImplicitParam(name = "account", value = "开发人员信息列表", dataType = "Account", required = true)
     })
     @PostMapping("/register")
     public Object createUser(@RequestBody Account account) {
@@ -137,8 +128,8 @@ public class AccountController {
         return new ResponseBean(200, "success", accountService.getAccountByToken(userToken).getUuid());
     }
 
-    /*
-    待测
+    /**
+    *待测
      */
     @ApiOperation(value="获取当前登录用户登录状态",httpMethod = "GET")
     @ApiImplicitParams({
@@ -182,8 +173,8 @@ public class AccountController {
         return new ResponseBean(200, "success",accountService.getGroupsByAccountName(accountName));
     }
 
-    /*
-    待测
+    /**
+    *待测
      */
     @ApiOperation(value="更新工具",httpMethod = "POST")
     @ApiImplicitParams({
@@ -213,4 +204,21 @@ public class AccountController {
     public Object getAccountNameById(@RequestParam("accountId") String accountId){
         return new ResponseBean(200, "success",accountService.getAccountNameById(accountId));
     }
+
+    @ApiOperation(value="自动更新人员列表",httpMethod = "POST")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "gitname", value = "更新后的gitname列表", dataType = "List<String>", required = true)
+    })
+    @PostMapping(value = "/account")
+    public Object autoUpdateAccount(@RequestBody List<String> gitname)
+    {
+        try{
+            accountService.getGitName(gitname);
+            return new ResponseBean(200, "update completed!", null);
+        }catch (Exception e){
+            e.printStackTrace();
+            return new ResponseBean(401, "update failed! " + e.getMessage(), null);
+        }
+    }
+
 }

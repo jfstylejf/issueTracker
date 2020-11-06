@@ -4,6 +4,7 @@ package cn.edu.fudan.accountservice.mapper;
 import cn.edu.fudan.accountservice.domain.Account;
 import cn.edu.fudan.accountservice.domain.Tool;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -38,6 +39,7 @@ public interface AccountMapper {
 
     /**
      * get account by email
+     *
      *
      * @param email get user name
      * @return Account
@@ -83,6 +85,13 @@ public interface AccountMapper {
 
     String getAccountNameById(String id);
 
+    @Select("select uuid,account_right from account where account_name = #{accountName}")
     List<Map<String,Object>> getRightByAccountName(String accountName);
 
+    /**
+     * get git name
+     *
+     * @return List<String>
+     */
+    List<String> getOldAccountGitname();
 }

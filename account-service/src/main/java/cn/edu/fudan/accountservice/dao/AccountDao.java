@@ -77,4 +77,10 @@ public class AccountDao {
         accountInfo.remove("account_right");
         return accountInfo;
     }
+
+    public List<String> getAccountGitname()
+    {
+        return accountMapper.getOldAccountGitname();
+
+    }
 }

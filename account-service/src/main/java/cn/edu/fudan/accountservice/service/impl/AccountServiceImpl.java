@@ -158,7 +158,8 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public List<Tool> getTools(){
-        return accountDao.getTools();
+        return accountDao.getTools
+                ();
     }
 
     @Override
@@ -173,4 +174,53 @@ public class AccountServiceImpl implements AccountService {
         return accountDao.getRightByAccountName(username);
     }
 
+
+    private static List<String> getDifferent(List<String> oldGitname, List<String> gitname)
+    {
+        List<String> diff = new ArrayList<String>();
+        Map<String,Integer> map = new HashMap<String,Integer>(gitname.size());
+
+        for (String name : gitname) {
+            map.put(name, 1);
+        }
+        for (String name : oldGitname) {
+            if(map.get(name)!=null)
+            {
+                map.put(name, 2);
+                continue;
+            }
+            diff.add(name);
+        }
+        for(Map.Entry<String, Integer> entry:map.entrySet())
+        {
+            if(entry.getValue()==1)
+            {
+                diff.add(entry.getKey());
+            }
+        }
+        return diff;
+    }
+
+    public void updateAccountInfo(Account account) {
+
+        account.setUuid(UUID.randomUUID().toString());
+        account.setPassword(MD5Util.md5(account.getAccountName() + account.getPassword()));
+        accountDao.addAccount(account);
+    }
+
+    @Override
+    public void getGitName(List<String> gitname)
+    {
+        List<String> oldGitname = accountDao.getAccountGitname();
+        List<String> diffList = getDifferent(gitname,oldGitname);
+        for (String gitName : diffList) {
+            Account account = new Account();
+            account.setAccountName(gitName);
+            account.setGitname(gitName);
+            account.setUuid(UUID.randomUUID().toString());
+            account.setPassword(MD5Util.md5(account.getAccountName() + account.getPassword()));
+            accountDao.addAccount(account);
+
+        }
+    }
 }

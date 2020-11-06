@@ -110,4 +110,11 @@ public interface AccountService {
     String getAccountNameById(String accountId);
 
     Map<String,Object> getRightByToken(String userToken);
+
+    /**
+     * 查询 account_author表中的所有 gitname
+     */
+    void getGitName(List<String> gitname);
+
+
 }
