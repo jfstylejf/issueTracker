@@ -58,7 +58,7 @@ public class MeasureDeveloperController {
     ){
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         if(until==null || "".equals(until)) {
-            until = dtf.format(LocalDateTime.now());
+            until = dtf.format(LocalDateTime.now().plusHours(8));
         }
         try{
             return new ResponseBean<>(200,"success",(Map<String, Object>) measureDeveloperService.getDeveloperWorkLoad(developer,since,until,repoUuid));
@@ -112,6 +112,10 @@ public class MeasureDeveloperController {
                                                             HttpServletRequest request){
 
         try{
+            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            if(until!=null && !"".equals(until)) {
+                until = dtf.format(LocalDateTime.now().plusHours(8));
+            }
             String token = request.getHeader("token");
             return new ResponseBean<>(200,"success",(DeveloperPortrait) measureDeveloperService.getPortraitLevel(developer,since,until,token));
         }catch (Exception e){
@@ -139,6 +143,10 @@ public class MeasureDeveloperController {
                                               HttpServletRequest request){
 
         try{
+            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            if(until!=null && !"".equals(until)) {
+                until = dtf.format(LocalDateTime.now().plusHours(8));
+            }
             String token = request.getHeader("token");
             return new ResponseBean<>(200,"success",(List<cn.edu.fudan.measureservice.portrait2.DeveloperPortrait>) measureDeveloperService.getPortraitCompetence(developer,repoUuidList,since,until,token));
         }catch (Exception e){
@@ -168,6 +176,10 @@ public class MeasureDeveloperController {
                                           HttpServletRequest request){
 
         try{
+            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            if(until!=null && !"".equals(until)) {
+                until = dtf.format(LocalDateTime.now().plusHours(8));
+            }
             String token = request.getHeader("token");
             String condition ;
             if(developer==null) {
@@ -204,6 +216,10 @@ public class MeasureDeveloperController {
                                                 @RequestParam(value = "until", required = false)String until){
 
         try{
+            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            if(until!=null && !"".equals(until)) {
+                until = dtf.format(LocalDateTime.now().plusHours(8));
+            }
             return new ResponseBean<>(200,"success",(Map<String,Object>) measureDeveloperService.getStatementByCondition(repUuidList,developer,since,until));
         }catch (Exception e){
             e.printStackTrace();
@@ -229,6 +245,10 @@ public class MeasureDeveloperController {
                                                @RequestParam(value = "until", required = false)String until){
 
         try{
+            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            if(until!=null && !"".equals(until)) {
+                until = dtf.format(LocalDateTime.now().plusHours(8));
+            }
             return new ResponseBean<>(200,"success",(List<Map<String, Object>>)measureDeveloperService.getDeveloperRecentNews(repoUuidList,developer,since,until));
         }catch (Exception e){
             e.printStackTrace();

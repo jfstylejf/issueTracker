@@ -10,6 +10,7 @@ import org.eclipse.jgit.diff.*;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectReader;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.lib.RepositoryBuilder;
 import org.eclipse.jgit.patch.FileHeader;
 import org.eclipse.jgit.patch.HunkHeader;
 import org.eclipse.jgit.revwalk.RevCommit;
@@ -47,6 +48,7 @@ public class JGitHelper {
     private Repository repository;
     private RevWalk revWalk;
     private Git git;
+
 
     /**
      * repoPath 加上了 .git 目录

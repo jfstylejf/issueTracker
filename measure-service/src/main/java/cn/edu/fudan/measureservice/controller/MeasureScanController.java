@@ -12,6 +12,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
@@ -41,7 +43,6 @@ public class MeasureScanController {
         String repoUuid = scanDTO.getRepoUuid();
         String branch = scanDTO.getBranch();
         String beginCommit = scanDTO.getBeginCommit();
-
         // TODO 调用 tool scan 流程
         try {
             // 调用javancss工具进行扫描 目前measure服务只有这个扫描工具
@@ -83,7 +84,7 @@ public class MeasureScanController {
     })
     @SuppressWarnings("unchecked")
     @DeleteMapping("/measure/{repoUuid}")
-    public ResponseBean deleteRepoMeasureByrepoUuid(@PathVariable("repo_uuid")String repoUuid){
+    public ResponseBean deleteRepoMeasureByRepoUuid(@PathVariable("repo_uuid")String repoUuid){
         try{
             measureScanService.delete(repoUuid);
             return new ResponseBean(200,"success",null);
