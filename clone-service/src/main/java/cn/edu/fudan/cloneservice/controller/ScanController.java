@@ -22,8 +22,8 @@ public class ScanController {
 
     @ApiOperation(value = "克隆扫描", notes = "将clone信息扫描入库", httpMethod = "POST")
     @ApiImplicitParams({
-            @ApiImplicitParam(name="repo_uuid", value = "repo_uuid", dataType = "String"),
-            @ApiImplicitParam(name = "begin_commit", value = "开始于哪个commit",dataType = "String"),
+            @ApiImplicitParam(name="repoUuid", value = "repoUuid", dataType = "String"),
+            @ApiImplicitParam(name = "beginCommit", value = "开始于哪个commit",dataType = "String"),
             @ApiImplicitParam(name = "branch", value = "分支")
     })
     @PostMapping(value = {"/clone/saga-cpu"})
