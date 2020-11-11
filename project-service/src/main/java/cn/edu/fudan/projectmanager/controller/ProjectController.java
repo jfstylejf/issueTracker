@@ -112,7 +112,7 @@ public class ProjectController {
         subRepositories.stream().filter(s -> s.getRecycled() == recycled).
                 forEach(s -> repositoryVos.add(new RepositoryVO(s)));
 
-        return new ResponseBean<>(200, "update success", repositoryVos);
+        return new ResponseBean<>(200, "success", repositoryVos);
     }
 
 //    //jeff get projectName list by module

@@ -95,7 +95,12 @@
         SELECT s.uuid , url, language, branch, repo_source, download_status,
                latest_commit_time, repo_uuid, s.project_name, recycled, import_account_uuid, scan_start, name
         FROM sub_repository as s inner join repo_user as r
-        WHERE r.account_uuid = #{accountUuid} and s.uuid = r.sub_repository_uuid ;
+        <where>
+            s.uuid = r.sub_repository_uuid
+            <if test="account_uuid != null">
+                AND r.account_uuid = #{account_uuid}
+            </if>
+        </where>
     </select>
 
 </mapper>

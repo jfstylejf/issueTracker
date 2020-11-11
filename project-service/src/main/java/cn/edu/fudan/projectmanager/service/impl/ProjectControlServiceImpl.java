@@ -3,6 +3,7 @@ package cn.edu.fudan.projectmanager.service.impl;
 import cn.edu.fudan.projectmanager.component.RestInterfaceManager;
 import cn.edu.fudan.projectmanager.dao.RepoUserDao;
 import cn.edu.fudan.projectmanager.dao.SubRepositoryDao;
+import cn.edu.fudan.projectmanager.domain.AccountRoleEnum;
 import cn.edu.fudan.projectmanager.domain.NeedDownload;
 import cn.edu.fudan.projectmanager.domain.RepoUser;
 import cn.edu.fudan.projectmanager.domain.SubRepository;
@@ -186,7 +187,16 @@ public class ProjectControlServiceImpl implements ProjectControlService {
     @SneakyThrows
     public List<SubRepository> query(String token){
         UserInfoDTO userInfoDTO = getUserInfoByToken(token);
-        return subRepositoryDao.getAllSubRepoByAccountUuid(userInfoDTO.getUuid());
+        String userUuid = userInfoDTO.getUuid();
+
+        // 用户权限为admin时 查询所有的repo
+        if (userInfoDTO.getRight().equals(AccountRoleEnum.ADMIN.getRight())) {
+            userUuid = null;
+        }
+
+        // todo 用户权限为 DEVELOPER 时不允许查询项目列表
+
+        return subRepositoryDao.getAllSubRepoByAccountUuid(userUuid);
     }
 
 

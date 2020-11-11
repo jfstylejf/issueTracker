@@ -51,7 +51,7 @@ public interface SubRepositoryMapper {
     Date getLatestCommitTime(@Param("repo_id") String repoUuid);
 
 
-    List<SubRepository> getAllSubRepoByAccountId(String accountUuid);
+    List<SubRepository> getAllSubRepoByAccountId(@Param("account_uuid") String accountUuid);
 
 
     @Update("UPDATE `sub_repository` SET `recycled` = '1' WHERE `uuid` = #{subRepoUuid};")
