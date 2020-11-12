@@ -1,15 +1,22 @@
 package cn.edu.fudan.accountservice.domain;
 
+import cn.edu.fudan.accountservice.util.MD5Util;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.util.UUID;
 
+/**
+ * @author fancying
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Account implements Serializable {
+
+    private transient static final String PASSWORD_POSTFIX = "1234!";
 
     private String uuid;
     /**
@@ -30,8 +37,23 @@ public class Account implements Serializable {
     private String dep;
     /** 用户使用的git用户名 */
     private String gitname;
-    /** 用户在职状态 */
-    private String status;
+
+    /**
+     * todo 后续用int 保存 1 表示在职 0 表示离职
+     * 用户在职状态
+     */
+    private String status = "1";
     /** 用户所属的项目角色 */
-    private String role;
+    private String role = AccountRoleEnum.DEVELOPER.name();
+
+    public static Account newInstance(String gitName) {
+        Account account = new Account();
+        account.setAccountName(gitName);
+        account.setGitname(gitName);
+        account.setName(gitName);
+        account.setStatus("1");
+        account.setUuid(UUID.randomUUID().toString());
+        account.setPassword(MD5Util.md5(gitName + gitName + PASSWORD_POSTFIX));
+        return account;
+    }
 }

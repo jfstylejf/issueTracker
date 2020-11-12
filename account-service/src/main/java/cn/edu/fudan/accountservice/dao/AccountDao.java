@@ -6,10 +6,7 @@ import cn.edu.fudan.accountservice.mapper.AccountMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Repository
 public class AccountDao {
@@ -50,10 +47,6 @@ public class AccountDao {
         accountMapper.updateStatusInfo(statusInfo);
     }
 
-    public void addAccount(Account account) {
-        accountMapper.addAccount(account);
-    }
-
     public List<String> getAllAccountId() {
         return accountMapper.getAllAccountId();
     }
@@ -82,5 +75,13 @@ public class AccountDao {
     {
         return accountMapper.getOldAccountGitname();
 
+    }
+
+    public void addAccounts(List<Account> accounts) {
+        accountMapper.addAccounts(accounts);
+    }
+
+    public void addAccount(Account account) {
+        addAccounts(Collections.singletonList(account));
     }
 }

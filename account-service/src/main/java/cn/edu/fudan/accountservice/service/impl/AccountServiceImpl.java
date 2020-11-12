@@ -1,10 +1,8 @@
 package cn.edu.fudan.accountservice.service.impl;
 
 import cn.edu.fudan.accountservice.dao.AccountDao;
-import cn.edu.fudan.accountservice.domain.Account;
-import cn.edu.fudan.accountservice.domain.AccountInfo;
-import cn.edu.fudan.accountservice.domain.ResponseBean;
-import cn.edu.fudan.accountservice.domain.Tool;
+import cn.edu.fudan.accountservice.domain.*;
+import cn.edu.fudan.accountservice.mapper.AccountAuthorMapper;
 import cn.edu.fudan.accountservice.service.AccountService;
 import cn.edu.fudan.accountservice.util.Base64Util;
 import cn.edu.fudan.accountservice.util.MD5Util;
@@ -14,12 +12,14 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 
 @Service
 public class AccountServiceImpl implements AccountService {
 
     private StringRedisTemplate stringRedisTemplate;
+    private AccountAuthorMapper accountAuthorMapper;
 
 
     @Autowired
@@ -90,7 +90,6 @@ public class AccountServiceImpl implements AccountService {
         if(statusInfo.size()!=0){
             accountDao.updateAccountStatus(statusInfo);
         }
-        return;
     }
 
     @Override
@@ -176,32 +175,6 @@ public class AccountServiceImpl implements AccountService {
     }
 
 
-    private static List<String> getDifferent(List<String> oldGitname, List<String> gitname)
-    {
-        List<String> diff = new ArrayList<String>();
-        Map<String,Integer> map = new HashMap<String,Integer>(gitname.size());
-
-        for (String name : gitname) {
-            map.put(name, 1);
-        }
-        for (String name : oldGitname) {
-            if(map.get(name)!=null)
-            {
-                map.put(name, 2);
-                continue;
-            }
-            diff.add(name);
-        }
-        for(Map.Entry<String, Integer> entry:map.entrySet())
-        {
-            if(entry.getValue()==1)
-            {
-                diff.add(entry.getKey());
-            }
-        }
-        return diff;
-    }
-
     public void updateAccountInfo(Account account) {
 
         account.setUuid(UUID.randomUUID().toString());
@@ -210,18 +183,17 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public void getGitName(List<String> gitname)
-    {
-        List<String> oldGitname = accountDao.getAccountGitname();
-        List<String> diffList = getDifferent(gitname,oldGitname);
-        for (String gitName : diffList) {
-            Account account = new Account();
-            account.setAccountName(gitName);
-            account.setGitname(gitName);
-            account.setUuid(UUID.randomUUID().toString());
-            account.setPassword(MD5Util.md5(account.getAccountName() + account.getPassword()));
-            accountDao.addAccount(account);
+    public void addNewAccounts(List<String> gitNames) {
+        List<Account> accounts = gitNames.stream().
+                filter(gitName -> !accountDao.getAccountGitname().contains(gitName)).
+                map(Account::newInstance).
+                collect(Collectors.toList());
+        accountDao.addAccounts(accounts);
+        accountAuthorMapper.batchInsertAccountAuthor(accounts.stream().map(AccountAuthor::newInstanceOf).collect(Collectors.toList()));
+    }
 
-        }
+    @Autowired
+    public void setAccountAuthorMapper(AccountAuthorMapper accountAuthorMapper) {
+        this.accountAuthorMapper = accountAuthorMapper;
     }
 }

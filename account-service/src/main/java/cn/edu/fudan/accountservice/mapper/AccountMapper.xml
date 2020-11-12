@@ -25,34 +25,15 @@
         <result property="installed" column="is_installed"/>
     </resultMap>
 
-    <insert id="addAccount" parameterType="Account">
-        insert into issueTracker.account
-        (
-            uuid,
-            account_name,
-            password,
-            name,
-            email,
-            account_right,
-            account_dep,
-            account_gitname,
-            account_status,
-            account_role
-        )
-        values
-        (
-            #{uuid},
-            #{accountName},
-            #{password},
-            #{name},
-            #{email},
-            #{right},
-            #{dep},
-            #{gitname},
-            #{status},
-            #{role}
-        )
+    <insert id="addAccounts" parameterType="List">
+        INSERT INTO account
+            (uuid, account_name, password, name, email, account_right, account_dep, account_gitname, account_status, account_role)
+        VALUES
+        <foreach collection="list" item="account" separator=",">
+            #{account.uuid}, #{account.accountName}, #{account.password}, #{account.name}, #{account.email}, #{account.right}, #{account.dep}, #{account.gitname}, #{account.status}, #{account.role}
+        </foreach>
     </insert>
+
 
     <select id="getAccountIdByName" parameterType="String" resultType="String">
         select uuid from account where name = #{name}

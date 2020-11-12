@@ -113,8 +113,9 @@ public interface AccountService {
 
     /**
      * 查询 account_author表中的所有 gitname
+     * @param gitname  新增用户的git 名字
      */
-    void getGitName(List<String> gitname);
+    void addNewAccounts(List<String> gitname);
 
 
 }

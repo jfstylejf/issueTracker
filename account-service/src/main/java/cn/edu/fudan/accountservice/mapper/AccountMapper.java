@@ -23,13 +23,6 @@ public interface AccountMapper {
     Account login(@Param("accountName") String accountName, @Param("password") String password);
 
     /**
-     * add account
-     *
-     * @param account Account type
-     */
-    void addAccount(Account account);
-
-    /**
      * get account id by name
      *
      * @param name get user name
@@ -94,4 +87,10 @@ public interface AccountMapper {
      * @return List<String>
      */
     List<String> getOldAccountGitname();
+
+    /**
+     * 一次插入多个账户
+     * @param accounts 多个账户
+     */
+    void addAccounts(List<Account> accounts);
 }

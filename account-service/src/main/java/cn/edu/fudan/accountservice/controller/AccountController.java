@@ -210,14 +210,14 @@ public class AccountController {
             @ApiImplicitParam(name = "gitname", value = "更新后的gitname列表", dataType = "List<String>", required = true)
     })
     @PostMapping(value = "/account")
-    public Object autoUpdateAccount(@RequestBody List<String> gitname)
+    public ResponseBean autoUpdateAccount(@RequestBody List<String> gitname)
     {
         try{
-            accountService.getGitName(gitname);
-            return new ResponseBean(200, "update completed!", null);
+            accountService.addNewAccounts(gitname);
+            return new ResponseBean<>(200, "receive!", null);
         }catch (Exception e){
             e.printStackTrace();
-            return new ResponseBean(401, "update failed! " + e.getMessage(), null);
+            return new ResponseBean<>(401, "failed! " + e.getMessage(), null);
         }
     }
 

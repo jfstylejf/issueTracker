@@ -11,7 +11,7 @@ public class MD5Util {
         return byteArrayToHex(arr).toLowerCase();
     }
 
-    // 获取digest byte  
+    // 获取digest byte
     private static byte[] getEncrypByteArr(String source, String algorithm) {
         MessageDigest mDigest = null;
         try {
