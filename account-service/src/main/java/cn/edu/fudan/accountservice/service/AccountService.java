@@ -2,9 +2,8 @@ package cn.edu.fudan.accountservice.service;
 
 
 import cn.edu.fudan.accountservice.domain.Account;
-import cn.edu.fudan.accountservice.domain.ResponseBean;
 import cn.edu.fudan.accountservice.domain.Tool;
-import com.sun.org.apache.xpath.internal.objects.XObject;
+import cn.edu.fudan.common.http.ResponseEntity;
 
 import java.util.List;
 import java.util.Map;
@@ -17,9 +16,9 @@ public interface AccountService {
      *
      * @param username get user name
      * @param password get user password
-     * @return ResponseBean
+     * @return ResponseEntity
      */
-    ResponseBean login(String username, String password);
+    ResponseEntity login(String username, String password);
 
     /**
      * get user name by token

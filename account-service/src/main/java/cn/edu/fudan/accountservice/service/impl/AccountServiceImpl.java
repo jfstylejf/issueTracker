@@ -6,6 +6,7 @@ import cn.edu.fudan.accountservice.mapper.AccountAuthorMapper;
 import cn.edu.fudan.accountservice.service.AccountService;
 import cn.edu.fudan.accountservice.util.Base64Util;
 import cn.edu.fudan.accountservice.util.MD5Util;
+import cn.edu.fudan.common.http.ResponseEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -35,7 +36,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public ResponseBean login(String username, String encodedPassword) {
+    public ResponseEntity login(String username, String encodedPassword) {
         //Base64解密
         String password = Base64Util.decodePassword(encodedPassword);
         //首次登录或token过期重新登录，返回新的token
@@ -47,9 +48,9 @@ public class AccountServiceImpl implements AccountService {
             stringRedisTemplate.opsForValue().set("login:" + userToken, username);
             //token保存7天
             stringRedisTemplate.expire("login:" + userToken, 7, TimeUnit.DAYS);
-            return new ResponseBean<>(200, "登录成功!", new AccountInfo(username, userToken, userRight));
+            return new ResponseEntity<>(200, "登录成功!", new AccountInfo(username, userToken, userRight));
         } else {
-            return new ResponseBean<>(401, "用户名或密码错误!", null);
+            return new ResponseEntity<>(401, "用户名或密码错误!", null);
         }
     }
 
