@@ -9,6 +9,7 @@ import java.io.Serializable;
 import java.util.UUID;
 
 /**
+ * 账户信息
  * @author fancying
  */
 @Data
@@ -20,14 +21,10 @@ public class Account implements Serializable {
 
     private String uuid;
     /**
-     * 登录时用户名（gitlab的用户名）
+     * 登录时用户名（用户的真实姓名）
      */
     private String accountName;
     private String password;
-    /**
-     * 登陆后用户真实姓名
-     */
-    private String name;
     private String email;
     /**
      * 用户权限管理，0表示管理员，1表示团队负责人，默认为1
@@ -35,8 +32,6 @@ public class Account implements Serializable {
     private int right;
     /** 用户所属部门 */
     private String dep;
-    /** 用户使用的git用户名 */
-    private String gitname;
 
     /**
      * todo 后续用int 保存 1 表示在职 0 表示离职
@@ -49,8 +44,6 @@ public class Account implements Serializable {
     public static Account newInstance(String gitName) {
         Account account = new Account();
         account.setAccountName(gitName);
-        account.setGitname(gitName);
-        account.setName(gitName);
         account.setStatus("1");
         account.setUuid(UUID.randomUUID().toString());
         account.setPassword(MD5Util.md5(gitName + gitName + PASSWORD_POSTFIX));

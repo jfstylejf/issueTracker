@@ -22,7 +22,6 @@ public class AccountServiceImpl implements AccountService {
     private StringRedisTemplate stringRedisTemplate;
     private AccountAuthorMapper accountAuthorMapper;
 
-
     @Autowired
     public void setStringRedisTemplate(StringRedisTemplate stringRedisTemplate) {
         this.stringRedisTemplate = stringRedisTemplate;
@@ -48,25 +47,15 @@ public class AccountServiceImpl implements AccountService {
             stringRedisTemplate.opsForValue().set("login:" + userToken, username);
             //token保存7天
             stringRedisTemplate.expire("login:" + userToken, 7, TimeUnit.DAYS);
-            return new ResponseEntity<>(200, "登录成功!", new AccountInfo(username, userToken, userRight));
+            return new ResponseEntity<>(200, "登录成功!", new AccountVO(username, userToken, userRight));
         } else {
             return new ResponseEntity<>(401, "用户名或密码错误!", null);
         }
     }
 
     @Override
-    public String getUserNameByToken(String userToken) {
-        return stringRedisTemplate.opsForValue().get("login:" + userToken);
-    }
-
-    @Override
     public boolean isAccountNameExist(String accountName) {
         return accountDao.isAccountNameExist(accountName);
-    }
-
-    @Override
-    public boolean isNameExist(String name) {
-        return accountDao.isNameExist(name);
     }
 
     @Override
@@ -79,7 +68,7 @@ public class AccountServiceImpl implements AccountService {
         List<Map<String,String>> result = accountDao.getStatusByName(name);
         Map<String, Integer> nameStatus = new HashMap<>(8);
         for(Map<String,String> m : result){
-            String authorName = m.get("name");
+            String authorName = m.get("accountName");
             String authorStatus = m.get("account_status");
             nameStatus.put(authorName,Integer.valueOf(authorStatus));
         }
@@ -114,7 +103,7 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public void addAccount(Account account) {
-        if (account.getAccountName() == null || account.getPassword() == null || account.getEmail() == null || account.getName() == null) {
+        if (account.getAccountName() == null || account.getPassword() == null || account.getEmail() == null) {
             throw new RuntimeException("param loss");
         }
         if (isAccountNameExist(account.getAccountName())) {
@@ -124,9 +113,6 @@ public class AccountServiceImpl implements AccountService {
             throw new RuntimeException("email has been used!");
         }
 
-        if (isNameExist(account.getName())) {
-            throw new RuntimeException("nickName has been used!");
-        }
         account.setUuid(UUID.randomUUID().toString());
         account.setPassword(MD5Util.md5(account.getAccountName() + account.getPassword()));
         accountDao.addAccount(account);
@@ -151,7 +137,7 @@ public class AccountServiceImpl implements AccountService {
     public void updateToolsEnable(List<Tool> tools) {
         String accountName = tools.get(0).getAccountName();
         int right = accountDao.getAccountByAccountName(accountName).getRight();
-        if(right == 1){
+        if(right == AccountRoleEnum.ADMIN.getRight()){
             accountDao.updateToolsEnable(tools);
         }
 
@@ -175,14 +161,6 @@ public class AccountServiceImpl implements AccountService {
         return accountDao.getRightByAccountName(username);
     }
 
-
-    public void updateAccountInfo(Account account) {
-
-        account.setUuid(UUID.randomUUID().toString());
-        account.setPassword(MD5Util.md5(account.getAccountName() + account.getPassword()));
-        accountDao.addAccount(account);
-    }
-
     @Override
     public void addNewAccounts(List<String> gitNames) {
         List<Account> accounts = gitNames.stream().
@@ -191,6 +169,8 @@ public class AccountServiceImpl implements AccountService {
                 collect(Collectors.toList());
         accountDao.addAccounts(accounts);
         accountAuthorMapper.batchInsertAccountAuthor(accounts.stream().map(AccountAuthor::newInstanceOf).collect(Collectors.toList()));
+
+        // todo 查询新增人员在哪个项目 后续更新account_project 表
     }
 
     @Autowired

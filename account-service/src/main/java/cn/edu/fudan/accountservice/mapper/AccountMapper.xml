@@ -7,56 +7,44 @@
         <id property="uuid" column="uuid"/>
         <result property="accountName" column="account_name"/>
         <result property="password" column="password"/>
-        <result property="name" column="name"/>
         <result property="email" column="email"/>
         <result property="dep" column="account_dep"/>
         <result property="right" column="account_right"/>
-        <result property="gitname" column="account_gitname"/>
         <result property="status" column="account_status"/>
         <result property="role" column="account_role"/>
     </resultMap>
 
-    <resultMap id="tool" type="Tool">
-        <id property="uuid" column="id"/>
-        <result property="toolType" column="tool_type"/>
-        <result property="toolName" column="tool_name"/>
-        <result property="description" column="description"/>
-        <result property="enabled" column="is_enabled"/>
-        <result property="installed" column="is_installed"/>
-    </resultMap>
-
     <insert id="addAccounts" parameterType="List">
         INSERT INTO account
-            (uuid, account_name, password, name, email, account_right, account_dep, account_gitname, account_status, account_role)
+            (uuid, account_name, password, email, account_right, account_dep, account_status, account_role)
         VALUES
         <foreach collection="list" item="account" separator=",">
-            #{account.uuid}, #{account.accountName}, #{account.password}, #{account.name}, #{account.email}, #{account.right}, #{account.dep}, #{account.gitname}, #{account.status}, #{account.role}
+            #{account.uuid}, #{account.accountName}, #{account.password}, #{account.email}, #{account.right}, #{account.dep}, #{account.status}, #{account.role}
         </foreach>
     </insert>
-
-
-    <select id="getAccountIdByName" parameterType="String" resultType="String">
-        select uuid from account where name = #{name}
-    </select>
 
     <select id="getAccountByAccountName" parameterType="String" resultMap="account">
         select * from account where account_name = #{accountName}
     </select>
 
     <select id="login" resultMap="account">
-        select uuid, account_name, password, name, email, account_right,account_dep,account_gitname,account_status,account_role
-        from
-            issueTracker.account
-        where
-            account_name=#{accountName} and password=#{password}
+        SELECT uuid, account_name, password, email, account_right, account_dep, account_status, account_role
+        FROM
+            account
+        WHERE
+            account_name = #{accountName} and password = #{password}
     </select>
 
     <select id="getAccountByEmail" parameterType="String" resultMap="account">
-        select * from account where email = #{email}
+        SELECT uuid, account_name, password, email, account_right, account_dep, account_status, account_role
+        FROM
+            account
+        WHERE
+              email = #{email}
     </select>
 
     <select id="getStatusByName" parameterType="String" resultType="Map">
-        select name,account_status from account
+        select account_status from account
         <where>
             <if test="name_list != null">
                 name in
@@ -67,8 +55,10 @@
         </where>
     </select>
 
-    <select id="getAccountStatus" parameterType="String" resultMap="account">
-        select account_name, name, account_gitname, account_dep, email, account_status, account_role from account;
+    <select id="getAllAccount" parameterType="String" resultMap="account">
+        SELECT uuid, account_name, password, email, account_right, account_dep, account_status, account_role
+        FROM
+            account;
     </select>
 
     <update id="updateStatusInfo" parameterType="java.util.List">
@@ -98,6 +88,20 @@
         select account_name from account where uuid=#{uuid};
     </select>
 
+
+    <resultMap id="tool" type="Tool">
+        <id property="uuid" column="id"/>
+        <result property="toolType" column="tool_type"/>
+        <result property="toolName" column="tool_name"/>
+        <result property="description" column="description"/>
+        <result property="enabled" column="is_enabled"/>
+        <result property="installed" column="is_installed"/>
+    </resultMap>
+
+    <select id="getTools" resultMap="tool">
+        select * from tool
+    </select>
+
     <update id="updateToolsEnable" parameterType="java.util.List">
         <foreach collection="list" item="item" index="index" open="" close="" separator=";">
             update tool
@@ -116,13 +120,5 @@
         </foreach>
 
     </update>
-
-    <select id="getTools" resultMap="tool">
-        select * from tool
-    </select>
-
-    <select id="getOldAccountGitname"  resultType="String">
-        select account_gitname from account_author;
-    </select>
 
 </mapper>

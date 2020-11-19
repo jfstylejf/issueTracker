@@ -6,7 +6,7 @@
 
     <insert id="batchInsertAccountAuthor" parameterType="List">
         INSERT INTO account_author
-            (account_uuid, name, account_gitname)
+            (account_uuid, account_name, account_gitname)
         VALUES
         <foreach collection="list" item="account" separator=",">
             #{account.accountUuid}, #{account.name}, #{account.accountGitName}

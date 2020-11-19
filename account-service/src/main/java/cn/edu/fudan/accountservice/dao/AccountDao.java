@@ -31,17 +31,13 @@ public class AccountDao {
         return getAccountByAccountName(accountName) != null;
     }
 
-    public boolean isNameExist(String name) {
-        return accountMapper.getAccountIdByName(name) != null;
-    }
-
     public boolean isEmailExist(String email) {
         return accountMapper.getAccountByEmail(email) != null;
     }
 
     public List<Map<String,String>> getStatusByName(List name){return accountMapper.getStatusByName(name);}
 
-    public List<Account> getAccountStatus(){ return accountMapper.getAccountStatus(); }
+    public List<Account> getAccountStatus(){ return accountMapper.getAllAccount(); }
 
     public void updateAccountStatus(List<Account> statusInfo){
         accountMapper.updateStatusInfo(statusInfo);
@@ -71,10 +67,8 @@ public class AccountDao {
         return accountInfo;
     }
 
-    public List<String> getAccountGitname()
-    {
-        return accountMapper.getOldAccountGitname();
-
+    public List<String> getAccountGitname() {
+        return accountMapper.getOldAccountGitName();
     }
 
     public void addAccounts(List<Account> accounts) {

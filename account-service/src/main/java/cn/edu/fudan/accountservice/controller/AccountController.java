@@ -59,14 +59,16 @@ public class AccountController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "nickName", value = "开发人员昵称", dataType = "String", required = true,defaultValue = "王贵成"),
     })
+
     @GetMapping("/nick-name/check")
+    @Deprecated
     public Object checkNickName(@RequestParam("nickName") String nickName) {
-        return new ResponseEntity<>(200, "success", accountService.isNameExist(nickName));
+        return new ResponseEntity<>(200, "success","false");
     }
 
     @ApiOperation(value="获取用户在职状态",notes="@return Object",httpMethod = "GET")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "name", value = "开发人员姓名列表", dataType = "List<String>", required = true,defaultValue = "[\"admin\",\"chenyuan\",\"王贵成\"]"),
+            @ApiImplicitParam(name = "accountName", value = "开发人员姓名列表", dataType = "List<String>", required = true,defaultValue = "[\"admin\",\"chenyuan\",\"王贵成\"]"),
     })
     @GetMapping("/status")
     public Object getStatusByName(@RequestBody List<String> name) {
@@ -108,7 +110,7 @@ public class AccountController {
         }
     }
 
-    @ApiOperation(value="用户登录",notes="@return AccountInfo",httpMethod = "GET")
+    @ApiOperation(value="用户登录",notes="@return AccountVO",httpMethod = "GET")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "username", value = "用户姓名", dataType = "String", required = true,defaultValue = "admin"),
             @ApiImplicitParam(name = "password", value = "密码", dataType = "String", required = true,defaultValue = "YWRtaW4="),
@@ -169,7 +171,7 @@ public class AccountController {
 
     @ApiOperation(value="通过姓名获取用户组别",notes="@return List<String>",httpMethod = "GET")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "accountName", value = "开发人员姓名", dataType = "String", required = true,defaultValue = "chenyuan"),
+            @ApiImplicitParam(name = "accountName", value = "开发人员姓名", dataType = "String", required = true, defaultValue = "chenyuan"),
     })
     @GetMapping(value = "/accountGroups")
     public Object getGroupsByAccountName(@RequestParam("accountName") String accountName){
@@ -193,6 +195,10 @@ public class AccountController {
         }
     }
 
+    /**
+     * fixme 放到scan service 中
+     */
+    @Deprecated
     @ApiOperation(value="获取工具列表",notes="@return List<Tool>",httpMethod = "GET")
     @GetMapping(value = "/tools")
     public Object getTools(){

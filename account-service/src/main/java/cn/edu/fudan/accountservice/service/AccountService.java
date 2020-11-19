@@ -14,35 +14,19 @@ public interface AccountService {
     /**
      * login
      *
-     * @param username get user name
+     * @param username get user accountName
      * @param password get user password
      * @return ResponseEntity
      */
     ResponseEntity login(String username, String password);
 
     /**
-     * get user name by token
+     * is account accountName exist
      *
-     * @param userToken get user token
-     * @return String
-     */
-    String getUserNameByToken(String userToken);
-
-    /**
-     * is account name exist
-     *
-     * @param accountName get user account name
+     * @param accountName get user account accountName
      * @return boolean
      */
     boolean isAccountNameExist(String accountName);
-
-    /**
-     * is name exist
-     *
-     * @param name get user name
-     * @return boolean
-     */
-    boolean isNameExist(String name);
 
     /**
      * is email exist
@@ -53,10 +37,10 @@ public interface AccountService {
     boolean isEmailExist(String email);
 
     /**
-     * get status by name
+     * get status by accountName
      *
      * @param name get user status
-     * @return status and name
+     * @return status and accountName
      */
     Object getStatusByName(List name);
 
