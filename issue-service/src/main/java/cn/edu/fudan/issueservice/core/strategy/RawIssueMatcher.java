@@ -159,7 +159,7 @@ public class RawIssueMatcher {
      * 匹配两个列表中的 RawIssue
      * @param rawIssues1 pre file 中
      * @param rawIssues2 cur file 中
-     * @param curParentName  cur file 中所有的 field name 和 method signature
+     * @param curParentName  cur file 中所有的 field accountName 和 method signature
      */
     public static void match(List<RawIssue> rawIssues1, List<RawIssue> rawIssues2, Set<String> curParentName){
         // 根据type分类 key {type}

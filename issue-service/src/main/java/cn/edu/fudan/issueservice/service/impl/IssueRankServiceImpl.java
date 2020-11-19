@@ -133,7 +133,7 @@ public class IssueRankServiceImpl implements IssueRankService {
         for(Object json : jsonArray ) {
             Map<String, String> map = (LinkedHashMap)json;
             if ("bug".equals(map.get("type"))) {
-                repoIDName.put(map.get("repo_id"), map.get("name"));
+                repoIDName.put(map.get("repo_id"), map.get("accountName"));
             }
         }
         Map repoCommit = restInterfaceManager.getRepoAndLatestScannedCommit(repoIDName.keySet());

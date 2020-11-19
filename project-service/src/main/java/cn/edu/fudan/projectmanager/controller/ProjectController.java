@@ -26,7 +26,7 @@ public class ProjectController {
 
     /**
      * description: 添加项目
-     * @param repositoryDTO url isPrivate username password name type branch
+     * @param repositoryDTO url isPrivate username password accountName type branch
      * @param request header
      */
     @PostMapping(value = {"/project"})
@@ -120,7 +120,7 @@ public class ProjectController {
 //    @GetMapping(value = {"/projectByModule"})
 //    public ResponseBean query(HttpServletRequest request,
 //                        @RequestParam("module") String module,
-//                        @RequestParam(name = "type",required = false,defaultValue = "bug")String type) {
+//                        @RequestParam(accountName = "type",required = false,defaultValue = "bug")String type) {
 //        String userToken = request.getHeader(TOKEN);
 //        return projectService.getProjectListByModule(userToken,type,module);
 //    }
@@ -128,18 +128,18 @@ public class ProjectController {
 //    @Deprecated
 //    @GetMapping(value = {"/project/filter"})
 //    public ResponseBean keyWordQuery(HttpServletRequest request,
-//                               @RequestParam(name = "key_word", required = false )String keyWord,
-//                               @RequestParam(name = "repo",required = false) String module,
-//                               @RequestParam(name = "type",required = false, defaultValue = "bug")String type,
-//                               @RequestParam(name = "isRecycled",required = false, defaultValue = "0") int isRecycled) {
+//                               @RequestParam(accountName = "key_word", required = false )String keyWord,
+//                               @RequestParam(accountName = "repo",required = false) String module,
+//                               @RequestParam(accountName = "type",required = false, defaultValue = "bug")String type,
+//                               @RequestParam(accountName = "isRecycled",required = false, defaultValue = "0") int isRecycled) {
 //        String userToken = request.getHeader(TOKEN);
 //        return projectService.getProjectListByKeyWord(userToken, module, keyWord, type, isRecycled);
 //    }
 
-//    @GetMapping(value = {"/project/name"})
+//    @GetMapping(value = {"/project/accountName"})
 //    public ResponseBean getProjectName(HttpServletRequest request,
 //                                 @RequestParam("repoUuid") String repoId,
-//                                 @RequestParam(name = "category",required = false,defaultValue = "bug")String category) {
+//                                 @RequestParam(accountName = "category",required = false,defaultValue = "bug")String category) {
 //        String userToken = request.getHeader(TOKEN);
 //        try {
 //            return projectService.getProjectByRepoIdAndCategory(userToken, repoId,category).getName();
@@ -152,13 +152,13 @@ public class ProjectController {
 //
 //    @GetMapping(value = {"/project/search"})
 //    public ResponseBean getProjectByCondition(HttpServletRequest request,
-//                                        @RequestParam(name = "category",required = false)String category,
-//                                        @RequestParam(name = "name", required = false)String name,
-//                                        @RequestParam(name = "module", required = false)String module
+//                                        @RequestParam(accountName = "category",required = false)String category,
+//                                        @RequestParam(accountName = "accountName", required = false)String accountName,
+//                                        @RequestParam(accountName = "module", required = false)String module
 //    ){
 //        String userToken = request.getHeader(TOKEN);
 //        try {
-//            return new ResponseBean(200, "get success", projectService.getProjectsByCondition(userToken, category,name,module));
+//            return new ResponseBean(200, "get success", projectService.getProjectsByCondition(userToken, category,accountName,module));
 //        } catch (Exception e) {
 //            e.printStackTrace();
 //            return new ResponseBean(401, "operate failed", null);
@@ -168,8 +168,8 @@ public class ProjectController {
 //
 //    @GetMapping(value = {"/project/recycle"})
 //    public ResponseBean projectRecycle(HttpServletRequest request,
-//                                 @RequestParam(name = "projectId")String projectId,
-//                                 @RequestParam(name = "isRecycled", required = false,defaultValue = "0") int isRecycled){
+//                                 @RequestParam(accountName = "projectId")String projectId,
+//                                 @RequestParam(accountName = "isRecycled", required = false,defaultValue = "0") int isRecycled){
 //        String userToken = request.getHeader(TOKEN);
 //        try {
 //            projectService.recycle(projectId,userToken,isRecycled);
@@ -182,7 +182,7 @@ public class ProjectController {
 
 //    @DeleteMapping(value = {"/project/{projectId}"})
 //    public ResponseBean delete(@PathVariable("projectId") String projectId,
-//                         @RequestParam(name = "type",required = false,defaultValue = "bug")String type,
+//                         @RequestParam(accountName = "type",required = false,defaultValue = "bug")String type,
 //                         HttpServletRequest request) {
 //        try {
 //            // projectService.remove(projectId, type,request.getHeader(TOKEN));

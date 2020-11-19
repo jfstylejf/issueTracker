@@ -8,13 +8,14 @@ import lombok.NoArgsConstructor;
 import java.util.Date;
 
 /**
+ * 记录人员在什么时候添加了库
  * @author fancying
  */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class RepoUser {
+public class AccountRepository {
 
     private String uuid;
     private String name;

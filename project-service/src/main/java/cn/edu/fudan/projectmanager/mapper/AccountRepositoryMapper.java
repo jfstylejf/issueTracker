@@ -1,6 +1,6 @@
 package cn.edu.fudan.projectmanager.mapper;
 
-import cn.edu.fudan.projectmanager.domain.RepoUser;
+import cn.edu.fudan.projectmanager.domain.AccountRepository;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -14,7 +14,7 @@ import java.util.List;
  * @date 2020/3/31
  */
 @Repository
-public interface RepoUserMapper {
+public interface AccountRepositoryMapper {
 
     /**
      * 通过用户id和项目名得到对应的项目
@@ -23,7 +23,7 @@ public interface RepoUserMapper {
      * @param name 项目名
      * @return
      */
-    List<RepoUser> getRepoUserByName(@Param("account_id") String accountId, @Param("name") String name);
+    List<AccountRepository> getRepoUserByName(@Param("account_id") String accountId, @Param("accountName") String name);
 
     /**
      * 通过subRepoUuid和accountId得到项目
@@ -32,20 +32,20 @@ public interface RepoUserMapper {
      * @param accountId
      * @return
      */
-    List<RepoUser> getRepoUserBySubRepoUuidAndAccountId(@Param("sub_repository_uuid") String subRepoUuid, @Param("account_id") String accountId);
+    List<AccountRepository> getRepoUserBySubRepoUuidAndAccountId(@Param("sub_repository_uuid") String subRepoUuid, @Param("account_id") String accountId);
 
     /**
      * 插入repoUser
-     * @param repoUser
+     * @param accountRepository
      */
-    void insertRepoUser(RepoUser repoUser);
+    void insertRepoUser(AccountRepository accountRepository);
 
     /**
      * 通过accountId来得到repoUser
      * @param accountId
      * @return
      */
-    List<RepoUser> getRepoUserByAccountId(@Param("account_id") String accountId);
+    List<AccountRepository> getRepoUserByAccountId(@Param("account_id") String accountId);
 
     /**
      * 非管理员删除项目，通过uuid删除
@@ -59,7 +59,7 @@ public interface RepoUserMapper {
      * @param subRepoUuid
      * @return
      */
-    List<RepoUser> getRepoUserBySubRepoId(@Param("sub_repository_uuid") String subRepoUuid);
+    List<AccountRepository> getRepoUserBySubRepoId(@Param("sub_repository_uuid") String subRepoUuid);
 
 
 
@@ -76,7 +76,7 @@ public interface RepoUserMapper {
     /**
      *
      */
-    @Update("UPDATE `repo_user` SET `project_name` = #{newName} WHERE account_uuid = #{accountUuid} and `name` = #{oldName};")
+    @Update("UPDATE `repo_user` SET `project_name` = #{newName} WHERE account_uuid = #{accountUuid} and `accountName` = #{oldName};")
     void updateRepoName(String accountUuid, String oldName, String newName);
 
     @Delete("DELETE FROM `repo_user` WHERE `sub_repository_uuid` = #{subRepoUuid};")

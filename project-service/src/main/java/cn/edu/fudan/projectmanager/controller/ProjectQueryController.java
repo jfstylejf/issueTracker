@@ -26,9 +26,9 @@ public class ProjectQueryController {
     /**
      * todo issue 所有项目和库的对应关系
      * @param recycled {@link cn.edu.fudan.projectmanager.domain.SubRepository} EMPTY RESERVATIONS ALL
-     * @return    k projectName v: list [k: repo_id, name]
+     * @return    k projectName v: list [k: repo_id, accountName]
      */
-    @ApiOperation(value = " 得到所有项目和库的对应关系", notes = "@return Map < String, List < Map < String, String > > >  k projectName v: list [k: repo_id, name]")
+    @ApiOperation(value = " 得到所有项目和库的对应关系", notes = "@return Map < String, List < Map < String, String > > >  k projectName v: list [k: repo_id, accountName]")
     @GetMapping(value = "/project/all")
     public Map<String, List<Map<String, String>>> getProjectAndRepoRelation(@RequestParam(name = "recycled", required = false, defaultValue = "0") int recycled) {
         return repoUser.getProjectAndRepoRelation(recycled);

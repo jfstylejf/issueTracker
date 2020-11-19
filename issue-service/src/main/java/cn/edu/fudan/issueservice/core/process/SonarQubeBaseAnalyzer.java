@@ -285,7 +285,7 @@ public class SonarQubeBaseAnalyzer extends BaseAnalyzer {
         String issueName=null;
         JSONObject rule = restInvoker.getRuleInfo(issue.getString("rule"),null,null);
         if(rule != null){
-            issueName = rule.getJSONObject("rule").getString("name");
+            issueName = rule.getJSONObject("rule").getString("accountName");
         }
         //获取文件路径
         String[] sonarComponents;

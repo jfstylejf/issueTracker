@@ -40,7 +40,7 @@ public class JGitUtil {
 
     private Logger logger = LoggerFactory.getLogger(JGitUtil.class);
 
-    private static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().contains("win");
+    private static final boolean IS_WINDOWS = System.getProperty("os.accountName").toLowerCase().contains("win");
     private static Repository repository;
     private RevWalk revWalk;
     private Git git;

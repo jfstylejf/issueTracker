@@ -475,7 +475,7 @@ public class RestInterfaceManager {
             return result;
 
         }catch (RuntimeException e) {
-            logger.error("repo name : {}  ----> request sonar api failed", repoName);
+            logger.error("repo accountName : {}  ----> request sonar api failed", repoName);
             throw e;
         }
 

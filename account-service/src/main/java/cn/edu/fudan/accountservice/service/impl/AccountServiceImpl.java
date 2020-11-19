@@ -35,7 +35,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public ResponseEntity login(String username, String encodedPassword) {
+    public AccountVO login(String username, String encodedPassword) {
         //Base64解密
         String password = Base64Util.decodePassword(encodedPassword);
         //首次登录或token过期重新登录，返回新的token
@@ -47,9 +47,9 @@ public class AccountServiceImpl implements AccountService {
             stringRedisTemplate.opsForValue().set("login:" + userToken, username);
             //token保存7天
             stringRedisTemplate.expire("login:" + userToken, 7, TimeUnit.DAYS);
-            return new ResponseEntity<>(200, "登录成功!", new AccountVO(username, userToken, userRight));
+            return new AccountVO(username, userToken, userRight);
         } else {
-            return new ResponseEntity<>(401, "用户名或密码错误!", null);
+            return null;
         }
     }
 

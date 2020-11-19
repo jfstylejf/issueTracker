@@ -72,11 +72,11 @@ public interface RepoCommitMapper {
 
     /**
      * fixme 移动到其他地方
-     * @return key name、account_gitname
+     * @return key accountName、account_gitname
      */
-    @Select("SELECT name,account_gitname FROM issueTracker.account_info;")
+    @Select("SELECT accountName,account_gitname FROM issueTracker.account_info;")
     List<Map<String, String>> getAllTrueName();
 
-    @Select("SELECT account_gitname FROM issueTracker.account_info WHERE `name` = #{developer};")
+    @Select("SELECT account_gitname FROM issueTracker.account_info WHERE `accountName` = #{developer};")
     List<String> getAllGitName(String developer);
 }

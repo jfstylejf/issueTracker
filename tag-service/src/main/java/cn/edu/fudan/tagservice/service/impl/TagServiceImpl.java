@@ -51,7 +51,7 @@ public class TagServiceImpl implements TagService {
     @Transactional
     @Override
     public void addTag(JSONObject requestBody) {
-        String name = requestBody.getString("name");
+        String name = requestBody.getString("accountName");
         String scope = requestBody.getString("scope");
         String itemId = requestBody.getString("itemId");
         String tag_id;
@@ -122,7 +122,7 @@ public class TagServiceImpl implements TagService {
 
     @Override
     public void modifyTag(JSONObject requestBody) {
-        String name = requestBody.getString("name");
+        String name = requestBody.getString("accountName");
         String scope = requestBody.getString("scope");
         String itemId = requestBody.getString("itemId");
         String oldName = requestBody.getString("oldName");
@@ -242,7 +242,7 @@ public class TagServiceImpl implements TagService {
         }
 
         JSONArray projects = restInterfaceManager.getProjectsByRepoId(repoId);
-        String repoName = projects.getJSONObject(0).getString("name");
+        String repoName = projects.getJSONObject(0).getString("accountName");
         String branch = projects.getJSONObject(0).getString("branch");
         List<String> ignoreUuidList = new ArrayList<>();
 

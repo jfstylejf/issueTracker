@@ -1,11 +1,9 @@
 package cn.edu.fudan.projectmanager.dao;
 
-import cn.edu.fudan.projectmanager.domain.RepoUser;
-import cn.edu.fudan.projectmanager.mapper.RepoUserMapper;
+import cn.edu.fudan.projectmanager.domain.AccountRepository;
+import cn.edu.fudan.projectmanager.mapper.AccountRepositoryMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
-
-import java.util.List;
 
 /**
  * @author fancying
@@ -14,26 +12,26 @@ import java.util.List;
 public class RepoUserDao {
 
 
-    private RepoUserMapper repoUserMapper;
+    private AccountRepositoryMapper accountRepositoryMapper;
 
-    public void insertRepoUser(RepoUser repoUser){
-        repoUserMapper.insertRepoUser(repoUser);
+    public void insertRepoUser(AccountRepository accountRepository){
+        accountRepositoryMapper.insertRepoUser(accountRepository);
     }
 
     public Boolean hasRepo(String accountUuid, String url) {
-        return repoUserMapper.getRepoCount(accountUuid, url) == 1;
+        return accountRepositoryMapper.getRepoCount(accountUuid, url) == 1;
     }
 
     public void updateRepoName(String accountUuid, String oldName, String newName) {
-        repoUserMapper.updateRepoName(accountUuid, oldName, newName);
+        accountRepositoryMapper.updateRepoName(accountUuid, oldName, newName);
     }
 
     public void deleteRelation(String subRepoUuid) {
-        repoUserMapper.deleteRelation(subRepoUuid);
+        accountRepositoryMapper.deleteRelation(subRepoUuid);
     }
 
     @Autowired
-    public void setRepoUserMapper(RepoUserMapper repoUserMapper) {
-        this.repoUserMapper = repoUserMapper;
+    public void setAccountRepositoryMapper(AccountRepositoryMapper accountRepositoryMapper) {
+        this.accountRepositoryMapper = accountRepositoryMapper;
     }
 }

@@ -39,7 +39,7 @@ public class TagController {
         return tagService.getTagsByScope(scope);
     }
 
-    //JSONObject(name、scope、itemId、isDefault)
+    //JSONObject(accountName、scope、itemId、isDefault)
     @PostMapping("/tags")
     public Object addTag(@RequestBody JSONObject requestBody) {
         try {
@@ -60,7 +60,7 @@ public class TagController {
         }
     }
 
-    //JSONObject(name,isDefault,itemId,scope,oldName)
+    //JSONObject(accountName,isDefault,itemId,scope,oldName)
     @PutMapping("/tags")
     public Object modifyTag(@RequestBody JSONObject requestBody) {
         try {
@@ -115,7 +115,7 @@ public class TagController {
     }
 
     @GetMapping("/tags/condition")
-    public Object getTagsByCondition(@RequestParam(value = "name" ,required = false)String name,
+    public Object getTagsByCondition(@RequestParam(value = "accountName" ,required = false)String name,
                                      @RequestParam(value ="scope" ,required = false)String scope,
                                      @RequestParam(value = "uuid", required = false)String uuid){
         try{

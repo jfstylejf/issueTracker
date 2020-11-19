@@ -177,7 +177,7 @@ public class FindbugsBaseAnalyzer extends BaseAnalyzer {
 
         Iterator<Element> iterator = bugInstance.elementIterator("SourceLine");
 
-        String methodName = method.attributeValue("name");
+        String methodName = method.attributeValue("accountName");
         Element sourceLineInMethod = method.element("SourceLine");
         int start = Integer.parseInt(sourceLineInMethod.attributeValue("start"));
         int end = Integer.parseInt(sourceLineInMethod.attributeValue("end"));
@@ -253,7 +253,7 @@ public class FindbugsBaseAnalyzer extends BaseAnalyzer {
     public  String getFileLocation(String repoPath, String fileName) {
         try {
             Runtime rt = Runtime.getRuntime();
-            String command = "find "+ repoPath + " -name " + fileName;
+            String command = "find "+ repoPath + " -accountName " + fileName;
             //String command =  binHome + "findOneFile.sh " + repoHome + repoPath + " "+ fileName;
             Process process = rt.exec(command);
             process.waitFor();

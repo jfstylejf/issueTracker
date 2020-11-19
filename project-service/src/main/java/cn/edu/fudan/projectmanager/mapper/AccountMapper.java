@@ -16,9 +16,6 @@ import java.util.Map;
 @Repository
 public interface AccountMapper {
 
-    @Select("SELECT account_right FROM issueTracker.account WHERE uuid = #{uuid};")
-    Integer getAccountRightByAccountUuid(@Param("uuid") String accountId);
-
     @Select("select p.account_name,account_right,p.account_role,p.project_name" +
             " from account as a ,project_relation as p" +
             " where a.account_name = p.account_name and a.account_name = #{account_name}")

@@ -24,7 +24,7 @@ public interface CloneMeasureService {
     /**
      * 获取一段时间内人员度量
      * @param repoId repo id
-     * @param developer name
+     * @param developer accountName
      * @param start start time
      * @param end end time
      * @return list

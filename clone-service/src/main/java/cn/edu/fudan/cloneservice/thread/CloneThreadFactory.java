@@ -26,7 +26,7 @@ public class CloneThreadFactory implements ThreadFactory {
     public Thread newThread(Runnable r) {
         Thread t = new Thread(r, name + "CloneThread_" + counter);
         counter++;
-        stats.add(String.format("Created thread %d with name %s on %s \n", t.getId(), t.getName(), new Date()));
+        stats.add(String.format("Created thread %d with accountName %s on %s \n", t.getId(), t.getName(), new Date()));
         return t;
     }
 

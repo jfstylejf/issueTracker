@@ -2,6 +2,7 @@ package cn.edu.fudan.accountservice.service;
 
 
 import cn.edu.fudan.accountservice.domain.Account;
+import cn.edu.fudan.accountservice.domain.AccountVO;
 import cn.edu.fudan.accountservice.domain.Tool;
 import cn.edu.fudan.common.http.ResponseEntity;
 
@@ -18,7 +19,7 @@ public interface AccountService {
      * @param password get user password
      * @return ResponseEntity
      */
-    ResponseEntity login(String username, String password);
+    AccountVO login(String username, String password);
 
     /**
      * is account accountName exist

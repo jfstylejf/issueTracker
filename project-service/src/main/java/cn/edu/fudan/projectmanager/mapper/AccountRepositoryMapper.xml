@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="cn.edu.fudan.projectmanager.mapper.RepoUserMapper">
+<mapper namespace="cn.edu.fudan.projectmanager.mapper.AccountRepositoryMapper">
 
-    <resultMap id="repoUser" type="RepoUser">
+    <resultMap id="accountRepository" type="RepoUser">
         <id property="uuid" column="uuid"/>
         <result property="name" column="name"/>
         <result property="importTime" column="import_time"/>
@@ -12,7 +12,7 @@
         <result property="projectName" column="project_name"/>
     </resultMap>
 
-    <select id="getRepoUserByName" parameterType="String" resultMap="repoUser">
+    <select id="getRepoUserByName" parameterType="String" resultMap="accountRepository">
         select * from repo_user
         <if test="account_id != null">
             where account_id = #{account_id}
@@ -22,7 +22,7 @@
         </if>
     </select>
 
-    <select id="getRepoUserBySubRepoUuidAndAccountId" parameterType="String" resultMap="repoUser">
+    <select id="getRepoUserBySubRepoUuidAndAccountId" parameterType="String" resultMap="accountRepository">
         select * from repo_user
         <if test="account_id != null">
             where account_id = #{account_id}
@@ -32,7 +32,7 @@
         </if>
     </select>
 
-    <insert id="insertRepoUser" parameterType="repoUser">
+    <insert id="insertRepoUser" parameterType="accountRepository">
         insert ignore into repo_user
         (
         uuid,
@@ -51,7 +51,7 @@
         )
     </insert>
 
-    <select id="getRepoUserByAccountId" parameterType="String" resultMap="repoUser">
+    <select id="getRepoUserByAccountId" parameterType="String" resultMap="accountRepository">
         select uuid, name, import_time, account_uuid, sub_repository_uuid, project_name
         from repo_user where account_id = #{account_id}
     </select>
@@ -60,7 +60,7 @@
         delete from repo_user where uuid = #{uuid}
     </delete>
 
-    <select id="getRepoUserBySubRepoId" parameterType="String" resultMap="repoUser">
+    <select id="getRepoUserBySubRepoId" parameterType="String" resultMap="accountRepository">
         select * from repo_user where sub_repository_uuid = #{sub_repository_uuid}
     </select>
 </mapper>

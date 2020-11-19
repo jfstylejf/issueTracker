@@ -27,10 +27,10 @@ public class RepoUserService {
     private AccountMapper accountMapper;
 
     /**
-     * @return  k projectName v: list [k: repo_id, name]
+     * @return  k projectName v: list [k: repo_id, accountName]
      */
     public Map<String, List<Map<String, String>>> getProjectAndRepoRelation(int recycled) {
-        // key project_name,name,sub_repository_uuid,recycled
+        // key project_name,accountName,sub_repository_uuid,recycled
         List<Map<String, Object>> projects =  subRepository.getAllProjectRepoRelation();
 
         boolean isAll = recycled == SubRepository.ALL;
@@ -53,7 +53,7 @@ public class RepoUserService {
             List< Map<String, String>> v = result.get(projectName);
             Map<String, String> p = new HashMap<>(4);
             p.put("repo_id", (String)project.get("repo_uuid"));
-            p.put("name", (String)project.get("name"));
+            p.put("name", (String)project.get("accountName"));
             v.add(p);
         }
         return result;

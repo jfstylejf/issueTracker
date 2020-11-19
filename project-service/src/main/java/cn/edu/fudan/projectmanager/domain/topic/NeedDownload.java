@@ -1,4 +1,4 @@
-package cn.edu.fudan.projectmanager.domain;
+package cn.edu.fudan.projectmanager.domain.topic;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

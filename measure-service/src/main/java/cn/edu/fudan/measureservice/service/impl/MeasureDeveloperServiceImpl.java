@@ -869,7 +869,7 @@ public class MeasureDeveloperServiceImpl implements MeasureDeveloperService {
         for (int i = 0; i < developerList.size(); i++){
             Map<String,Object> dev = new HashMap<>();
             Map<String,Object> map = developerList.get(i);
-            String developerName = map.get("name").toString();
+            String developerName = map.get("accountName").toString();
             dev.put("developer_name",developerName);
             String developerDutyType = map.get("account_status").toString();
             if("1".equals(developerDutyType)) {

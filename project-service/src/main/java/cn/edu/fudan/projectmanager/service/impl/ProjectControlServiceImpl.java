@@ -4,8 +4,8 @@ import cn.edu.fudan.projectmanager.component.RestInterfaceManager;
 import cn.edu.fudan.projectmanager.dao.RepoUserDao;
 import cn.edu.fudan.projectmanager.dao.SubRepositoryDao;
 import cn.edu.fudan.projectmanager.domain.AccountRoleEnum;
-import cn.edu.fudan.projectmanager.domain.NeedDownload;
-import cn.edu.fudan.projectmanager.domain.RepoUser;
+import cn.edu.fudan.projectmanager.domain.topic.NeedDownload;
+import cn.edu.fudan.projectmanager.domain.AccountRepository;
 import cn.edu.fudan.projectmanager.domain.SubRepository;
 import cn.edu.fudan.projectmanager.domain.dto.RepositoryDTO;
 import cn.edu.fudan.projectmanager.domain.dto.UserInfoDTO;
@@ -88,7 +88,7 @@ public class ProjectControlServiceImpl implements ProjectControlService {
 
         // 一个 Repo目前只扫描一个分支
         if(repoUserDao.hasRepo(accountUuid, url)) {
-            throw new RunTimeException("The repo name has already been used! ");
+            throw new RunTimeException("The repo accountName has already been used! ");
         }
         String projectName = repositoryDTO.getProjectName();
 
@@ -111,10 +111,10 @@ public class ProjectControlServiceImpl implements ProjectControlService {
         }
 
 
-        RepoUser repoUser = RepoUser.builder().uuid(UUID.randomUUID().toString()).
+        AccountRepository accountRepository = AccountRepository.builder().uuid(UUID.randomUUID().toString()).
                 name(repoName).accountUuid(accountUuid).
                 subRepositoryUuid(uuid).projectName(projectName).build();
-        repoUserDao.insertRepoUser(repoUser);
+        repoUserDao.insertRepoUser(accountRepository);
     }
 
     @Override
@@ -150,13 +150,13 @@ public class ProjectControlServiceImpl implements ProjectControlService {
 
         // 0 表示超级管理员 只有超级管理员能操作
         if (project.equals(type) && userInfoDTO.getRight() != 0) {
-            throw new RunTimeException("this user has no right to change project name");
+            throw new RunTimeException("this user has no right to change project accountName");
         }
 
         // TODO 两种操作 1：修改所有的project名称 2：改变repo的所属组
 
-        // 改变project name 该repo的所有project name 都会改变 只有超级管理员才会有此权限
-        log.warn("project name changed by {}! old name is {}, new name is {}", userInfoDTO.getUuid(), oldName, newName);
+        // 改变project accountName 该repo的所有project accountName 都会改变 只有超级管理员才会有此权限
+        log.warn("project accountName changed by {}! old accountName is {}, new accountName is {}", userInfoDTO.getUuid(), oldName, newName);
 
         /// repoUserDao.updateProjectName();
 
@@ -168,7 +168,7 @@ public class ProjectControlServiceImpl implements ProjectControlService {
         UserInfoDTO userInfoDTO = getUserInfoByToken(token);
         // 0 表示超级管理员 只有超级管理员能操作
         if ( userInfoDTO.getRight() != 0) {
-            throw new RunTimeException("this user has no right to change project name");
+            throw new RunTimeException("this user has no right to change project accountName");
         }
 
         if (! empty) {

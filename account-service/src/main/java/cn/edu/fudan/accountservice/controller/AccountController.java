@@ -1,6 +1,7 @@
 package cn.edu.fudan.accountservice.controller;
 
 import cn.edu.fudan.accountservice.domain.Account;
+import cn.edu.fudan.accountservice.domain.AccountVO;
 import cn.edu.fudan.accountservice.domain.Tool;
 import cn.edu.fudan.accountservice.service.AccountService;
 import cn.edu.fudan.accountservice.util.CookieUtil;
@@ -9,6 +10,7 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
@@ -117,9 +119,13 @@ public class AccountController {
     })
     @GetMapping(value = {"/login"})
     public Object login(@RequestParam("username") String username, @RequestParam("password") String password, HttpServletResponse response) {
-        ResponseEntity responseBean = accountService.login(username, password);
-        if (responseBean.getData() != null) {
-            CookieUtil.addCookie(response, "userToken", responseBean.getData().toString(), 24 * 60 * 60);
+        AccountVO accountVO = accountService.login(username, password);
+        ResponseEntity<AccountVO> responseBean = new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), HttpStatus.INTERNAL_SERVER_ERROR.name(), null);
+        if (accountVO != null) {
+            CookieUtil.addCookie(response, "userToken", accountVO.getToken(), 24 * 60 * 60);
+            responseBean.setCode(HttpStatus.OK.value());
+            responseBean.setMsg(HttpStatus.OK.name());
+            responseBean.setData(accountVO);
         }
         return responseBean;
     }

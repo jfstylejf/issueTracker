@@ -3,7 +3,7 @@ package cn.edu.fudan.projectmanager.service;
 import cn.edu.fudan.projectmanager.dao.SubRepositoryDao;
 import cn.edu.fudan.projectmanager.domain.*;
 import cn.edu.fudan.projectmanager.domain.message.RepoUpdateInfo;
-import com.alibaba.fastjson.JSONArray;
+import cn.edu.fudan.projectmanager.domain.topic.CompleteDownLoad;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -11,10 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author fancying

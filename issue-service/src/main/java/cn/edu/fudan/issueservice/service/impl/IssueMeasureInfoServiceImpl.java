@@ -129,7 +129,7 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
         }
         if (SpaceType.PACKAGE.getLevel().equals(spaceType)) {
 
-            // package name 需要做处理
+            // package accountName 需要做处理
             return rawIssueDao.getNumberOfRemainingIssueBasePackage(repoId, commit,
                     "%" + detail.replace('.','/') + "%");
         }

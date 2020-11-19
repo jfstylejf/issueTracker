@@ -8,9 +8,9 @@ public interface AccountMapper {
 
     /**
      * 获取开发者的唯一名称
-     * @param name    git name
-     * @return     account name
+     * @param name    git accountName
+     * @return     account accountName
      */
-    String getAccountName(@Param("name") String name);
+    String getAccountName(@Param("accountName") String name);
 
 }
