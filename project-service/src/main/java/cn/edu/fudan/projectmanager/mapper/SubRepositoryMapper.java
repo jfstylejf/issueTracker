@@ -63,8 +63,8 @@ public interface SubRepositoryMapper {
     /**
      * 项目与库的对应关系
      */
-    @Select("SELECT s.project_name, accountName, repo_uuid, recycled " +
-            "FROM sub_repository as s,repo_user as r " +
+    @Select("SELECT s.project_name, repo_name, repo_uuid, recycled " +
+            "FROM sub_repository as s,account_repository as r " +
             "WHERE s.uuid = r.sub_repository_uuid order by project_name;")
     List<Map<String, Object>> getAllProjectRepoRelation();
 

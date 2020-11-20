@@ -16,9 +16,8 @@ import java.util.Map;
 @Repository
 public interface AccountMapper {
 
-    @Select("select p.account_name,account_right,p.account_role,p.project_name" +
-            " from account as a ,project_relation as p" +
-            " where a.account_name = p.account_name and a.account_name = #{account_name}")
-    List<Map<String, Object>> getProjectInfoByAccountName(String accountName);
+    List<Map<String, Object>> getProjectInfoByAccountName(@Param("accountName") String accountName);
 
+    @Select("SELECT account_right FROM account WHERE account_name = #{accountName}  LIMIT 1")
+    Integer queryRightByAccountName(String accountName);
 }

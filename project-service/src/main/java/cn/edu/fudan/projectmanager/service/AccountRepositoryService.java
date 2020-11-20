@@ -1,6 +1,7 @@
 package cn.edu.fudan.projectmanager.service;
 
 import cn.edu.fudan.projectmanager.dao.SubRepositoryDao;
+import cn.edu.fudan.projectmanager.domain.AccountRoleEnum;
 import cn.edu.fudan.projectmanager.domain.SubRepository;
 import cn.edu.fudan.projectmanager.mapper.AccountMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -21,16 +22,16 @@ import java.util.Map;
  **/
 @Slf4j
 @Service
-public class RepoUserService {
+public class AccountRepositoryService {
 
     private SubRepositoryDao subRepository;
     private AccountMapper accountMapper;
 
     /**
-     * @return  k projectName v: list [k: repo_id, accountName]
+     * @return  k projectName v: list [k: repo_id, name]
      */
     public Map<String, List<Map<String, String>>> getProjectAndRepoRelation(int recycled) {
-        // key project_name,accountName,sub_repository_uuid,recycled
+        // key project_name,repo_name,sub_repository_uuid,recycled
         List<Map<String, Object>> projects =  subRepository.getAllProjectRepoRelation();
 
         boolean isAll = recycled == SubRepository.ALL;
@@ -53,7 +54,7 @@ public class RepoUserService {
             List< Map<String, String>> v = result.get(projectName);
             Map<String, String> p = new HashMap<>(4);
             p.put("repo_id", (String)project.get("repo_uuid"));
-            p.put("name", (String)project.get("accountName"));
+            p.put("name", (String)project.get("repo_name"));
             v.add(p);
         }
         return result;
@@ -78,6 +79,11 @@ public class RepoUserService {
     }
 
     public List<Map<String, Object>> getProjectInfoByAccountName(String accountName) {
+        // 根据accountName 查询权限
+        int accountRight = accountMapper.queryRightByAccountName(accountName);
+        if (accountRight == AccountRoleEnum.ADMIN.getRight()) {
+            accountName = null;
+        }
         return accountMapper.getProjectInfoByAccountName(accountName);
     }
 

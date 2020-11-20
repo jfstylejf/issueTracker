@@ -1,7 +1,7 @@
 package cn.edu.fudan.projectmanager.service.impl;
 
 import cn.edu.fudan.projectmanager.component.RestInterfaceManager;
-import cn.edu.fudan.projectmanager.dao.RepoUserDao;
+import cn.edu.fudan.projectmanager.dao.AccountRepositoryDao;
 import cn.edu.fudan.projectmanager.dao.SubRepositoryDao;
 import cn.edu.fudan.projectmanager.domain.AccountRoleEnum;
 import cn.edu.fudan.projectmanager.domain.topic.NeedDownload;
@@ -48,7 +48,7 @@ public class ProjectControlServiceImpl implements ProjectControlService {
     private static Map<String, UserInfoDTO> userInfos = new ConcurrentHashMap<>(32);
     private RestInterfaceManager rest;
 
-    private RepoUserDao repoUserDao;
+    private AccountRepositoryDao accountRepositoryDao;
     private SubRepositoryDao subRepositoryDao;
 
     private KafkaTemplate kafkaTemplate;
@@ -87,7 +87,7 @@ public class ProjectControlServiceImpl implements ProjectControlService {
         String repoName = repositoryDTO.getRepoName();
 
         // 一个 Repo目前只扫描一个分支
-        if(repoUserDao.hasRepo(accountUuid, url)) {
+        if(accountRepositoryDao.hasRepo(accountUuid, url)) {
             throw new RunTimeException("The repo accountName has already been used! ");
         }
         String projectName = repositoryDTO.getProjectName();
@@ -112,9 +112,9 @@ public class ProjectControlServiceImpl implements ProjectControlService {
 
 
         AccountRepository accountRepository = AccountRepository.builder().uuid(UUID.randomUUID().toString()).
-                name(repoName).accountUuid(accountUuid).
+                repoName(repoName).accountUuid(accountUuid).
                 subRepositoryUuid(uuid).projectName(projectName).build();
-        repoUserDao.insertRepoUser(accountRepository);
+        accountRepositoryDao.insertAccountRepository(accountRepository);
     }
 
     @Override
@@ -145,7 +145,7 @@ public class ProjectControlServiceImpl implements ProjectControlService {
 
 
         if (repository.equals(type)) {
-            repoUserDao.updateRepoName(accountUuid, oldName, newName);
+            accountRepositoryDao.updateRepoName(accountUuid, oldName, newName);
         }
 
         // 0 表示超级管理员 只有超级管理员能操作
@@ -176,7 +176,7 @@ public class ProjectControlServiceImpl implements ProjectControlService {
             return;
         }
 
-        repoUserDao.deleteRelation(subRepoUuid);
+        accountRepositoryDao.deleteRelation(subRepoUuid);
         subRepositoryDao.deleteRepo(subRepoUuid);
         // TODO 基于 rest 调用所有扫描服务把与该 repo相关的所有数据删除
 
@@ -237,8 +237,8 @@ public class ProjectControlServiceImpl implements ProjectControlService {
     }
 
     @Autowired
-    public void setRepoUserDao(RepoUserDao repoUserDao) {
-        this.repoUserDao = repoUserDao;
+    public void setAccountRepositoryDao(AccountRepositoryDao accountRepositoryDao) {
+        this.accountRepositoryDao = accountRepositoryDao;
     }
 
     @Autowired

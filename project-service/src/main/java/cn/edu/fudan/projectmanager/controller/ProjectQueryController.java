@@ -2,7 +2,7 @@ package cn.edu.fudan.projectmanager.controller;
 
 import cn.edu.fudan.projectmanager.domain.SubRepository;
 import cn.edu.fudan.projectmanager.domain.vo.RepositoryVO;
-import cn.edu.fudan.projectmanager.service.RepoUserService;
+import cn.edu.fudan.projectmanager.service.AccountRepositoryService;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -21,7 +21,7 @@ import java.util.Map;
 public class ProjectQueryController {
 
 
-    private RepoUserService repoUser;
+    private AccountRepositoryService repoUser;
 
     /**
      * todo issue 所有项目和库的对应关系
@@ -98,7 +98,7 @@ public class ProjectQueryController {
 
 
     @Autowired
-    public void setRepoUser(RepoUserService repoUser) {
+    public void setRepoUser(AccountRepositoryService repoUser) {
         this.repoUser = repoUser;
     }
 }

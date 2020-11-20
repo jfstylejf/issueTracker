@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.edu.fudan.projectmanager.mapper.AccountMapper">
+
+    <select id="getProjectInfoByAccountName" parameterType="String" resultType="java.util.HashMap">
+        SELECT p.account_name,account_right,p.account_role,p.project_name
+        FROM account as a ,account_project as p
+        WHERE a.account_name = p.account_name
+        <if test="accountName != null" >
+            and a.account_name = #{accountName}
+        </if>
+    </select>
+
+    <insert id="insertAccountRepositories" parameterType="List">
+        INSERT  IGNORE INTO account_repository
+        (
+            uuid,
+            repo_name,
+            account_uuid,
+            sub_repository_uuid,
+            project_name
+        )
+        VALUES
+        <foreach collection="list" item="accountRepositories" separator=",">
+            #{uuid},
+            #{name},
+            #{accountUuid},
+            #{subRepositoryUuid},
+            #{projectName}
+        </foreach>
+    </insert>
+
+</mapper>

@@ -3,64 +3,68 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.edu.fudan.projectmanager.mapper.AccountRepositoryMapper">
 
-    <resultMap id="accountRepository" type="RepoUser">
+    <resultMap id="accountRepository" type="AccountRepository">
         <id property="uuid" column="uuid"/>
-        <result property="name" column="name"/>
+        <result property="repoName" column="repo_name"/>
         <result property="importTime" column="import_time"/>
         <result property="accountUuid" column="account_uuid"/>
         <result property="subRepositoryUuid" column="sub_repository_uuid"/>
         <result property="projectName" column="project_name"/>
     </resultMap>
 
-    <select id="getRepoUserByName" parameterType="String" resultMap="accountRepository">
-        select * from repo_user
-        <if test="account_id != null">
-            where account_id = #{account_id}
-        </if>
-        <if test="name != null">
-            and name = #{name}
-        </if>
-    </select>
 
-    <select id="getRepoUserBySubRepoUuidAndAccountId" parameterType="String" resultMap="accountRepository">
-        select * from repo_user
-        <if test="account_id != null">
-            where account_id = #{account_id}
-        </if>
-        <if test="sub_repository_uuid != null">
-            and sub_repository_uuid = #{sub_repository_uuid}
-        </if>
-    </select>
-
-    <insert id="insertRepoUser" parameterType="accountRepository">
-        insert ignore into repo_user
+    <insert id="insertAccountRepositories" parameterType="List">
+        INSERT  IGNORE INTO account_repository
         (
-        uuid,
-        name,
-        account_uuid,
-        sub_repository_uuid,
-        project_name
+            uuid,
+            repo_name,
+            account_uuid,
+            sub_repository_uuid,
+            project_name
         )
         VALUES
-        (
-        #{uuid},
-        #{name},
-        #{accountUuid},
-        #{subRepositoryUuid},
-        #{projectName}
-        )
+        <foreach collection="list" item="accountRepositories" separator=",">
+            #{uuid},
+            #{name},
+            #{accountUuid},
+            #{subRepositoryUuid},
+            #{projectName}
+        </foreach>
     </insert>
 
-    <select id="getRepoUserByAccountId" parameterType="String" resultMap="accountRepository">
-        select uuid, name, import_time, account_uuid, sub_repository_uuid, project_name
-        from repo_user where account_id = #{account_id}
-    </select>
+<!--    <select id="getRepoUserByName" parameterType="String" resultMap="accountRepository">-->
+<!--        select * from account_repository-->
+<!--        <if test="account_id != null">-->
+<!--            where account_uuid = #{account_id}-->
+<!--        </if>-->
+<!--        <if test="name != null">-->
+<!--            and name = #{name}-->
+<!--        </if>-->
+<!--    </select>-->
 
-    <delete id="remove" parameterType="String">
-        delete from repo_user where uuid = #{uuid}
-    </delete>
+<!--    <select id="getRepoUserBySubRepoUuidAndAccountId" parameterType="String" resultMap="accountRepository">-->
+<!--        select * from account_repository-->
+<!--        <if test="account_id != null">-->
+<!--            where account_uuid = #{account_id}-->
+<!--        </if>-->
+<!--        <if test="sub_repository_uuid != null">-->
+<!--            and sub_repository_uuid = #{sub_repository_uuid}-->
+<!--        </if>-->
+<!--    </select>-->
 
-    <select id="getRepoUserBySubRepoId" parameterType="String" resultMap="accountRepository">
-        select * from repo_user where sub_repository_uuid = #{sub_repository_uuid}
-    </select>
+<!--    <select id="getRepoUserByAccountId" parameterType="String" resultMap="accountRepository">-->
+<!--        select uuid, repo_name, import_time, account_uuid, sub_repository_uuid, project_name-->
+<!--        from -->
+<!--             account_repository -->
+<!--        where -->
+<!--              account_uuid = #{account_id}-->
+<!--    </select>-->
+
+<!--    <delete id="remove" parameterType="String">-->
+<!--        delete from account_repository where uuid = #{uuid}-->
+<!--    </delete>-->
+
+<!--    <select id="getRepoUserBySubRepoId" parameterType="String" resultMap="accountRepository">-->
+<!--        select * from account_repository where sub_repository_uuid = #{sub_repository_uuid}-->
+<!--    </select>-->
 </mapper>

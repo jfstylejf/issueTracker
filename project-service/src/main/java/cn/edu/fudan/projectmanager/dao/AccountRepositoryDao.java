@@ -5,18 +5,26 @@ import cn.edu.fudan.projectmanager.mapper.AccountRepositoryMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  * @author fancying
  */
 @Repository
-public class RepoUserDao {
+public class AccountRepositoryDao {
 
 
     private AccountRepositoryMapper accountRepositoryMapper;
 
-    public void insertRepoUser(AccountRepository accountRepository){
-        accountRepositoryMapper.insertRepoUser(accountRepository);
+    public void insertAccountRepository(AccountRepository accountRepository){
+        insertAccountRepositories(Collections.singletonList(accountRepository));
     }
+
+    public void insertAccountRepositories(List<AccountRepository> accountRepositories){
+        accountRepositoryMapper.insertAccountRepositories(accountRepositories);
+    }
+
 
     public Boolean hasRepo(String accountUuid, String url) {
         return accountRepositoryMapper.getRepoCount(accountUuid, url) == 1;

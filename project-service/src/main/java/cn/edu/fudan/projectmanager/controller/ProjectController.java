@@ -142,7 +142,7 @@ public class ProjectController {
 //                                 @RequestParam(accountName = "category",required = false,defaultValue = "bug")String category) {
 //        String userToken = request.getHeader(TOKEN);
 //        try {
-//            return projectService.getProjectByRepoIdAndCategory(userToken, repoId,category).getName();
+//            return projectService.getProjectByRepoIdAndCategory(userToken, repoId,category).getRepoName();
 //        } catch (Exception e) {
 //            e.printStackTrace();
 //            return new ResponseBean(401, "projectName add failed! No such repo found!", null);

@@ -18,7 +18,7 @@ import java.util.Date;
 public class AccountRepository {
 
     private String uuid;
-    private String name;
+    private String repoName;
     private Date importTime;
     private String accountUuid;
     private String subRepositoryUuid;
