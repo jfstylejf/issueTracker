@@ -24,16 +24,16 @@ public interface AccountRepositoryMapper {
      * @param accountUuid 用户uuid
      * @param url repo的URL
      */
-    @Select("SELECT count(*) FROM repo_user,sub_repository WHERE account_uuid = #{accountUuid} and url = #{url}")
+    @Select("SELECT count(*) FROM account_repository,sub_repository WHERE account_uuid = #{accountUuid} and url = #{url}")
     Integer getRepoCount(String accountUuid, String url);
 
     /**
      *
      */
-    @Update("UPDATE `repo_user` SET `project_name` = #{newName} WHERE account_uuid = #{accountUuid} and `accountName` = #{oldName};")
+    @Update("UPDATE `account_repository` SET `project_name` = #{newName} WHERE account_uuid = #{accountUuid} and `accountName` = #{oldName};")
     void updateRepoName(String accountUuid, String oldName, String newName);
 
-    @Delete("DELETE FROM `repo_user` WHERE `sub_repository_uuid` = #{subRepoUuid};")
+    @Delete("DELETE FROM `account_repository` WHERE `sub_repository_uuid` = #{subRepoUuid};")
     void deleteRelation(String subRepoUuid);
 
 //    /**
