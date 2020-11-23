@@ -6,6 +6,7 @@ import cn.edu.fudan.issueservice.mapper.IssueRepoMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.util.HashMap;
 import java.util.List;
 
 @Repository
@@ -29,10 +30,13 @@ public class IssueRepoDao {
         return issueRepoMapper.getIssueRepoByCondition (repoId, nature, tool);
     }
 
-    public List<String> getAllScannedRepoId(){
-        return issueRepoMapper.getAllScanedRepoId();
+    public List<HashMap<String, Integer>> getNotScanCommitsCount(String repoUuid, String tool) {
+        return issueRepoMapper.getNotScanCommitsCount(repoUuid, tool);
     }
 
+    public IssueRepo getMainIssueRepo(String repoUuid, String tool) {
+        return issueRepoMapper.getMainIssueRepo(repoUuid, tool);
+    }
 
     @Autowired
     public void setIssueRepoMapper(IssueRepoMapper issueRepoMapper) {

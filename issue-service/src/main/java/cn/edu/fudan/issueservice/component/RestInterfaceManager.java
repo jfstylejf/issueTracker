@@ -7,6 +7,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import io.netty.util.internal.StringUtil;
 import org.apache.kafka.common.protocol.types.Field;
+import org.aspectj.weaver.patterns.PerObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,6 +21,8 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -284,8 +287,10 @@ public class RestInterfaceManager {
         return result;
     }
 
-    public JSONObject getFirstCommitDate(String developerName){
-        return restTemplate.getForObject(commitServicePath+"/first-commit?author="+ developerName,JSONObject.class).getJSONObject("data");
+    public String getFirstCommitDate(String developerName){
+        JSONObject data = restTemplate.getForObject(commitServicePath + "/first-commit?author=" + developerName, JSONObject.class).getJSONObject("data");
+        LocalDateTime fistCommitDate = LocalDateTime.parse(data.getJSONObject("repos_summary").getString("first_commit_time_summary"), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        return fistCommitDate.plusHours(8).toLocalDate().toString();
     }
 
     //----------------------------------------------end-----------------------------------------------------------------
@@ -475,7 +480,7 @@ public class RestInterfaceManager {
             return result;
 
         }catch (RuntimeException e) {
-            logger.error("repo accountName : {}  ----> request sonar api failed", repoName);
+            logger.error("repo name : {}  ----> request sonar api failed", repoName);
             throw e;
         }
 
@@ -587,6 +592,23 @@ public class RestInterfaceManager {
         return linesList;
     }
 
+    public JSONObject getSonarAnalysisTime(String projectName) {
+        JSONObject error = new JSONObject();
+        error.put("errors","Component key " + projectName + " not found");
+
+        try {
+            String urlPath = sonarServicePath + "/api/components/show?component=" + projectName;
+            logger.debug(urlPath);
+            return restTemplate.getForObject(urlPath, JSONObject.class);
+        }catch (Exception e) {
+            logger.error(e.getMessage());
+            logger.error("projectName: {} ---> request sonar api failed 获取最新版本时间API 失败", projectName);
+        }
+
+        return error;
+
+    }
+
 
 
     public JSONObject getSonarIssueType(String repositories,String status,int page , int ps){
@@ -606,28 +628,6 @@ public class RestInterfaceManager {
             logger.error("componentKey : {}  ----> request sonar  source rule  api failed , repositories --> {} , status --> {}", repositories,status);
             return null;
         }
-
-
-
-    }
-
-    public JSONObject getProjectAnalysesVersion(String projectName, int pageSize, int page) {
-        Map<String, Object> map = new HashMap<>();
-        StringBuilder urlBuilder = new StringBuilder();
-        urlBuilder.append(sonarServicePath + "/api/project_analyses/search?project={projectName}&p={p}&ps={ps}");
-        map.put("projectName",projectName);
-        map.put("p",page);
-        map.put("ps",pageSize);
-
-        try {
-            ResponseEntity entity = restTemplate.getForEntity(urlBuilder.toString(), JSONObject.class,map);
-            JSONObject result  = JSONObject.parseObject(entity.getBody().toString());
-            return result;
-        }catch (RuntimeException e) {
-            logger.error("projectName : {}  ----> request sonar api failed", projectName);
-            throw e;
-        }
-
     }
 
     //------------------------------------------------------scan api ---------------------------------------------
@@ -770,9 +770,9 @@ public class RestInterfaceManager {
         ResponseEntity responseEntity = restTemplate.exchange(url , HttpMethod.GET,request,JSONObject.class);
         JSONObject result = JSONObject.parseObject(responseEntity.getBody().toString(),JSONObject.class);
 
-        if(result.getIntValue("code") != 200 || result.getJSONObject("data").isEmpty()){
+        if(result.getIntValue("code") != 200){
             logger.error("request /measure/developer/workLoad failed");
-            return null;
+            throw  new RuntimeException("get data from /measure/developer/work-load failed!");
         }
 
         Map<String, Integer> developerWorkLoad = new HashMap<>(16);

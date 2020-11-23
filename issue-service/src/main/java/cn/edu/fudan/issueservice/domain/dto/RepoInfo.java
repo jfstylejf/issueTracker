@@ -1,6 +1,5 @@
 package cn.edu.fudan.issueservice.domain.dto;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
 

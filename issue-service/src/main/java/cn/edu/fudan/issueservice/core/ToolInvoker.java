@@ -152,7 +152,7 @@ public class ToolInvoker {
             IssueScanTransactionManager issueScanTransactionManager = (IssueScanTransactionManager)applicationContext.getBean("DataPersistManager");
 
             //2.根据策略获取扫描的commit列表
-            ConcurrentLinkedDeque<String>  scanCommits = scanStrategy.getScanCommitLinkedDeque (repoId, jGitInvoker, branch, beginCommit);
+            ConcurrentLinkedDeque<String>  scanCommits = scanStrategy.getScanCommitLinkedQueue(repoId, jGitInvoker, branch, beginCommit);
 
             if(scanCommits == null || scanCommits.isEmpty ()){
                 log.error ("get commit List failed or all commits were scanned! repo id --> {}", repoId);

@@ -15,9 +15,6 @@ import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -177,7 +174,7 @@ public class FindbugsBaseAnalyzer extends BaseAnalyzer {
 
         Iterator<Element> iterator = bugInstance.elementIterator("SourceLine");
 
-        String methodName = method.attributeValue("accountName");
+        String methodName = method.attributeValue("name");
         Element sourceLineInMethod = method.element("SourceLine");
         int start = Integer.parseInt(sourceLineInMethod.attributeValue("start"));
         int end = Integer.parseInt(sourceLineInMethod.attributeValue("end"));
@@ -253,7 +250,7 @@ public class FindbugsBaseAnalyzer extends BaseAnalyzer {
     public  String getFileLocation(String repoPath, String fileName) {
         try {
             Runtime rt = Runtime.getRuntime();
-            String command = "find "+ repoPath + " -accountName " + fileName;
+            String command = "find "+ repoPath + " -name " + fileName;
             //String command =  binHome + "findOneFile.sh " + repoHome + repoPath + " "+ fileName;
             Process process = rt.exec(command);
             process.waitFor();

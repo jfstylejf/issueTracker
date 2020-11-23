@@ -1,6 +1,10 @@
+/**
+ * @description:
+ * @author: fancying
+ * @create: 2019-06-05 17:16
+ **/
 package cn.edu.fudan.issueservice.util;
 
-import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jgit.api.BlameCommand;
@@ -12,9 +16,7 @@ import org.eclipse.jgit.blame.BlameResult;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.DiffFormatter;
 import org.eclipse.jgit.diff.RenameDetector;
-import org.eclipse.jgit.lib.ObjectId;
-import org.eclipse.jgit.lib.ObjectReader;
-import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.lib.*;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
@@ -22,34 +24,32 @@ import org.eclipse.jgit.treewalk.CanonicalTreeParser;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.util.io.DisabledOutputStream;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Stream;
 
 import static cn.edu.fudan.issueservice.util.DateTimeUtil.timeTotimeStamp;
 
-/**
- * @description:
- * @author: fancying
- * @create: 2019-06-05 17:16
- **/
 @SuppressWarnings("Duplicates")
 @Slf4j
 public class JGitHelper {
 
-    private static final boolean IS_WINDOWS = System.getProperty("os.accountName").toLowerCase().contains("win");
+    private static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().contains("win");
     private static final int MERGE_WITH_CONFLICT = -1;
     private static final int MERGE_WITHOUT_CONFLICT = 2;
     private static final int NOT_MERGE = 1;
     private Repository repository;
     private RevWalk revWalk;
     private Git git;
-    @Getter
-    private String repoPath;
 
     private final String format = "yyyy-MM-dd HH:mm:ss";
     /**
@@ -58,8 +58,7 @@ public class JGitHelper {
      *
      */
     public JGitHelper(String repoPath) {
-        this.repoPath = repoPath + (IS_WINDOWS ? "\\" : "/");
-        String gitDir = this.repoPath  + ".git";
+        String gitDir =  IS_WINDOWS ? repoPath + "\\.git" : repoPath + "/.git";
         FileRepositoryBuilder builder = new FileRepositoryBuilder();
         try {
             repository = builder.setGitDir(new File(gitDir))
@@ -157,7 +156,59 @@ public class JGitHelper {
             repository.close();
         }
     }
-    
+
+    public List<String> getScanCommitListByBranchAndBeginCommit(String branch, String beginCommit) {
+        //checkout to the branch
+        checkout(branch);
+        //new result set
+        Map<String, Set<String>> commitMap = new HashMap<>(512);
+        Map<String, Boolean> commitCheckMap = new HashMap<>(512);
+        List<String> scanCommitQueue = new ArrayList<>();
+        //get the start commit time
+        Long start = getLongCommitTime(beginCommit);
+        //init commitMap:key->commitId,value->set<String> parentsCommitId
+        try {
+            Iterable<RevCommit> commits = git.log().call();
+            commits.forEach(commit -> {
+                if(commit.getCommitTime() * 1000L >= start) {
+                    Set<String> parents = new HashSet<>();
+                    List<RevCommit> parentsCommit = Arrays.asList(commit.getParents());
+                    parentsCommit.forEach(parentCommit -> parents.add(parentCommit.getName()));
+                    commitMap.put(commit.getName(), parents);
+                    commitCheckMap.put(commit.getName(), false);
+                }
+            });
+        } catch (GitAPIException e) {
+            log.error(e.getMessage());
+        }
+        //init scanCommitQueue
+        scanCommitQueue.add(beginCommit);
+        commitCheckMap.put(beginCommit, true);
+        //get the commitList
+        while(scanCommitQueue.size() != commitMap.size()){
+            for(Map.Entry<String, Set<String>> entry : commitMap.entrySet()){
+                //if parent in commitMap but not in scanCommitQueue, should not add to queue.
+                boolean shouldAddToQueue = shouldAddToQueue(entry.getValue(), scanCommitQueue, commitMap);
+                if(shouldAddToQueue && !commitCheckMap.get(entry.getKey())){
+                    scanCommitQueue.add(entry.getKey());
+                    commitCheckMap.put(entry.getKey(), true);
+                    break;
+                }
+            }
+        }
+
+        return scanCommitQueue;
+    }
+
+    private boolean shouldAddToQueue(Set<String> parents, List<String> scanCommitQueue, Map<String, Set<String>> commitMap) {
+        for(String parent : parents){
+            if(commitMap.containsKey(parent) && !scanCommitQueue.contains(parent)){
+                return false;
+            }
+        }
+        return true;
+    }
+
 
     public List<String> getCommitListByBranchAndBeginCommit(String branchName, String beginCommit) {
         checkout(branchName);
@@ -209,7 +260,6 @@ public class JGitHelper {
     }
 
     /**
-     * todo 抽到公共方法中
      * 由小到大排序
      * st.sorted((e1, e2) -> e2.getValue().compareTo(e1.getValue())).forEach(e -> result.put(e.getKey(), e.getValue()));
      * 默认由大到小排序
@@ -507,14 +557,4 @@ public class JGitHelper {
         return result;
     }
 
-    /**
-     * 根据两个commit id 来diff两个
-     * @param preCommitId 前一个版本的commit id
-     * @param commitId 当前版本的commit id
-     * @return add : a, delete: ,a   change a,a   英文逗号 ， 区分 add delete change
-     */
-    public List<String> getDiffFilePair(String preCommitId, String commitId) {
-        List<String> result = new ArrayList<>();
-        return result;
-    }
 }

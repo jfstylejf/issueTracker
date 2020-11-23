@@ -12,21 +12,6 @@
         <result property="developerEmail" column="developer_email"/>
     </resultMap>
 
-    <select id="getCommitCount"  resultType="int">
-        select count(*) from commit_view
-        <where>
-            <trim  prefixOverrides="and | or" >
-                <if test="repo_id != null  and repo_id !=''">
-                    and repo_id= #{repo_id}
-                </if>
-                <if test="start_commit_time != null  and start_commit_time !=''">
-                    and <![CDATA[ commit_time > #{start_commit_time} ]]>
-                </if>
-            </trim>
-
-        </where>
-    </select>
-
     <select id="getCommits" parameterType="String" resultMap="commit">
         SELECT commit_id,message,developer,commit_time,repo_id,developer_email FROM commit_view
         <where>
@@ -38,35 +23,23 @@
                     and <![CDATA[ commit_time > #{start_commit_time} ]]>
                 </if>
             </trim>
-
         </where>
             ORDER BY commit_time DESC
-    </select>
-
-    <select id="getDevelopersByRepoIdList" parameterType="List" resultType="String">
-        select distinct developer_unique_name from commit_view
-        where 1 = 1
-        <if test="repoIdList != null and repoIdList.size > 0">
-            and repo_id in
-            <foreach collection="repoIdList" separator="," open="(" close=")" item="repo_id">
-                #{repo_id}
-            </foreach>
-        </if>
     </select>
 
     <select id="getCommitViewInfoByCommitId" parameterType="String" resultType="java.util.HashMap">
         select uuid, commit_id, message, developer, commit_time, repo_id, developer_email, self_index, parent_commit, developer_unique_name from commit_view
         where 1 = 1
-
         <if test="repo_id != null and repo_id != '' ">
             and repo_id = #{repo_id}
         </if>
-
         <if test="commit_id != null and commit_id != '' ">
             and commit_id = #{commit_id}
         </if>
-
         limit 1
     </select>
 
+    <select id="getCommitByCommitId" resultMap="commit">
+        SELECT * FROM commit_view WHERE repo_id = #{repoUuid} and commit_id = #{startCommit}
+    </select>
 </mapper>

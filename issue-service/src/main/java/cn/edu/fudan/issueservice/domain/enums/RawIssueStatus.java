@@ -16,7 +16,7 @@ public enum RawIssueStatus {
     SOLVED("solved"),
     //这个issue 在这个commit 通过merge的方式自动消除
     MERGE_SOLVED("merge solved");
-    private String type;
+    private final String type;
 
     public static RawIssueStatus getStatusByName(String name){
         for(RawIssueStatus status : RawIssueStatus.values()){

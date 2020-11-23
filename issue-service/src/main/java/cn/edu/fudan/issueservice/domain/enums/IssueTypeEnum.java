@@ -31,22 +31,12 @@ public enum IssueTypeEnum {
 
 
 
-    private String name;
-    private String category;
-    private String tool;
+    private final String name;
+    private final String category;
+    private final String tool;
     IssueTypeEnum(String name,String tool,String category) {
         this.name = name;
         this.category = category;
         this.tool = tool;
-    }
-
-
-    public static IssueTypeEnum getIssueTypeEnum(String name){
-        for(IssueTypeEnum issueTypeEnum : IssueTypeEnum.values()){
-            if(issueTypeEnum.getName().equals(name)){
-                return issueTypeEnum;
-            }
-        }
-        return null;
     }
 }

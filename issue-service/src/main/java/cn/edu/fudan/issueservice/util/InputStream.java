@@ -18,14 +18,17 @@ public abstract class InputStream extends java.io.InputStream {
 
             private void ensureOpen() throws IOException { if (closed) throw new IOException("Stream closed"); }
 
+            @Override
             public void close() throws IOException { closed = true; }
 
 
+            @Override
             public int read() throws IOException {
                 ensureOpen();
                 return -1;
             }
 
+            @Override
             public int read(byte[] b, int off, int len) throws IOException {
                 ensureOpen();
                 return len == 0 ? 0: -1;
@@ -46,6 +49,7 @@ public abstract class InputStream extends java.io.InputStream {
                 return new byte[0];
             }
 
+            @Override
             public long skip(long n) throws IOException {
                 ensureOpen();
                 return 0L;
@@ -56,6 +60,7 @@ public abstract class InputStream extends java.io.InputStream {
                 if (n > 0) throw new EOFException();
             }
 
+            @Override
             public int available () throws IOException {
                 ensureOpen();
                 return 0;

@@ -6,17 +6,35 @@ import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Map;
 
 
 @Repository
 public interface LocationMapper {
 
+    /**
+     * 插入locations
+     * @param list location list
+     */
     void insertLocationList(List<Location> list);
 
-    void deleteLocationByRepoIdAndTool(@Param("repo_id") String repo_id, @Param("tool")String tool);
-
+    /**
+     * 获取locations
+     * @param rawIssueId rawIssueUuid
+     * @return locations
+     */
     List<Location> getLocations(@Param("uuid") String rawIssueId);
 
+    /**
+     * 删除location
+     * @param list rawIssueUuid list
+     */
     void deleteLocationByRawIssueIds(@Param("list")List<String> list);
 
+    /**
+     * 获取locations
+     * @param uuid rawIssueUuid
+     * @return locations
+     */
+    List<Map<String, Object>> getLocationsByRawIssueUuid(String uuid);
 }

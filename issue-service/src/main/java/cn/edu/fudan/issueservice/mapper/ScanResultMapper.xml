@@ -203,4 +203,25 @@
     </select>
 
 
+    <select id="findFirstDateByRepo" parameterType="String" resultType="String">
+        SELECT commit_date  FROM scan_result ORDER BY commit_date ASC LIMIT 1
+    </select>
+
+    <select id="getRepoIssueCounts2" parameterType="String" resultType="java.util.HashMap">
+        SELECT
+        `commit_date` AS date,
+        new_count AS newIssueCount,
+        eliminated_count AS eliminatedIssueCount,
+        remaining_count AS remainingIssueCount
+        FROM
+        scan_result
+        where repo_id = #{repo_id} and DATE(commit_date) BETWEEN #{since} AND #{until}
+        <if test="developer != null and developer != ''" >
+            and developer = #{developer}
+        </if>
+        <if test="category != null">
+            and category = #{category}
+        </if>
+    </select>
+
 </mapper>

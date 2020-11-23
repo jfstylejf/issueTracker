@@ -38,6 +38,8 @@
         <result property="resolution" column="resolution"/>
         <result property="producer" column="producer"/>
         <result property="issueCategory" column="issue_category"/>
+        <result property="manual_status" column="manual_status"/>
+        <result property="solver" column="solver"/>
         <collection property="issueType" column="type"
                     select="cn.edu.fudan.issueservice.mapper.IssueTypeMapper.getIssueTypeByTypeName"/>
     </resultMap>
@@ -88,7 +90,8 @@
         `status`,
         resolution,
         producer,
-        issue_category
+        issue_category,
+        solver
         )
         VALUES
         <foreach collection="list" item="item" index="index" separator=",">
@@ -109,214 +112,14 @@
             #{item.status},
             #{item.resolution},
             #{item.producer},
-            #{item.issueCategory}
+            #{item.issueCategory},
+            #{item.solver}
             )
         </foreach>
     </insert>
 
-    <select id="getIssueList" parameterType="Map" resultMap="issueWithCommitView">
-        select
-        a.uuid,a.type,a.tool,a.start_commit,a.start_commit_date,a.end_commit,a.end_commit_date,
-        a.repo_id,a.target_files,a.create_time,a.update_time,a.priority,a.display_id,a.status,a.resolution,
-        a.type,a.issue_category,b.developer_unique_name as developer,a.producer
-        from issue as a left join commit_view as b on a.repo_id = b.repo_id and a.start_commit = b.commit_id
-        <trim prefix="where" prefixOverrides="and | or">
-            <if test="repo_id != null and repo_id.size > 0">
-                and a.repo_id in
-                <foreach collection="repo_id" separator="," open="(" close=")" item="repo">
-                    #{repo}
-                </foreach>
-            </if>
-            <if test="types != null">
-                and a.type in
-                <foreach collection="types" separator="," open="(" close=")" item="type">
-                    #{type}
-                </foreach>
-            </if>
-            <if test="issue_status != null">
-                and a.status  in
-                <foreach collection="issue_status" separator="," open="(" close=")" item="status">
-                    #{status}
-                </foreach>
-            </if>
-            <if test="toolName != null">
-                and a.tool = #{toolName}
-            </if>
-            <if test="priority != null and priority != -1">
-                and a.priority = #{priority}
-            </if>
-            <if test="developer != null">
-                and b.developer_unique_name = #{developer}
-            </if>
-            <if test="since != null">
-                and <![CDATA[ start_commit_date >= #{since} ]]>
-            </if>
-            <if test="until != null">
-                and <![CDATA[ start_commit_date <= #{until} ]]>
-            </if>
-            <if test="issueCategory != null and issueCategory != ''">
-                and a.issue_category = #{issueCategory}
-            </if>
-        </trim>
-        order by a.priority , a.end_commit_date desc , a.start_commit_date desc , a.display_id
-        <if test="start != null  and size != null ">
-            limit #{start},#{size}
-        </if>
-    </select>
-
-    <select id="getIssueWithAdder" parameterType="Map" resultType="java.util.HashMap">
-        select
-        a.uuid,a.type,a.tool,a.start_commit as startCommit,a.start_commit_date as startCommitDate,a.end_commit as endCommit,a.end_commit_date as endCommitDate,
-        a.repo_id as repoId,a.target_files as targetFiles,a.priority,a.display_id as displayId,a.status,a.resolution,
-        a.type,a.issue_category as issueCategory,b.developer_unique_name as adder
-        from issue as a left join commit_view as b on a.repo_id = b.repo_id and a.start_commit = b.commit_id
-        <trim prefix="where" prefixOverrides="and | or">
-            <if test="repo_id != null and repo_id.size > 0">
-                and a.repo_id in
-                <foreach collection="repo_id" separator="," open="(" close=")" item="repo">
-                    #{repo}
-                </foreach>
-            </if>
-            <if test="types != null">
-                and a.type in
-                <foreach collection="types" separator="," open="(" close=")" item="type">
-                    #{type}
-                </foreach>
-            </if>
-            <if test="issue_status != null">
-                and a.status  in
-                <foreach collection="issue_status" separator="," open="(" close=")" item="status">
-                    #{status}
-                </foreach>
-            </if>
-            <if test="toolName != null">
-                and a.tool = #{toolName}
-            </if>
-            <if test="priority != null and priority != -1">
-                and a.priority = #{priority}
-            </if>
-            <if test="developer != null">
-                and b.developer_unique_name = #{developer}
-            </if>
-            <if test="since != null">
-                and <![CDATA[ start_commit_date >= #{since} ]]>
-            </if>
-            <if test="until != null">
-                and <![CDATA[ start_commit_date <= #{until} ]]>
-            </if>
-            <if test="issueCategory != null and issueCategory != ''">
-                and a.issue_category = #{issueCategory}
-            </if>
-        </trim>
-        order by a.priority , a.end_commit_date desc , a.start_commit_date desc , a.display_id
-        <if test="start != null  and size != null ">
-            limit #{start},#{size}
-        </if>
-    </select>
-
     <select id="getIssueByID" parameterType="String" resultMap="issueWithCommitView">
         select * from issue where uuid = #{uuid}
-    </select>
-
-    <select id="getIssueCount" parameterType="Map" resultType="java.util.HashMap">
-        select
-        issue_category as 'key',count(*) as 'value'
-        from issue as a left join commit_view as b on a.repo_id = b.repo_id and a.start_commit = b.commit_id
-        <trim prefix="where" prefixOverrides="and | or">
-            <if test="repo_id != null">
-                and a.repo_id in
-                <foreach collection="repo_id" separator="," open="(" close=")" item="repo">
-                    #{repo}
-                </foreach>
-            </if>
-            <if test="types != null">
-                and a.type in
-                <foreach collection="types" separator="," open="(" close=")" item="type">
-                    #{type}
-                </foreach>
-            </if>
-            <if test="issue_status != null">
-                and a.status  in
-                <foreach collection="issue_status" separator="," open="(" close=")" item="status">
-                    #{status}
-                </foreach>
-            </if>
-            <if test="toolName != null">
-                and a.tool = #{toolName}
-            </if>
-            <if test="priority != null and priority != -1">
-                and a.priority = #{priority}
-            </if>
-            <if test="developer != null">
-                and b.developer_unique_name = #{developer}
-            </if>
-            <if test="since != null">
-                and <![CDATA[ start_commit_date >= #{since} ]]>
-            </if>
-            <if test="until != null">
-                and <![CDATA[ start_commit_date <= #{until} ]]>
-            </if>
-            <if test="issueCategory != null and issueCategory != ''">
-                and a.issue_category = #{issueCategory}
-            </if>
-        </trim>
-        group by issue_category;
-    </select>
-
-    <select id="getIssuesCount" parameterType="Map" resultType="java.util.HashMap">
-        select
-        issue_category as 'key',count(*) as 'value'
-        from issue as a left join commit_view as b on a.repo_id = b.repo_id and a.start_commit = b.commit_id
-        <trim prefix="where" prefixOverrides="and | or">
-            <if test="repoList != null">
-                and a.repo_id in
-                <foreach collection="repoList" separator="," open="(" close=")" item="repo">
-                    #{repo}
-                </foreach>
-            </if>
-            <if test="types != null">
-                and a.type in
-                <foreach collection="types" separator="," open="(" close=")" item="type">
-                    #{type}
-                </foreach>
-            </if>
-            <if test="status != null">
-                and a.status  in
-                <foreach collection="status" separator="," open="(" close=")" item="status">
-                    #{status}
-                </foreach>
-            </if>
-            <if test="toolName != null">
-                and a.tool = #{toolName}
-            </if>
-            <if test="priority != null and priority != -1">
-                and a.priority = #{priority}
-            </if>
-            <if test="developer != null">
-                and b.developer_unique_name = #{developer}
-            </if>
-            <if test="since != null">
-                and <![CDATA[ start_commit_date >= #{since} ]]>
-            </if>
-            <if test="until != null">
-                and <![CDATA[ start_commit_date <= #{until} ]]>
-            </if>
-            <if test="category != null and category != ''">
-                and a.issue_category = #{category}
-            </if>
-            <if test="filesPath != null">
-                and a.target_files in
-                <foreach collection="filesPath" separator="," open="(" close=")" item="filePath">
-                    #{filePath}
-                </foreach>
-            </if>
-        </trim>
-        group by issue_category;
-    </select>
-
-    <select id="getIssuesByEndCommit" parameterType="String" resultMap="issue">
-        select * from issue
-        where repo_id = #{repo_id} and end_commit = #{commit_id} and tool = #{tool}
     </select>
 
     <select id="getRepoWithIssues" parameterType="String" resultType="String">
@@ -324,11 +127,9 @@
         distinct b.repo_id as repoId
         from issue as a inner join commit_view as b on a.repo_id = b.repo_id and a.start_commit = b.commit_id
         <trim prefix="where" prefixOverrides="and | or">
-
             <if test="developer != null">
                 and b.developer_unique_name = #{developer}
             </if>
-
         </trim>
     </select>
 
@@ -371,6 +172,11 @@
                     </if>
                 </foreach>
             </trim>
+            <trim prefix="solver = case" suffix="end,">
+                <foreach collection="list" item="item">
+                    when uuid=#{item.uuid} then #{item.solver}
+                </foreach>
+            </trim>
             <trim prefix="priority = case" suffix="end,">
                 <foreach collection="list" item="item">
                     <if test="item.priority != null">
@@ -410,76 +216,6 @@
         where tool = #{tool} order by types
     </select>
 
-    <select id="getIssueIdsByRepoIdAndTool" resultType="String" parameterType="String">
-        select uuid from issue where repo_id = #{repo_id} and tool = #{tool}
-    </select>
-
-    <select id="getSpecificIssueCount" resultType="int" parameterType="Map">
-        select count(uuid) from issue
-        <include refid="whereSpecificIssues" />
-    </select>
-
-    <sql id="whereSpecificIssues" >
-        <where>
-            tool = #{tool}
-            <if test="repo_id != null">
-                and repo_id = #{repo_id}
-            </if>
-            <if test="types != null">
-                and type in
-                <foreach collection="types" separator="," open="(" close=")" item="type">
-                    #{type}
-                </foreach>
-            </if>
-            <if test="list != null">
-                and uuid in
-                <foreach collection="list" separator="," open="(" close=")" item="issue_id">
-                    #{issue_id}
-                </foreach>
-            </if>
-            <if test="solved_issue_ids != null">
-                and uuid not in
-                <foreach collection="solved_issue_ids" separator="," open="(" close=")" item="issue_id">
-                    #{issue_id}
-                </foreach>
-            </if>
-        </where>
-    </sql>
-
-    <select id="getSpecificIssues" resultMap="issueWithCommitView" parameterType="Map">
-        select * from issue
-        <include refid="whereSpecificIssues" />
-        order by priority , end_commit_date desc , start_commit_date desc
-        limit #{start},#{size}
-    </select>
-
-    <select id="getAvgEliminatedTime" resultType="double">
-        select
-        avg((UNIX_TIMESTAMP(end_commit_date) - UNIX_TIMESTAMP(start_commit_date)))
-        FROM
-        issue
-        WHERE
-        repo_id = #{repo_id} and tool = #{tool} and uuid in
-        <foreach collection="list" separator="," open="(" close=")" item="issue_id">
-            #{issue_id}
-        </foreach>
-    </select>
-
-    <select id="getMaxAliveTime" resultType="long">
-        select
-        max((UNIX_TIMESTAMP(end_commit_date) - UNIX_TIMESTAMP(start_commit_date)))
-        FROM
-        issue
-        WHERE
-        repo_id = #{repo_id} and tool = #{tool}
-        <if test="list != null">
-            and uuid not in
-            <foreach collection="list" separator="," open="(" close=")" item="issue_id">
-                #{issue_id}
-            </foreach>
-        </if>
-    </select>
-
     <update id="updateOneIssuePriority"  >
         UPDATE issue SET priority = #{priority} WHERE uuid = #{uuid}
     </update>
@@ -501,85 +237,10 @@
         select max(display_id) from issue where repo_id = #{repo_id}
     </select>
 
-    <update id="updateIssueDisplayId"  >
-        UPDATE issue set display_id = #{display_id} where uuid = #{uuid}
-    </update>
-
-
-
-    <select id="getAllRepoId" resultType="String">
-        select distinct(repo_id) from issue
-    </select>
-
-    <select id="getAllIssueIdByRepoId" parameterType="String" resultType="String">
-        select uuid from issue where repo_id = #{repo_id}
-    </select>
-
-    <select id="getNotSolvedIssueListByTypeAndRepoId" parameterType="String" resultType="String">
-        select uuid from issue where repo_id = #{repo_id} and type = #{type} and priority != 6
-    </select>
-
     <select id="getNotSolvedIssueAllListByToolAndRepoId" parameterType="String" resultType="Issue">
-        select * from issue where repo_id = #{repo_id} and tool = #{tool} and priority != 6
-    </select>
-
-    <update id="batchUpdateIssueListPriority" >
-        update issue set priority = #{priority}
-        <if test="list != null">
-            where uuid in
-            <foreach collection="list" separator="," open="(" close=")" item="issue_id">
-                #{issue_id}
-            </foreach>
-        </if>
-    </update>
-
-    <select id="getIgnoredCountInMappedIssues" resultType="int">
-        select count(uuid) from issue
-        inner join tagged on uuid = item_id
-        where uuid in
-        <foreach collection="list" separator="," open="(" close=")" item="issue_id">
-            #{issue_id}
-        </foreach>
-        and tag_id = #{ignoreId}
-    </select>
-
-    <select id="getNumberOfNewIssueByDuration" resultType="int">
-        select count(*) from issue where repo_id = #{repo_id} and start_commit_date between #{start} and #{end}
-    </select>
-
-    <select id="getNumberOfEliminateIssueByDuration" resultType="int">
-        select count(*) from issue where repo_id = #{repo_id} and end_commit_date between #{start} and #{end}
-    </select>
-
-    <select id="getCommitNewIssue" resultType="java.util.WeakHashMap">
-        select start_commit as 'key',count(start_commit) as 'value'
-        from issue
-        where repo_id = #{repo_id} and start_commit_date between #{start} and #{end}
-        group by start_commit order by value
-    </select>
-
-
-    <select id="getIssuesByIssueIds" parameterType="List" resultMap="issue4">
-        SELECT * FROM issue
-        WHERE uuid IN
-        <foreach collection="list" item="issue_id"  open="(" close=")" separator=",">
-            #{issue_id}
-        </foreach>
-    </select>
-
-    <select id="getCommitIds" parameterType="String" resultType="String">
-        select commit_id from commit where repo_id = #{repo_id}
-        <if test="since != null">
-            and <![CDATA[ commit_time >= #{since} ]]>
-        </if>
-        <if test="until != null">
-            and <![CDATA[ commit_time <= #{until} ]]>
-        </if>
-    </select>
-
-    <select id="getHaveNotAdoptEliminateIssuesByToolAndRepoId" parameterType="String" resultMap="issue4">
-        select * from issue
-        where  repo_id = #{repo_id} and tool = #{tool} and resolution is not null and  resolution != '0';
+        select uuid, type, tool, start_commit, start_commit_date, end_commit, end_commit_date, repo_id, target_files,
+        create_time, update_time, priority, display_id, status, manual_status, resolution, issue_category, producer, solver
+        from issue where repo_id = #{repo_id} and tool = #{tool} and priority != 6
     </select>
 
     <select id="getIssueByRepoIdAndToolAndStatusList" parameterType="String" resultMap="issue4">
@@ -592,7 +253,6 @@
         </if>
     </select>
 
-
     <select id="getIssuesByIds"  resultMap="issue4">
         select * from issue
         <where>
@@ -603,96 +263,6 @@
                 </foreach>
             </if>
         </where>
-    </select>
-
-    <select id="getIssueByRawIssuesCommitViewIssueTable" resultType="java.util.HashMap">
-        select uuid, type, status, start_commit_date, end_commit_date, now() as now_date, datediff(now(),start_commit_date) as lifeCycle
-        from issue
-        where uuid in
-        (SELECT a.issue_id
-        FROM
-        rawIssue as a
-        INNER JOIN commit_view as b
-        ON a.repo_id = b.repo_id AND a.commit_id = b.commit_id
-        <trim prefix="where" prefixOverrides="and">
-            <if test="repoUuids != null and repoUuids.size > 0">
-                and a.repo_id in
-                <foreach collection="repoUuids" separator="," open="(" close=")" item="repo_uuid">
-                    #{repo_uuid}
-                </foreach>
-            </if>
-            <if test="rawIssueStatus != null  and rawIssueStatus != ''">
-                and a.status = #{rawIssueStatus}
-            </if>
-            <if test="type != null  and type != ''">
-                and a.type = #{type}
-            </if>
-            <if test="developer != null  and developer != ''">
-                and b.developer_unique_name = #{developer}
-            </if>
-            <if test="tool != null  and tool != ''">
-                and a.tool = #{tool}
-            </if>
-            <if test="since != null and since != '' ">
-                and <![CDATA[ b.commit_time >= #{since} ]]>
-            </if>
-            <if test="until != null and until != '' ">
-                and <![CDATA[ b.commit_time <= #{until} ]]>
-            </if>
-        </trim>
-        GROUP BY a.issue_id)
-        <if test="issueStatus != null  and issueStatus != ''">
-            and status = #{issueStatus}
-        </if>
-        order by lifeCycle desc
-    </select>
-
-    <select id="getIssueByRawIssueCommitViewIssueTable" resultType="java.util.HashMap">
-        select uuid, type, status, start_commit_date, end_commit_date, now() as now_date, datediff(now(),start_commit_date) as lifeCycle
-        from issue
-        where uuid in
-        (SELECT a.issue_id
-        FROM
-        rawIssue as a
-        INNER JOIN commit_view as b
-        ON a.repo_id = b.repo_id AND a.commit_id = b.commit_id
-        <trim prefix="where" prefixOverrides="and">
-            <if test="repoIdList != null and repoIdList.size > 0">
-                and a.repo_id in
-                <foreach collection="repoIdList" separator="," open="(" close=")" item="repo_id">
-                    #{repo_id}
-                </foreach>
-            </if>
-
-            <if test="rawIssueStatus != null  and rawIssueStatus != ''">
-                and a.status = #{rawIssueStatus}
-            </if>
-
-            <if test="type != null  and type != ''">
-                and a.type = #{type}
-            </if>
-
-            <if test="developer != null  and developer != ''">
-                and b.developer_unique_name = #{developer}
-            </if>
-
-            <if test="tool != null  and tool != ''">
-                and a.tool = #{tool}
-            </if>
-
-            <if test="since != null and since != '' ">
-                and <![CDATA[ b.commit_time >= #{since} ]]>
-            </if>
-
-            <if test="until != null and until != '' ">
-                and <![CDATA[ b.commit_time <= #{until} ]]>
-            </if>
-        </trim>
-        GROUP BY a.issue_id)
-        <if test="issueStatus != null  and issueStatus != ''">
-            and status = #{issueStatus}
-        </if>
-        order by lifeCycle desc
     </select>
 
     <select id="getSolvedIssueLifeCycle" resultType="java.util.HashMap">
@@ -736,11 +306,10 @@
                 and <![CDATA[ b.commit_time <= #{until} ]]>
             </if>
         </trim>
-
         GROUP BY a.issue_id)
         and status = "Solved"
+        and manual_status != "Ignore"
         order by  lifeCycle desc
-
     </select>
 
     <select id="getSolvedIssueLifeCycleByOtherSolved" parameterType="String" resultType="java.util.HashMap">
@@ -759,35 +328,29 @@
                     #{repo_id}
                 </foreach>
             </if>
-
             <if test="status != null  and status != ''">
                 and a.status = #{status}
             </if>
-
             <if test="type != null  and type != ''">
                 and a.type = #{type}
             </if>
-
             <if test="developer != null  and developer != ''">
                 and b.developer_unique_name != #{developer}
             </if>
-
             <if test="tool != null  and tool != ''">
                 and a.tool = #{tool}
             </if>
-
             <if test="since != null and since != '' ">
                 and <![CDATA[ b.commit_time >= #{since} ]]>
             </if>
-
             <if test="until != null and until != '' ">
                 and <![CDATA[ b.commit_time <= #{until} ]]>
             </if>
         </trim>
         GROUP BY a.issue_id)
         and status = "Solved"
+        and manual_status != "Ignore"
         order by lifeCycle desc
-
     </select>
 
     <select id="getOpenIssueLifeCycle" resultType="java.util.HashMap">
@@ -806,27 +369,21 @@
                     #{repo_id}
                 </foreach>
             </if>
-
             <if test="rawIssueStatus != null  and rawIssueStatus != ''">
                 and a.status = #{rawIssueStatus}
             </if>
-
             <if test="type != null  and type != ''">
                 and a.type = #{type}
             </if>
-
             <if test="developer != null  and developer != ''">
                 and b.developer_unique_name = #{developer}
             </if>
-
             <if test="tool != null  and tool != ''">
                 and a.tool = #{tool}
             </if>
-
             <if test="since != null and since != '' ">
                 and <![CDATA[ b.commit_time >= #{since} ]]>
             </if>
-
             <if test="until != null and until != '' ">
                 and <![CDATA[ b.commit_time <= #{until} ]]>
             </if>
@@ -836,83 +393,12 @@
         order by lifeCycle desc
     </select>
 
-    <select id="getIssueStatisticByIssueIdList"  parameterType="String" resultType="java.util.HashMap">
-        select b.type, AVG(b.lifeCycle) as avgLifeCycle ,MIN(b.lifeCycle) as minLifeCycle , MAX(b.lifeCycle) as maxLifeCycle, COUNT(b.type) as quantity
-        FROM
-        (select type, DATEDIFF(end_commit_date,start_commit_date) AS lifeCycle
-        from issue
-        <where>
-            <if test="issueId_list != null  and issueId_list.size > 0">
-                uuid in
-                <foreach collection="issueId_list" item="issueId" separator="," open="(" close=")">
-                    #{issueId}
-                </foreach>
-            </if>
-        </where>
-        ) AS b
-        GROUP BY b.type
-        <if test='order != null and order == "quantity" '>
-            ORDER BY quantity
-        </if>
-        <if test='order != null and order == "lifecycle" '>
-            ORDER BY avgLifeCycle
-        </if>
-        <if test='asc != null and asc == "false" '>
-            desc
-        </if>
-    </select>
-
-    <select id="getAdderByIssue" resultType="String">
-        SELECT a.developer FROM rawIssue AS a INNER JOIN commit_view AS b
-        ON a.repo_id = b.repo_id AND a.commit_id = b.commit_id
-        WHERE a.status = #{status}
-        <if test="tool != null and tool != '' ">
-            AND a.tool = #{tool}
-        </if>
-        <if test="repoList != null and repoList.size > 0">
-            AND a.repo_id IN
-            <foreach collection="repoList" separator="," open="(" close=")" item="repo_id">
-                #{repo_id}
-            </foreach>
-        </if>
-        <if test="since != null and since != '' ">
-            AND <![CDATA[ b.commit_time >= #{since} ]]>
-        </if>
-        <if test="until != null and until != '' ">
-            AND <![CDATA[ b.commit_time <= #{until} ]]>
-        </if>
-    </select>
-
-    <select id="getSolvedIssue" resultType="String">
-        SELECT uuid FROM issue WHERE status = #{status}
-        <if test="repoList != null and repoList.size > 0">
-            AND repo_id IN
-            <foreach collection="repoList" separator="," open="(" close=")" item="repo_id">
-                #{repo_id}
-            </foreach>
-        </if>
-        <if test="tool != null and tool != '' ">
-            AND tool = #{tool}
-        </if>
-        <if test="since != null and since != '' ">
-            AND <![CDATA[ update_time >= #{since} ]]>
-        </if>
-        <if test="until != null and until != '' ">
-            AND <![CDATA[ update_time <= #{until} ]]>
-        </if>
-    </select>
-
-    <update id="test" parameterType="String">
-        update issue set solver = #{s} where uuid = #{uuid}
-    </update>
-
-    <select id="getIssuetest" resultType="String">
-        select * from issue where status = 'Solved'
-    </select>
-
     <select id="getSolvedIssueFilterListCount" parameterType="Map" resultType="Integer">
         SELECT COUNT(*) FROM issue AS a INNER JOIN commit_view AS b ON a.repo_id = b.repo_id AND a.end_commit = b.commit_id
         <trim prefix="where" prefixOverrides="and">
+            <if test="manual_status != null">
+                AND a.manual_status = #{manual_status}
+            </if>
             <if test="developer != null">
                 AND a.producer = #{developer}
             </if>
@@ -970,6 +456,9 @@
     <select id="getIssueFilterListCount" parameterType="Map" resultType="Integer">
         SELECT COUNT(*) FROM issue AS a INNER JOIN commit_view AS b ON a.repo_id = b.repo_id AND a.start_commit = b.commit_id
         <trim prefix="where" prefixOverrides="and">
+            <if test="manual_status != null">
+                AND a.manual_status = #{manual_status}
+            </if>
             <if test="developer != null">
                 AND a.producer = #{developer}
             </if>
@@ -1151,4 +640,30 @@
             limit #{start},#{ps}
         </if>
     </select>
+
+    <update id="updateIssueManualStatus" parameterType="String" >
+        UPDATE issue
+        <trim prefix="set" suffixOverrides=",">
+            <if test="manualStatus != null and manualStatus != '' ">
+                manual_status = #{manualStatus},
+            </if>
+            <if test="currentTime != null and currentTime != '' ">
+                update_time = #{currentTime},
+            </if>
+        </trim>
+        WHERE
+        1 = 1
+        <if test="repoUuid != null and repoUuid != '' ">
+            AND repo_id = #{repoUuid}
+        </if>
+        <if test="issueUuid != null and issueUuid != '' ">
+            AND uuid = #{issueUuid}
+        </if>
+        <if test="issueType != null and issueType != '' ">
+            AND type = #{issueType}
+        </if>
+        <if test="tool != null and tool != '' ">
+            AND tool = #{tool}
+        </if>
+    </update>
 </mapper>

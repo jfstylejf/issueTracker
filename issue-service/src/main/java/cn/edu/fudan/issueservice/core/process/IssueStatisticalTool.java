@@ -235,13 +235,15 @@ public class IssueStatisticalTool {
             }
 
             Issue issue = generateOneNewIssue (rawIssue, currentCommitDate, addDate, analyzer, isIgnore);
-            resetProducer(rawIssue, issue, jGitInvoker);
+            //resetProducer(rawIssue, issue, jGitInvoker);
             insertIssues.add (issue);
             rawIssue.setIssue_id (issue.getUuid ());
             if(!isIgnore){
                 newIssueCount++;
             }
         }
+
+        String solver = currentRawIssuesResult.size() == 0 ? null : currentRawIssuesResult.get(0).getDeveloperName();
 
         //匹配与消除
         for(Map.Entry<String, List<RawIssue>> entry : parentRawIssuesResult.entrySet ()){
@@ -250,11 +252,13 @@ public class IssueStatisticalTool {
                 if(!parentRawIssue.isMapped ()){
                     //此时认为是消除缺陷
                     Issue eliminatedIssue = eliminateIssue(parentRawIssue, isIgnore);
+                    eliminatedIssue.setSolver(solver);
                     parentRawIssue.setIssue (eliminatedIssue);
                     eliminatedIssues.add (eliminatedIssue);
                 }else{
                     //更新issue的状态
                     Issue matchedIssue = matchedIssue(parentRawIssue, isIgnore, currentCommitDate, addDate);
+                    matchedIssue.setSolver(null);
                     matchedIssues.add (matchedIssue);
                 }
             }
@@ -400,9 +404,9 @@ public class IssueStatisticalTool {
             isDefaultDisplayId = false;
         }
 
-        Issue issue = new Issue(newIssueId, rawIssue.getType(),toolName, commitId,
-                commitDate, commitId,commitDate, repoId, targetFiles,addTime,addTime,++currentDisplayId);
-        issue.setPriority(priority);
+        Issue issue = new Issue(newIssueId, rawIssue.getType(), toolName, commitId,
+                commitDate, commitId, commitDate, repoId, targetFiles, addTime, addTime, ++currentDisplayId,
+                priority, rawIssue.getDeveloperName(), null);
         IssueType issueType = issueTypeDao.getIssueTypeByTypeName (rawIssue.getType ());
         if(issueType != null){
             issue.setIssueCategory (issueType.getCategory ());

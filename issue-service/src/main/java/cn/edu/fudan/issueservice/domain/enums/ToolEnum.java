@@ -10,5 +10,5 @@ public enum ToolEnum {
     FINDBUGS("findbugs"),
     //sonar qube 工具
     SONAR("sonarqube");
-    private String type;
+    private final String type;
 }

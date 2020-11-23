@@ -2,7 +2,6 @@ package cn.edu.fudan.issueservice.core.process;
 
 import cn.edu.fudan.issueservice.domain.dbo.RawIssue;
 import cn.edu.fudan.issueservice.util.JGitHelper;
-import org.springframework.beans.factory.annotation.Value;
 
 import java.util.ArrayList;
 import java.util.List;

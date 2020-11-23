@@ -29,17 +29,17 @@ public class ScanThreadExecutorConfig {
 
 
     /**
-     * key 为 repo id 加上 tool accountName , value 为 扫描开关
+     * key 为 repo id 加上 tool name , value 为 扫描开关
       */
     private  static volatile Map<String, Boolean> threadSwitch = new HashMap<> ();
 
     /**
-     * key 为 repo id 加上 tool accountName， value 为该repo 需要扫描的commit 列表
+     * key 为 repo id 加上 tool name， value 为该repo 需要扫描的commit 列表
       */
     private  static volatile Map<String, ConcurrentLinkedDeque<String>> needToScanCommitLists = new HashMap<> ();
 
     /**
-     * key 为 repo id 加上 tool accountName， value 表示该repo 是否已经更新过
+     * key 为 repo id 加上 tool name， value 表示该repo 是否已经更新过
      */
     private  static volatile Map<String, Boolean> repoUpdatedStatus = new HashMap<> ();
 

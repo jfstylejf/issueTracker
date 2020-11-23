@@ -33,11 +33,10 @@ public class IssueInnerController {
     public ResponseBean<String> deleteIssues(@PathVariable("tool")String tool,@PathVariable("repo-uuid") String repoUuid) {
         try {
             issueService.deleteIssueByRepoIdAndTool(repoUuid,tool);
-            return new ResponseBean(200, "success", "issues delete success!");
+            return new ResponseBean<>(200, "success", "issues delete success!");
         } catch (Exception e) {
             e.printStackTrace();
-            return new ResponseBean(401, e.getMessage(), "issues delete failed!");
+            return new ResponseBean<>(401, "failed\n" + e.getMessage(), "issues delete failed!");
         }
     }
-
 }

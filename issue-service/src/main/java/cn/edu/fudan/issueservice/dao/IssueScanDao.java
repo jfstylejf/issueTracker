@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 @Repository
@@ -50,15 +51,11 @@ public class IssueScanDao {
         return result;
     }
 
-    public IssueScan getLatestScannedCommitId(String repoId,  String tool) {
-        List<IssueScan> issueScans = issueScanMapper.getIssueScanByRepoIdAndCommitIdAndTool(repoId, null, tool, null, null);
-        if(issueScans == null || issueScans.isEmpty ()){
-            return null;
-        }
-        return issueScans.get (issueScans.size ()-1);
-    }
-
     public IssueScan getLatestIssueScanByRepoIdAndTool(String repoId, String tool) {
         return issueScanMapper.getLatestIssueScanByRepoIdAndTool(repoId, tool);
+    }
+
+    public HashSet<String> getScannedCommitList(String repoUuid, String tool) {
+        return new HashSet<>(issueScanMapper.getScannedCommitList(repoUuid, tool));
     }
 }

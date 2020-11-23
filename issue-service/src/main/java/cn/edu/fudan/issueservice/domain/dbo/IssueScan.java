@@ -32,7 +32,7 @@ public class IssueScan {
     private String resultSummary;
 
     //todo 适配需要后续可删
-    //private String accountName;
+    //private String name;
 
     /**
      *  初始化一个IssueScan对象

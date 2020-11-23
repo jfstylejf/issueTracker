@@ -21,15 +21,16 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /** -【【lsw
  * @author lsw
  */
 @Service
 @Slf4j
+@SuppressWarnings("unchecked")
 public class IssueScanServiceImpl implements IssueScanService {
 
     private BlockingQueue<ScanCommitInfoDTO> scanCommitInfoDTOBlockingQueue;
@@ -154,7 +155,6 @@ public class IssueScanServiceImpl implements IssueScanService {
     public IssueRepo getScanStatus(String  repoId, String toolName) throws Exception {
         List<IssueRepo> issueRepos = issueRepoDao.getIssueRepoByCondition (repoId, null, toolName);
         //三种情况
-
         if(issueRepos == null || issueRepos.isEmpty ()){
             //第一种还未扫描
             return null;
@@ -169,77 +169,47 @@ public class IssueScanServiceImpl implements IssueScanService {
             }
             return updateIssueRepo;
         }
-
-
     }
 
-    /**
-     * fixme 重写
-     */
     @Override
-    public Map<String, Object> getCommits(String repoId, Integer page, Integer size, Boolean isWhole, String tool) {
-        int pageCount = 0;
-        int totalCount = 0;
-        Map<String, Object> result = new HashMap<> (4);
-        List<Commit> commitList = null;
-        IssueScan issueScan = issueScanDao.getLatestIssueScanByRepoIdAndTool(repoId, tool);
-        if (isWhole) {
-            commitList = commitDao.getCommits(repoId, null);
-            if (issueScan != null && issueScan.getCommitId() != null) {
-                String lastedScannedCommit = issueScan.getCommitId();
-                for (Commit commit : commitList) {
-                    if (commit.getCommitId().equals(lastedScannedCommit)){
-                        commitList.subList(0, commitList.indexOf(commit)).forEach(c -> c.setScanned(false));
-                        break;
-                    }
-                }
-//                List<Commit> commits = commitList;
-//                commitList.stream().filter(commit -> commit.getCommitId().equals(lastedScannedCommit)).forEach(commit -> commits.subList(0, commits.indexOf(commit)).forEach(c -> c.setScanned(true)));
+    public Map<String, Object> getCommitsCount(String repoUuid, String tool) {
+        AtomicInteger notScanCommitCount = new AtomicInteger();
 
-            }
-        } else if(issueScan != null && issueScan.getCommitTime() != null){
-            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            String dateString = formatter.format(issueScan.getCommitTime());
-            // todo 基于时间筛选可能出现问题 在dao层实现分页
-            commitList = commitDao.getCommits(repoId, dateString);
-            commitList.forEach(commit -> commit.setScanned(false));
-        } else {
-            log.error("this repo has not been scanned! repoId:{}", repoId);
-            commitList = new ArrayList<>(0);
-        }
-        totalCount = commitList.size();
-        pageCount = totalCount%size == 0 ? totalCount/size : totalCount/size + 1;
-        result.put("pageCount", pageCount);
-        result.put("totalCount", totalCount);
-        result.put("commitList", commitList.subList((page - 1) * size, page * size > totalCount ? totalCount : page * size));
-        return result;
+        List<HashMap<String, Integer>> notScanCommitsInfos = issueRepoDao.getNotScanCommitsCount(repoUuid, tool);
+
+        notScanCommitsInfos.forEach(notScanCommitsInfo -> notScanCommitCount.addAndGet(notScanCommitsInfo.get("total_commit_count") - notScanCommitsInfo.get("scanned_commit_count")));
+
+        return new HashMap<String, Object>(8){{put("total", notScanCommitCount);}};
     }
 
-
-    /**
-     * fixme 重写
-     */
     @Override
-    public Integer getStockCommit(RepoResourceDTO repoResourceDTO, String toolName, String branch) {
-        try{
-            String repoId = repoResourceDTO.getRepoId ();
-            IssueScan issueScan = issueScanDao.getLatestIssueScanByRepoIdAndTool (repoId, toolName);
-            if(issueScan == null || issueScan.getCommitTime() == null){
-                log.error("this repo has not been scanned! repoId:{}", repoId);
-            }
-            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            String dateString = formatter.format(issueScan.getCommitTime());
-            Integer count = commitDao.getCommitCount(repoId, dateString);
-            if (count == null) {
-                return 0;
-            }
-            return count;
-        }catch (Exception e){
-            log.error(e.getMessage());
-            return null;
-        }
-    }
+    public Map<String, Object> getCommits(String repoUuid, Integer page, Integer size, Boolean isWhole, String tool) {
 
+        HashSet<String> scannedCommitList = issueScanDao.getScannedCommitList(repoUuid, tool);
+
+        LinkedList<Commit> wholeCommits = commitDao.getCommits(repoUuid,null);
+
+        if(isWhole){
+            wholeCommits.forEach(commit -> commit.setScanned(scannedCommitList.contains(commit.getCommitId())));
+            return new HashMap<String, Object>(8){{
+                put("total", wholeCommits.size());
+                put("commitList", wholeCommits.subList((page - 1) * size, Math.min(page * size, wholeCommits.size())));
+                put("pageCount", wholeCommits.size() % size != 0 ? wholeCommits.size() / size + 1 : wholeCommits.size()/size);
+            }};
+        }
+
+        String commitTime = commitDao.getCommitByCommitId(repoUuid, issueRepoDao.getMainIssueRepo(repoUuid, tool).getStartCommit()).getCommit_time();
+
+        LinkedList<Commit> commits = commitDao.getCommits(repoUuid, commitTime.substring(0, 19));
+
+        commits.removeIf(commit -> scannedCommitList.contains(commit.getCommitId()));
+
+        return new HashMap<String, Object>(8){{
+            put("total", commits.size());
+            put("commitList", commits.subList((page - 1) * size, Math.min(page * size, commits.size())));
+            put("pageCount", commits.size() % size != 0 ? commits.size() / size + 1 : commits.size()/size);
+        }};
+    }
 
     private Thread getThreadByThreadName(String threadName){
         Thread result = null;

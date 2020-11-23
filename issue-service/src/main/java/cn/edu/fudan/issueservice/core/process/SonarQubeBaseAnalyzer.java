@@ -7,8 +7,8 @@ import cn.edu.fudan.issueservice.domain.dbo.RawIssue;
 import cn.edu.fudan.issueservice.domain.enums.RawIssueStatus;
 import cn.edu.fudan.issueservice.domain.enums.ToolEnum;
 import cn.edu.fudan.issueservice.util.ASTUtil;
-import cn.edu.fudan.issueservice.util.FileFilter;
 import cn.edu.fudan.issueservice.util.AstParserUtil;
+import cn.edu.fudan.issueservice.util.FileFilter;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
@@ -36,8 +36,8 @@ public class SonarQubeBaseAnalyzer extends BaseAnalyzer {
 
     @Override
     public boolean invoke(String repoId, String repoPath, String commit) {
-        // 先得到最新版本的数据
-        JSONObject before = restInvoker.getSonarIssueResults(repoId,null,1,false,0);
+        // 先得到上次扫描的数据
+        JSONObject before = restInvoker.getSonarAnalysisTime(repoId);
         setSonarIssue(before);
 
         try {
@@ -45,11 +45,11 @@ public class SonarQubeBaseAnalyzer extends BaseAnalyzer {
             String command = binHome + "executeSonar.sh " + repoPath + " " + repoId + " " + commit;
             log.info("command -> {}",command);
             Process process = rt.exec(command);
-            //最多等待sonar脚本执行1200秒，超时就返回false
-            boolean timeout = process.waitFor(300L,TimeUnit.SECONDS);
+            //最多等待sonar脚本执行100秒，超时就返回false
+            boolean timeout = process.waitFor(100L,TimeUnit.SECONDS);
             if (!timeout) {
                 process.destroy();
-                log.error("invoke tool timeout ! (300s)");
+                log.error("invoke tool timeout ! (100s)");
                 return false;
             }
             int exitValue = process.exitValue();
@@ -62,29 +62,21 @@ public class SonarQubeBaseAnalyzer extends BaseAnalyzer {
 
     @Override
     public boolean analyze(String repoPath, String repoId, String commitId) {
-        // 在85服务器上扫描完成   到能读取数据在10秒之内
         long analyzeStartTime = System.currentTimeMillis();
         boolean isChanged = false;
         try {
-            // 最多等待300秒
-            for (int i = 1; i < 150; i++) {
+            // 最多等待100秒
+            for (int i = 1; i <= 50; i++) {
                 TimeUnit.SECONDS.sleep(2);
-                JSONObject newRecord = restInvoker.getProjectAnalysesVersion(repoId,20,1);
-                JSONObject newResult = restInvoker.getSonarIssueResults(repoId,null,1,false,0);
-                JSONArray sonarAnalysesVersions = newRecord.getJSONArray("analyses");
-                JSONObject latestVersion = sonarAnalysesVersions.size() == 0 ? null : sonarAnalysesVersions.getJSONObject(0);
-                if (latestVersion == null ) {
-                    continue;
-                }
-                String version = latestVersion.getString("projectVersion");
-                if(commitId.equals(version) || !isNotChange(newResult)){
+                if (isChange(restInvoker.getSonarAnalysisTime(repoId))){
                     isChanged = true;
                     long analyzeEndTime2= System.currentTimeMillis();
                     log.info("It takes {}s to wait for the latest sonar result ", (analyzeEndTime2-analyzeStartTime)/1000 );
+                    //睡4秒再去拿sonar issue search api 的结果
+                    TimeUnit.SECONDS.sleep(4);
                     break;
                 }
             }
-            TimeUnit.SECONDS.sleep(4);
         }catch (InterruptedException e) {
             log.error(e.getMessage());
         }
@@ -133,14 +125,19 @@ public class SonarQubeBaseAnalyzer extends BaseAnalyzer {
         }
     }
 
-    private boolean isNotChange(JSONObject newRecord) {
+    private boolean isChange(JSONObject newRecord) {
         JSONObject old = sonarIssue.get();
-        if (old == null || newRecord == null) {
+        String errors = "errors", component = "component";
+        // 0. old 为 error    new 为 error 此时是没有change
+        if (old.containsKey(errors) && newRecord.containsKey(errors)){
+            return false;
+        }
+        // 1. old 为 error    new 有 component 此时是change
+        if (old.containsKey(errors) && newRecord.containsKey(component)){
             return true;
         }
-        return old.getIntValue("total") == newRecord.getIntValue("total")  &&
-                old.getIntValue("effortTotal") == newRecord.getIntValue("effortTotal") &&
-                old.getIntValue("debtTotal") == newRecord.getIntValue("debtTotal");
+        // 2. old 有 component  new 有 component 此时需要判断时间analysisDate
+        return !old.getJSONObject(component).getString("analysisDate").equals(newRecord.getJSONObject(component).getString("analysisDate"));
     }
 
     @Override
@@ -153,7 +150,7 @@ public class SonarQubeBaseAnalyzer extends BaseAnalyzer {
         int result = -1;
         String detail = rawIssue.getDetail ();
         String[] rawIssueArgs  = detail.split ("---");
-        String severity = rawIssueArgs[1];
+        String severity = rawIssueArgs[rawIssueArgs.length - 1];
         switch (severity){
             case "BLOCKER":
                 result = 0;
@@ -191,10 +188,10 @@ public class SonarQubeBaseAnalyzer extends BaseAnalyzer {
                 startLine = textRange.getIntValue("startLine");
                 endLine = textRange.getIntValue("endLine");
             }else{
-                log.error("textRange is null , sonar issue-->",issue.toJSONString());
+                log.error("textRange is null , sonar issue-->{}",issue.toJSONString());
             }
 
-            sonar_path = issue.getString("component");
+            sonar_path =issue.getString("component");
             if(sonar_path != null) {
                 sonarComponents = sonar_path.split(":");
                 if (sonarComponents.length >= 2) {
@@ -202,11 +199,11 @@ public class SonarQubeBaseAnalyzer extends BaseAnalyzer {
                 }
             }
 
-            Location mainLocation = getLocation(startLine, endLine, rawIssueUUID, filePath, repoPath);
+            Location mainLocation = getLocation(startLine,endLine,rawIssueUUID,filePath,repoPath);
             locations.add(mainLocation);
         }else{
             //第二种针对issue中的flows中的所有location存储
-            for(int i = 0;i < flows.size();i++){
+            for(int i=0;i<flows.size();i++){
                 JSONObject flow = flows.getJSONObject(i);
                 JSONArray flowLocations = flow.getJSONArray("locations");
                 //一个flows里面有多个locations， locations是一个数组，目前看sonar的结果每个locations都是一个location，但是不排除有多个。
@@ -233,7 +230,6 @@ public class SonarQubeBaseAnalyzer extends BaseAnalyzer {
         }
 
         allLocations.addAll (locations);
-
         return locations;
     }
 
@@ -242,7 +238,7 @@ public class SonarQubeBaseAnalyzer extends BaseAnalyzer {
         Location location = new Location ();
         String locationUUID = UUID.randomUUID().toString();
         //获取相应的code
-        String code = null;
+        String code= null;
         try{
             code = ASTUtil.getCode(startLine,endLine,repoPath+"/"+filePath);
         }catch (Exception e){
@@ -256,23 +252,24 @@ public class SonarQubeBaseAnalyzer extends BaseAnalyzer {
         location.setUuid(locationUUID);
         location.setStart_line(startLine);
         location.setEnd_line(endLine);
-        if(startLine > endLine){
+        if(startLine>endLine){
             log.error("startLine number greater than endLine number");
             return null;
-        }else if(startLine == endLine){
+        }else if(startLine==endLine){
             location.setBug_lines(startLine+"");
         }else{
             StringBuilder lines = new StringBuilder();
-            while(startLine <= endLine){
+            while(startLine<endLine){
                 lines.append(startLine+",");
                 startLine++;
             }
+            lines.append(endLine);
             location.setBug_lines(lines.toString());
         }
         location.setFile_path(filePath);
         location.setRawIssue_id(rawIssueId);
         // todo location 方法名解析
-        String  methodName = AstParserUtil.findMethod (repoPath+"/"+filePath, startLine, endLine);
+        String methodName = AstParserUtil.findMethod (repoPath+"/"+filePath, startLine, endLine);
         location.setMethod_name (methodName);
 
         return location;
@@ -285,7 +282,7 @@ public class SonarQubeBaseAnalyzer extends BaseAnalyzer {
         String issueName=null;
         JSONObject rule = restInvoker.getRuleInfo(issue.getString("rule"),null,null);
         if(rule != null){
-            issueName = rule.getJSONObject("rule").getString("accountName");
+            issueName = rule.getJSONObject("rule").getString("name");
         }
         //获取文件路径
         String[] sonarComponents;
@@ -331,7 +328,6 @@ public class SonarQubeBaseAnalyzer extends BaseAnalyzer {
     }
 
     public static void main(String[] args){
-
         SonarQubeBaseAnalyzer sonarQubeBaseAnalyzer = new SonarQubeBaseAnalyzer();
         String repoPath = "/home/fdse/user/issueTracker/bin/executeSonar.sh /home/fdse/user/issueTracker/repo/github/FudanSELab/IssueTracker-Master-zhonghui20191012_duplicate_fdse-13";
         String projectName = "test1";

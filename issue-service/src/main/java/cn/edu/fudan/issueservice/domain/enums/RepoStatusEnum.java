@@ -8,12 +8,12 @@ import lombok.Getter;
 public enum RepoStatusEnum {
 
     /**
-     *
+     * repo scan status
      */
     SCANNING ("scanning"),
     STOP("stop"),
     FAILED("failed"),
     COMPLETE("complete");
 
-    private String type;
+    private final String type;
 }

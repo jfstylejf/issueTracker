@@ -4,16 +4,16 @@ import cn.edu.fudan.issueservice.domain.dbo.IssueType;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-
+/**
+ * @author Beethoven
+ */
 @Repository
 public interface IssueTypeMapper {
 
-    IssueType getIssueTypeByTypeName(@Param("type") String type);
-
     /**
-     *  插入 issue type
-     * @param list
+     * 获取issueType
+     * @param type type
+     * @return issueType
      */
-    void insertIssueTypeList(List<IssueType> list);
+    IssueType getIssueTypeByTypeName(@Param("type") String type);
 }

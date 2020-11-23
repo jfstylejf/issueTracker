@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author WZY
@@ -25,10 +26,6 @@ public class LocationDao {
         locationMapper.insertLocationList(list);
     }
 
-    public void deleteLocationByRepoIdAndCategory(String repoId,String tool) {
-        locationMapper.deleteLocationByRepoIdAndTool(repoId,tool);
-    }
-
     public void deleteLocationByRawIssueIds(List<String> rawIssueIds) {
         if(rawIssueIds == null || rawIssueIds.isEmpty ()){
             return;
@@ -38,5 +35,9 @@ public class LocationDao {
 
     public List<Location> getLocations(String rawIssueId) {
         return locationMapper.getLocations(rawIssueId);
+    }
+
+    public List<Map<String, Object>> getLocationsByRawIssueUuid(String uuid) {
+        return locationMapper.getLocationsByRawIssueUuid(uuid);
     }
 }

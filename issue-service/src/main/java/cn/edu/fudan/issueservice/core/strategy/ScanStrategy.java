@@ -10,4 +10,6 @@ public interface ScanStrategy {
      List<String> getScanCommitList(String repoId, JGitHelper jGitHelper, String branch, String beginCommit);
 
      ConcurrentLinkedDeque<String> getScanCommitLinkedDeque(String repoId, JGitHelper jGitHelper, String branch, String beginCommit);
+
+     ConcurrentLinkedDeque<String> getScanCommitLinkedQueue(String repoId, JGitHelper jGitHelper, String branch, String beginCommit);
 }
