@@ -25,11 +25,11 @@ public class ProjectController {
     private final String TOKEN = "token";
 
     /**
-     * description: 添加项目
+     * description: 添加库
      * @param repositoryDTO url isPrivate username password accountName type branch
      * @param request header
      */
-    @PostMapping(value = {"/project"})
+    @PostMapping(value = {"/repository"})
     public ResponseBean addProject(HttpServletRequest request, @RequestBody RepositoryDTO repositoryDTO) {
         String token = request.getHeader(TOKEN);
         try {
@@ -193,6 +193,21 @@ public class ProjectController {
 //        }
 //    }
 
+    /**
+     * description: 添加项目
+     * @param projectName
+     * @param request header
+     */
+    @PostMapping(value = {"/project"})
+    public ResponseBean addNewProject(HttpServletRequest request, @RequestParam ("project_name") String projectName) {
+        String token = request.getHeader(TOKEN);
+        try {
+            projectControl.addOneProject(token, projectName);
+            return new ResponseBean<>(200, "add success", null);
+        } catch (Exception e) {
+            return new ResponseBean<>(401, "add failed :" + e.getMessage(), null);
+        }
+    }
 
 
 

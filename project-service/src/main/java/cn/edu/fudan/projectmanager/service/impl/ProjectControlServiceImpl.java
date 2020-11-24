@@ -2,6 +2,7 @@ package cn.edu.fudan.projectmanager.service.impl;
 
 import cn.edu.fudan.projectmanager.component.RestInterfaceManager;
 import cn.edu.fudan.projectmanager.dao.AccountRepositoryDao;
+import cn.edu.fudan.projectmanager.dao.ProjectDao;
 import cn.edu.fudan.projectmanager.dao.SubRepositoryDao;
 import cn.edu.fudan.projectmanager.domain.AccountRoleEnum;
 import cn.edu.fudan.projectmanager.domain.topic.NeedDownload;
@@ -50,6 +51,7 @@ public class ProjectControlServiceImpl implements ProjectControlService {
 
     private AccountRepositoryDao accountRepositoryDao;
     private SubRepositoryDao subRepositoryDao;
+    private ProjectDao projectDao;
 
     private KafkaTemplate kafkaTemplate;
 
@@ -197,6 +199,16 @@ public class ProjectControlServiceImpl implements ProjectControlService {
         // todo 用户权限为 DEVELOPER 时不允许查询项目列表
 
         return subRepositoryDao.getAllSubRepoByAccountUuid(userUuid);
+    }
+
+    @Override
+    public void addOneProject(String token, String projectName) throws Exception {
+        UserInfoDTO userInfoDTO = getUserInfoByToken(token);
+        String accountUuid = userInfoDTO.getUuid();
+        //project表中插入信息
+        Map newProject = new HashMap();
+        newProject.put(projectName,accountUuid);
+        int effectRow = projectDao.insertOneProject(newProject);
     }
 
 

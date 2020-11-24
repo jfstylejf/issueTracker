@@ -60,4 +60,12 @@ public interface ProjectControlService {
      * @throws Exception e
      */
     List<SubRepository> query(String token);
+
+    /**
+     * 添加一个项目
+     * @param token 用户token
+     * @param projectName 项目名
+     * @throws Exception e
+     */
+    void addOneProject(String token, String projectName) throws Exception;
 }
