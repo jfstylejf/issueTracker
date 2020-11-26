@@ -2,6 +2,7 @@ package cn.edu.fudan.projectmanager.dao;
 
 import cn.edu.fudan.projectmanager.domain.SubRepository;
 import cn.edu.fudan.projectmanager.mapper.SubRepositoryMapper;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -47,6 +48,10 @@ public class SubRepositoryDao {
 
     public List<Map<String, Object>> getAllProjectRepoRelation(){
         return subRepositoryMapper.getAllProjectRepoRelation();
+    }
+
+    public void updateProjectNameSR(String accountUuid,String oldProjectName, String newProjectName) {
+        subRepositoryMapper.updateProjectNameSR(accountUuid, oldProjectName, newProjectName);
     }
 
     @Autowired

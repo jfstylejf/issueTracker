@@ -38,12 +38,11 @@ public interface ProjectControlService {
     /**
      * 更新仓库信息
      * @param token 用户token
-     * @param oldName 旧名
-     * @param newName  新名
-     * @param type 修改的类型名字 : project repo
+     * @param oldProjectName 旧名
+     * @param newProjectName  新名
      * @throws Exception e
      */
-    void update(String token, String oldName, String newName, String type) throws Exception;
+    void update(String token, String oldProjectName, String newProjectName) throws Exception;
 
     /**
      * 删除项目

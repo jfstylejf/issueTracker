@@ -24,13 +24,23 @@
         )
         VALUES
         <foreach collection="list" item="accountRepositories" separator=",">
-            #{uuid},
-            #{name},
-            #{accountUuid},
-            #{subRepositoryUuid},
-            #{projectName}
+            (
+                #{accountRepositories.uuid},
+                #{accountRepositories.repoName},
+                #{accountRepositories.accountUuid},
+                #{accountRepositories.subRepositoryUuid},
+                #{accountRepositories.projectName}
+            )
         </foreach>
     </insert>
+
+    <update id="updateProjectNameAR" parameterType="String">
+        update account_repository
+        <set>
+            project_name = #{newProjectName},
+        </set>
+        where   project_name = #{oldProjectName}
+    </update>
 
 <!--    <select id="getRepoUserByName" parameterType="String" resultMap="accountRepository">-->
 <!--        select * from account_repository-->
