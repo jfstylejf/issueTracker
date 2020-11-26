@@ -115,6 +115,22 @@ public class RestInterfaceManager {
     public JSONObject getProjectsOfRepo(String repoId) {
         String path =  projectServicePath + "/inner/project?repo_uuid=" + repoId;
         log.debug("get request path is {}", path);
+
+        try {
+            // 最多等待180秒
+            for (int i = 1; i <= 180; i++) {
+                TimeUnit.SECONDS.sleep(1);
+                JSONObject res = restTemplate.getForObject(path , JSONObject.class);
+                if (res == null || res.isEmpty()){
+                    log.warn("repo : [{}] info is null, continue waiting", repoId);
+                    continue;
+                }
+                return res;
+            }
+        }catch (InterruptedException e) {
+            log.error(e.getMessage());
+        }
+
         return restTemplate.getForObject(path , JSONObject.class);
     }
 
