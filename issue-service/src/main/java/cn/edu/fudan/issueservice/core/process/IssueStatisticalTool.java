@@ -10,7 +10,6 @@ import cn.edu.fudan.issueservice.domain.enums.ScanStatusEnum;
 import cn.edu.fudan.issueservice.util.DateTimeUtil;
 import cn.edu.fudan.issueservice.util.JGitHelper;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.jgit.revwalk.RevCommit;
 
 import java.util.*;
 
@@ -79,9 +78,9 @@ public class IssueStatisticalTool {
 
             //2. 开始匹配更新issue状态，以及缺陷统计数据。
             startStatistics(ignoreParentRawIssuesResult, ignoreCurrentRawIssuesResult,
-                    true, analyzer, jGitInvoker);
+                    true, analyzer);
             startStatistics(normalParentRawIssuesResult, normalCurrentRawIssuesResult,
-                    false, analyzer, jGitInvoker);
+                    false, analyzer);
 
             //3. 整理统计结果
             sortOutStatisticalResult(jGitInvoker,repoId,analyzer.getToolName ());
@@ -147,10 +146,10 @@ public class IssueStatisticalTool {
                                           String toolName){
 
         String currentCommitter = jGitInvoker.getAuthorName (commitId);
-        String issueCommitter = null;
+        String issueCommitter;
         int newIssueCountResult = 0;
         int eliminateIssueCountResult = 0;
-        int remainIssueChangedCountResult = 0;
+        int remainIssueChangedCountResult;
 
         // todo 目前暂不考虑merge存在冲突的情况。  后面改成switch case
         if(isFirstScanCommit){
@@ -178,7 +177,6 @@ public class IssueStatisticalTool {
             }
         }
 
-
         remainIssueChangedCount = remainIssueChangedCountResult;
 
         List<String> statusList = new ArrayList<> ();
@@ -190,12 +188,8 @@ public class IssueStatisticalTool {
         List<Issue> issue = issueDao.getIssueByRepoIdAndToolAndStatusListAndTypeList(repoId,toolName,statusList);
         int remainIssueCount = issue.size () + remainIssueChangedCount;
 
-
-        ScanResult scanResult = new ScanResult (toolName, repoId, addDate, commitId, currentCommitDate,
+        scanResultGlobal = new ScanResult (toolName, repoId, addDate, commitId, currentCommitDate,
                 issueCommitter,newIssueCountResult,eliminateIssueCountResult,remainIssueCount);
-
-        scanResultGlobal = scanResult;
-
     }
 
     private void init(JGitHelper jGitInvoker){
@@ -213,7 +207,7 @@ public class IssueStatisticalTool {
     private void startStatistics(Map<String, List<RawIssue>> parentRawIssuesResult,
                                  List<RawIssue> currentRawIssuesResult,
                                  boolean isIgnore,
-                                 BaseAnalyzer analyzer, JGitHelper jGitInvoker){
+                                 BaseAnalyzer analyzer){
 
         /*
             分为三种匹配统计结果：
@@ -270,23 +264,6 @@ public class IssueStatisticalTool {
         allEliminatedIssues.addAll (eliminatedIssues);
         allMatchedIssues.addAll (matchedIssues);
 
-    }
-
-    private void resetProducer(RawIssue rawIssue, Issue issue, JGitHelper jGitInvoker) {
-        int time = 0;
-        String producer = jGitInvoker.getAuthorName(commitId);
-        try {
-            for (Location location : rawIssue.getLocations()) {
-                RevCommit commit = jGitInvoker.getBlameCommit(commitId, location.getFile_path(), location.getStart_line(), location.getEnd_line());
-                if (time < commit.getCommitTime()) {
-                    time = commit.getCommitTime();
-                    producer = commit.getAuthorIdent().getName();
-                }
-            }
-            issue.setProducer(producer);
-        } catch (Exception e) {
-            log.error(e.getMessage());
-        }
     }
 
     private Issue matchedIssue(RawIssue parentRawIssue, boolean isIgnore, Date currentCommitDate, Date addDate){
@@ -372,7 +349,7 @@ public class IssueStatisticalTool {
          */
         if(parentRawIssuesResult == null){
             isFirstScanCommit = true;
-            normalParentRawIssuesResult = new HashMap<> ();
+            normalParentRawIssuesResult = new HashMap<> (64);
         }else {
             normalParentRawIssuesResult = parentRawIssuesResult;
         }
@@ -425,9 +402,9 @@ public class IssueStatisticalTool {
 
     /**
      *  获取commit 时间 ，可能还存在bug
-     * @param commitId
-     * @param jGitInvoker
-     * @return
+     * @param commitId commitId
+     * @param jGitInvoker jGit
+     * @return commit time
      */
     private Date getCommitDate(String commitId, JGitHelper jGitInvoker){
         return DateTimeUtil.localToUTC(jGitInvoker.getCommitTime(commitId));

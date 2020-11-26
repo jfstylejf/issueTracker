@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * @author Beethoven
+ */
 @Slf4j
 @RestController
 @Api(value = "rawIssue", tags = {"用于统计rawIssue的相关接口"})
@@ -22,7 +25,7 @@ public class RawIssueController {
 
     private final String success = "success";
 
-    private final String failed = "failed\n";
+    private final String failed = "failed ";
 
     @ApiOperation(value = "获取rawIssue列表接口", notes = "@return Object", httpMethod = "GET")
     @GetMapping(value = {"/raw-issue-list"})

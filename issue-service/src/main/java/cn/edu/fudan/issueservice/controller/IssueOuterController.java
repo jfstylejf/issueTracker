@@ -33,7 +33,7 @@ public class IssueOuterController {
 
     private final String success = "success";
 
-    private final String failed = "failed\n";
+    private final String failed = "failed ";
 
     private final String TOKEN = "token";
 
@@ -188,7 +188,7 @@ public class IssueOuterController {
             return new ResponseBean<>(200, success, issueFilterList);
         }
 
-        //step2 select issueList (always(since,until,status,types,filespath,repolist,priority,toolname,start,ps,category) and
+        //step2 select issueList (always(since,until,status,types,filesPath,repoList,priority,toolName,start,ps,category) and
         //                        options(commit ? do select commit : pass)(solver ? select introducer and solver : select introducer))
         issueFilterList = issueService.getIssueFilterList(query, issueFilterList);
 

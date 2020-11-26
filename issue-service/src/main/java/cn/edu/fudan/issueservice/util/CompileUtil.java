@@ -3,8 +3,6 @@ package cn.edu.fudan.issueservice.util;
 import cn.edu.fudan.issueservice.domain.enums.CompileTool;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.maven.shared.invoker.*;
-import org.gradle.tooling.BuildLauncher;
-import org.gradle.tooling.GradleConnector;
 import org.gradle.tooling.ProjectConnection;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -112,15 +110,9 @@ public class CompileUtil {
         return pathList;
     }
 
-//    public static void main(String[] args) {
-//        String path = "E:\\Lab\\github\\gradle";
-//        System.out.println(PomAnalysisUtil.getMainPom(getCompilePath(path)));
-//    }
-
     private static boolean isContainsCompileFile(String path) {
         for (CompileTool s : CompileTool.values()) {
             if (path.endsWith(s.compileFile())) {
-                System.out.println(s.compileFile());
                 return true;
             }
         }
@@ -146,28 +138,6 @@ public class CompileUtil {
             e.printStackTrace();
         }
         return false;
-
-//        ProjectConnection connection = projectConnectionMap.keySet().contains(projectDirectory) ?
-//                projectConnectionMap.get(projectDirectory) :
-//                GradleConnector.newConnector()
-//                        .forProjectDirectory(new File(projectDirectory))
-//                        .connect();
-//
-//        projectConnectionMap.putIfAbsent(projectDirectory, connection);
-//
-//        try {
-//            BuildLauncher build = connection.newBuild();
-//            build.forTasks("build");
-//            build.withArguments("-x", "test");
-//            build.run();
-//            return true;
-//        } catch (Exception o) {
-//            log.error(o.getMessage());
-//        } finally {
-//            /// 暂时去掉提升性能
-//            connection.close();
-//        }
-//        return false;
     }
 
 }

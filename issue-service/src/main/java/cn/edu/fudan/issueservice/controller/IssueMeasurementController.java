@@ -32,7 +32,7 @@ public class IssueMeasurementController {
 
     private final String success = "success";
 
-    private final String failed = "failed\n";
+    private final String failed = "failed ";
 
     @ApiOperation(value = "获取issueTypeCounts", notes = "@return List<Map.Entry<String, JSONObject>>\n[\n" +
             "        {\n" +
