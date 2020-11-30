@@ -64,7 +64,7 @@ public class ToolInvoker {
         applicationContextGetBeanHelper.setApplicationContext (applicationContext);
         //1.获取相应的扫描工具
 
-        BaseAnalyzer analyzer = null;
+        BaseAnalyzer analyzer;
 
         // todo 处理多线程的多例情况 目前因为存在扫描问题，故先直接new一个对象 ,后面解决了prototype问题后，重新优化结构
         if(ToolEnum.SONAR.getType ().equals (toolName)){
@@ -178,11 +178,6 @@ public class ToolInvoker {
                     log.info ("start scan  commit id --> {}", commit);
 
                     //4.1 初始化 一个IssueScan用于记录scan过程
-//            JSONObject jsonObject = restInvoker.getCommitTime(commit,repoId);
-//            if(jsonObject == null){
-//                throw new RuntimeException("request base server failed");
-//            }
-//            Date commitTime = jsonObject.getJSONObject("data").getDate("commit_time");
                     Date commitTime = jGitInvoker.getCommitDateTime(commit);
                     IssueScan issueScan = IssueScan.initIssueScan (repoId, commit, toolName, commitTime);
 
@@ -369,14 +364,12 @@ public class ToolInvoker {
             IssueRepo mainIssueRepo = null;
             boolean mappedUpdate = false;
             for(IssueRepo issueRepo :issueRepos){
-
                 if(RepoNatureEnum.UPDATE.getType ().equals (issueRepo.getNature())){
                     mappedUpdate = true;
                     preUpdateIssueRepo = issueRepo;
                 }else{
                     mainIssueRepo = issueRepo;
                 }
-
             }
 
             if(mappedUpdate){

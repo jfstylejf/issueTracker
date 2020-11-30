@@ -126,24 +126,23 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
         }
 
         //下面开始处理返回的格式
-        if (issueLifeList.size()==0){
-            Map<String, Integer> percentMap = new HashMap<>();
-            percentMap.put("max",0);
-            percentMap.put("min",0);
-            percentMap.put("avg",0);
-            percentMap.put("mid",0);
-            percentMap.put("upperQuartile",0);
-            percentMap.put("lowerQuartile",0);
-            percentMap.put("multiple",0);
-            percentMap.put("quantity", 0);
-            return percentMap;
+        if (issueLifeList.size() == 0){
+            return new HashMap<String, Integer>(16){{
+                put("max",0);
+                put("min",0);
+                put("avg",0);
+                put("mid",0);
+                put("upperQuartile",0);
+                put("lowerQuartile",0);
+                put("multiple",0);
+                put("quantity", 0);
+            }};
         }
 
         List<Integer> lifeCycle = new ArrayList<>();
-        for (Map<String, Object> stringObjectMap : issueLifeList) {
-            lifeCycle.add(Integer.parseInt(stringObjectMap.get("lifeCycle").toString()));
-        }
-        Map<String, Double> percentMap = new HashMap<>();
+        issueLifeList.forEach(issueLife -> lifeCycle.add(Integer.parseInt(issueLife.get("lifeCycle").toString())));
+
+        Map<String, Double> percentMap = new HashMap<>(16);
         if(percent == -1){
             return issueLifeList;
         } else if (percent == -2){

@@ -1,7 +1,6 @@
 package cn.edu.fudan.issueservice.core.process;
 
 import cn.edu.fudan.issueservice.domain.dbo.RawIssue;
-import cn.edu.fudan.issueservice.util.JGitHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,9 +12,6 @@ import java.util.List;
  * create: 2020-05-20 15:53
  **/
 public abstract class BaseAnalyzer {
-
-    IssueMatcher issueMatcher;
-    private JGitHelper jGitHelper;
 
     protected String binHome;
 
@@ -30,26 +26,34 @@ public abstract class BaseAnalyzer {
     }
 
     /**
-     *  调用工具的流程
+     * 调用工具扫描
+     * @param repoId repoUuid
+     * @param repoPath repoPath
+     * @param commit commit
+     * @return 调用工具是否成功
      */
     public abstract boolean invoke(String repoId, String repoPath, String commit);
 
 
     /**
-     *  调用工具的流程
+     * 调用工具进行解析,如sonarqube结果解析成rawIssue
+     * @param repoPath repoPath
+     * @param repoId repoUuid
+     * @param commitId commitId
+     * @return 解析是否成功
      */
     public abstract boolean analyze(String repoPath, String repoId, String commitId);
 
     /**
      *  返回工具名
-     * @return
+     * @return 工具名
      */
     public abstract String getToolName();
 
     /**
      * 返回该缺陷的优先级
-     * @param rawIssue
-     * @return
+     * @param rawIssue rawIssue
+     * @return 缺陷优先级
      */
     public abstract Integer getPriorityByRawIssue(RawIssue rawIssue);
 
@@ -60,6 +64,4 @@ public abstract class BaseAnalyzer {
     public void emptyAnalyzeRawIssues() {
         resultRawIssues.clear ();
     }
-
-
 }

@@ -9,10 +9,7 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -27,6 +24,10 @@ import java.util.List;
 public class IssueIgnoreController {
 
     private IssueIgnoreService issueIgnoreService;
+
+    private final String success = "success";
+
+    private final String failed = "failed ";
 
     @ApiOperation(value = "插入IssueIgnore记录", notes = "@return String", httpMethod = "PUT")
     @ApiImplicitParams({
@@ -45,10 +46,23 @@ public class IssueIgnoreController {
                 ignoreRecord.setUuid(UUID.randomUUID().toString());
                 ignoreRecord.setIgnoreTime(df.format(new Date()));
             }
-            return new ResponseBean<>(200, "success", issueIgnoreService.insertIssueIgnoreRecords(ignoreRecords));
+            return new ResponseBean<>(200, success, issueIgnoreService.insertIssueIgnoreRecords(ignoreRecords));
         }catch (Exception e){
             e.printStackTrace();
-            return new ResponseBean<>(401,"failed\n" + e.getMessage(), null);
+            return new ResponseBean<>(401,failed + e.getMessage(), null);
+        }
+    }
+
+    @DeleteMapping("issue/ignore/{tool}")
+    public ResponseBean<String> deleteIssueIgnoreRecord(@PathVariable("tool")String tool,
+                                                        @RequestParam("issue_uuid")String issueUuid,
+                                                        @RequestParam("ignore_uuid")String ignoreUuid){
+        try{
+            issueIgnoreService.deleteIssueIgnoreRecord(tool, issueUuid, ignoreUuid);
+            return new ResponseBean<>(200, success, "delete issue ignore record success");
+        }catch (Exception e){
+            e.printStackTrace();
+            return new ResponseBean<>(401, failed + e.getMessage(), null);
         }
     }
 
