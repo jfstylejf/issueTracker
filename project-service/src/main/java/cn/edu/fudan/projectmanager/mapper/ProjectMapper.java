@@ -6,6 +6,7 @@ import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Update;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -27,4 +28,9 @@ public interface ProjectMapper {
      * @param  accountUuid,oldProjectName,newProjectName
      */
     void updateProjectNameP(@Param("accountUuid") String accountUuid, @Param("oldProjectName")String oldProjectName, @Param("newProjectName")String newProjectName);
+
+    /**
+     * 获取所有项目
+     */
+    List<Map<String, Object>> getProjectP();
 }

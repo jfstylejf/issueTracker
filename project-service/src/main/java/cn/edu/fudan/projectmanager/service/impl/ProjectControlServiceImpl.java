@@ -202,6 +202,12 @@ public class ProjectControlServiceImpl implements ProjectControlService {
         projectDao.insertOneProject(accountUuid,projectName);
     }
 
+    @Override
+    public List<Map<String, Object>> getProjectAll(String token){
+        List<Map<String, Object>> result = projectDao.getProjectAll();
+        return result;
+    }
+
 
     private void send(String projectId, String url,boolean isPrivate,String username,String password, String branch,String repoSource) {
         NeedDownload needDownload = new NeedDownload(projectId, repoSource, url, isPrivate, username, password , branch);

@@ -28,6 +28,10 @@ public class ProjectDao {
         projectMapper.updateProjectNameP(accountUuid, oldProjectName, newProjectName);
     }
 
+    public List<Map<String, Object>> getProjectAll(){
+        return projectMapper.getProjectP();
+    }
+
     @Autowired
     public void setProjectMapper(ProjectMapper projectMapper) {
         this.projectMapper = projectMapper;
