@@ -44,7 +44,8 @@ public class JGitHelper {
     private RevWalk revWalk;
     private Git git;
 
-    private final String format = "yyyy-MM-dd HH:mm:ss";
+    private final String timeFormat = "yyyy-MM-dd HH:mm:ss";
+    private final String dateFormat = "yyyy-MM-dd";
     /**
      *
      * repoPath 加上了 .git 目录
@@ -109,7 +110,7 @@ public class JGitHelper {
             Calendar calendar = Calendar.getInstance();
             calendar.setTime (date);
             calendar.add (Calendar.HOUR_OF_DAY, -8);
-            time = new java.text.SimpleDateFormat(format).format(calendar.getTime ());
+            time = new java.text.SimpleDateFormat(timeFormat).format(calendar.getTime ());
         }catch (Exception e) {
             e.printStackTrace();
         }
@@ -118,7 +119,7 @@ public class JGitHelper {
 
     @SneakyThrows
     public Date getCommitDateTime(String commit) {
-        return new SimpleDateFormat(format).parse(getCommitTime(commit));
+        return new SimpleDateFormat(timeFormat).parse(getCommitTime(commit));
     }
 
     private Long getLongCommitTime(String version) {
@@ -276,9 +277,9 @@ public class JGitHelper {
      */
     private long getTime(String s) {
         s = s.replace(".","-");
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        DateFormat df = new SimpleDateFormat(dateFormat);
         try {
-            Date date = dateFormat.parse(s);
+            Date date = df.parse(s);
             return  date.getTime();
         }catch (ParseException e) {
             log.error(e.getMessage());
@@ -379,7 +380,7 @@ public class JGitHelper {
     public List<RevCommit> getAggregationCommit(String startTime){
         List<RevCommit> aggregationCommits = new ArrayList<>();
         try {
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat(timeFormat);
             long ts = simpleDateFormat.parse(startTime).getTime();
             //除以1000是将毫秒转成秒
             int startTimeStamp = Integer.parseInt(String.valueOf(ts / 1000));
