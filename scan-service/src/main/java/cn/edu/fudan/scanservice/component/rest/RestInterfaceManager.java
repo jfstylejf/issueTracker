@@ -119,7 +119,7 @@ public class RestInterfaceManager {
         try {
             // 最多等待180秒
             for (int i = 1; i <= 180; i++) {
-                TimeUnit.SECONDS.sleep(1);
+                TimeUnit.SECONDS.sleep(5);
                 JSONObject res = restTemplate.getForObject(path , JSONObject.class);
                 if (res == null || res.isEmpty()){
                     log.warn("repo : [{}] info is null, continue waiting", repoId);
