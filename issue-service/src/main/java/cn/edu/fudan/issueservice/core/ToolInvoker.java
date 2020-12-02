@@ -124,9 +124,6 @@ public class ToolInvoker {
             String repoId = repoResourceDTO.getRepoId();
             String toolName = analyzer.getToolName();
 
-
-
-
             //1.配置jGit资源
             JGitHelper jGitInvoker = new JGitHelper (repoPath);
             //判断beginCommit 是否为空，如果为空则获取
@@ -146,7 +143,6 @@ public class ToolInvoker {
                 beginCommit = commitIds.get (1);
             }
 
-
             IssueMatcher issueMatcher = new IssueMatcher (issueDao, rawIssueDao, issueScanDao, matchStrategy);
             IssueStatisticalTool issueStatisticalTool = new IssueStatisticalTool (issueDao, issueScanDao, issueTypeDao);
             IssueScanTransactionManager issueScanTransactionManager = (IssueScanTransactionManager)applicationContext.getBean("DataPersistManager");
@@ -161,10 +157,8 @@ public class ToolInvoker {
             //并且存入全局扫描 commit列表进行管理
             ScanThreadExecutorConfig.setNeedToScanCommitLists (repoId, scanCommits, toolName);
 
-
             //3.初始化issue repo信息 并持久化到数据库中
             IssueRepo issueRepo = getIssueRepoByDifferentScenarios(repoId, branch, toolName, beginCommit, scanCommits.size ());
-
 
             log.info ("start scan !  repo id --> {}", repoId);
             //4.遍历扫描
@@ -282,9 +276,6 @@ public class ToolInvoker {
         log.info("invoke tool --> {}", (invokeToolTime-compileTime)/1000 );
         log.info ("invoke tool success ! " );
 
-
-
-
         //3. 调用工具进行解析
         boolean analyzeResult = analyzer.analyze(repoPath, repoId, commit);
         if(!analyzeResult){
@@ -295,7 +286,6 @@ public class ToolInvoker {
         long analyzeToolTime = System.currentTimeMillis();
         log.info("analyze tool --> {}", (analyzeToolTime-invokeToolTime)/1000 );
         log.info ("analyze success ! " );
-
 
         List<RawIssue> analyzeRawIssues = analyzer.getResultRawIssues ();
         //4. 缺陷匹配

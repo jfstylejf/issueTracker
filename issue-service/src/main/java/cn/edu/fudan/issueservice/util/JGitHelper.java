@@ -1,8 +1,3 @@
-/**
- * @description:
- * @author: fancying
- * @create: 2019-06-05 17:16
- **/
 package cn.edu.fudan.issueservice.util;
 
 import lombok.SneakyThrows;
@@ -24,21 +19,21 @@ import org.eclipse.jgit.treewalk.CanonicalTreeParser;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.util.io.DisabledOutputStream;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Stream;
 
 import static cn.edu.fudan.issueservice.util.DateTimeUtil.timeTotimeStamp;
 
+/**
+ * @description:
+ * @author: fancying
+ * @create: 2019-06-05 17:16
+ **/
 @SuppressWarnings("Duplicates")
 @Slf4j
 public class JGitHelper {
@@ -139,7 +134,7 @@ public class JGitHelper {
     }
 
 
-    public String getMess(String commit) {
+    public String getMessage(String commit) {
         String message = null;
         try {
             RevCommit revCommit = revWalk.parseCommit(ObjectId.fromString(commit));
@@ -226,7 +221,7 @@ public class JGitHelper {
                 }
             }
         } catch (GitAPIException e) {
-            e.getMessage();
+            log.error(e.getMessage());
         }
         return new ArrayList<>(sortByValue(commitMap).keySet());
     }
@@ -254,7 +249,7 @@ public class JGitHelper {
                 }
             }
         } catch (GitAPIException e) {
-            e.getMessage();
+            log.error(e.getMessage());
         }
         return new ArrayList<>(sortByValue(commitMap).keySet());
     }
@@ -268,7 +263,7 @@ public class JGitHelper {
     public static <K, V extends Comparable<? super V>> Map<K, V> sortByValue(Map<K, V> map) {
         Map<K, V> result = new LinkedHashMap<>();
         Stream<Map.Entry<K, V>> st = map.entrySet().stream();
-        st.sorted(Comparator.comparing(Map.Entry::getValue)).forEach(e -> result.put(e.getKey(), e.getValue()));
+        st.sorted(Map.Entry.comparingByValue()).forEach(e -> result.put(e.getKey(), e.getValue()));
         return result;
     }
 
@@ -282,7 +277,7 @@ public class JGitHelper {
             Date date = dateFormat.parse(s);
             return  date.getTime();
         }catch (ParseException e) {
-            e.getMessage();
+            log.error(e.getMessage());
         }
         return 0;
     }
@@ -381,7 +376,7 @@ public class JGitHelper {
     public List<RevCommit> getAggregationCommit(String startTime){
         List<RevCommit> aggregationCommits = new ArrayList<>();
         try {
-            int startTimeStamp = Integer.valueOf(timeTotimeStamp(startTime));
+            int startTimeStamp = Integer.parseInt(timeTotimeStamp(startTime));
             int branch = 0;
             Iterable<RevCommit> commits = git.log().call();
             List<RevCommit> commitList = new ArrayList<>();
@@ -401,9 +396,7 @@ public class JGitHelper {
                 if (startTimeStamp<=revCommit.getCommitTime()&&branch==1) {aggregationCommits.add(revCommit);}
                 branch += Optional.ofNullable(sonCommitsMap.get(revCommit.getName())).orElse(0)-1;
             }
-        } catch (GitAPIException e) {
-            e.printStackTrace();
-        } catch (ParseException e) {
+        } catch (GitAPIException | ParseException e) {
             e.printStackTrace();
         }
 
@@ -541,7 +534,7 @@ public class JGitHelper {
      * @param startCommitId 开始的commit id  如果startCommitId有改动该文件，不计入改动次数
      * @param endCommitId 终止的commit id  如果endCommitId有改动该文件，计入改动次数
      * @param filePath 此处的filePath 表示该文件在项目中的相对路径，且文件路径一定要使用 / 进行分隔
-     * @return
+     * @return 指定文件在指定的两个commit之间的改动次数
      */
     @SneakyThrows
     public int getFileChangedCount(String startCommitId, String endCommitId, String filePath){
@@ -549,11 +542,10 @@ public class JGitHelper {
         ObjectId startCommit = repository.resolve(startCommitId);
         ObjectId endCommit = repository.resolve(endCommitId);
         Iterable<RevCommit> revCommits = git.log ().addPath(filePath).addRange (startCommit, endCommit).call ();
-        Iterator<RevCommit> iterator = revCommits.iterator ();
-        while (iterator.hasNext ()) {
-            iterator.next ();
+        for (RevCommit ignored : revCommits) {
             result++;
         }
+
         return result;
     }
 

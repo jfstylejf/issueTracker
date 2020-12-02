@@ -26,4 +26,8 @@
 
     </update>
 
+    <select id="getProjectP"  resultType="Map">
+        SELECT id,project_name
+        FROM project
+    </select>
 </mapper>

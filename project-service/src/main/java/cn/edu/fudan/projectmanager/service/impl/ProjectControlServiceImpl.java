@@ -88,7 +88,8 @@ public class ProjectControlServiceImpl implements ProjectControlService {
             throw new RunTimeException("this projectName is private,please provide your git username and password!");
         }
 
-        String repoName = repositoryDTO.getRepoName();
+        /// String repoName = repositoryDTO.getRepoName();
+        String repoName = url.substring(url.lastIndexOf("/")).replace("/", "");
 
         // 一个 Repo目前只扫描一个分支
         if(accountRepositoryDao.hasRepo(accountUuid, url)) {
@@ -109,16 +110,15 @@ public class ProjectControlServiceImpl implements ProjectControlService {
         //subRepository表中插入信息
         int effectRow = subRepositoryDao.insertOneRepo(subRepo);
 
-        if (effectRow != 0) {
-            //只有subRepository表中不存在才会下载，向RepoManager这个Topic发送消息，请求开始下载
-            send(uuid, url, isPrivate, username, password, branch, repoSource);
-        }
-
-
         AccountRepository accountRepository = AccountRepository.builder().uuid(UUID.randomUUID().toString()).
                 repoName(repoName).accountUuid(accountUuid).
                 subRepositoryUuid(uuid).projectName(projectName).build();
         accountRepositoryDao.insertAccountRepository(accountRepository);
+        if (effectRow != 0) {
+            //只有subRepository表中不存在才会下载，向RepoManager这个Topic发送消息，请求开始下载
+            send(uuid, url, isPrivate, username, password, branch, repoSource);
+        }
+        log.info("success add repo {}", url);
     }
 
     @Override
@@ -200,6 +200,12 @@ public class ProjectControlServiceImpl implements ProjectControlService {
         String accountUuid = userInfoDTO.getUuid();
         //project表中插入信息
         projectDao.insertOneProject(accountUuid,projectName);
+    }
+
+    @Override
+    public List<Map<String, Object>> getProjectAll(String token){
+        List<Map<String, Object>> result = projectDao.getProjectAll();
+        return result;
     }
 
 

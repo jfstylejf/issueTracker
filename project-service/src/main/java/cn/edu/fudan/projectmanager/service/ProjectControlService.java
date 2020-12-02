@@ -67,4 +67,10 @@ public interface ProjectControlService {
      * @throws Exception e
      */
     void addOneProject(String token, String projectName) throws Exception;
+
+    /**
+     * 获取全部项目
+     * @throws Exception e
+     */
+    List<Map<String, Object>> getProjectAll(String token);
 }

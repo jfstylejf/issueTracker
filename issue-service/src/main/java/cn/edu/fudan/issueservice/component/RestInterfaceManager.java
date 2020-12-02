@@ -4,10 +4,6 @@ import cn.edu.fudan.issueservice.exception.AuthException;
 import cn.edu.fudan.issueservice.util.RegexUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.fasterxml.jackson.annotation.JsonAlias;
-import io.netty.util.internal.StringUtil;
-import org.apache.kafka.common.protocol.types.Field;
-import org.aspectj.weaver.patterns.PerObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,8 +12,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
@@ -33,8 +27,7 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class RestInterfaceManager {
 
-    private static Logger logger = LoggerFactory.getLogger(RestInterfaceManager.class);
-
+    private static final Logger logger = LoggerFactory.getLogger(RestInterfaceManager.class);
 
     @Value("${account.service.path}")
     private String accountServicePath;
@@ -66,11 +59,6 @@ public class RestInterfaceManager {
     }
 
     //------------------------------------------------account service-----------------------------------------------------------
-    public String getAccountId(String userToken){
-        Map<String,String> urlParameters=new HashMap<>();
-        urlParameters.put("userToken",userToken);
-        return restTemplate.getForObject(accountServicePath+"/user/accountId?userToken={userToken}",String.class,urlParameters);
-    }
 
     public void userAuth(String userToken)throws AuthException{
         JSONObject result = restTemplate.getForObject(accountServicePath + "/user/auth/" + userToken, JSONObject.class);
@@ -86,48 +74,7 @@ public class RestInterfaceManager {
 
     //------------------------------------------------end----------------------------------------------------------------------
 
-
-    //----------------------------------------------tag service---------------------------------------------------------------
-    public void deleteTagsOfIssueInOneRepo(List<String> issueIds){
-        if (issueIds != null && !issueIds.isEmpty()) {
-            JSONObject response = restTemplate.postForObject(tagServicePath +  "/inner/tags" + "/tagged-delete", issueIds, JSONObject.class);
-            if (response == null || response.getIntValue("code") != 200) {
-                throw new RuntimeException("tag item delete failed!");
-            }
-        }
-    }
-
-    public JSONArray getTagsOfIssue(String issueId){
-        return  restTemplate.getForObject(tagServicePath +  "/inner/tags" + "?item_id=" + issueId, JSONArray.class);
-    }
-
-    public JSONArray getSpecificTaggedIssueIds(String ...tagIds){
-        return restTemplate.postForObject(tagServicePath +  "/inner/tags" + "/item-ids", tagIds, JSONArray.class);
-    }
-    public JSONArray getSpecificTaggedIssueIds(JSONArray tagIds){
-        return restTemplate.postForObject(tagServicePath +  "/inner/tags" + "/item-ids", tagIds, JSONArray.class);
-    }
-    public JSONArray getSpecificTaggedIssueIds(List<String> tagIds){
-        return restTemplate.postForObject(tagServicePath +  "/inner/tags" + "/item-ids", tagIds, JSONArray.class);
-    }
-
-    public JSONArray getSolvedIssueIds(List<String> tag_ids){
-        return restTemplate.postForObject(tagServicePath +  "/inner/tags" + "/item-ids", tag_ids, JSONArray.class);
-    }
-
-
-    //----------------------------------------------------end--------------------------------------------------------
-
     //-----------------------------------------------project service-------------------------------------------------
-
-    public JSONArray getRepoIdsOfAccount(String account_id,String type) {
-        return restTemplate.getForObject(projectServicePath + "/inner/project/repo-ids?account_id=" + account_id+"&type="+type, JSONArray.class);
-    }
-
-    public String getRepoIdOfProject(String projectId) {
-        return restTemplate.getForObject(projectServicePath + "/inner/project/repo-uuid?project_uuid=" + projectId, String.class);
-    }
-
     /**
      * 根据account_id查找参与的项目信息
      * @param account_id 用户登录帐号Id
@@ -209,84 +156,6 @@ public class RestInterfaceManager {
     //-------------------------------------------------end-------------------------------------------------------------
 
     //---------------------------------------------commit service------------------------------------------------------
-
-    @Deprecated
-    public JSONObject getOneCommitByCommitId(String commitId){
-
-        JSONObject result = null;
-        int tryCount = 0;
-        while (tryCount < 5) {
-
-            try{
-                result = restTemplate.getForObject(commitServicePath+"/"+commitId,JSONObject.class);
-                break;
-            }catch (Exception e){
-                e.printStackTrace();
-                try{
-                    TimeUnit.SECONDS.sleep(20);
-                }catch(Exception sleepException){
-                    e.printStackTrace();
-                }
-
-                tryCount++;
-            }
-        }
-        return result;
-
-
-    }
-
-    public JSONObject checkOut(String repo_id,String commit_id){
-        return restTemplate.getForObject(commitServicePath + "/checkout?repo_id=" + repo_id + "&commit_id=" + commit_id, JSONObject.class);
-    }
-
-    public JSONObject getCommitTime(String commitId,String repoId){
-        return restTemplate.getForObject(commitServicePath+"/commit-time?commit_id="+commitId+"&repo_id="+repoId,JSONObject.class);
-    }
-
-
-    public JSONObject getCommitsOfRepoByConditions(String repoId, Integer page, Integer pageSize,Boolean isWhole) {
-
-        String url = commitServicePath + "?repo_id=" + repoId;
-        if(page != null ){
-            if(pageSize != null){
-                if(pageSize<=0 || page<=0){
-                    logger.error("page size or page is not correct . page size --> {},page --> {}",pageSize,page);
-                    return null;
-                }
-                url += "&per_page=" + pageSize;
-            }
-            url += "&page=" + page;
-        }
-
-
-        if(isWhole != null){
-            url += "&is_whole=" + isWhole ;
-        }
-
-        JSONObject result = null;
-        int tryCount = 0;
-        while (tryCount < 5) {
-
-            try{
-
-
-                result = restTemplate.getForObject(url, JSONObject.class);
-                break;
-            }catch (Exception e){
-                e.printStackTrace();
-                try{
-                    TimeUnit.SECONDS.sleep(20);
-                }catch(Exception sleepException){
-                    e.printStackTrace();
-                }
-
-                tryCount++;
-            }
-        }
-        return result;
-    }
-
     public String getFirstCommitDate(String developerName){
         JSONObject data = restTemplate.getForObject(commitServicePath + "/first-commit?author=" + developerName, JSONObject.class).getJSONObject("data");
         LocalDateTime fistCommitDate = LocalDateTime.parse(data.getJSONObject("repos_summary").getString("first_commit_time_summary"), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
@@ -372,68 +241,6 @@ public class RestInterfaceManager {
         }
         return null;
     }
-
-    //-----------------------------------recommendation service---------------------------------------------------------
-    public void addSolvedIssueInfo(List<JSONObject> solvedInfos){
-        try{
-            restTemplate.postForObject(recommendationServicePath + "/add-bug-recommendation",solvedInfos,JSONObject.class);
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-    }
-
-    public JSONObject getRepoById(String repoId) {
-        return restTemplate.getForObject(repoServicePath + "/" + repoId, JSONObject.class);
-    }
-
-
-
-    public Map<String, String> getDeveloperByCommits(Set<String> keySet) {
-        //restTemplate.postForObject(repoServicePath + "/developerListsByCommits", keySet ,HashMap.class);
-/*        Map<String,String> s = new HashMap<>();
-        s.put("7e89cfe4d854e5c1b00d6f01b3790ba2d3c9738a", "tatu.saloranta@iki.fi");
-        s.put("99d90d43bd14d7b1262e5b32f3fb14355dab220d", "tatu.saloranta@iki.fi");
-        s.put("6cfdce3eed883e10b0c67ce4b4e7738cfcb1fc7b", "tatu.saloranta@iki.fi");
-        s.put("b712954e0a4d7bf86f470d123f1768e07f14d6c3", "tatu.saloranta@iki.fi");
-        s.put("105102ba5bbcdd8cd752f9a9dd820164132688e3", "tatu.saloranta@iki.fi");
-        s.put("50905423394bbcf2d6df9d86a1472b81db3b6d62", "tatu.saloranta@iki.fi");
-        s.put("c2b69429e5f8791022b3b6c1bbb585592983f880", "tatu.saloranta@iki.fi");
-        s.put("feddb66f98874a1022c74a7b0bc5b550dc7236e1", "tatu.saloranta@iki.fi");
-        s.put("acda0f9e69043dfcf0a6758ad4dee0af1de3b4ac", "tatu.saloranta@iki.fi");
-        s.put("e7551ed0153df46ee7324567fd4dc8ce8afe7aff", "tatu.saloranta@iki.fi");
-        s.put("569c9e9ec6e53ba54013d254825cf293257edbf6", "tatu.saloranta@iki.fi");
-        s.put("d708338d421df111ab3d4a36bb90b14900594ec0", "tatu.saloranta@iki.fi");
-        s.put("3b4b0a174949ddc83bbba5d74283a243c866844b", "tatu.saloranta@iki.fi");
-        s.put("fdf1663ef024c89535aedef8f890a34938db8c4c", "tatu.saloranta@iki.fi");
-        s.put("d8bed348eb375baa4a2dff933fdac1160ad35f67", "doug.roper@rallyhealth.com");
-        s.put("24f65a28db07467ae9d3b8c5e765e7783067cf06", "tatu.saloranta@iki.fi");
-        s.put("9b53cf5e214aa55f4eebee9e61cb25af21e35ec1", "tatu.saloranta@iki.fi");
-        s.put("465fd8e3ef598abf919feeb01577376b492558a0", "tatu.saloranta@iki.fi");
-        s.put("a8eb65dd6d4da0faf8b329de8fcf53ecd4c2fa8a", "tatu.saloranta@iki.fi");*/
-        StringBuffer stringBuffer = new StringBuffer();
-        for (String s : keySet) {
-            stringBuffer.append(s);
-            stringBuffer.append(",");
-        }
-        stringBuffer.deleteCharAt(stringBuffer.length() - 1);
-        MultiValueMap<String, String> requestEntity = new LinkedMultiValueMap<>(1);
-        requestEntity.add("key_set", stringBuffer.toString());
-        JSONObject jsonObject = restTemplate.postForObject(commitServicePath + "/developer-lists-by-commits", requestEntity,JSONObject.class);
-        return jsonObject.getObject("data",Map.class);
-    }
-
-    public Map getRepoAndLatestScannedCommit(Set repoList) {
-        return null;
-    }
-
-    public Map getRepoAndCodeLine(Map repoCommit) {
-        return null;
-    }
-
-/*    public List<String> getScanCommitsIdByDuration(String detail, String start, String end) {
-        return null;
-    }*/
-
 
     //--------------------------------------------------------sonar api -----------------------------------------------------
     public JSONObject getSonarIssueResults(String repoName, String type, int pageSize, boolean resolved,int page) {
@@ -578,15 +385,14 @@ public class RestInterfaceManager {
         paraMap.put("to",String.valueOf(to));
         JSONObject linesJO = restTemplate.getForObject(baseRequestUrl, JSONObject.class,paraMap);
         List<java.lang.Object> sourcesList = (List<Object>) linesJO.get("sources");
-        int sourceListSize = sourcesList.size();
         Map<List<String>,String> regexAndReplaceStr = new HashMap<>();
         regexAndReplaceStr.put(Arrays.asList("<span[^>]*>","</span[^>]*>"),"");
         regexAndReplaceStr.put(Arrays.asList("&lt;"),"<");
         regexAndReplaceStr.put(Arrays.asList("&gt;"),">");
         regexAndReplaceStr.put(Arrays.asList("&amp;"),"&");
-        for (int i = 0; i < sourceListSize; i++) {
-            String code = (String) ((List<Object>)(sourcesList.get(i))).get(1);
-            code = RegexUtil.getNoTagCode(code,regexAndReplaceStr);
+        for (Object o : sourcesList) {
+            String code = (String) ((List<Object>) o).get(1);
+            code = RegexUtil.getNoTagCode(code, regexAndReplaceStr);
             linesList.add(code);
         }
         return linesList;
@@ -606,153 +412,36 @@ public class RestInterfaceManager {
         }
 
         return error;
-
     }
 
-
-
-    public JSONObject getSonarIssueType(String repositories,String status,int page , int ps){
-
-        Map<String, String> map = new HashMap<>();
-
-        String baseRequestUrl = sonarServicePath + "/api/rules/search?repositories={repositories}&status={status}&p={p}&ps={ps}";
-        map.put("repositories",repositories);
-        map.put("status",status);
-        map.put("p",String.valueOf(page));
-        map.put("ps",String.valueOf(ps));
+    public void deleteSonarProject(String projectName){
         try{
-            ResponseEntity entity = restTemplate.getForEntity(baseRequestUrl,JSONObject.class,map);
-            return JSONObject.parseObject(entity.getBody().toString());
-        }catch (RuntimeException e){
-            e.printStackTrace();
-            logger.error("componentKey : {}  ----> request sonar  source rule  api failed , repositories --> {} , status --> {}", repositories,status);
-            return null;
+            ResponseEntity<JSONObject> responseEntity = restTemplate.exchange(scanServicePath + "/api/authentication/login?login=admin&password=admin", HttpMethod.POST, null, JSONObject.class);
+            List<String> sonarDeleteHeaders = responseEntity.getHeaders().get("Set-Cookie");
+            if(sonarDeleteHeaders == null || sonarDeleteHeaders.size() != 2){
+                logger.error("get sonar delete headers failed !");
+                logger.error("projectName: {} ---> delete sonar project failed !", projectName);
+                return;
+            }
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("X-XSRF-TOKEN", sonarDeleteHeaders.get(0));
+            headers.add("Cookie", sonarDeleteHeaders.get(1));
+            String urlPath = sonarServicePath + "/api/projects/bulk_delete?projects=" + projectName;
+            restTemplate.exchange(urlPath, HttpMethod.POST, new HttpEntity(headers), JSONObject.class);
+            logger.info("projectName: {} ---> delete sonar project success !", projectName);
+        }catch (Exception e){
+            logger.error(e.getMessage());
+            logger.error("projectName: {} ---> delete sonar project failed !", projectName);
         }
     }
 
     //------------------------------------------------------scan api ---------------------------------------------
 
-
     public JSONObject getScanByCategoryAndRepoIdAndCommitId(String repoId,String commitId ,String category){
         return restTemplate.getForObject(scanServicePath + "/inner/scan/commit?repo_id=" + repoId+"&commit_id="+commitId+"&category="+category, JSONObject.class);
     }
 
-    public List<String> getPreScannedCommitByCurrentCommit(String repoId,String commitId ,String category){
-        JSONArray preCommits = restTemplate.getForObject(scanServicePath + "/inner/scan/pre-scanned-commit?repo_id=" + repoId+"&commit_id="+commitId+"&category="+category, JSONArray.class);
-        List<String> parentCommits = new ArrayList<>();
-        if(preCommits != null){
-            parentCommits = preCommits.toJavaList(String.class);
-        }
-
-
-        return parentCommits;
-    }
-
-    public String getLatestScanFailedCommitId(String repoId,String commitId ,String category){
-        String failedCommitId = restTemplate.getForObject(scanServicePath + "/inner/scan/pre-failed-commit?repo_id=" + repoId+"&commit_id="+commitId+"&category="+category, String.class);
-        if(failedCommitId != null){
-            return failedCommitId;
-        }
-        return null;
-
-    }
-
-
-    public JSONArray getScanByRepoIdAndStatus(String repoId,String status){
-        JSONArray scans = restTemplate.getForObject(scanServicePath + "/inner/scan/get-by-status?repo_id=" + repoId+"&status=" + status, JSONArray.class);
-        if(scans != null){
-            return scans;
-        }
-        return null;
-
-    }
-
-
-
     // --------------------------------------------------------measure api ---------------------------------------------------------
-
-
-    public JSONObject getCodeChangesByDurationAndDeveloperName(String developerName,String since ,String until,String category,String repoId){
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("token",null);
-        HttpEntity request = new HttpEntity(headers);
-        StringBuilder urlBuilder = new StringBuilder();
-        boolean isFirstPram =true;
-        urlBuilder.append(measureServicePath + "/measure/developer/code-change?");
-        if(developerName != null){
-            if(!isFirstPram){
-                urlBuilder.append("&");
-            }else{
-                isFirstPram=false;
-            }
-            urlBuilder.append("developer_name=" + developerName);
-        }
-
-        if(since != null){
-            if(!isFirstPram){
-                urlBuilder.append("&");
-            }else{
-                isFirstPram=false;
-            }
-            urlBuilder.append("since=" + since);
-        }
-        if(until != null){
-            if(!isFirstPram){
-                urlBuilder.append("&");
-            }else{
-                isFirstPram=false;
-            }
-            urlBuilder.append("until=" + until);
-        }
-        if(category != null){
-            if(!isFirstPram){
-                urlBuilder.append("&");
-            }else{
-                isFirstPram=false;
-            }
-            urlBuilder.append("category=" + category);
-        }
-        if(repoId != null){
-            if(!isFirstPram){
-                urlBuilder.append("&");
-            }else{
-                isFirstPram=false;
-            }
-            urlBuilder.append("repo_id=" + repoId);
-        }
-        String url = urlBuilder.toString();
-        ResponseEntity responseEntity = restTemplate.exchange(url , HttpMethod.GET,request,JSONObject.class);
-        String body = responseEntity.getBody().toString();
-        JSONObject result = JSONObject.parseObject(body,JSONObject.class);
-        return result;
-    }
-
-
-    public JSONObject getDeveloperListByDuration(String developerName,String since ,String until,String repoId){
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("token",null);
-        HttpEntity request = new HttpEntity(headers);
-        StringBuilder urlBuilder = new StringBuilder();
-        boolean isFirstPram =true;
-        urlBuilder.append(measureServicePath + "/measure/repository/duration?");
-        urlBuilder.append("repo_id=" + repoId);
-        urlBuilder.append("&since=" + since);
-        urlBuilder.append("&until=" + until);
-
-        if(developerName != null){
-            urlBuilder.append("&developer_name=" + developerName);
-        }
-
-        String url = urlBuilder.toString();
-        ResponseEntity responseEntity = restTemplate.exchange(url , HttpMethod.GET,request,JSONObject.class);
-        String body = responseEntity.getBody().toString();
-        JSONObject result = JSONObject.parseObject(body,JSONObject.class);
-        if(result == null){
-            logger.error("request /measure/repository/duration failed");
-        }
-        return result;
-    }
 
     public Map<String, Integer> getDeveloperWorkload(Map<String, Object> query){
 
@@ -783,4 +472,5 @@ public class RestInterfaceManager {
 
         return developerWorkLoad;
     }
+
 }
