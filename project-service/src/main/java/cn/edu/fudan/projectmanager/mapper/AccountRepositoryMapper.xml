@@ -23,12 +23,14 @@
             project_name
         )
         VALUES
-        <foreach collection="list" item="accountRepositories" separator=",">
-            #{uuid},
-            #{name},
-            #{accountUuid},
-            #{subRepositoryUuid},
-            #{projectName}
+        <foreach collection="list" item="item" separator=",">
+            (
+            #{item.uuid},
+            #{item.repoName},
+            #{item.accountUuid},
+            #{item.subRepositoryUuid},
+            #{item.projectName}
+            )
         </foreach>
     </insert>
 
