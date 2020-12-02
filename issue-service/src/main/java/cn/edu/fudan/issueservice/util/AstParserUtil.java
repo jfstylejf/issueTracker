@@ -5,7 +5,7 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.*;
 
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -17,22 +17,9 @@ import java.util.Set;
  */
 public class AstParserUtil {
 
-
-    public static Set<String> getAllMethodAndFieldName(String filePath) {
-        Set<String> methodsAndFields = new HashSet<>();
-
-        List<String> allFieldsInFile = getAllFieldsInFile(filePath);
-        List<String> allMethodsInFile = getAllMethodsInFile(filePath);
-
-        allFieldsInFile.forEach(field -> methodsAndFields.add(field));
-        allMethodsInFile.forEach(method -> methodsAndFields.add(method));
-
-        return methodsAndFields;
-    }
-
     public static String findMethod(String filePath, int beginLine, int endLine) {
         try {
-            CompilationUnit compilationUnit = JavaParser.parse(Paths.get(filePath), Charset.forName("UTF-8"));
+            CompilationUnit compilationUnit = JavaParser.parse(Paths.get(filePath), StandardCharsets.UTF_8);
             List<ClassOrInterfaceDeclaration> classOrInterfaceDeclarationList = compilationUnit.findAll(ClassOrInterfaceDeclaration.class);
             //判断是否是enum
             if (classOrInterfaceDeclarationList.size() == 0) {
@@ -89,6 +76,23 @@ public class AstParserUtil {
 
     }
 
+    public static Set<String> getAllMethodAndFieldName(String filePath) {
+        Set<String> methodsAndFields = new HashSet<>();
+
+        List<String> allFieldsInFile = getAllFieldsInFile(filePath);
+        List<String> allMethodsInFile = getAllMethodsInFile(filePath);
+
+        if(allFieldsInFile != null){
+            methodsAndFields.addAll(allFieldsInFile);
+        }
+
+        if(allMethodsInFile != null) {
+            methodsAndFields.addAll(allMethodsInFile);
+        }
+
+        return methodsAndFields;
+    }
+
     /**
      * 抽java文件中所有方法签名
      * @param file 文件路径
@@ -97,7 +101,7 @@ public class AstParserUtil {
     public static List<String> getAllMethodsInFile(String file){
         List<String> allMethodsInFile = new ArrayList<>();
         try{
-            CompilationUnit compileUtil = JavaParser.parse(Paths.get(file), Charset.forName("UTF-8"));
+            CompilationUnit compileUtil = JavaParser.parse(Paths.get(file), StandardCharsets.UTF_8);
             List<ClassOrInterfaceDeclaration> classOrInterfaceDeclarations = compileUtil.findAll(ClassOrInterfaceDeclaration.class);
             for(ClassOrInterfaceDeclaration classOrInterfaceDeclaration : classOrInterfaceDeclarations){
                 List<MethodDeclaration> methodDeclarations = classOrInterfaceDeclaration.findAll(MethodDeclaration.class);
@@ -121,7 +125,7 @@ public class AstParserUtil {
     public static List<String> getAllFieldsInFile(String file){
         List<String> allFieldsInFile = new ArrayList<>();
         try {
-            CompilationUnit compileUtil = JavaParser.parse(Paths.get(file), Charset.forName("UTF-8"));
+            CompilationUnit compileUtil = JavaParser.parse(Paths.get(file), StandardCharsets.UTF_8);
             List<ClassOrInterfaceDeclaration> classOrInterfaceDeclarations = compileUtil.findAll(ClassOrInterfaceDeclaration.class);
             for(ClassOrInterfaceDeclaration classOrInterfaceDeclaration : classOrInterfaceDeclarations){
                 List<FieldDeclaration> fieldDeclarations = classOrInterfaceDeclaration.findAll(FieldDeclaration.class);

@@ -1,6 +1,7 @@
 package cn.edu.fudan.projectmanager.service.impl;
 
 import cn.edu.fudan.projectmanager.component.RestInterfaceManager;
+import cn.edu.fudan.projectmanager.dao.AccountProjectDao;
 import cn.edu.fudan.projectmanager.dao.AccountRepositoryDao;
 import cn.edu.fudan.projectmanager.dao.ProjectDao;
 import cn.edu.fudan.projectmanager.dao.SubRepositoryDao;
@@ -52,6 +53,7 @@ public class ProjectControlServiceImpl implements ProjectControlService {
     private AccountRepositoryDao accountRepositoryDao;
     private SubRepositoryDao subRepositoryDao;
     private ProjectDao projectDao;
+    private AccountProjectDao accountProjectDao;
 
     private KafkaTemplate kafkaTemplate;
 
@@ -136,32 +138,23 @@ public class ProjectControlServiceImpl implements ProjectControlService {
     }
 
     @Override
-    public void update(String token, String oldName, String newName, String type) throws Exception {
+    public void update(String token, String oldProjectName, String newProjectName) throws Exception {
         UserInfoDTO userInfoDTO = getUserInfoByToken(token);
         String accountUuid = userInfoDTO.getUuid();
-        final String project = "project";
-        final String repository = "repository";
-        if (StringUtils.isEmpty(oldName) || StringUtils.isEmpty(newName) || oldName.equals(newName)) {
+
+        if (StringUtils.isEmpty(oldProjectName) || StringUtils.isEmpty(newProjectName) || oldProjectName.equals(newProjectName)) {
             return;
         }
-
-
-        if (repository.equals(type)) {
-            accountRepositoryDao.updateRepoName(accountUuid, oldName, newName);
-        }
-
         // 0 表示超级管理员 只有超级管理员能操作
-        if (project.equals(type) && userInfoDTO.getRight() != 0) {
+        if (userInfoDTO.getRight() != 0) {
             throw new RunTimeException("this user has no right to change project accountName");
         }
-
-        // TODO 两种操作 1：修改所有的project名称 2：改变repo的所属组
-
         // 改变project accountName 该repo的所有project accountName 都会改变 只有超级管理员才会有此权限
-        log.warn("project accountName changed by {}! old accountName is {}, new accountName is {}", userInfoDTO.getUuid(), oldName, newName);
-
-        /// repoUserDao.updateProjectName();
-
+        log.warn("project accountName changed by {}! old accountName is {}, new accountName is {}", userInfoDTO.getUuid(), oldProjectName, newProjectName);
+        accountRepositoryDao.updateProjectNameAR(accountUuid, oldProjectName, newProjectName);
+        projectDao.updateProjectNameP(accountUuid, oldProjectName, newProjectName);
+        accountProjectDao.updateProjectNameAP(accountUuid, oldProjectName, newProjectName);
+        subRepositoryDao.updateProjectNameSR(accountUuid, oldProjectName, newProjectName);
     }
 
     @Override
@@ -206,9 +199,13 @@ public class ProjectControlServiceImpl implements ProjectControlService {
         UserInfoDTO userInfoDTO = getUserInfoByToken(token);
         String accountUuid = userInfoDTO.getUuid();
         //project表中插入信息
-        Map newProject = new HashMap();
-        newProject.put(projectName,accountUuid);
-        int effectRow = projectDao.insertOneProject(newProject);
+        projectDao.insertOneProject(accountUuid,projectName);
+    }
+
+    @Override
+    public List<Map<String, Object>> getProjectAll(String token){
+        List<Map<String, Object>> result = projectDao.getProjectAll();
+        return result;
     }
 
 
@@ -252,6 +249,14 @@ public class ProjectControlServiceImpl implements ProjectControlService {
     public void setAccountRepositoryDao(AccountRepositoryDao accountRepositoryDao) {
         this.accountRepositoryDao = accountRepositoryDao;
     }
+
+    @Autowired
+    public void setProjectDao(ProjectDao projectDao) {
+        this.projectDao = projectDao;
+    }
+
+    @Autowired
+    public void setAccountProjectDao(AccountProjectDao accountProjectDao) {this.accountProjectDao = accountProjectDao;}
 
     @Autowired
     public void setKafkaTemplate(KafkaTemplate kafkaTemplate) {

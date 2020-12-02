@@ -28,7 +28,6 @@ public class TokenMatchStrategy implements MatchStrategy {
         List<Location> locations1 = rawIssue1.getLocations ();
         List<Location> locations2 = rawIssue2.getLocations ();
 
-
         // 第一种情况，两个location的code都为空
         if(locations1.size () == 1 && locations2.size () == 1){
             String locationCode1 = locations1.get (0).getCode ();
@@ -61,9 +60,6 @@ public class TokenMatchStrategy implements MatchStrategy {
             }
 
         }
-
-
-
 
         //初始化每个location的信息
         for(Location location1 :locations1){
@@ -103,10 +99,8 @@ public class TokenMatchStrategy implements MatchStrategy {
             }
         }
 
-
         Map<String, Location> locationsFirstMap = new HashMap<> ();
         Map<String, Location> locationsSecondMap = new HashMap<> ();
-
 
         for(Location location1 : locations1){
             locationsFirstMap.put(location1.getUuid (),location1);
@@ -118,12 +112,10 @@ public class TokenMatchStrategy implements MatchStrategy {
             location2.setMatchedIndex (-1);
         }
 
-
         for(Location location1 : locations1){
             if(location1.isMatched ()){
                 findBestLocationMatching(locationsFirstMap,locationsSecondMap,location1);
             }
-
         }
 
         int bestMatchCounts = 0 ;
@@ -131,7 +123,7 @@ public class TokenMatchStrategy implements MatchStrategy {
         int matchCount = 0;
 
         for(Location location1 : locations1){
-            if(location1.isMatched () == false){
+            if(!location1.isMatched()){
                 continue;
             }
             LocationMatchResult locationMatchResult = location1.getLocationMatchResults().get (location1.getMatchedIndex ());

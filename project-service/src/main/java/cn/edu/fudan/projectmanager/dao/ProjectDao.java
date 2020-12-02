@@ -3,6 +3,7 @@ package cn.edu.fudan.projectmanager.dao;
 import cn.edu.fudan.projectmanager.domain.SubRepository;
 import cn.edu.fudan.projectmanager.mapper.AccountRepositoryMapper;
 import cn.edu.fudan.projectmanager.mapper.ProjectMapper;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -19,8 +20,16 @@ import java.util.Map;
 public class ProjectDao {
     private ProjectMapper projectMapper;
 
-    public Integer insertOneProject(Map<String,Integer> newProject){
-        return projectMapper.insertOneProject(newProject);
+    public void insertOneProject(String accountUuid,String projectName){
+        projectMapper.insertOneProject(accountUuid,projectName);
+    }
+
+    public void updateProjectNameP(String accountUuid,String oldProjectName, String newProjectName) {
+        projectMapper.updateProjectNameP(accountUuid, oldProjectName, newProjectName);
+    }
+
+    public List<Map<String, Object>> getProjectAll(){
+        return projectMapper.getProjectP();
     }
 
     @Autowired

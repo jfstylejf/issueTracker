@@ -5,6 +5,9 @@ import cn.edu.fudan.projectmanager.domain.SubRepository;
 import cn.edu.fudan.projectmanager.domain.dto.RepositoryDTO;
 import cn.edu.fudan.projectmanager.domain.vo.RepositoryVO;
 import cn.edu.fudan.projectmanager.service.ProjectControlService;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -29,6 +32,10 @@ public class ProjectController {
      * @param repositoryDTO url isPrivate username password accountName type branch
      * @param request header
      */
+    @ApiOperation(value="添加新的库",httpMethod = "POST")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "repositoryDTO", value = "库的信息", dataType = "RepositoryDTO", required = true)
+    })
     @PostMapping(value = {"/repository"})
     public ResponseBean addProject(HttpServletRequest request, @RequestBody RepositoryDTO repositoryDTO) {
         String token = request.getHeader(TOKEN);
@@ -91,18 +98,21 @@ public class ProjectController {
 
 
     @PutMapping(value = {"/project"})
-    public ResponseBean updateProject(HttpServletRequest request, @RequestParam("old_name") String oldName,
-                                      @RequestParam("new_name") String newName,
-                                      @RequestParam(value = "type", required = false, defaultValue = "repository") String type){
+    public ResponseBean updateProject(HttpServletRequest request,
+                                      @RequestParam("old_project_name") String oldProjectName,
+                                      @RequestParam("new_project_name") String newProjectName){
         try {
-            projectControl.update(request.getHeader(TOKEN), oldName, newName, type);
+            projectControl.update(request.getHeader(TOKEN), oldProjectName, newProjectName);
             return new ResponseBean<>(200, "update success", null);
         } catch (Exception e) {
             return new ResponseBean<>(401, "update failed :" + e.getMessage(), null);
         }
     }
 
-
+    @ApiOperation(value="获取所有库信息",httpMethod = "GET")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "recycled", value = "是否被回收", dataType = "int", required = false,defaultValue = "0"),
+    })
     @GetMapping(value = {"/project"})
     public ResponseBean<List<RepositoryVO>> query(HttpServletRequest request,
                               @RequestParam(name = "recycled",required = false, defaultValue = "0") int recycled) {

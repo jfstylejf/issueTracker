@@ -12,6 +12,7 @@ import cn.edu.fudan.issueservice.util.FileFilter;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,28 +33,22 @@ public class SonarQubeBaseAnalyzer extends BaseAnalyzer {
 
     private RestInterfaceManager restInvoker;
 
-    private ThreadLocal<JSONObject> sonarIssue = new ThreadLocal<>();
-
     @Override
-    public boolean invoke(String repoId, String repoPath, String commit) {
-        // 先得到上次扫描的数据
-        JSONObject before = restInvoker.getSonarAnalysisTime(repoId);
-        setSonarIssue(before);
-
+    public boolean invoke(String repoUuid, String repoPath, String commit) {
         try {
             Runtime rt = Runtime.getRuntime();
-            String command = binHome + "executeSonar.sh " + repoPath + " " + repoId + " " + commit;
+            //执行sonar命令,一个commit对应一个sonarqube project(repoUuid_commit)
+            String command = binHome + "executeSonar.sh " + repoPath + " " + repoUuid + "_" + commit + " " + commit;
             log.info("command -> {}",command);
             Process process = rt.exec(command);
-            //最多等待sonar脚本执行100秒，超时就返回false
-            boolean timeout = process.waitFor(100L,TimeUnit.SECONDS);
+            //最多等待sonar脚本执行200秒,超时则认为该commit解析失败
+            boolean timeout = process.waitFor(200L, TimeUnit.SECONDS);
             if (!timeout) {
                 process.destroy();
-                log.error("invoke tool timeout ! (100s)");
+                log.error("invoke tool timeout ! (200s)");
                 return false;
             }
-            int exitValue = process.exitValue();
-            return exitValue == 0;
+            return process.exitValue() == 0;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -61,83 +56,80 @@ public class SonarQubeBaseAnalyzer extends BaseAnalyzer {
     }
 
     @Override
-    public boolean analyze(String repoPath, String repoId, String commitId) {
+    public boolean analyze(String repoPath, String repoUuid, String commit) {
         long analyzeStartTime = System.currentTimeMillis();
         boolean isChanged = false;
         try {
-            // 最多等待100秒
-            for (int i = 1; i <= 50; i++) {
+            // 最多等待200秒
+            for (int i = 1; i <= 100; i++) {
                 TimeUnit.SECONDS.sleep(2);
-                if (isChange(restInvoker.getSonarAnalysisTime(repoId))){
+                JSONObject sonarIssueResults = restInvoker.getSonarIssueResults(repoUuid + "_" + commit, null, 1, false, 0);
+                if(sonarIssueResults.getInteger("total") != 0){
                     isChanged = true;
-                    long analyzeEndTime2= System.currentTimeMillis();
-                    log.info("It takes {}s to wait for the latest sonar result ", (analyzeEndTime2-analyzeStartTime)/1000 );
-                    //睡4秒再去拿sonar issue search api 的结果
-                    TimeUnit.SECONDS.sleep(4);
+                    long analyzeEndTime2 = System.currentTimeMillis();
+                    log.info("It takes {}s to wait for the latest sonar result ", (analyzeEndTime2 - analyzeStartTime) / 1000);
                     break;
                 }
             }
         }catch (InterruptedException e) {
             log.error(e.getMessage());
         }
+        //判断是否确实issue为0,还是没获取到这个commit的sonar结果
+        if(!isChanged) {
+            JSONObject sonarAnalysisTime = restInvoker.getSonarAnalysisTime(repoUuid + "_" + commit);
+            if (sonarAnalysisTime.containsKey("component")) {
+                isChanged = true;
+                try {
+                    log.info("200s past,the number of issue is 0,but get sonar analysis time,sonar result should be changed");
+                    TimeUnit.SECONDS.sleep(4);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        //此时isChanged == false则认为解析失败
         if(!isChanged){
-            log.error("get latest sonar result failed!");
-            long analyzeEndTime1 = System.currentTimeMillis();
-            log.info("It takes {}s to wait for the latest sonar result ", (analyzeEndTime1-analyzeStartTime)/1000 );
+            log.error("get commit {} latest sonar result failed!", commit);
             return false;
         }
-
-        JSONObject old = restInvoker.getSonarIssueResults(repoId,null,1,false,0);//实际上这里的old已经是最新sonar扫描的结果了
-        // 分析之前记录上一个版本的数据 此版本的数据与上个版本的数据不一致说明数据已经入库
+        //获取最新sonar issues数量
+        JSONObject sonarIssueResult = restInvoker.getSonarIssueResults(repoUuid + "_" + commit,null,1,false,0);
         try {
             List<Location> allLocations = new ArrayList<> ();
             int pageSize = 100;
-            int issueTotal = old.getIntValue("total");
-            log.info("Current commit {}, issueTotal in sonar result is {}",commitId,issueTotal);
-            int pages = issueTotal % pageSize > 0 ? issueTotal/pageSize+1 : issueTotal/pageSize;
+            int issueTotal = sonarIssueResult.getIntValue("total");
+            log.info("Current commit {}, issueTotal in sonar result is {}", commit, issueTotal);
+            int pages = issueTotal % pageSize > 0 ? issueTotal / pageSize + 1 : issueTotal / pageSize;
             for(int i = 1; i <= pages; i++){
                 //获取第i页的全部issue结果
-                JSONObject sonarResult = restInvoker.getSonarIssueResults(repoId,null, pageSize,false, i);
+                JSONObject sonarResult = restInvoker.getSonarIssueResults(repoUuid + "_" + commit,null, pageSize,false, i);
                 JSONArray sonarRawIssues = sonarResult.getJSONArray("issues");
-                //遍历存储 location,rawIssue,issue
-                for(int j = 0; j<sonarRawIssues.size();j++){
+                //解析sonar的issues为平台的rawIssue
+                for(int j = 0; j < sonarRawIssues.size(); j++){
                     JSONObject sonarIssue = sonarRawIssues.getJSONObject(j);
-                    String component = sonarIssue.getString ("component");//issue所在的文件
+                    //直解析java文件且非test文件夹
+                    String component = sonarIssue.getString ("component");
                     if(FileFilter.javaFilenameFilter(component)){
                         continue;
                     }
                     String rawIssueUuid = UUID.randomUUID().toString();
-
-                    //fixme location status 放入getRawIssue方法内
-                    //将该issue的所有location直接插入表中
+                    //解析location
                     List<Location> locations = getLocations(rawIssueUuid, sonarIssue, repoPath, allLocations);
-                    //获取rawIssue
-                    RawIssue rawIssue = getRawIssue(repoId,commitId,ToolEnum.SONAR.getType (),rawIssueUuid ,sonarIssue);
+                    //解析rawIssue
+                    RawIssue rawIssue = getRawIssue(repoUuid, commit, ToolEnum.SONAR.getType(), rawIssueUuid, sonarIssue);
                     rawIssue.setLocations (locations);
                     rawIssue.setStatus (RawIssueStatus.DEFAULT.getType ());
                     resultRawIssues.add(rawIssue);
                 }
             }
+            log.info("Current commit {}, rawIssue total is {}", commit, resultRawIssues.size());
+            //删除本次sonar的库
+            restInvoker.deleteSonarProject(repoUuid + "_" +commit);
             return true;
         } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
-    }
-
-    private boolean isChange(JSONObject newRecord) {
-        JSONObject old = sonarIssue.get();
-        String errors = "errors", component = "component";
-        // 0. old 为 error    new 为 error 此时是没有change
-        if (old.containsKey(errors) && newRecord.containsKey(errors)){
-            return false;
-        }
-        // 1. old 为 error    new 有 component 此时是change
-        if (old.containsKey(errors) && newRecord.containsKey(component)){
-            return true;
-        }
-        // 2. old 有 component  new 有 component 此时需要判断时间analysisDate
-        return !old.getJSONObject(component).getString("analysisDate").equals(newRecord.getJSONObject(component).getString("analysisDate"));
     }
 
     @Override
@@ -168,15 +160,14 @@ public class SonarQubeBaseAnalyzer extends BaseAnalyzer {
                 result = 4;
                 break;
             default:
-                result = -1;
         }
         return result;
     }
 
-    public List<Location> getLocations(String rawIssueUUID, JSONObject issue, String repoPath, List<Location> allLocations) throws Exception{
+    public List<Location> getLocations(String rawIssueUuid, JSONObject issue, String repoPath, List<Location> allLocations) throws Exception{
         int startLine =0;
         int endLine = 0;
-        String sonar_path;
+        String sonarPath;
         String[] sonarComponents;
         String filePath = null;
         List<Location> locations = new ArrayList<> ();
@@ -191,15 +182,15 @@ public class SonarQubeBaseAnalyzer extends BaseAnalyzer {
                 log.error("textRange is null , sonar issue-->{}",issue.toJSONString());
             }
 
-            sonar_path =issue.getString("component");
-            if(sonar_path != null) {
-                sonarComponents = sonar_path.split(":");
+            sonarPath =issue.getString("component");
+            if(sonarPath != null) {
+                sonarComponents = sonarPath.split(":");
                 if (sonarComponents.length >= 2) {
                     filePath = sonarComponents[sonarComponents.length - 1];
                 }
             }
 
-            Location mainLocation = getLocation(startLine,endLine,rawIssueUUID,filePath,repoPath);
+            Location mainLocation = getLocation(startLine,endLine,rawIssueUuid,filePath,repoPath);
             locations.add(mainLocation);
         }else{
             //第二种针对issue中的flows中的所有location存储
@@ -223,7 +214,7 @@ public class SonarQubeBaseAnalyzer extends BaseAnalyzer {
                         flowFilePath = flowComponents[flowComponents.length - 1];
                     }
 
-                    Location location = getLocation(flowStartLine,flowEndLine,rawIssueUUID,flowFilePath,repoPath);
+                    Location location = getLocation(flowStartLine,flowEndLine,rawIssueUuid,flowFilePath,repoPath);
                     locations.add(location);
                 }
             }
@@ -234,9 +225,9 @@ public class SonarQubeBaseAnalyzer extends BaseAnalyzer {
     }
 
 
-    private Location getLocation(int startLine,int endLine,String rawIssueId,String filePath,String repoPath) throws Exception{
+    private Location getLocation(int startLine,int endLine,String rawIssueId,String filePath,String repoPath) {
         Location location = new Location ();
-        String locationUUID = UUID.randomUUID().toString();
+        String locationUuid = UUID.randomUUID().toString();
         //获取相应的code
         String code= null;
         try{
@@ -248,19 +239,18 @@ public class SonarQubeBaseAnalyzer extends BaseAnalyzer {
         }
 
         location.setCode(code);
-
-        location.setUuid(locationUUID);
+        location.setUuid(locationUuid);
         location.setStart_line(startLine);
         location.setEnd_line(endLine);
-        if(startLine>endLine){
+        if(startLine > endLine){
             log.error("startLine number greater than endLine number");
             return null;
-        }else if(startLine==endLine){
-            location.setBug_lines(startLine+"");
+        }else if(startLine == endLine){
+            location.setBug_lines(startLine + "");
         }else{
             StringBuilder lines = new StringBuilder();
-            while(startLine<endLine){
-                lines.append(startLine+",");
+            while(startLine < endLine){
+                lines.append(startLine).append(",");
                 startLine++;
             }
             lines.append(endLine);
@@ -269,15 +259,14 @@ public class SonarQubeBaseAnalyzer extends BaseAnalyzer {
         location.setFile_path(filePath);
         location.setRawIssue_id(rawIssueId);
         // todo location 方法名解析
-        String methodName = AstParserUtil.findMethod (repoPath+"/"+filePath, startLine, endLine);
+        String methodName = AstParserUtil.findMethod (repoPath + "/" + filePath, startLine, endLine);
         location.setMethod_name (methodName);
 
         return location;
     }
 
 
-    private RawIssue getRawIssue(String repoId, String commitId, String category, String rawIssueUUID ,JSONObject issue){
-
+    private RawIssue getRawIssue(String repoId, String commitId, String category, String rawIssueUuid, JSONObject issue){
         //根据ruleId获取rule的name
         String issueName=null;
         JSONObject rule = restInvoker.getRuleInfo(issue.getString("rule"),null,null);
@@ -297,7 +286,7 @@ public class SonarQubeBaseAnalyzer extends BaseAnalyzer {
 
         RawIssue rawIssue = new RawIssue();
         rawIssue.setTool(category);
-        rawIssue.setUuid(rawIssueUUID);
+        rawIssue.setUuid(rawIssueUuid);
         rawIssue.setType(issueName);
         rawIssue.setFile_name(filePath);
         rawIssue.setDetail(issue.getString("message")+ "---" + issue.getString ("severity"));
@@ -307,16 +296,11 @@ public class SonarQubeBaseAnalyzer extends BaseAnalyzer {
         rawIssue.setRepo_id(repoId);
         Map<String, Object> commitViewInfo = commitDao.getCommitViewInfoByCommitId(repoId, commitId);
         String developerUniqueName = (String) commitViewInfo.get("developer_unique_name");
-        if(developerUniqueName == null || developerUniqueName.length() == 0){
+        if(StringUtils.isEmpty(developerUniqueName)){
             developerUniqueName = (String) commitViewInfo.get("developer");
         }
         rawIssue.setDeveloperName(developerUniqueName);
         return rawIssue;
-    }
-
-    private void setSonarIssue(JSONObject sonar) {
-        sonarIssue.remove();
-        sonarIssue.set(sonar);
     }
 
     public void setRestInvoker(RestInterfaceManager restInvoker) {

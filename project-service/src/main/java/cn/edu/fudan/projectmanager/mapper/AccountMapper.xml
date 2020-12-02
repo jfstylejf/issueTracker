@@ -31,4 +31,12 @@
         </foreach>
     </insert>
 
+    <update id="updateProjectNameAP" parameterType="String">
+        update account_project
+        <set>
+                project_name = #{newProjectName},
+        </set>
+        where   project_name = #{oldProjectName}
+    </update>
+
 </mapper>

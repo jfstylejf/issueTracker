@@ -46,7 +46,7 @@ public class IssueScanServiceImpl implements IssueScanService {
     @GetResource
     @Override
     public String prepareForScan(RepoResourceDTO repoResourceDTO, String branch, String beginCommit, String toolName) {
-        String repoPath = null;
+        String repoPath;
         try{
             String repoId = repoResourceDTO.getRepoId ();
             repoPath = repoResourceDTO.getRepoPath ();

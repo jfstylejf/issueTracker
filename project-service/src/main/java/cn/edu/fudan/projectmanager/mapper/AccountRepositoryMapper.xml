@@ -34,39 +34,13 @@
         </foreach>
     </insert>
 
-<!--    <select id="getRepoUserByName" parameterType="String" resultMap="accountRepository">-->
-<!--        select * from account_repository-->
-<!--        <if test="account_id != null">-->
-<!--            where account_uuid = #{account_id}-->
-<!--        </if>-->
-<!--        <if test="name != null">-->
-<!--            and name = #{name}-->
-<!--        </if>-->
-<!--    </select>-->
+    <update id="updateProjectNameAR" parameterType="String">
+        update account_repository
+        <set>
+            project_name = #{newProjectName},
+        </set>
+        where   project_name = #{oldProjectName}
+    </update>
 
-<!--    <select id="getRepoUserBySubRepoUuidAndAccountId" parameterType="String" resultMap="accountRepository">-->
-<!--        select * from account_repository-->
-<!--        <if test="account_id != null">-->
-<!--            where account_uuid = #{account_id}-->
-<!--        </if>-->
-<!--        <if test="sub_repository_uuid != null">-->
-<!--            and sub_repository_uuid = #{sub_repository_uuid}-->
-<!--        </if>-->
-<!--    </select>-->
 
-<!--    <select id="getRepoUserByAccountId" parameterType="String" resultMap="accountRepository">-->
-<!--        select uuid, repo_name, import_time, account_uuid, sub_repository_uuid, project_name-->
-<!--        from -->
-<!--             account_repository -->
-<!--        where -->
-<!--              account_uuid = #{account_id}-->
-<!--    </select>-->
-
-<!--    <delete id="remove" parameterType="String">-->
-<!--        delete from account_repository where uuid = #{uuid}-->
-<!--    </delete>-->
-
-<!--    <select id="getRepoUserBySubRepoId" parameterType="String" resultMap="accountRepository">-->
-<!--        select * from account_repository where sub_repository_uuid = #{sub_repository_uuid}-->
-<!--    </select>-->
 </mapper>

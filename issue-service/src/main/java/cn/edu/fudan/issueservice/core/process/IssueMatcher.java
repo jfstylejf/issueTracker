@@ -14,7 +14,6 @@ import cn.edu.fudan.issueservice.util.JGitHelper;
 import cn.edu.fudan.issueservice.util.SearchUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
@@ -66,10 +65,6 @@ public class IssueMatcher {
         bestMappedPreRawIssueIds = new ArrayList<> ();
     }
 
-    public IssueMatcher(){
-    }
-
-
     public boolean matchProcess(String repoId, String commitId, JGitHelper jGitHelper, String toolName, List<RawIssue> analyzeRawIssues){
         try{
 
@@ -83,7 +78,7 @@ public class IssueMatcher {
 
             if(parentCommits.isEmpty ()){
                 //如果当前的commit没有任何parent commit扫描过，则认为该commit是第一次扫描
-                firstMatch(repoId, toolName, commitId, analyzeRawIssues);
+                firstMatch(analyzeRawIssues);
                 return true;
             }
 
@@ -102,7 +97,7 @@ public class IssueMatcher {
     }
 
 
-    private void firstMatch(String repoId, String toolName, String commitId, List<RawIssue> analyzeRawIssues){
+    private void firstMatch(List<RawIssue> analyzeRawIssues){
 
         log.info ("start first matching  ...");
         List<RawIssue> rawIssues = analyzeRawIssues;
@@ -118,12 +113,12 @@ public class IssueMatcher {
 
     private void normalMatch(String repoId, String toolName, String commitId, String preCommitId, List<RawIssue> currentRawIssues){
         currentRawIssuesResult = new ArrayList<> ();
-        parentRawIssuesResult = new HashMap<> ();
+        parentRawIssuesResult = new HashMap<> (64);
         log.info ("start  matching commit id --> {} ...", commitId);
         List<RawIssue> preRawIssues = rawIssueDao.getRawIssueByCommitIDAndTool(repoId, toolName, preCommitId);
 
-        Map<String, List<RawIssue>> preMap = new HashMap<>();
-        Map<String,  List<RawIssue>> curMap = new HashMap<>();
+        Map<String, List<RawIssue>> preMap = new HashMap<>(64);
+        Map<String,  List<RawIssue>> curMap = new HashMap<>(64);
 
         for(RawIssue rawIssue : preRawIssues){
             List<RawIssue> rawIssueList = preMap.getOrDefault(rawIssue.getFile_name(), new ArrayList<>());
@@ -175,7 +170,6 @@ public class IssueMatcher {
 
         // key parentCommitId value [k parentRawIssueId v parentRawIssue ]
         Map<String, Map<String, RawIssue>> matchPreRawIssueMaps = new HashMap<> (4);
-        int parentCommitsSize = parentCommits.size();
 
         // key curRawIssueId value 匹配上的 preRawIssue
         Map<String,List<RawIssueMappingSort>> currentRawIssueMatchedPreRawIssues = new HashMap<> ();
@@ -184,58 +178,55 @@ public class IssueMatcher {
         List<Issue>  allIssues = new ArrayList<>();
 
 
-
-        for(int j = 0; j < parentCommitsSize ; j++) {
-            List<RawIssue> parentRawIssues = rawIssueDao.getRawIssueByCommitIDAndTool (repoId, toolName, parentCommits.get (j));
+        for (String parentCommit : parentCommits) {
+            List<RawIssue> parentRawIssues = rawIssueDao.getRawIssueByCommitIDAndTool(repoId, toolName, parentCommit);
             if (parentRawIssues.size() == 0) {
                 continue;
             }
 
             //filterRawIssue这个方法会更新allIssues，把所有parent的不同的issue存到allIssues，并且返回当前parent里的与之前parent里的不重复的rawIssue列表，返回给parentRawIssues
-            parentRawIssues = filterRawIssue (parentRawIssues, allIssues);
+            parentRawIssues = filterRawIssue(parentRawIssues, allIssues);
 
             // key 是 parent raw issue 的 uuid , value 是对应的 parent raw issue
-            Map<String, RawIssue> parentRawIssuesMap = new HashMap<> ();
-            for(RawIssue rawIssue : parentRawIssues){
-                parentRawIssuesMap.put(rawIssue.getUuid (), rawIssue);
+            Map<String, RawIssue> parentRawIssuesMap = new HashMap<>();
+            for (RawIssue rawIssue : parentRawIssues) {
+                parentRawIssuesMap.put(rawIssue.getUuid(), rawIssue);
             }
-            matchPreRawIssueMaps.put (parentCommits.get (j), parentRawIssuesMap);
-            matchPreRawIssueLists.put (parentCommits.get (j), parentRawIssues);
+            matchPreRawIssueMaps.put(parentCommit, parentRawIssuesMap);
+            matchPreRawIssueLists.put(parentCommit, parentRawIssues);
 
 
             mappingTwoRawIssueList(parentRawIssues, currentRawIssues);
 
-            for(RawIssue rawIssue : currentRawIssues){
-                int index = rawIssue.getMatchResultDTOIndex ();
-                if(index == -1){
+            for (RawIssue rawIssue : currentRawIssues) {
+                int index = rawIssue.getMatchResultDTOIndex();
+                if (index == -1) {
                     continue;
                 }
-                RawIssueMatchResult matchResultDTO = rawIssue.getRawIssueMatchResults().get (index);
+                RawIssueMatchResult matchResultDTO = rawIssue.getRawIssueMatchResults().get(index);
 
-                RawIssueMappingSort rawIssueMappingSort = new RawIssueMappingSort ();
-                rawIssueMappingSort.setCommitId (parentCommits.get (j));
-                rawIssueMappingSort.setRawIssueId (matchResultDTO.getMatchedRawIssueId ());
-                rawIssueMappingSort.setMappingSort (matchResultDTO.getMatchingDegree ());
-                rawIssueMappingSort.setMatchedIssueId (matchResultDTO.getMatchedIssueId ());
-                rawIssueMappingSort.setBestMatch (matchResultDTO.isBestMatch ());
+                RawIssueMappingSort rawIssueMappingSort = new RawIssueMappingSort();
+                rawIssueMappingSort.setCommitId(parentCommit);
+                rawIssueMappingSort.setRawIssueId(matchResultDTO.getMatchedRawIssueId());
+                rawIssueMappingSort.setMappingSort(matchResultDTO.getMatchingDegree());
+                rawIssueMappingSort.setMatchedIssueId(matchResultDTO.getMatchedIssueId());
+                rawIssueMappingSort.setBestMatch(matchResultDTO.isBestMatch());
 
-                List<RawIssueMappingSort> rawIssueMappingSorts = currentRawIssueMatchedPreRawIssues.get (rawIssue.getUuid ());
-                if(rawIssueMappingSorts == null){
-                    rawIssueMappingSorts = new ArrayList<> ();
+                List<RawIssueMappingSort> rawIssueMappingSorts = currentRawIssueMatchedPreRawIssues.get(rawIssue.getUuid());
+                if (rawIssueMappingSorts == null) {
+                    rawIssueMappingSorts = new ArrayList<>();
                 }
-                rawIssueMappingSorts.add (rawIssueMappingSort);
-                currentRawIssueMatchedPreRawIssues.put (rawIssue.getUuid (), rawIssueMappingSorts);
+                rawIssueMappingSorts.add(rawIssueMappingSort);
+                currentRawIssueMatchedPreRawIssues.put(rawIssue.getUuid(), rawIssueMappingSorts);
 
             }
 
             //把currentRawIssues的匹配状态全部初始化，准备与下一个parent 的rawIssue做匹配
-            for(RawIssue rawIssue : currentRawIssues){
-
-                rawIssue.setRawIssueMatchResults(new ArrayList<> ());
-                rawIssue.setMapped (false);
-                rawIssue.setMatchResultDTOIndex (-1);
+            for (RawIssue rawIssue : currentRawIssues) {
+                rawIssue.setRawIssueMatchResults(new ArrayList<>());
+                rawIssue.setMapped(false);
+                rawIssue.setMatchResultDTOIndex(-1);
             }
-
         }
 
         for(RawIssue rawIssue : currentRawIssues){
@@ -296,8 +287,8 @@ public class IssueMatcher {
 
     /**
      * 更改中，比对两个raw issue列表
-     * @param preRawIssues
-     * @param currentRawIssues
+     * @param preRawIssues parent rawIssue list
+     * @param currentRawIssues current rawIssue list
      */
     private void mappingTwoRawIssueList(List<RawIssue> preRawIssues,
                                         List<RawIssue> currentRawIssues){
@@ -388,7 +379,7 @@ public class IssueMatcher {
 
     private void findSimilarRawIssues(RawIssue currentRawIssue, List<RawIssue> preList) {
 
-        boolean isFindBestMatch = false;
+        boolean isFindBestMatch;
         for (RawIssue rawIssue : preList) {
             if(bestMappedPreRawIssueIds.contains (rawIssue.getUuid ())){
                 continue;

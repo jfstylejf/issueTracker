@@ -2,6 +2,7 @@ package cn.edu.fudan.projectmanager.dao;
 
 import cn.edu.fudan.projectmanager.domain.AccountRepository;
 import cn.edu.fudan.projectmanager.mapper.AccountRepositoryMapper;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -30,8 +31,8 @@ public class AccountRepositoryDao {
         return accountRepositoryMapper.getRepoCount(accountUuid, url) == 1;
     }
 
-    public void updateRepoName(String accountUuid, String oldName, String newName) {
-        accountRepositoryMapper.updateRepoName(accountUuid, oldName, newName);
+    public void updateProjectNameAR(String accountUuid, String oldProjectName, String newProjectName) {
+        accountRepositoryMapper.updateProjectNameAR(accountUuid, oldProjectName, newProjectName);
     }
 
     public void deleteRelation(String subRepoUuid) {

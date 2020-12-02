@@ -3,7 +3,7 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.edu.fudan.projectmanager.mapper.ProjectMapper">
 
-    <insert id="insertOneProject" parameterType="java.util.HashMap">
+    <insert id="insertOneProject" parameterType="String">
         insert ignore into project
         (
             project_name,
@@ -16,4 +16,18 @@
         )
     </insert>
 
+    <update id="updateProjectNameP" parameterType="String">
+        update project
+        <set>
+            project_name = #{newProjectName},
+            import_account_uuid =#{accountUuid}
+        </set>
+        where   project_name = #{oldProjectName}
+
+    </update>
+
+    <select id="getProjectP"  resultType="Map">
+        SELECT id,project_name
+        FROM project
+    </select>
 </mapper>

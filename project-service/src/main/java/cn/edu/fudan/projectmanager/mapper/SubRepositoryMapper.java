@@ -31,7 +31,7 @@ public interface SubRepositoryMapper {
      * 更新subRepo表
      * @param subRepository s
      */
-    void updateSubRepository(SubRepository subRepository);
+    void updateSubRepository(@Param("subRepository")SubRepository subRepository);
 
     /**
      * 通过uuid得到subRepo
@@ -55,10 +55,10 @@ public interface SubRepositoryMapper {
 
 
     @Update("UPDATE `sub_repository` SET `recycled` = '1' WHERE `uuid` = #{subRepoUuid};")
-    void setRecycled(String subRepoUuid);
+    void setRecycled(@Param("subRepoUuid") String subRepoUuid);
 
     @Delete("DELETE FROM `sub_repository` WHERE `uuid` = #{subRepoUuid};")
-    void deleteRepo(String subRepoUuid);
+    void deleteRepo(@Param("subRepoUuid") String subRepoUuid);
 
     /**
      * 项目与库的对应关系
@@ -68,5 +68,9 @@ public interface SubRepositoryMapper {
             "WHERE s.uuid = r.sub_repository_uuid order by project_name;")
     List<Map<String, Object>> getAllProjectRepoRelation();
 
-
+    /**
+     * 更新项目名
+     * @param  accountUuid,oldProjectName,newProjectName
+     */
+    void updateProjectNameSR(@Param("accountUuid") String accountUuid, @Param("oldProjectName")String oldProjectName, @Param("newProjectName")String newProjectName);
 }

@@ -20,25 +20,14 @@ public class ScanManagementAsync {
 
     private StringRedisTemplate stringRedisTemplate;
 
-    private IssueRepoDao issueRepoDao;
-
-
-
     @Async("scanProducerExecutor")
     public void addProjectToScanQueue(ScanCommitInfoDTO scanCommitInfoDTO) {
         try{
             //每个添加程序秩序执行一次 ，且添加速度快，所以是否采用多线程还需考虑
-
-
             scanCommitInfoDTOBlockingQueue.put (scanCommitInfoDTO);
-
-
         }catch (Exception e){
             //todo 分多个exception处理，可能会存在队列满了或是其他情况 返回对应的信息
-
         }
-
-
     }
 
     @Async("scanConsumerExecutor")
@@ -65,7 +54,8 @@ public class ScanManagementAsync {
                 // 获取线程名 ，以repo id 为key，线程名为value存入redis中
                 String threadName = Thread.currentThread ().getName ();
                 stringRedisTemplate.opsForValue ().set (repoId + "-" + toolName, threadName);
-                ScanThreadExecutorConfig.setConsumerThreadSwitch (repoId , true, toolName);//后续扫描过程中，需要这个开关  开始扫描
+                //后续扫描过程中，需要这个开关  开始扫描
+                ScanThreadExecutorConfig.setConsumerThreadSwitch (repoId , true, toolName);
                 toolInvoker.invoke (repoId, branch, beginCommit, toolName);
 
                 //单个task扫描结束后的收尾处理
@@ -92,9 +82,7 @@ public class ScanManagementAsync {
             ScanThreadExecutorConfig.delNeedToScanCommitList (repoId, toolName);
             //todo 做什么处理后面待考虑完善
         }finally{
-            /**
-             * 存在当进行清除当前repo信息的时候 ，又来一个commit 更新消息的可能性，概率很小
-             */
+             // 存在当进行清除当前repo信息的时候 ，又来一个commit 更新消息的可能性，概率很小
             if(repoId != null && toolName != null && ScanThreadExecutorConfig.getRepoUpdateStatus (repoId, toolName)){
                 ScanCommitInfoDTO scanCommitInfoDTO = ScanCommitInfoDTO.builder()
                         .repoId(repoId).branch(branch).toolName(toolName).build();
@@ -119,10 +107,5 @@ public class ScanManagementAsync {
     @Autowired
     public void setStringRedisTemplate(StringRedisTemplate stringRedisTemplate) {
         this.stringRedisTemplate = stringRedisTemplate;
-    }
-
-    @Autowired
-    public void setIssueRepoDao(IssueRepoDao issueRepoDao) {
-        this.issueRepoDao = issueRepoDao;
     }
 }

@@ -22,10 +22,12 @@ import java.util.List;
 @Service
 @Slf4j
 public class IssueIgnoreServiceImpl implements IssueIgnoreService {
-    private Logger logger = LoggerFactory.getLogger(IssueIgnoreServiceImpl.class);
+
+    private final Logger logger = LoggerFactory.getLogger(IssueIgnoreServiceImpl.class);
 
     private IssueIgnoreDao issueIgnoreDao;
-    private IssueDao issueDao = new IssueDao();
+
+    private IssueDao issueDao;
 
     @Override
     public String insertIssueIgnoreRecords(List<IgnoreRecord> ignoreRecords) {
@@ -47,11 +49,14 @@ public class IssueIgnoreServiceImpl implements IssueIgnoreService {
             logger.error("manualStatus shouldn't be null!");
             return false;
         }
-        Date currentDate = new Date();
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        String currentTime = df.format(currentDate);
-        issueDao.updateIssueManualStatus(repoUuid, issueUuid, manualStatus, issueType, tool, currentTime);
+        issueDao.updateIssueManualStatus(repoUuid, issueUuid, manualStatus, issueType, tool, df.format(new Date()));
         return true;
+    }
+
+    @Override
+    public void deleteIssueIgnoreRecord(String tool, String issueUuid, String ignoreUuid) {
+        //issueIgnoreDao.deleteIgnoreRecord()
     }
 
     @Autowired

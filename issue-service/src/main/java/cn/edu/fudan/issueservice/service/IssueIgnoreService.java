@@ -14,4 +14,12 @@ public interface IssueIgnoreService {
      * @return
      */
     String insertIssueIgnoreRecords(List<IgnoreRecord> list);
+
+    /**
+     * 删除issue ignore record
+     * @param tool tool
+     * @param issueUuid issueUuid
+     * @param ignoreUuid ignoreUuid
+     */
+    void deleteIssueIgnoreRecord(String tool, String issueUuid, String ignoreUuid);
 }
