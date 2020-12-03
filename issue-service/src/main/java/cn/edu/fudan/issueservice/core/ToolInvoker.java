@@ -134,7 +134,7 @@ public class ToolInvoker {
                     return false;
                 }
                 String latestScannedCommitId = latestIssueScan.getCommitId ();
-                List<String> commitIds =  jGitInvoker.getCommitListByBranchAndBeginCommit(branch, latestScannedCommitId);
+                List<String> commitIds =  jGitInvoker.getScanCommitListByBranchAndBeginCommit(branch, latestScannedCommitId);
                 //因为必定不为null，所以不做此判断
                 if(commitIds.size () <= 1){
                     log.info (" already update! repoId --> {}", repoId);
@@ -448,8 +448,4 @@ public class ToolInvoker {
         this.issueTypeDao = issueTypeDao;
     }
 
-//    @Autowired
-//    public void setCommitDao(CommitDao commitDao) {
-//        this.commitDao = commitDao;
-//    }
 }

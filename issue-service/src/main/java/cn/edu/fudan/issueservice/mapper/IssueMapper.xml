@@ -579,7 +579,7 @@
 
     <select id="getIssueFilterList" parameterType="Map" resultType="java.util.HashMap">
         SELECT a.uuid, a.type, a.tool, a.start_commit AS startCommit, a.start_commit_date AS startCommitDate, a.end_commit AS endCommit,
-        a.end_commit_date AS endCommitDate, a.repo_id AS repoId, a.target_files AS targetFiles, a.create_time AS creatTime, a.priority,
+        a.end_commit_date AS endCommitDate, a.repo_id AS repoId, a.target_files AS targetFiles, a.create_time AS createTime, a.priority,
         a.display_id AS displayId, a.status, a.issue_category AS issueCategory, a.producer, a.solver FROM issue AS a INNER JOIN commit_view
         AS b ON a.repo_id = b.repo_id AND a.start_commit = b.commit_id
         <trim prefix="where" prefixOverrides="and">

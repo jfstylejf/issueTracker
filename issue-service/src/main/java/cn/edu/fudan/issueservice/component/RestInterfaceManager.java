@@ -118,9 +118,8 @@ public class RestInterfaceManager {
         HttpEntity request = new HttpEntity(headers);
         ResponseEntity responseEntity = restTemplate.exchange(projectServicePath  + "/project/all",HttpMethod.GET,request,JSONObject.class);
         String body = responseEntity.getBody().toString();
-        JSONObject result = JSONObject.parseObject(body);
 
-        return result;
+        return JSONObject.parseObject(body);
     }
 
     /**
@@ -416,7 +415,8 @@ public class RestInterfaceManager {
 
     public void deleteSonarProject(String projectName){
         try{
-            ResponseEntity<JSONObject> responseEntity = restTemplate.exchange(scanServicePath + "/api/authentication/login?login=admin&password=admin", HttpMethod.POST, null, JSONObject.class);
+            String url = sonarServicePath + "/api/authentication/login?login=admin&password=admin";
+            ResponseEntity<JSONObject> responseEntity = restTemplate.exchange(url, HttpMethod.POST, null, JSONObject.class);
             List<String> sonarDeleteHeaders = responseEntity.getHeaders().get("Set-Cookie");
             if(sonarDeleteHeaders == null || sonarDeleteHeaders.size() != 2){
                 logger.error("get sonar delete headers failed !");

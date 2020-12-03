@@ -20,14 +20,7 @@ public class JGitHelperTest {
     }
 
     @Test
-    public void getCommitListByBranchAndBeginCommitTest() throws Exception{
-        String branch = "issue-shangqi106";
-        String beginCommit = "cf5eba2615f16a91d1c81902bbc3a3fb69f7a612";
-        List<String> commitListByBranchAndBeginCommit = jGitHelper.getCommitListByBranchAndBeginCommit(branch, beginCommit);
-    }
-
-    @Test
-    public void getScanCommitListByBranchAndBeginCommitTest() throws Exception{
+    public void getScanCommitListByBranchAndBeginCommitTest() {
         String branch = "issue-refactor";
         String beginCommit = "b7ff341b698431cb35186c899d774797e0bc562c";
         List<String> commitListByBranchAndBeginCommit = jGitHelper.getScanCommitListByBranchAndBeginCommit(branch, beginCommit);

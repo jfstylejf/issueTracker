@@ -2,14 +2,21 @@ package cn.edu.fudan.issueservice.core.strategy;
 
 import cn.edu.fudan.issueservice.util.JGitHelper;
 
-import java.util.List;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
+/**
+ * @author Beethoven
+ */
 public interface ScanStrategy {
 
-     List<String> getScanCommitList(String repoId, JGitHelper jGitHelper, String branch, String beginCommit);
-
-     ConcurrentLinkedDeque<String> getScanCommitLinkedDeque(String repoId, JGitHelper jGitHelper, String branch, String beginCommit);
-
+     /**
+      * 根据扫描策略获取commit list
+      * @param repoId repoUuid
+      * @param jGitHelper jGit
+      * @param branch branch
+      * @param beginCommit begin commit
+      * @return commit list
+      */
      ConcurrentLinkedDeque<String> getScanCommitLinkedQueue(String repoId, JGitHelper jGitHelper, String branch, String beginCommit);
+
 }

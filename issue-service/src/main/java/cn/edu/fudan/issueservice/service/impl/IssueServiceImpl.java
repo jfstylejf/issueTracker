@@ -265,10 +265,13 @@ public class IssueServiceImpl implements IssueService {
 
         for(Map<String, Object> issue : issues){
             String issueId = (String) issue.get("uuid");
+            issue.put("startCommitDate", DateTimeUtil.format((Date) issue.get("startCommitDate")));
+            issue.put("endCommitDate", DateTimeUtil.format((Date) issue.get("endCommitDate")));
+            issue.put("createTime", DateTimeUtil.format((Date) issue.get("createTime")));
             if("Solved".equals(issue.get("status").toString())) {
                 Map<String, Object> lastSolvedInfo = rawIssueDao.getLastSolvedInfoOfOneIssue(issueId);
                 issue.put("solver", lastSolvedInfo.get("lastSolver"));
-                issue.put("solveTime", lastSolvedInfo.get("commit_time"));
+                issue.put("solveTime", DateTimeUtil.format((Date) lastSolvedInfo.get("commit_time")));
                 issue.put("solveCommit", lastSolvedInfo.get("commit_id"));
             }else{
                 issue.put("solver", null);
@@ -279,10 +282,12 @@ public class IssueServiceImpl implements IssueService {
             issue.put("priority",priority);
         }
 
-        int size = (int) query.get("ps");
-        int total = (int) issueFilterList.get("total");
+        if(query.get("ps") != null) {
+            int size = (int) query.get("ps");
+            int total = (int) issueFilterList.get("total");
 
-        issueFilterList.put("totalPage", total % size == 0 ? total / size : total / size + 1);
+            issueFilterList.put("totalPage", total % size == 0 ? total / size : total / size + 1);
+        }
         issueFilterList.put("issueList", issues);
 
         return issueFilterList;

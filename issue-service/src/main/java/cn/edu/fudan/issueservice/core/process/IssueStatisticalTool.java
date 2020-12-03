@@ -410,7 +410,6 @@ public class IssueStatisticalTool {
         return DateTimeUtil.localToUTC(jGitInvoker.getCommitTime(commitId));
     }
 
-
     private String getPreScannedFailedCommit(JGitHelper jGitHelper, String repoId, String tool, String commitId) {
         String[] parents = jGitHelper.getCommitParents(commitId);
         for(String parent : parents){
@@ -421,6 +420,5 @@ public class IssueStatisticalTool {
         }
         return null;
     }
-
 
 }

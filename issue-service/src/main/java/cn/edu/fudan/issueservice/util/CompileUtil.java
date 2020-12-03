@@ -3,15 +3,13 @@ package cn.edu.fudan.issueservice.util;
 import cn.edu.fudan.issueservice.domain.enums.CompileTool;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.maven.shared.invoker.*;
-import org.gradle.tooling.ProjectConnection;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 /**
  * description: 判断指定目录下的代码是否可以编译
@@ -23,10 +21,11 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class CompileUtil {
 
-
     private static String mvnHome;
 
     private static String gradleBin;
+
+    private static int compileMaxWaitTime;
 
     @Value("${mvnHome}")
     public void setMvnHome(String mvnHome) {
@@ -38,22 +37,46 @@ public class CompileUtil {
         CompileUtil.gradleBin = gradleBin;
     }
 
-
-    //"-T 2C" "-Dmaven.compile.fork=true"
+    @Value("${compile.maxWaitTime}")
+    public void setCompileMaxWaitTime(int compileMaxWaitTime) {
+        CompileUtil.compileMaxWaitTime = compileMaxWaitTime;
+    }
 
     private static final String[] VAR = {"compile", "-Dmaven.test.skip=true", "-ff",
             "-B", "-q", "-l /dev/null", "-Dmaven.compile.fork=true","-T 2C"};
+
     private static List<String> var = java.util.Arrays.asList(VAR);
 
+    private static class CompileThread extends Thread implements Runnable {
+
+        private Invoker invoker;
+
+        private InvocationRequest invocationRequest;
+        //2表示等待执行结果,0成功编译,1编译失败
+        public int compileSuccess = 2;
+
+        public CompileThread(Invoker invoker, InvocationRequest invocationRequest) {
+            this.invoker = invoker;
+            this.invocationRequest = invocationRequest;
+        }
+
+        @Override
+        public void run() {
+            try {
+                InvocationResult invocationResult = invoker.execute(invocationRequest);
+                compileSuccess = invocationResult.getExitCode() == 0 ? 0 : 1;
+            } catch (MavenInvocationException e) {
+                log.error("MavenInvocationException,compile failed!");
+            }
+        }
+    }
+
     public static boolean isCompilable(String repoPath) {
-        final int compileSuccessCode = 0;
 
         List<String> compilePathList = PomAnalysisUtil.getMainPom(getCompilePath(repoPath));
         if (compilePathList == null || compilePathList.size() == 0) {
-            log.error("repo path is {}, compilePathList is null", repoPath);
-            //return false;
             /// fixme 特殊处理  后面在看
-            return  gradleCompile(repoPath);
+            return gradleCompile(repoPath);
         }
 
         for (String compilePath : compilePathList) {
@@ -62,19 +85,7 @@ public class CompileUtil {
             log.info("Compile Tool is {}", compileTool.name());
             // TODO 应该根据接口来动态的根据 compileTool 调用相应的实现方法
             if (compileTool == CompileTool.maven) {
-                InvocationRequest request = new DefaultInvocationRequest();
-                request.setPomFile(new File(compilePath));
-                request.setGoals(var);
-                request.setInputStream(InputStream.nullInputStream());
-                Invoker invoker = new DefaultInvoker();
-                invoker.setMavenHome(new File(mvnHome));
-                try {
-                    InvocationResult invocationResult = invoker.execute(request);
-                    if(invocationResult.getExitCode() != compileSuccessCode){
-                        return false;
-                    }
-                } catch (MavenInvocationException e) {
-                    log.error("maven compile failure message is {}", e.getMessage());
+                if(!mvnCompile(compilePath)){
                     return false;
                 }
             } else if (compileTool == CompileTool.gradle) {
@@ -88,6 +99,47 @@ public class CompileUtil {
         return true;
     }
 
+    private static boolean mvnCompile(String compilePath) {
+        InvocationRequest request = new DefaultInvocationRequest();
+        request.setPomFile(new File(compilePath));
+        request.setGoals(var);
+        request.setInputStream(InputStream.nullInputStream());
+        Invoker invoker = new DefaultInvoker();
+        invoker.setMavenHome(new File(mvnHome));
+        //启动编译线程
+        CompileThread compileThread = new CompileThread(invoker, request);
+        compileThread.start();
+        //最多等待编译线程执行60s
+        try {
+            TimeUnit.SECONDS.timedJoin(compileThread, compileMaxWaitTime);
+        }catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return compileThread.compileSuccess == 0;
+    }
+
+    private static boolean gradleCompile(String projectDirectory) {
+
+        try {
+            Runtime rt = Runtime.getRuntime();
+            String command = gradleBin + " " + projectDirectory ;
+            log.info("command -> {}",command);
+            Process process = rt.exec(command);
+            boolean timeout = process.waitFor(compileMaxWaitTime, TimeUnit.SECONDS);
+            if (!timeout) {
+                process.destroy();
+                log.error("compile gradle timeout ! (60s)");
+                return false;
+            }
+            log.info("exit value is {}", process.exitValue());
+            return process.exitValue() == 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("gradleCompile Exception!");
+            return false;
+        }
+    }
+
     private static CompileTool getCompileToolByPath(String compilePath) {
         for (CompileTool compileTool : CompileTool.values()) {
             if (compilePath.endsWith(compileTool.compileFile())) {
@@ -96,7 +148,6 @@ public class CompileUtil {
         }
         return CompileTool.maven;
     }
-
 
     private static List<String> getCompilePath(String repoPath) {
         File repoFile = new File(repoPath);
@@ -115,27 +166,6 @@ public class CompileUtil {
             if (path.endsWith(s.compileFile())) {
                 return true;
             }
-        }
-        return false;
-    }
-
-    private static Map<String, ProjectConnection>  projectConnectionMap = new ConcurrentHashMap<>(512);
-
-    private static boolean gradleCompile(String projectDirectory) {
-
-        try {
-            Runtime rt = Runtime.getRuntime();
-            String command = gradleBin + " " + projectDirectory ;
-            log.info("command -> {}",command);
-            Process process = rt.exec(command);
-            process.waitFor();
-
-            int exitValue = process.exitValue();
-            log.info("exit valuse is {}", exitValue);
-
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
         }
         return false;
     }
