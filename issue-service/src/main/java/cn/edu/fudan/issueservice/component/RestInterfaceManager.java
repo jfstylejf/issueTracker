@@ -1,7 +1,6 @@
 package cn.edu.fudan.issueservice.component;
 
 import cn.edu.fudan.issueservice.exception.AuthException;
-import cn.edu.fudan.issueservice.util.RegexUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.slf4j.Logger;
@@ -37,14 +36,6 @@ public class RestInterfaceManager {
     private String codeServicePath;
     @Value("${commit.service.path}")
     private String commitServicePath;
-    @Value("${tag.service.path}")
-    private String tagServicePath;
-    @Value("${recommendation.path}")
-    String recommendationServicePath;
-    @Value("${repository.service.path}")
-    private String repoServicePath;
-    @Value("${scan.service.path}")
-    private String scanServicePath;
     @Value("${sonar.service.path}")
     private String sonarServicePath;
     @Value("${measure.service.path}")
@@ -52,7 +43,7 @@ public class RestInterfaceManager {
     @Value("${test.repo.path}")
     private String testProjectPath;
 
-    private RestTemplate restTemplate;
+    private final RestTemplate restTemplate;
 
     public RestInterfaceManager(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
@@ -72,51 +63,48 @@ public class RestInterfaceManager {
         return restTemplate.getForObject(accountServicePath + "/user/accountIds", List.class);
     }
 
-    //------------------------------------------------end----------------------------------------------------------------------
-
     //-----------------------------------------------project service-------------------------------------------------
     /**
      * 根据account_id查找参与的项目信息
-     * @param account_id 用户登录帐号Id
+     * @param accountId 用户登录帐号Id
      * @return  参与的项目信息
      */
-    public JSONArray getProjectList(String account_id) {
-        JSONArray projectInfo = restTemplate.getForObject(projectServicePath + "/inner/projects?account_uuid=" + account_id, JSONArray.class);
-
-        return restTemplate.getForObject(projectServicePath + "/inner/projects?account_uuid=" + account_id,JSONArray.class);
+    public JSONArray getProjectList(String accountId) {
+         return restTemplate.getForObject(projectServicePath + "/inner/projects?account_uuid=" + accountId,JSONArray.class);
     }
-
 
     /**
      * 根据repo_uuid查找对应的project
-     * @param repo_id 代码库uuid
+     * @param repoUuid 代码库uuid
      * @return Map<String,String> 项目名 代码库名 分支名 代码库uuid
      */
-    public Map<String, String> getProjectByRepoId(String repo_id) {
+    public Map<String, String> getProjectByRepoId(String repoUuid) {
 
-        JSONObject projectInfo = restTemplate.getForObject(projectServicePath + "/inner/project?repo_uuid=" + repo_id, JSONObject.class);
+        JSONObject projectInfo = restTemplate.getForObject(projectServicePath + "/inner/project?repo_uuid=" + repoUuid, JSONObject.class);
 
-        Map<String,String> result = new HashMap<>();
+        Map<String,String> result = new HashMap<>(8);
 
-        result.put("projectName", projectInfo.getString("projectName"));
-        result.put("repoName", projectInfo.getString("repoName"));
-        result.put("branch", projectInfo.getString("branch"));
-        result.put("repoUuid", projectInfo.getString("repoUuid"));
+        if(projectInfo != null) {
+            result.put("projectName", projectInfo.getString("projectName"));
+            result.put("repoName", projectInfo.getString("repoName"));
+            result.put("branch", projectInfo.getString("branch"));
+            result.put("repoUuid", projectInfo.getString("repoUuid"));
+        }
 
         return result;
     }
 
     /**
      * 获取所有project下所有repo uuid和name
-     * @param userToken
-     * @return
+     * @param userToken userToken
+     * @return 所有repo uuid和name
      */
     public JSONObject getAllRepo(String userToken){
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("token", userToken);
-        HttpEntity request = new HttpEntity(headers);
-        ResponseEntity responseEntity = restTemplate.exchange(projectServicePath  + "/project/all",HttpMethod.GET,request,JSONObject.class);
+        HttpEntity<HttpHeaders> request = new HttpEntity<>(headers);
+        ResponseEntity<JSONObject> responseEntity = restTemplate.exchange(projectServicePath  + "/project/all",HttpMethod.GET,request,JSONObject.class);
         String body = responseEntity.getBody().toString();
 
         return JSONObject.parseObject(body);
@@ -124,8 +112,8 @@ public class RestInterfaceManager {
 
     /**
      * 根据url返回repoUuid
-     * @param url
-     * @param userToken
+     * @param url url
+     * @param userToken userToken
      * @return repoUuid
      */
     public String getRepoUuidByUrl(String url, String userToken){
@@ -136,8 +124,8 @@ public class RestInterfaceManager {
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("token", userToken);
-        HttpEntity request = new HttpEntity(headers);
-        ResponseEntity responseEntity = restTemplate.exchange(projectServicePath  + "/project",HttpMethod.GET,request,JSONObject.class);
+        HttpEntity<HttpHeaders> request = new HttpEntity<>(headers);
+        ResponseEntity<JSONObject> responseEntity = restTemplate.exchange(projectServicePath  + "/project",HttpMethod.GET,request,JSONObject.class);
         String body = responseEntity.getBody().toString();
         JSONObject result = JSONObject.parseObject(body);
         JSONArray reposDetail = result.getJSONArray("data");
@@ -152,25 +140,23 @@ public class RestInterfaceManager {
         return null;
     }
 
-    //-------------------------------------------------end-------------------------------------------------------------
-
     //---------------------------------------------commit service------------------------------------------------------
+
     public String getFirstCommitDate(String developerName){
         JSONObject data = restTemplate.getForObject(commitServicePath + "/first-commit?author=" + developerName, JSONObject.class).getJSONObject("data");
         LocalDateTime fistCommitDate = LocalDateTime.parse(data.getJSONObject("repos_summary").getString("first_commit_time_summary"), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         return fistCommitDate.plusHours(8).toLocalDate().toString();
     }
 
-    //----------------------------------------------end-----------------------------------------------------------------
-
     //---------------------------------------------code service---------------------------------------------------------
-    public JSONObject getRepoPath(String repoId,String commit_id){
+
+    public JSONObject getRepoPath(String repoId,String commitId){
         JSONObject repoPath = null;
         int tryCount = 0;
         while (tryCount < 5) {
 
             try{
-                JSONObject response = restTemplate.getForObject(codeServicePath + "?repo_id=" + repoId + "&commit_id=" + commit_id, JSONObject.class);
+                JSONObject response = restTemplate.getForObject(codeServicePath + "?repo_id=" + repoId + "&commitId=" + commitId, JSONObject.class);
                 if (response != null ) {
                     repoPath = response;
                 } else {
@@ -193,7 +179,7 @@ public class RestInterfaceManager {
     }
 
     public String getRepoPath(String repoId){
-        if (testProjectPath != null && !testProjectPath.equals ("false")) {
+        if (testProjectPath != null && !"false".equals (testProjectPath)) {
             return testProjectPath;
         }
 
@@ -223,29 +209,28 @@ public class RestInterfaceManager {
             }
         }
         return repoPath;
-
     }
 
-    public JSONObject freeRepoPath(String repoId,String repoPath){
+    public void freeRepoPath(String repoId, String repoPath){
         try{
-            if (testProjectPath != null && !testProjectPath.equals ("false")) {
-                return null;
+            if (testProjectPath != null && !"false".equals (testProjectPath)) {
+                return;
             }
             if(repoPath == null || repoId == null){
-                return null;
+                return;
             }
             restTemplate.getForObject(codeServicePath + "/free?repo_id=" + repoId+"&path="+repoPath, JSONObject.class);
         }catch (Exception e){
             logger.error(e.getMessage());
         }
-        return null;
     }
 
     //--------------------------------------------------------sonar api -----------------------------------------------------
+
     public JSONObject getSonarIssueResults(String repoName, String type, int pageSize, boolean resolved,int page) {
-        Map<String, String> map = new HashMap<>();
+        Map<String, String> map = new HashMap<>(16);
         StringBuilder urlBuilder = new StringBuilder();
-        urlBuilder.append(sonarServicePath + "/api/issues/search?componentKeys={componentKeys}&additionalFields={additionalFields}&s={s}&resolved={resolved}");
+        urlBuilder.append(sonarServicePath).append("/api/issues/search?componentKeys={componentKeys}&additionalFields={additionalFields}&s={s}&resolved={resolved}");
         map.put("additionalFields","_all");
         map.put("s","FILE_LINE");
         map.put("componentKeys",repoName);
@@ -253,10 +238,9 @@ public class RestInterfaceManager {
         if(type != null){
             String[] types = type.split(",");
             StringBuilder stringBuilder = new StringBuilder();
-            for(int i=0;i<types.length;i++){
-                String typeSb = types[i];
-                if("CODE_SMELL".equals(typeSb) || "BUG".equals(typeSb) || "VULNERABILITY".equals(typeSb) || "SECURITY_HOTSPOT".equals(typeSb)){
-                    stringBuilder.append(typeSb+",");
+            for (String typeSb : types) {
+                if ("CODE_SMELL".equals(typeSb) || "BUG".equals(typeSb) || "VULNERABILITY".equals(typeSb) || "SECURITY_HOTSPOT".equals(typeSb)) {
+                    stringBuilder.append(typeSb).append(",");
                 }
             }
             if(!stringBuilder.toString().isEmpty()){
@@ -281,10 +265,8 @@ public class RestInterfaceManager {
         String url = urlBuilder.toString();
 
         try {
-            ResponseEntity entity = restTemplate.getForEntity(url, JSONObject.class,map);
-            JSONObject result  = JSONObject.parseObject(entity.getBody().toString());
-            return result;
-
+            ResponseEntity<JSONObject> entity = restTemplate.getForEntity(url, JSONObject.class,map);
+            return JSONObject.parseObject(entity.getBody().toString());
         }catch (RuntimeException e) {
             logger.error("repo name : {}  ----> request sonar api failed", repoName);
             throw e;
@@ -293,28 +275,8 @@ public class RestInterfaceManager {
 
     }
 
-    public JSONObject getSonarIssueResultsBySonarIssueKey(String issues,int pageSize) {
-        //由于pathurl不能过长，所以请求时设置为5个issueKey为一组
-        String baseRequestUrl = sonarServicePath + "/api/issues/search?issues={issues}";
-        Map<String, String> map = new HashMap<>();
-        map.put("issues",issues);
-        if(pageSize>0){
-            map.put("ps",pageSize+"");
-            baseRequestUrl= baseRequestUrl+"&ps={ps}";
-        }
-        try {
-            ResponseEntity entity = restTemplate.getForEntity(baseRequestUrl,JSONObject.class,map);
-            JSONObject result  = JSONObject.parseObject(entity.getBody().toString());
-            return result;
-        } catch (RuntimeException e) {
-            logger.error("issues : {}  ----> request sonar api failed", issues);
-            throw e;
-        }
-    }
-
-
     public JSONObject getRuleInfo(String ruleKey,String actives,String organizationKey){
-        Map<String, String> map = new HashMap<>();
+        Map<String, String> map = new HashMap<>(64);
 
         String baseRequestUrl = sonarServicePath + "/api/rules/show";
         if(ruleKey ==null){
@@ -337,64 +299,6 @@ public class RestInterfaceManager {
             throw e;
         }
 
-    }
-
-    public JSONObject getSonarSourceLines(String componentKey,int from,int to){
-        if(to<from){
-            logger.error("lines {} can not greater {} ",from,to);
-        }
-        if(from <= 0){
-            from = 1;
-        }
-        Map<String, String> map = new HashMap<>();
-
-        String baseRequestUrl = sonarServicePath + "/api/sources/lines?key={key}&from={from}&to={to}";
-        map.put("key",componentKey);
-        map.put("from",String.valueOf(from));
-        map.put("to",String.valueOf(to));
-        try{
-            ResponseEntity entity = restTemplate.getForEntity(baseRequestUrl,JSONObject.class,map);
-            return JSONObject.parseObject(entity.getBody().toString());
-        }catch (RuntimeException e){
-            e.printStackTrace();
-            logger.error("componentKey : {}  ----> request sonar  source Lines  api failed , from --> {} , to --> {}", componentKey,from,to);
-            return null;
-        }
-
-
-
-    }
-
-    /**该函数用来解析/api/sources/show返回来的每行代码（由于返回的数据出现各种标签，现需去掉标签）
-     * @param componentKey
-     * @param from
-     * @param to
-     * @return
-     */
-    public List<String> getSonarSourcesLinesShow(String componentKey, int from, int to){
-        if (to<from){
-            logger.error("lines {} can not greater than {} ",from,to);
-        }
-
-        ArrayList<String> linesList = new ArrayList<>();
-        Map<String,String> paraMap = new HashMap<>(3);
-        String baseRequestUrl = sonarServicePath + "api/sources/show?key={key}&from={from}&to={to}";
-        paraMap.put("key",componentKey);
-        paraMap.put("from",String.valueOf(from));
-        paraMap.put("to",String.valueOf(to));
-        JSONObject linesJO = restTemplate.getForObject(baseRequestUrl, JSONObject.class,paraMap);
-        List<java.lang.Object> sourcesList = (List<Object>) linesJO.get("sources");
-        Map<List<String>,String> regexAndReplaceStr = new HashMap<>();
-        regexAndReplaceStr.put(Arrays.asList("<span[^>]*>","</span[^>]*>"),"");
-        regexAndReplaceStr.put(Arrays.asList("&lt;"),"<");
-        regexAndReplaceStr.put(Arrays.asList("&gt;"),">");
-        regexAndReplaceStr.put(Arrays.asList("&amp;"),"&");
-        for (Object o : sourcesList) {
-            String code = (String) ((List<Object>) o).get(1);
-            code = RegexUtil.getNoTagCode(code, regexAndReplaceStr);
-            linesList.add(code);
-        }
-        return linesList;
     }
 
     public JSONObject getSonarAnalysisTime(String projectName) {
@@ -427,7 +331,7 @@ public class RestInterfaceManager {
             headers.add("X-XSRF-TOKEN", sonarDeleteHeaders.get(0));
             headers.add("Cookie", sonarDeleteHeaders.get(1));
             String urlPath = sonarServicePath + "/api/projects/bulk_delete?projects=" + projectName;
-            restTemplate.exchange(urlPath, HttpMethod.POST, new HttpEntity(headers), JSONObject.class);
+            restTemplate.exchange(urlPath, HttpMethod.POST, new HttpEntity<HttpHeaders>(headers), JSONObject.class);
             logger.info("projectName: {} ---> delete sonar project success !", projectName);
         }catch (Exception e){
             logger.error(e.getMessage());
@@ -435,28 +339,21 @@ public class RestInterfaceManager {
         }
     }
 
-    //------------------------------------------------------scan api ---------------------------------------------
-
-    public JSONObject getScanByCategoryAndRepoIdAndCommitId(String repoId,String commitId ,String category){
-        return restTemplate.getForObject(scanServicePath + "/inner/scan/commit?repo_id=" + repoId+"&commit_id="+commitId+"&category="+category, JSONObject.class);
-    }
-
     // --------------------------------------------------------measure api ---------------------------------------------------------
 
     public Map<String, Integer> getDeveloperWorkload(Map<String, Object> query){
 
-        HttpEntity request = new HttpEntity(new HttpHeaders(){{
+        HttpEntity<HttpHeaders> request = new HttpEntity<>(new HttpHeaders(){{
             add("token",null);
         }});
 
-        String url = new StringBuilder().append(measureServicePath).append("/measure/developer/work-load?developer=")
-                .append(StringUtils.isEmpty(query.get("developer")) ? "" : query.get("developer").toString())
-                .append("&repo_uuid=").append(StringUtils.isEmpty(query.get("repoList")) ? "" : query.get("repoList").toString())
-                .append("&since=").append(StringUtils.isEmpty(query.get("since")) ? "" : query.get("since").toString())
-                .append("&until=").append(StringUtils.isEmpty(query.get("until")) ? "" : query.get("until").toString())
-                .toString();
+        String url = measureServicePath + "/measure/developer/work-load?developer=" +
+                (StringUtils.isEmpty(query.get("developer")) ? "" : query.get("developer").toString()) +
+                "&repo_uuid=" + (StringUtils.isEmpty(query.get("repoList")) ? "" : query.get("repoList").toString()) +
+                "&since=" + (StringUtils.isEmpty(query.get("since")) ? "" : query.get("since").toString()) +
+                "&until=" + (StringUtils.isEmpty(query.get("until")) ? "" : query.get("until").toString());
 
-        ResponseEntity responseEntity = restTemplate.exchange(url , HttpMethod.GET,request,JSONObject.class);
+        ResponseEntity<JSONObject> responseEntity = restTemplate.exchange(url , HttpMethod.GET,request,JSONObject.class);
         JSONObject result = JSONObject.parseObject(responseEntity.getBody().toString(),JSONObject.class);
 
         if(result.getIntValue("code") != 200){

@@ -19,6 +19,6 @@ public class RestInterfaceManagerTest {
 
     @Test
     public void deleteSonarProjectTest() {
-        restInterfaceManager.deleteSonarProject("7213b81e-2401-11eb-8dca-4dbb5f7a5f33");
+        restInterfaceManager.deleteSonarProject("0744a10e-65af-11e9-9ddc-f93dfaa9da61");
     }
 }

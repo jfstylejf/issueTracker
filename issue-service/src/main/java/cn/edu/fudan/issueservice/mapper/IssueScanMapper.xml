@@ -15,8 +15,6 @@
         <result property="resultSummary" column="result_summary"/>
     </resultMap>
 
-
-
     <insert id="insertOneScan" parameterType="IssueScan">
         insert into issue_scan
         (

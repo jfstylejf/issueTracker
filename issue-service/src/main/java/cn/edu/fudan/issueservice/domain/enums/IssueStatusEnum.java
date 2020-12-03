@@ -3,6 +3,10 @@ package cn.edu.fudan.issueservice.domain.enums;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+/**
+ * @author Beethoven
+ */
+
 @Getter
 public enum IssueStatusEnum {
 

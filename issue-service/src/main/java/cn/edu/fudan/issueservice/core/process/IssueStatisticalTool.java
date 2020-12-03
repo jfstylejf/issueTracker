@@ -4,7 +4,7 @@ import cn.edu.fudan.issueservice.dao.IssueDao;
 import cn.edu.fudan.issueservice.dao.IssueScanDao;
 import cn.edu.fudan.issueservice.dao.IssueTypeDao;
 import cn.edu.fudan.issueservice.domain.dbo.*;
-import cn.edu.fudan.issueservice.domain.ScanResult;
+import cn.edu.fudan.issueservice.domain.dbo.ScanResult;
 import cn.edu.fudan.issueservice.domain.enums.IssueStatusEnum;
 import cn.edu.fudan.issueservice.domain.enums.ScanStatusEnum;
 import cn.edu.fudan.issueservice.util.DateTimeUtil;

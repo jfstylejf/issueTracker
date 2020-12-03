@@ -1,6 +1,6 @@
 package cn.edu.fudan.issueservice.mapper;
 
-import cn.edu.fudan.issueservice.domain.ScanResult;
+import cn.edu.fudan.issueservice.domain.dbo.ScanResult;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 

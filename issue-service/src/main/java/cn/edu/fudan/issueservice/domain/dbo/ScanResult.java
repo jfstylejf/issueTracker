@@ -1,4 +1,4 @@
-package cn.edu.fudan.issueservice.domain;
+package cn.edu.fudan.issueservice.domain.dbo;
 
 import lombok.Data;
 

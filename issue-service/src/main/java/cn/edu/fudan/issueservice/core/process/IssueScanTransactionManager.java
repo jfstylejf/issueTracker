@@ -1,7 +1,7 @@
 package cn.edu.fudan.issueservice.core.process;
 
 import cn.edu.fudan.issueservice.dao.*;
-import cn.edu.fudan.issueservice.domain.ScanResult;
+import cn.edu.fudan.issueservice.domain.dbo.ScanResult;
 import cn.edu.fudan.issueservice.domain.dbo.Issue;
 import cn.edu.fudan.issueservice.domain.dbo.IssueScan;
 import cn.edu.fudan.issueservice.domain.dbo.Location;

@@ -1,6 +1,6 @@
 package cn.edu.fudan.issueservice.dao;
 
-import cn.edu.fudan.issueservice.domain.ScanResult;
+import cn.edu.fudan.issueservice.domain.dbo.ScanResult;
 import cn.edu.fudan.issueservice.mapper.ScanResultMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;

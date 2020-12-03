@@ -4,6 +4,7 @@ package cn.edu.fudan.issueservice.domain;
  * @author WZY
  * @version 1.0
  **/
+@Deprecated
 public class RawIssueDetail {
 
     private String abbrev;
