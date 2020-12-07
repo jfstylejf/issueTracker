@@ -309,16 +309,17 @@ public class IssueOuterController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "since", value = "起始时间\n格式要求: yyyy-MM-dd", required = true),
             @ApiImplicitParam(name = "until", value = "终止时间\n格式要求: yyyy-MM-dd", required = true),
-            @ApiImplicitParam(name = "repo_uuid", value = "代码库uuid", required = true),
+            @ApiImplicitParam(name = "repo_uuids", value = "多个库的uuid\n库uuid之间用英文逗号,作为分隔符", required = true),
             @ApiImplicitParam(name = "tool", value = "工具名", defaultValue = "sonarqube", allowableValues = "sonarqube"),
     })
     @GetMapping(value = {"/issue/repository/issue-count"})
-    public ResponseBean<List<Map<String, Object>>> getNewTrend(@RequestParam("repo_uuid")String repoUuid,
+    public ResponseBean<List<Map<String, Object>>> getNewTrend(@RequestParam("repo_uuids")String repoUuids,
                               @RequestParam("since")String since,
                               @RequestParam("until")String until,
                               @RequestParam(name="tool", required = false, defaultValue = "sonarqube")String tool) {
+        List<String> repoList = SegmentationUtil.splitStringList(repoUuids);
         try{
-            return new ResponseBean<>(200,success, issueService.getRepoIssueCounts(repoUuid, since, until, tool));
+            return new ResponseBean<>(200,success, issueService.getRepoIssueCounts(repoList, since, until, tool));
         }catch (Exception e){
             return new ResponseBean<>(500, failed + e.getMessage(),null);
         }

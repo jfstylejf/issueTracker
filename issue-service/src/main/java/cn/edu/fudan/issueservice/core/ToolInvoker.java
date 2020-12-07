@@ -261,7 +261,7 @@ public class ToolInvoker {
             return ;
         }
         long compileTime = System.currentTimeMillis();
-        log.info("compile time --> {}\n compile success ! ", (compileTime-deleteTargetTime)/1000 );
+        log.info("compile time --> {}, compile success ! ", (compileTime - deleteTargetTime)/1000 );
 
         //2. 调用工具进行扫描
         boolean invokeToolResult = analyzer.invoke(repoId, repoPath, commit);
