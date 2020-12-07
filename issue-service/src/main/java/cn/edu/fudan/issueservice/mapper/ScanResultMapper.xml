@@ -42,7 +42,13 @@
         SUBSTRING_INDEX( GROUP_CONCAT( `remaining_count` ORDER BY `id` DESC SEPARATOR '||' ), '||', 1 )remainingIssueCount
         FROM
         scan_result
-        where repo_id = #{repo_id} and DATE(commit_date) BETWEEN #{since} AND #{until}
+        where DATE(commit_date) BETWEEN #{since} AND #{until}
+        <if test="repoUuids != null and repoUuids.size > 0">
+            AND repo_id IN
+            <foreach collection="repoUuids" separator="," open="(" close=")" item="repoUuid">
+                #{repoUuid}
+            </foreach>
+        </if>
         <if test="developer != null and developer != ''" >
             and developer = #{developer}
         </if>
@@ -53,7 +59,16 @@
     </select>
 
     <select id="findFirstDateByRepo" parameterType="String" resultType="String">
-        SELECT commit_date  FROM scan_result ORDER BY commit_date ASC LIMIT 1
+        SELECT commit_date FROM scan_result
+        <where>
+            <if test="repoUuids != null and repoUuids.size > 0">
+                repo_id IN
+                <foreach collection="repoUuids" separator="," open="(" close=")" item="repoUuid">
+                    #{repoUuid}
+                </foreach>
+            </if>
+        </where>
+        ORDER BY commit_date ASC LIMIT 1
     </select>
 
 

@@ -317,28 +317,6 @@ public class RestInterfaceManager {
         return error;
     }
 
-    public void deleteSonarProject(String projectName){
-        try{
-            String url = sonarServicePath + "/api/authentication/login?login=admin&password=admin";
-            ResponseEntity<JSONObject> responseEntity = restTemplate.exchange(url, HttpMethod.POST, null, JSONObject.class);
-            List<String> sonarDeleteHeaders = responseEntity.getHeaders().get("Set-Cookie");
-            if(sonarDeleteHeaders == null || sonarDeleteHeaders.size() != 2){
-                logger.error("get sonar delete headers failed !");
-                logger.error("projectName: {} ---> delete sonar project failed !", projectName);
-                return;
-            }
-            HttpHeaders headers = new HttpHeaders();
-            headers.add("X-XSRF-TOKEN", sonarDeleteHeaders.get(0));
-            headers.add("Cookie", sonarDeleteHeaders.get(1));
-            String urlPath = sonarServicePath + "/api/projects/bulk_delete?projects=" + projectName;
-            restTemplate.exchange(urlPath, HttpMethod.POST, new HttpEntity<HttpHeaders>(headers), JSONObject.class);
-            logger.info("projectName: {} ---> delete sonar project success !", projectName);
-        }catch (Exception e){
-            logger.error(e.getMessage());
-            logger.error("projectName: {} ---> delete sonar project failed !", projectName);
-        }
-    }
-
     // --------------------------------------------------------measure api ---------------------------------------------------------
 
     public Map<String, Integer> getDeveloperWorkload(Map<String, Object> query){

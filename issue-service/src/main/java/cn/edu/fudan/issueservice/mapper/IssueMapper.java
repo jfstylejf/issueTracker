@@ -83,11 +83,11 @@ public interface IssueMapper {
     /**
      * get not solved issue all list by category and repo id
      *
-     * @param repoId get issue repo id
+     * @param repoUuids get issue repo id
      * @param tool get issue type
      * @return List<Issue>
      */
-    List<Issue> getNotSolvedIssueAllListByToolAndRepoId(@Param("repo_id") String repoId,@Param("tool")  String tool);
+    List<Issue> getNotSolvedIssueAllListByToolAndRepoId(@Param("repoUuids") List<String> repoUuids,@Param("tool")  String tool);
 
     /**
      * 获取指定repocategory的issue列表且status不等于statusLis中任何一个。

@@ -100,6 +100,17 @@
         from rawIssue where repo_id = #{repo_id} and tool = #{tool} and commit_id = #{commit_id} and status != 'solved' and status != 'merge solved'
     </select>
 
+    <select id="getRawIssueByRepoList" parameterType="String" resultMap="rawIssue2">
+        select uuid,type,tool,detail,file_name,scan_id,issue_id,commit_id,repo_id,code_lines,status
+        from rawIssue where tool = #{tool} and commit_id = #{commit_id} and status != 'solved' and status != 'merge solved'
+        <if test="repoUuids != null and repoUuids.size > 0">
+            AND repo_id IN
+            <foreach collection="repoUuids" separator="," open="(" close=")" item="repoUuid">
+                #{repoUuid}
+            </foreach>
+        </if>
+    </select>
+
     <select id="getRawIssueByIssueId" parameterType="String" resultType="java.util.HashMap">
         select distinct a.uuid, a.type, a.tool, a.detail, a.file_name as fileName,a.scan_id as scanId, a.issue_id as issueUuid,
         a.commit_id as commitId,a.repo_id as repoUuid, a.code_lines as codeLines,a.status,b.commit_time as commitTime, b.developer_email as developerEmail

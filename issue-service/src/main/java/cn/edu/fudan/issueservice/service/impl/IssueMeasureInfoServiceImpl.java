@@ -36,13 +36,13 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
 
 
     @Override
-    public List<Map.Entry<String, JSONObject>> getNotSolvedIssueCountByToolAndRepoUuid(String repoUuid, String tool, String order, String commitUuid) {
+    public List<Map.Entry<String, JSONObject>> getNotSolvedIssueCountByToolAndRepoUuid(List<String> repoUuids, String tool, String order, String commitUuid) {
 
         Map<String, JSONObject> result = new HashMap<>(32);
 
-        List<RawIssue> rawIssues = commitUuid == null ? new ArrayList<>() : rawIssueDao.getRawIssueByCommitIDAndTool(repoUuid,tool,commitUuid);
+        List<RawIssue> rawIssues = commitUuid == null ? new ArrayList<>() : rawIssueDao.getRawIssueByRepoList(repoUuids, tool, commitUuid);
 
-        List<Issue> issues = commitUuid != null ? new ArrayList<>() : issueDao.getNotSolvedIssueAllListByToolAndRepoId(repoUuid, tool);
+        List<Issue> issues = commitUuid != null ? new ArrayList<>() : issueDao.getNotSolvedIssueAllListByToolAndRepoId(repoUuids, tool);
 
         String total = "Total";
 
@@ -127,16 +127,16 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
 
         //下面开始处理返回的格式
         if (issueLifeList.size() == 0){
-            return new HashMap<String, Integer>(16){{
-                put("max",0);
-                put("min",0);
-                put("avg",0);
-                put("mid",0);
-                put("upperQuartile",0);
-                put("lowerQuartile",0);
-                put("multiple",0);
-                put("quantity", 0);
-            }};
+            Map<String, Integer> result = new HashMap<>(16);
+            result.put("max",0);
+            result.put("min",0);
+            result.put("avg",0);
+            result.put("mid",0);
+            result.put("upperQuartile",0);
+            result.put("lowerQuartile",0);
+            result.put("multiple",0);
+            result.put("quantity", 0);
+            return  result;
         }
 
         List<Integer> lifeCycle = new ArrayList<>();
@@ -245,7 +245,7 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
     }
 
     private void filterIssueAddedBySelfAndNotSolved(List<Map<String, Object>> addedIssueLife) {
-        for (int i = addedIssueLife.size()-1; i >= 0; i--){
+        for (int i = addedIssueLife.size() - 1; i >= 0; i--){
             Map<String, Object> map = addedIssueLife.get(i);
             if ("Solved".equals(map.get("status"))){
                 addedIssueLife.remove(i);

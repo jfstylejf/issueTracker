@@ -15,13 +15,13 @@ public interface IssueMeasureInfoService {
 
     /**
      * 获取未解决的Issue
-     * @param repoUuid repoUuid
+     * @param repoList repoUuids
      * @param tool tool
      * @param order order
      * @param commitUuid commitId
      * @return 未解决的Issue
      */
-    List<Map.Entry<String, JSONObject>> getNotSolvedIssueCountByToolAndRepoUuid(String repoUuid, String tool, String order, String commitUuid);
+    List<Map.Entry<String, JSONObject>> getNotSolvedIssueCountByToolAndRepoUuid(List<String> repoList, String tool, String order, String commitUuid);
 
     /**
      *  根据条件获取开发者日均解决缺陷数量

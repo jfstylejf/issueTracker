@@ -5,6 +5,7 @@ import cn.edu.fudan.issueservice.component.RestInterfaceManager;
 import cn.edu.fudan.issueservice.domain.ResponseBean;
 import cn.edu.fudan.issueservice.service.IssueMeasureInfoService;
 import cn.edu.fudan.issueservice.util.DateTimeUtil;
+import cn.edu.fudan.issueservice.util.SegmentationUtil;
 import com.alibaba.fastjson.JSONObject;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -46,17 +47,18 @@ public class IssueMeasurementController {
             "        }\n]", httpMethod = "GET")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "tool", value = "工具名", dataType = "String", required = true, defaultValue = "sonarqube", allowableValues = "sonarqube"),
-            @ApiImplicitParam(name = "repo_uuid", value = "代码库uuid", dataType = "String", required = true),
+            @ApiImplicitParam(name = "repo_uuids", value = "多个库的uuid\n库uuid之间用英文逗号,作为分隔符", dataType = "String", required = true),
             @ApiImplicitParam(name = "order", value = "排序方式", dataType = "String", defaultValue = "Default", allowableValues = "Default, Total, Ignore, Misinformation, To_Review"),
             @ApiImplicitParam(name = "commit", value = "commit的uuid", dataType = "String"),
     })
     @GetMapping(value = "/measurement/issue-type-counts")
-    public ResponseBean<List<Map.Entry<String, JSONObject>>> getIssueTypeCountsByToolAndRepoUuid(@RequestParam("repo_uuid") String repoUuid,
+    public ResponseBean<List<Map.Entry<String, JSONObject>>> getIssueTypeCountsByToolAndRepoUuid(@RequestParam("repo_uuids") String repoUuids,
                                                                                      @RequestParam("tool") String category,
                                                                                      @RequestParam(value = "order", required = false, defaultValue = "Default") String order,
                                                                                      @RequestParam(value = "commit", required = false) String commitUuid) {
+        List<String> repoList = SegmentationUtil.splitStringList(repoUuids);
         try{
-            return new ResponseBean<>(200, success, issueMeasureInfoService.getNotSolvedIssueCountByToolAndRepoUuid(repoUuid, category, order, commitUuid));
+            return new ResponseBean<>(200, success, issueMeasureInfoService.getNotSolvedIssueCountByToolAndRepoUuid(repoList, category, order, commitUuid));
         }catch (Exception e){
             e.printStackTrace();
             return new ResponseBean<>(500, failed + e.getMessage(),null);
@@ -182,8 +184,13 @@ public class IssueMeasurementController {
 
         Map<String, Object> query = new HashMap<>(10);
 
-        query.put("since", DateTimeUtil.timeFormatIsLegal(since, false));
-        query.put("until", DateTimeUtil.timeFormatIsLegal(until, true));
+        String timeError = "time format error";
+        if(timeError.equals(DateTimeUtil.timeFormatIsLegal(since, false)) || timeError.equals(DateTimeUtil.timeFormatIsLegal(until, true))){
+            return new ResponseBean<>(400, "The input time format error,should be yyyy-MM-dd.", null);
+        }
+
+        query.put("since", since);
+        query.put("until", until);
         query.put("developer", developer);
         query.put("tool", tool);
         query.put("repoList", repoList);
