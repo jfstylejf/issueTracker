@@ -12,6 +12,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -35,23 +37,21 @@ public class MeasureRepoServiceImpl implements MeasureRepoService {
     private RestInterfaceManager restInterfaceManager;
     private RepoMeasureMapper repoMeasureMapper;
 
+    private static DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    private static String defaultStartTime = "2018-01-01";
+
+
     public MeasureRepoServiceImpl(RestInterfaceManager restInterfaceManager, RepoMeasureMapper repoMeasureMapper) {
         this.restInterfaceManager = restInterfaceManager;
         this.repoMeasureMapper = repoMeasureMapper;
     }
 
     @Override
-    public List<RepoMeasure> getRepoMeasureByrepoUuid(String repoUuid,String since,String until,Granularity granularity) {
+    public List<RepoMeasure> getRepoMeasureByRepoUuid(String repoUuid,String since,String until,Granularity granularity) {
         List<RepoMeasure> result=new ArrayList<>();
-        LocalDate preTimeLimit= DateTimeUtil.parse(until).plusDays(1);
-        //until查询往后推一天，例如输入的是2020-03-31，不往后推一天，接口只能返回03-30这一天及以前的数据。推一天后，就能返回03-31这一天的数据
-        until = preTimeLimit.toString();
+        LocalDate preTimeLimit= LocalDate.parse(until,dtf);
         //先统一把这个时间段的所有度量值对象都取出来，然后按照时间单位要求来过滤
-        int count = 0;
-        if(since == null || since.isEmpty()){
-            count = 10;
-        }
-        List<RepoMeasure> repoMeasures=repoMeasureMapper.getRepoMeasureByDeveloperAndrepoUuid(repoUuid,null,count,since,until);
+        List<RepoMeasure> repoMeasures=repoMeasureMapper.getRepoMeasureByDeveloperAndrepoUuid(repoUuid,null,since,until);
         if(repoMeasures==null||repoMeasures.isEmpty()) {
             return Collections.emptyList();
         }
@@ -63,6 +63,17 @@ public class MeasureRepoServiceImpl implements MeasureRepoService {
             return LocalDate.parse(dateStr,DateTimeUtil.Y_M_D_formatter);
         }));
 
+        List<LocalDate> dates = sortByCondition(map);
+        selectByGranularity(result,dates,map,preTimeLimit,granularity);
+        result= result.stream().map(rm -> {
+            String date=rm.getCommit_time();
+            rm.setCommit_time(date.split(" ")[0]);
+            return rm;
+        }).collect(Collectors.toList());
+        return result;
+    }
+
+    public List<LocalDate> sortByCondition(Map<LocalDate,List<RepoMeasure>> map) {
 
         //对日期进行排序
         List<LocalDate> dates=new ArrayList<>(map.keySet());
@@ -87,6 +98,10 @@ public class MeasureRepoServiceImpl implements MeasureRepoService {
             });
         }
 
+        return dates;
+    }
+
+    public void selectByGranularity(List<RepoMeasure> result,List<LocalDate> dates,Map<LocalDate,List<RepoMeasure>> map,LocalDate preTimeLimit,Granularity granularity) {
 
         switch (granularity){
             case day:
@@ -129,15 +144,9 @@ public class MeasureRepoServiceImpl implements MeasureRepoService {
                 throw new RuntimeException("please input correct granularity !");
         }
 
-        result= result.stream().map(rm -> {
-            String date=rm.getCommit_time();
-            rm.setCommit_time(date.split(" ")[0]);
-            return rm;
-        }).collect(Collectors.toList());
-
-
-        return result;
     }
+
+
 
     @Override
     public RepoMeasure getRepoMeasureByrepoUuidAndCommitId(String repoUuid, String commitId) {
@@ -157,15 +166,12 @@ public class MeasureRepoServiceImpl implements MeasureRepoService {
     @Override
     public CommitBaseInfoDuration getCommitBaseInformationByDuration(String repo_id, String since, String until, String developer_name) {
         CommitBaseInfoDuration commitBaseInfoDuration = new CommitBaseInfoDuration();
-        String sinceDay = dateFormatChange(since);
-        String untilDay = dateFormatChange(until);
-
-        List<CommitInfoDeveloper> commitInfoDeveloper = repoMeasureMapper.getCommitInfoDeveloperListByDuration(repo_id, sinceDay, untilDay, developer_name);
+        List<CommitInfoDeveloper> commitInfoDeveloper = repoMeasureMapper.getCommitInfoDeveloperListByDuration(repo_id, since, until, developer_name);
         commitInfoDeveloper.removeIf(info -> info.getAuthor() == null || "".equals(info.getAuthor()));
-        int addLines = repoMeasureMapper.getAddLinesByDuration(repo_id, sinceDay, untilDay, "");
-        int delLines = repoMeasureMapper.getDelLinesByDuration(repo_id, sinceDay, untilDay, "");
-        int sumCommitCounts = repoMeasureMapper.getCommitCountsByDuration(repo_id, sinceDay, untilDay,null);
-        int sumChangedFiles = repoMeasureMapper.getChangedFilesByDuration(repo_id, sinceDay, untilDay,null);
+        int addLines = repoMeasureMapper.getAddLinesByDuration(repo_id, since, until, "");
+        int delLines = repoMeasureMapper.getDelLinesByDuration(repo_id, since, until, "");
+        int sumCommitCounts = repoMeasureMapper.getCommitCountsByDuration(repo_id, since, until,null);
+        int sumChangedFiles = repoMeasureMapper.getChangedFilesByDuration(repo_id, since, until,null);
         commitBaseInfoDuration.setCommitInfoList(commitInfoDeveloper);
         commitBaseInfoDuration.setSumAddLines(addLines);
         commitBaseInfoDuration.setSumDelLines(delLines);
@@ -189,34 +195,19 @@ public class MeasureRepoServiceImpl implements MeasureRepoService {
         if (since.compareTo(until)>0 || since.length()>10 || until.length()>10){
             throw new RuntimeException("please input correct date");
         }
-        String sinceday = dateFormatChange(since);
-        String untilday = dateFormatChange(until);
-
-        return repoMeasureMapper.getCommitCountsByDuration(repo_id, sinceday, untilday,null);
+        return repoMeasureMapper.getCommitCountsByDuration(repo_id, since, until,null);
     }
-
-    /**
-     *     把日期格式从“2010.10.10转化为2010-10-10”
-     */
-    private String dateFormatChange(String dateStr){
-        return dateStr.replace('.','-');
-    }
-
 
 
 
 
     @Override
     public Object getDeveloperRankByCommitCount(String repo_id, String since, String until){
-        since = dateFormatChange(since);
-        until = dateFormatChange(until);
         return repoMeasureMapper.getDeveloperRankByCommitCount(repo_id, since, until);
     }
 
     @Override
     public Object getDeveloperRankByLoc(String repo_id, String since, String until){
-        since = dateFormatChange(since);
-        until = dateFormatChange(until);
         List<Map<String, Object>> result = repoMeasureMapper.getDeveloperRankByLoc(repo_id, since, until);
         //如果LOC数据为0，则删除这条数据
         if (null != result && result.size() > 0) {
@@ -245,12 +236,20 @@ public class MeasureRepoServiceImpl implements MeasureRepoService {
 
     @Override
     public Object getCommitCountLOCDaily(String repo_id, String since, String until){
-        since = dateFormatChange(since);
-        until = dateFormatChange(until);
         List<Map<String, Object>> result = new ArrayList<>();
-
-        LocalDate indexDay = LocalDate.parse(since,DateTimeUtil.Y_M_D_formatter);
-        LocalDate untilDay = LocalDate.parse(until,DateTimeUtil.Y_M_D_formatter);
+        LocalDate indexDay;
+        LocalDate untilDay;
+        if(since!=null && !"".equals(since)) {
+            indexDay = LocalDate.parse(since,dtf);
+        }else {
+            indexDay = LocalDate.parse(defaultStartTime,dtf);
+        }
+        if (until!=null && !"".equals(until)) {
+            untilDay = LocalDate.parse(until,dtf);
+        }else {
+            LocalDateTime ldf = LocalDateTime.now();
+            untilDay = LocalDate.parse(ldf.format(dtf),dtf);
+        }
         while(untilDay.isAfter(indexDay) || untilDay.isEqual(indexDay)){
             Map<String, Object> map = new HashMap<>();
             int LOC = repoMeasureMapper.getRepoLOCByDuration(repo_id, indexDay.toString(), indexDay.toString(),null);

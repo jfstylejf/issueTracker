@@ -34,7 +34,7 @@ public interface RepoMeasureMapper {
      * @param developerName
      * @return
      */
-    int getValidCommitCountsByAllRepo(@Param("repoUuidList")List<String> repoUuidList,@Param("since")String since,@Param("until")String until,@Param("developer_name")String developerName);
+    List<Map<String,Object>> getValidCommitCountsByAllRepo(@Param("repoUuidList")List<String> repoUuidList,@Param("since")String since,@Param("until")String until,@Param("developer_name")String developerName);
 
     /**
      * 获取开发者不规范提交明细
@@ -81,7 +81,7 @@ public interface RepoMeasureMapper {
      *
      *
      */
-    List<RepoMeasure> getRepoMeasureByDeveloperAndrepoUuid(@Param("repo_id")String repo_id,@Param("developer_name")String developer_name,@Param("counts")int counts,@Param("since")String since,@Param("until")String until);
+    List<RepoMeasure> getRepoMeasureByDeveloperAndrepoUuid(@Param("repo_id")String repo_id,@Param("developer_name")String developer_name ,@Param("since")String since,@Param("until")String until);
 
     List<Map<String, Object>> getDeveloperRankByCommitCount(@Param("repo_id")String repo_id, @Param("since")String since, @Param("until")String until);
 

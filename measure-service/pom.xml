@@ -132,6 +132,11 @@
             <artifactId>swagger-bootstrap-ui</artifactId>
             <version>1.6</version>
         </dependency>
+        <dependency>
+            <groupId>org.mybatis</groupId>
+            <artifactId>mybatis</artifactId>
+            <version>3.5.0</version>
+        </dependency>
 
 
     </dependencies>

@@ -30,8 +30,7 @@ public class MeasureServiceApplication implements ApplicationRunner {
 
 //    RedisTemplate
 
-    private MeasureDeveloperService measureDeveloperService;
-    private RepoMeasureMapper repoMeasureMapper;
+    //private MeasureDeveloperService measureDeveloperService;
 
     public static void main(String[] args) {
         SpringApplication.run(MeasureServiceApplication.class, args);
@@ -39,18 +38,8 @@ public class MeasureServiceApplication implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
-//        measureDeveloperService.clearCache();
+        //measureDeveloperService.clearCache();
     }
 
 
-
-    @Autowired
-    public void setMeasureDeveloperService(MeasureDeveloperService measureDeveloperService) {
-        this.measureDeveloperService = measureDeveloperService;
-    }
-
-    @Autowired
-    public void setRepoMeasureMapper(RepoMeasureMapper repoMeasureMapper) {
-        this.repoMeasureMapper = repoMeasureMapper;
-    }
 }

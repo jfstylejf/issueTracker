@@ -1,5 +1,7 @@
 package cn.edu.fudan.measureservice.service;
 
+import org.springframework.stereotype.Service;
+
 import java.text.ParseException;
 import java.util.List;
 import java.util.Map;

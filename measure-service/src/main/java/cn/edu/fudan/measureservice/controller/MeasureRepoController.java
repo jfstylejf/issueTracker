@@ -11,6 +11,9 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
@@ -20,6 +23,8 @@ public class MeasureRepoController {
 
     private MeasureRepoService measureRepoService;
 
+    private static DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
     public MeasureRepoController(MeasureRepoService measureRepoService) {
         this.measureRepoService = measureRepoService;
     }
@@ -28,7 +33,7 @@ public class MeasureRepoController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "repo_uuid", value = "参与库", dataType = "String",required = true,defaultValue = "3ecf804e-0ad6-11eb-bb79-5b7ba969027e" ),
             @ApiImplicitParam(name = "since", value = "起始时间（yyyy-MM-dd）", dataType = "String", defaultValue = "2019-02-20"),
-            @ApiImplicitParam(name = "until", value = "截止时间（yyyy-MM-dd）", dataType = "String",required = true,defaultValue = "当前时间"),
+            @ApiImplicitParam(name = "until", value = "截止时间（yyyy-MM-dd）", dataType = "String" ,defaultValue = "当前时间"),
             @ApiImplicitParam(name = "granularity", value = "时间粒度", dataType = "String", required = true,defaultValue = "week")
     })
 
@@ -36,10 +41,14 @@ public class MeasureRepoController {
     @CrossOrigin
     public ResponseBean<List<RepoMeasure>> getMeasureDataByrepoUuid(@RequestParam("repo_uuid")String repoUuid,
                                                                   @RequestParam(name="since",required = false)String since,
-                                                                  @RequestParam("until")String until,
+                                                                  @RequestParam(value = "until",required = false)String until,
                                                                   @RequestParam("granularity") Granularity granularity){
+
         try{
-            return new ResponseBean<>(200,"success", measureRepoService.getRepoMeasureByrepoUuid(repoUuid,since,until,granularity));
+            if(until==null || "".equals(until)) {
+                until = dtf.format(LocalDate.now().plusDays(1));
+            }
+            return new ResponseBean<>(200,"success", measureRepoService.getRepoMeasureByRepoUuid(repoUuid,since,until,granularity));
         }catch (Exception e){
             e.printStackTrace();
             return new ResponseBean<>(401,"failed "+ e.getMessage(),null);
@@ -58,11 +67,15 @@ public class MeasureRepoController {
     @GetMapping("/measure/repository/duration")
     @CrossOrigin
     public ResponseBean<CommitBaseInfoDuration> getCommitBaseInformationByDuration(@RequestParam("repo_uuid")String repoUuid,
-                                                                                   @RequestParam("since")String since,
-                                                                                   @RequestParam("until")String until,
+                                                                                   @RequestParam(value = "since",required = false)String since,
+                                                                                   @RequestParam(value = "until",required = false)String until,
                                                                                    @RequestParam(name = "developer",required = false)String developerName
                                                  ){
+
         try{
+            if(until==null || "".equals(until)) {
+                until = dtf.format(LocalDate.now().plusDays(1));
+            }
             return new ResponseBean<>(200,"success",measureRepoService.getCommitBaseInformationByDuration(repoUuid, since, until, developerName));
         }catch (Exception e){
             e.printStackTrace();
@@ -82,9 +95,13 @@ public class MeasureRepoController {
     @CrossOrigin
     public ResponseBean<List<Map<String,Object>>> getDeveloperRankByCommitCount(
             @RequestParam("repo_uuid")String repoUuid,
-            @RequestParam("since")String since,
-            @RequestParam("until")String until){
+            @RequestParam(value = "since",required = false)String since,
+            @RequestParam(value = "until",required = false)String until){
+
         try{
+            if(until==null || "".equals(until)) {
+                until = dtf.format(LocalDate.now().plusDays(1));
+            }
             return new ResponseBean<>(200,"success",(List<Map<String,Object>>) measureRepoService.getDeveloperRankByCommitCount(repoUuid, since, until));
         }catch (Exception e){
             e.printStackTrace();
@@ -103,9 +120,13 @@ public class MeasureRepoController {
     @CrossOrigin
     public ResponseBean<List<Map<String, Object>>> getDeveloperRankByLoc(
             @RequestParam("repo_uuid")String repoUuid,
-            @RequestParam("since")String since,
-            @RequestParam("until")String until){
+            @RequestParam(value = "since",required = false)String since,
+            @RequestParam(value = "until",required = false)String until){
+
         try{
+            if(until==null || "".equals(until)) {
+                until = dtf.format(LocalDate.now().plusDays(1));
+            }
             return new ResponseBean<>(200,"success",(List<Map<String, Object>>) measureRepoService.getDeveloperRankByLoc(repoUuid, since, until));
         }catch (Exception e){
             e.printStackTrace();
@@ -124,9 +145,13 @@ public class MeasureRepoController {
     @CrossOrigin
     public ResponseBean<List<Map<String, Object>>> getCommitCountLOCDaily(
             @RequestParam("repo_uuid")String repoUuid,
-            @RequestParam("since")String since,
-            @RequestParam("until")String until){
+            @RequestParam(value = "since",required = false)String since,
+            @RequestParam(value = "until",required = false)String until){
+
         try{
+            if(until==null || "".equals(until)) {
+                until = dtf.format(LocalDate.now().plusDays(1));
+            }
             return new ResponseBean<>(200,"success",(List<Map<String, Object>>) measureRepoService.getCommitCountLOCDaily(repoUuid, since, until));
         }catch (Exception e){
             e.printStackTrace();

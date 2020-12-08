@@ -194,11 +194,11 @@
     <select id="getCommitCountsByDuration" resultType="int">
         select
              COUNT(*) as commit_counts
-        from repo_measure
+        from commit_view
         <where>
             <trim prefixOverrides="and">
                 <if test="developer_name != null and developer_name != '' ">
-                    and developer_name = #{developer_name}
+                    and developer_unique_name = #{developer_name}
                 </if>
 
                 <if test="repo_id != null and repo_id != '' ">
@@ -216,9 +216,8 @@
         </where>
     </select>
 
-    <select id="getValidCommitCountsByAllRepo" resultType="int">
-        select
-        COUNT(*) as commit_counts
+    <select id="getValidCommitCountsByAllRepo" resultType="java.util.HashMap">
+        SELECT developer_unique_name,left(commit_time,10) as commit_time,commit_id,message
         from commit_view
         <where>
             <trim prefixOverrides="and">
@@ -243,6 +242,7 @@
                 and message NOT LIKE '%Merge%'
             </trim>
         </where>
+        ORDER By commit_time desc
     </select>
 
     <select id="getInvalidCommitMsg" resultType="java.util.HashMap">
@@ -430,9 +430,6 @@
         </where>
         group by commit_id
         order by commit_time desc
-        <if test="counts != 0 ">
-            limit #{counts}
-        </if>
     </select>
 
     <select id="getCommits" parameterType="String" resultMap="Commit">
@@ -504,10 +501,10 @@
     </select>
 
     <select id="getDeveloperDutyTypeListByrepoUuid" parameterType="String" resultType="java.util.HashMap">
-        SELECT DISTINCT a.name , a.account_status
+        SELECT DISTINCT a.account_name as accountName , a.account_status
         FROM account as a
         WHERE
-        a.name IN
+        a.account_name IN
         (SELECT DISTINCT developer_unique_name FROM commit_view
         <where>
             <if test="repoUuidList != null and repoUuidList.size > 0">
@@ -614,6 +611,7 @@
                     and <![CDATA[ commit_time <= #{until} ]]>
                 </if>
             </trim>
+            and repo_id in (SELECT distinct repo_uuid FROM sub_repository)
         </where>
 
     </select>
@@ -733,7 +731,7 @@
         FROM
             account
         WHERE
-	        name = #{developer}
+	        account_name = #{developer}
     </select>
 
     <select id="getDeveloperList" resultType="String">

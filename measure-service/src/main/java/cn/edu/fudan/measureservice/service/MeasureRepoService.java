@@ -14,7 +14,7 @@ public interface MeasureRepoService {
      * @param granularity 时间段的单位day,week,month
      * @return 每个时间点上的项目级度量信息
      */
-    List<RepoMeasure> getRepoMeasureByrepoUuid(String repoUuid, String since, String until, Granularity granularity);
+    List<RepoMeasure> getRepoMeasureByRepoUuid(String repoUuid, String since, String until, Granularity granularity);
 
     /**
      * 获取一个项目在某个commit的所有度量信息
