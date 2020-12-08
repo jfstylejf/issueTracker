@@ -17,7 +17,6 @@
         <result property="code" column="code"/>
     </resultMap>
 
-
     <insert id="insertLocationList" parameterType="List">
         insert into location
         (

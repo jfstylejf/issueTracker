@@ -6,6 +6,7 @@ import cn.edu.fudan.issueservice.domain.enums.IssuePriorityEnum;
 import cn.edu.fudan.issueservice.exception.UrlException;
 import cn.edu.fudan.issueservice.service.IssueService;
 import cn.edu.fudan.issueservice.util.DateTimeUtil;
+import cn.edu.fudan.issueservice.util.ExcelUtil;
 import cn.edu.fudan.issueservice.util.SegmentationUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -13,11 +14,14 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -36,6 +40,8 @@ public class IssueOuterController {
     private final String failed = "failed ";
 
     private final String TOKEN = "token";
+
+    private final String timeError = "time format error";
 
     @ApiOperation(value = "根据缺陷扫描工具获取该工具下扫描的所有的issue类型", notes = "@return  List < String > ", httpMethod = "GET")
     @ApiImplicitParams({
@@ -100,7 +106,7 @@ public class IssueOuterController {
             @ApiImplicitParam(name = "since", value = "起始时间\n格式要求: yyyy-MM-dd"),
             @ApiImplicitParam(name = "until", value = "终止时间\n格式要求: yyyy-MM-dd"),
             @ApiImplicitParam(name = "tool", value = "工具名", defaultValue = "sonarqube", allowableValues = "sonarqube"),
-            @ApiImplicitParam(name = "types", value = "issue类型\n支持多个类型筛选\n用英文逗号,作为分隔符\n传null默认查询所有类型"),
+            @ApiImplicitParam(name = "types", value = "issue类型\n传null默认查询所有类型"),
             @ApiImplicitParam(name = "page", value = "页号", defaultValue = "1"),
             @ApiImplicitParam(name = "ps", value = "页大小\n范围0-100\n为0时只返回issue数量", defaultValue = "10"),
             @ApiImplicitParam(name = "status", value = "issue状态\n传null默认查询所有状态", allowableValues = "Open , Solved , Misinformation , To_Review , Ignore"),
@@ -117,12 +123,12 @@ public class IssueOuterController {
             @ApiImplicitParam(name = "issue_uuids", value = "多个issue的uuid\n用英文逗号,作为分隔符")
     })
     @GetMapping(value = {"/issue/filter"})
-    public ResponseBean<Map<String, Object>> filterIssues2(HttpServletRequest request, @RequestParam(value = "project_name",required = false) String projectName,
+    public ResponseBean<Map<String, Object>> filterIssues(HttpServletRequest request, @RequestParam(value = "project_name",required = false) String projectName,
                                                            @RequestParam(value = "repo_uuids", required = false) String repoUuids,
                                                            @RequestParam(value = "since",required = false) String since,
                                                            @RequestParam(value = "until",required = false) String until,
                                                            @RequestParam(value = "tool",required = false, defaultValue = "sonarqube") String toolName,
-                                                           @RequestParam(value = "types",required = false) String types,
+                                                           @RequestParam(value = "types",required = false) String type,
                                                            @RequestParam(value = "page",required = false,defaultValue = "1") int page,
                                                            @RequestParam(value = "ps",required = false,defaultValue = "10") int ps,
                                                            @RequestParam(value = "status",required = false) String status,
@@ -138,8 +144,6 @@ public class IssueOuterController {
                                                            @RequestParam(value = "order", required = false, defaultValue = "no") String order,
                                                            @RequestParam(value = "issue_uuids", required = false) String issueUuids) {
         String userToken = request.getHeader(TOKEN);
-
-        String timeError = "time format error";
 
         Map<String, Object> query = new HashMap<>(32);
 
@@ -162,12 +166,13 @@ public class IssueOuterController {
         } catch (UrlException e) {
             return new ResponseBean<>(400, failed + e.getMessage(), null);
         }
-
-        String[] queryName = {"types", "status", "filesPath", "issueUuids"};
-        String[] spiltStrings = {types, status, filesPath, issueUuids};
+        //处理查询条件
+        String[] queryName = {"status", "filesPath", "issueUuids"};
+        String[] spiltStrings = {status, filesPath, issueUuids};
         SegmentationUtil.splitString(queryName, spiltStrings, query);
-
-        //直接dao的条件
+        if(!StringUtils.isEmpty(type)){
+            query.put("types", new ArrayList<String>(){{add(type);}});
+        }
         query.put("since", since);
         query.put("until", until);
         query.put("category", category);
@@ -180,21 +185,17 @@ public class IssueOuterController {
         query.put("asc", asc);
         query.put("detail", detail);
         query.put("order", order);
-
         //fixme end_commit 改为 solve_commit 有误差
         //step1 ps = 0 only return total(because fetch time --)  or  ps != 0 do select;
         Map<String, Object> issueFilterList = issueService.getIssueFilterListCount(query);
         if(ps == 0){
             return new ResponseBean<>(200, success, issueFilterList);
         }
-
         //step2 select issueList (always(since,until,status,types,filesPath,repoList,priority,toolName,start,ps,category) and
         //                        options(commit ? do select commit : pass)(solver ? select introducer and solver : select introducer))
         issueFilterList = issueService.getIssueFilterList(query, issueFilterList);
-
         //step3 final check detail
         issueFilterList = issueService.getIssueFilterListWithDetail(query, issueFilterList);
-
         //step3 final check asc and order,do this need much time.
         issueFilterList = issueService.getIssueFilterListWithOrder(query, issueFilterList);
 
@@ -219,7 +220,6 @@ public class IssueOuterController {
             return repoList;
         }
 
-        //fixme 根据projectName找repoUuid需要封装成一个函数，已经有多次使用 or project api change
         if (!StringUtils.isEmpty(projectName)) {
             JSONArray repo = restInterfaceManager.getAllRepo(userToken).getJSONArray(projectName);
             for (int i = 0; i < repo.size(); i++) {
@@ -241,6 +241,64 @@ public class IssueOuterController {
         return repoList;
     }
 
+    @ApiOperation(value = "下载缺陷总览excel", notes = "@return issues.xls", httpMethod = "GET")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "project_name", value = "项目名"),
+            @ApiImplicitParam(name = "repo_uuids", value = "多个库的uuid\n库uuid之间用英文逗号,作为分隔符"),
+            @ApiImplicitParam(name = "since", value = "起始时间\n格式要求: yyyy-MM-dd"),
+            @ApiImplicitParam(name = "until", value = "终止时间\n格式要求: yyyy-MM-dd"),
+            @ApiImplicitParam(name = "tool", value = "工具名", defaultValue = "sonarqube", allowableValues = "sonarqube"),
+            @ApiImplicitParam(name = "status", value = "issue状态\n传null默认查询所有状态", allowableValues = "Open , Solved , Misinformation , To_Review , Ignore"),
+            @ApiImplicitParam(name = "introducer", value = "issue引入者\n传null默认查询所有引入者"),
+            @ApiImplicitParam(name = "priority", value = "优先级", allowableValues = "Low , Urgent , Normal , High , Immediate"),
+    })
+    @GetMapping("/issue/filter/download")
+    @ResponseBody
+    public void downloadExcel(HttpServletRequest request, @RequestParam(value = "project_name",required = false) String projectName,
+                              @RequestParam(value = "repo_uuids", required = false) String repoUuids,
+                              @RequestParam(value = "tool",required = false, defaultValue = "sonarqube") String toolName,
+                              @RequestParam(value = "since", required = false) String since,
+                              @RequestParam(value = "until", required = false) String until,
+                              @RequestParam(value = "introducer", required = false) String introducer,
+                              @RequestParam(value = "status", required = false) String status,
+                              @RequestParam(value = "priority", required = false) String priority, HttpServletResponse response) {
+
+        Map<String, Object> query = new HashMap<>(16);
+
+        String userToken = request.getHeader(TOKEN);
+        JSONObject allRepo = restInterfaceManager.getAllRepo(userToken);
+
+        try {
+            List<String> repoList = getRepoListByUrlProjectNameRepoUuids(null, projectName, repoUuids, userToken);
+            query.put("repoList", repoList);
+        } catch (UrlException e) {
+            e.printStackTrace();
+            return;
+        }
+
+        if(timeError.equals(DateTimeUtil.timeFormatIsLegal(since, false)) || timeError.equals(DateTimeUtil.timeFormatIsLegal(until, true))){
+            return;
+        }
+        query.put("since", since);
+        query.put("until", until);
+        query.put("toolName", toolName);
+        query.put("introducer", introducer);
+        query.put("status", status);
+        query.put("priority", priority);
+
+        Map<String, Object> issueFilterList = issueService.getIssueFilterListCount(query);
+        issueFilterList = issueService.getIssueFilterList(query, issueFilterList);
+
+        response.setHeader("content-type", "application/octet-stream");
+        response.setHeader("Content-Disposition", "attachment; filename=" + "issues.xls");
+
+        try (HSSFWorkbook workbook = ExcelUtil.exportExcel(issueFilterList, allRepo)){
+            workbook.write(response.getOutputStream());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     @ApiOperation(value = "项目详情页面的issueCount数据图的接口", notes = "@return List<Map<String, Object>>\n[\n" +
             "        {\n" +
             "            \"date\": \"2020-06-10\",\n" +
@@ -251,16 +309,17 @@ public class IssueOuterController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "since", value = "起始时间\n格式要求: yyyy-MM-dd", required = true),
             @ApiImplicitParam(name = "until", value = "终止时间\n格式要求: yyyy-MM-dd", required = true),
-            @ApiImplicitParam(name = "repo_uuid", value = "代码库uuid", required = true),
+            @ApiImplicitParam(name = "repo_uuids", value = "多个库的uuid\n库uuid之间用英文逗号,作为分隔符", required = true),
             @ApiImplicitParam(name = "tool", value = "工具名", defaultValue = "sonarqube", allowableValues = "sonarqube"),
     })
     @GetMapping(value = {"/issue/repository/issue-count"})
-    public ResponseBean<List<Map<String, Object>>> getNewTrend(@RequestParam("repo_uuid")String repoUuid,
+    public ResponseBean<List<Map<String, Object>>> getNewTrend(@RequestParam("repo_uuids")String repoUuids,
                               @RequestParam("since")String since,
                               @RequestParam("until")String until,
                               @RequestParam(name="tool", required = false, defaultValue = "sonarqube")String tool) {
+        List<String> repoList = SegmentationUtil.splitStringList(repoUuids);
         try{
-            return new ResponseBean<>(200,success, issueService.getRepoIssueCounts(repoUuid, since, until, tool));
+            return new ResponseBean<>(200,success, issueService.getRepoIssueCounts(repoList, since, until, tool));
         }catch (Exception e){
             return new ResponseBean<>(500, failed + e.getMessage(),null);
         }

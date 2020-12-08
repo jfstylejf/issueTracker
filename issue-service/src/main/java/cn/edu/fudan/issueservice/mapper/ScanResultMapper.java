@@ -1,6 +1,6 @@
 package cn.edu.fudan.issueservice.mapper;
 
-import cn.edu.fudan.issueservice.domain.ScanResult;
+import cn.edu.fudan.issueservice.domain.dbo.ScanResult;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
@@ -28,19 +28,19 @@ public interface ScanResultMapper {
 
     /**
      * 获取scanResult
-     * @param repoId repoUuid
+     * @param repoUuids repoUuids
      * @param since since
      * @param until until
      * @param category category
      * @param developer developer
      * @return scanResult
      */
-    List<Map<String, Object>> getRepoIssueCounts(@Param("repo_id")String repoId, @Param("since")String since, @Param("until")String until, @Param("category") String category, @Param("developer")String developer);
+    List<Map<String, Object>> getRepoIssueCounts(@Param("repoUuids")List<String> repoUuids, @Param("since")String since, @Param("until")String until, @Param("category") String category, @Param("developer")String developer);
 
     /**
      *  获取firstDate
-     * @param repoId repoUuid
+     * @param repoUuids repoUuids
      * @return firstDate
      */
-    String findFirstDateByRepo(@Param("repo_id")String repoId);
+    String findFirstDateByRepo(@Param("repoUuids")List<String> repoUuids);
 }

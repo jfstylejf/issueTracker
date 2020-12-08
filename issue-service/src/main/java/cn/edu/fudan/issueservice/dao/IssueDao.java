@@ -55,8 +55,8 @@ public class IssueDao {
         return issueMapper.getMaxIssueDisplayId(repoId);
     }
 
-    public List<Issue> getNotSolvedIssueAllListByToolAndRepoId(String repoId, String tool) {
-        return issueMapper.getNotSolvedIssueAllListByToolAndRepoId(repoId, tool);
+    public List<Issue> getNotSolvedIssueAllListByToolAndRepoId(List<String> repoUuids, String tool) {
+        return issueMapper.getNotSolvedIssueAllListByToolAndRepoId(repoUuids, tool);
     }
 
     public List<Issue> getIssueByRepoIdAndToolAndStatusListAndTypeList(String repoId, String tool,

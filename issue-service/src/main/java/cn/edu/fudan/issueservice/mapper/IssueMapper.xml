@@ -240,7 +240,13 @@
     <select id="getNotSolvedIssueAllListByToolAndRepoId" parameterType="String" resultType="Issue">
         select uuid, type, tool, start_commit, start_commit_date, end_commit, end_commit_date, repo_id, target_files,
         create_time, update_time, priority, display_id, status, manual_status, resolution, issue_category, producer, solver
-        from issue where repo_id = #{repo_id} and tool = #{tool} and priority != 6
+        from issue where tool = #{tool} and priority != 6
+        <if test="repoUuids != null and repoUuids.size > 0">
+            AND repo_id IN
+            <foreach collection="repoUuids" separator="," open="(" close=")" item="repoUuid">
+                #{repoUuid}
+            </foreach>
+        </if>
     </select>
 
     <select id="getIssueByRepoIdAndToolAndStatusList" parameterType="String" resultMap="issue4">
@@ -579,7 +585,7 @@
 
     <select id="getIssueFilterList" parameterType="Map" resultType="java.util.HashMap">
         SELECT a.uuid, a.type, a.tool, a.start_commit AS startCommit, a.start_commit_date AS startCommitDate, a.end_commit AS endCommit,
-        a.end_commit_date AS endCommitDate, a.repo_id AS repoId, a.target_files AS targetFiles, a.create_time AS creatTime, a.priority,
+        a.end_commit_date AS endCommitDate, a.repo_id AS repoId, a.target_files AS targetFiles, a.create_time AS createTime, a.priority,
         a.display_id AS displayId, a.status, a.issue_category AS issueCategory, a.producer, a.solver FROM issue AS a INNER JOIN commit_view
         AS b ON a.repo_id = b.repo_id AND a.start_commit = b.commit_id
         <trim prefix="where" prefixOverrides="and">

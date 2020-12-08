@@ -1,6 +1,6 @@
 package cn.edu.fudan.issueservice.dao;
 
-import cn.edu.fudan.issueservice.domain.ScanResult;
+import cn.edu.fudan.issueservice.domain.dbo.ScanResult;
 import cn.edu.fudan.issueservice.mapper.ScanResultMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
@@ -41,16 +41,16 @@ public class ScanResultDao {
     }
 
 
-    public List<Map<String, Object>> getRepoIssueCounts(String repoId, String since, String until, String category, String developer){
+    public List<Map<String, Object>> getRepoIssueCounts(List<String> repoUuids, String since, String until, String category, String developer){
         try{
-            return scanResultMapper.getRepoIssueCounts(repoId, since, until, category, developer);
+            return scanResultMapper.getRepoIssueCounts(repoUuids, since, until, category, developer);
         }catch (Exception e){
             logger.error(e.getMessage());
             return null;
         }
     }
 
-    public String findFirstDateByRepo(String repoUuid) {
-        return scanResultMapper.findFirstDateByRepo(repoUuid);
+    public String findFirstDateByRepo(List<String> repoUuids) {
+        return scanResultMapper.findFirstDateByRepo(repoUuids);
     }
 }

@@ -13,20 +13,6 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 public class PositiveSequenceScanStrategy implements ScanStrategy {
 
     @Override
-    public List<String> getScanCommitList(String repoId, JGitHelper jGitHelper, String branch, String beginCommit) {
-        return jGitHelper.getCommitListByBranchAndBeginCommit(branch, beginCommit);
-    }
-
-    @Override
-    public  ConcurrentLinkedDeque<String> getScanCommitLinkedDeque(String repoId, JGitHelper jGitHelper, String branch, String beginCommit) {
-        ConcurrentLinkedDeque<String> commitConcurrentLinked = new ConcurrentLinkedDeque<> ();
-        List<String> commitList =  jGitHelper.getCommitListByBranchAndBeginCommit(branch, beginCommit);
-        commitConcurrentLinked.addAll (commitList);
-
-        return commitConcurrentLinked;
-    }
-
-    @Override
     public ConcurrentLinkedDeque<String> getScanCommitLinkedQueue(String repoId, JGitHelper jGitHelper, String branch, String beginCommit) {
         ConcurrentLinkedDeque<String> commitConcurrentLinked = new ConcurrentLinkedDeque<> ();
         List<String> commitList =  jGitHelper.getScanCommitListByBranchAndBeginCommit(branch, beginCommit);

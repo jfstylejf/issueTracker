@@ -37,6 +37,10 @@ public class RawIssueDao {
         return rawIssueMapper.getRawIssueByCommitIDAndTool(repoUuid,tool, commitId);
     }
 
+    public List<RawIssue> getRawIssueByRepoList(List<String> repoUuids,String tool,String commitId) {
+        return rawIssueMapper.getRawIssueByRepoList(repoUuids,tool, commitId);
+    }
+
     public List<Map<String, Object>> getRawIssueByIssueId(String issueId) {
         return rawIssueMapper.getRawIssueByIssueId(issueId);
     }

@@ -84,6 +84,7 @@ public class ScanServiceImpl implements ScanService {
             return;
         }
         JGitHelper jGitHelper = new JGitHelper(repoPath);
+        //fixme beginScan if update,begin 1.
         List<String> commitList = jGitHelper.getCommitListByBranchAndBeginCommit(branch, beginCommit, isUpdate);
         int commitSize = commitList.size();
         int lastCommitIndex = commitSize - 1;

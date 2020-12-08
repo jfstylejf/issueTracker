@@ -138,10 +138,10 @@ public class IssueServiceImpl implements IssueService {
     }
 
     @Override
-    public List<Map<String, Object>> getRepoIssueCounts(String repoUuid, String since, String until, String tool) {
+    public List<Map<String, Object>> getRepoIssueCounts(List<String> repoUuids, String since, String until, String tool) {
         List<Map<String, Object>> result = new ArrayList<>();
 
-        LocalDate firstDate = LocalDate.parse(scanResultDao.findFirstDateByRepo(repoUuid), DateTimeUtil.Y_M_D_formatter);
+        LocalDate firstDate = LocalDate.parse(scanResultDao.findFirstDateByRepo(repoUuids), DateTimeUtil.Y_M_D_formatter);
         LocalDate indexDay = LocalDate.parse(since,DateTimeUtil.Y_M_D_formatter);
         LocalDate untilDay = LocalDate.parse(until,DateTimeUtil.Y_M_D_formatter);
 
@@ -158,13 +158,13 @@ public class IssueServiceImpl implements IssueService {
         }
 
         LocalDate indexDay2 = LocalDate.parse(indexDay.toString(),DateTimeUtil.Y_M_D_formatter);
-        Map<String, Object> firstDateScanResult = findFirstDateScanResult(repoUuid, indexDay2, firstDate, tool);
+        Map<String, Object> firstDateScanResult = findFirstDateScanResult(repoUuids, indexDay2, firstDate, tool);
         result.add(firstDateScanResult);
         indexDay = indexDay.plusDays(1);
 
         while(untilDay.isAfter(indexDay) || untilDay.isEqual(indexDay)){
-            Map<String, Object> map = new HashMap<>();
-            List<Map<String, Object>> repoIssueCounts2 = scanResultDao.getRepoIssueCounts(repoUuid, indexDay.toString(), indexDay.toString(), tool, null);
+            Map<String, Object> map = new HashMap<>(16);
+            List<Map<String, Object>> repoIssueCounts2 = scanResultDao.getRepoIssueCounts(repoUuids, indexDay.toString(), indexDay.toString(), tool, null);
             if(repoIssueCounts2.size() == 0){
                 map.put(newIssueCount, 0);
                 map.put(eliminatedIssueCount, 0);
@@ -185,15 +185,15 @@ public class IssueServiceImpl implements IssueService {
         return result;
     }
 
-    private Map<String, Object> findFirstDateScanResult(String repoUuid, LocalDate indexDay, LocalDate firstDate, String tool) {
+    private Map<String, Object> findFirstDateScanResult(List<String> repoUuids, LocalDate indexDay, LocalDate firstDate, String tool) {
         Map<String, Object> map = new HashMap<>(8);
         map.put("date", indexDay.toString());
-        while(indexDay.isAfter(firstDate)){
-            List<Map<String, Object>> repoIssueCounts2 = scanResultDao.getRepoIssueCounts(repoUuid, indexDay.toString(), indexDay.toString(), tool, null);
-            if(repoIssueCounts2.size() != 0){
-                map.put(newIssueCount, repoIssueCounts2.get(repoIssueCounts2.size() - 1).get(newIssueCount));
-                map.put(eliminatedIssueCount, repoIssueCounts2.get(repoIssueCounts2.size() - 1).get(eliminatedIssueCount));
-                map.put(remainingIssueCount, repoIssueCounts2.get(repoIssueCounts2.size() - 1).get(remainingIssueCount));
+        while(indexDay.isAfter(firstDate) || indexDay.isEqual(firstDate)){
+            List<Map<String, Object>> repoIssueCounts = scanResultDao.getRepoIssueCounts(repoUuids, indexDay.toString(), indexDay.toString(), tool, null);
+            if(repoIssueCounts.size() != 0){
+                map.put(newIssueCount, repoIssueCounts.get(repoIssueCounts.size() - 1).get(newIssueCount));
+                map.put(eliminatedIssueCount, repoIssueCounts.get(repoIssueCounts.size() - 1).get(eliminatedIssueCount));
+                map.put(remainingIssueCount, repoIssueCounts.get(repoIssueCounts.size() - 1).get(remainingIssueCount));
                 break;
             }
             indexDay = indexDay.minusDays(1);
@@ -265,10 +265,13 @@ public class IssueServiceImpl implements IssueService {
 
         for(Map<String, Object> issue : issues){
             String issueId = (String) issue.get("uuid");
+            issue.put("startCommitDate", DateTimeUtil.format((Date) issue.get("startCommitDate")));
+            issue.put("endCommitDate", DateTimeUtil.format((Date) issue.get("endCommitDate")));
+            issue.put("createTime", DateTimeUtil.format((Date) issue.get("createTime")));
             if("Solved".equals(issue.get("status").toString())) {
                 Map<String, Object> lastSolvedInfo = rawIssueDao.getLastSolvedInfoOfOneIssue(issueId);
                 issue.put("solver", lastSolvedInfo.get("lastSolver"));
-                issue.put("solveTime", lastSolvedInfo.get("commit_time"));
+                issue.put("solveTime", DateTimeUtil.format((Date) lastSolvedInfo.get("commit_time")));
                 issue.put("solveCommit", lastSolvedInfo.get("commit_id"));
             }else{
                 issue.put("solver", null);
@@ -279,10 +282,12 @@ public class IssueServiceImpl implements IssueService {
             issue.put("priority",priority);
         }
 
-        int size = (int) query.get("ps");
-        int total = (int) issueFilterList.get("total");
+        if(query.get("ps") != null) {
+            int size = (int) query.get("ps");
+            int total = (int) issueFilterList.get("total");
 
-        issueFilterList.put("totalPage", total % size == 0 ? total / size : total / size + 1);
+            issueFilterList.put("totalPage", total % size == 0 ? total / size : total / size + 1);
+        }
         issueFilterList.put("issueList", issues);
 
         return issueFilterList;

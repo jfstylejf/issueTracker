@@ -48,13 +48,13 @@ public interface IssueService {
 
     /**
      * 项目详情页面的issueCount每日数据
-     * @param repoUuid repo_uuid
+     * @param repoUuids repo_uuids
      * @param since since
      * @param until until
      * @param tool tool
      * @return 项目详情页面的issueCount每日数据
      */
-    List<Map<String, Object>> getRepoIssueCounts(String repoUuid, String since, String until, String tool);
+    List<Map<String, Object>> getRepoIssueCounts(List<String> repoUuids, String since, String until, String tool);
 
     /**
      * 根据 工具名 获取该工具对缺陷的相应分类

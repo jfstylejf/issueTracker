@@ -99,7 +99,7 @@ public class IssueScanServiceImpl implements IssueScanService {
                     return "please provide  begin commit !";
                 }
                 String latestScannedCommitId = issueScan.getCommitId ();
-                List<String> commitIds =  jGitInvoker.getCommitListByBranchAndBeginCommit(branch, latestScannedCommitId);
+                List<String> commitIds =  jGitInvoker.getScanCommitListByBranchAndBeginCommit(branch, latestScannedCommitId);
                 //因为必定不为null，所以不做此判断
                 if(commitIds.size () <= 1){
                     return "scanned";
@@ -228,26 +228,6 @@ public class IssueScanServiceImpl implements IssueScanService {
         return result;
     }
 
-    /**
-     * 获取正在扫描的repo commit列表需要增加更新的commit集合
-     * @param repoId
-     * @param jGitInvoker
-     * @param branch
-     * @return
-     */
-    private List<String> getCommitList(String repoId, JGitHelper jGitInvoker, String branch, String toolName){
-        List<String> commitList = null;
-        String lastCommit = ScanThreadExecutorConfig.getLastCommitIdFromCommitList (repoId, toolName);
-        commitList = jGitInvoker.getCommitListByBranchAndBeginCommit (branch,lastCommit);
-        if(commitList.size () <= 1){
-            return null;
-        }
-        commitList = commitList.subList (1, commitList.size ()-1);
-        return commitList;
-    }
-
-
-
     @Autowired
     public void setScanCommitInfoDTOBlockingQueue(BlockingQueue<ScanCommitInfoDTO> scanCommitInfoDTOBlockingQueue) {
         this.scanCommitInfoDTOBlockingQueue = scanCommitInfoDTOBlockingQueue;
@@ -287,4 +267,5 @@ public class IssueScanServiceImpl implements IssueScanService {
     public void setCommitDao(CommitDao commitDao) {
         this.commitDao = commitDao;
     }
+
 }

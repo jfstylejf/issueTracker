@@ -31,6 +31,7 @@ import java.util.regex.Pattern;
  * create: 2020-05-20 15:55
  **/
 @Slf4j
+@Deprecated
 public class FindbugsBaseAnalyzer extends BaseAnalyzer {
 
     private String resultFileHome;
