@@ -29,7 +29,7 @@ public class ExcelUtil {
         sheet.setColumnWidth(0, 4000);
         sheet.setColumnWidth(1, 10000);
         sheet.setColumnWidth(2, 5000);
-        sheet.setColumnWidth(3, 8000);
+        sheet.setColumnWidth(3, 9000);
         sheet.setColumnWidth(4, 22000);
         sheet.setColumnWidth(5, 4000);
         sheet.setColumnWidth(6, 6000);
@@ -50,7 +50,7 @@ public class ExcelUtil {
         cell3.setCellValue("库");
         cell3.setCellStyle(style);
         HSSFCell cell4 = titleRow.createCell(4);
-        cell4.setCellValue("位置");
+        cell4.setCellValue("缺陷所在文件位置");
         cell4.setCellStyle(style);
         HSSFCell cell5 = titleRow.createCell(5);
         cell5.setCellValue("引入者");

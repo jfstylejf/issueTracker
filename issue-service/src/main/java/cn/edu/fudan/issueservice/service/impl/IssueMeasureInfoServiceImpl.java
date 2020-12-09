@@ -71,7 +71,7 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
 
         String developer = query.get("developer").toString();
 
-        JSONObject developerDetail = getDeveloperCodeQuality(query).get(developer);
+        JSONObject developerDetail = getDeveloperCodeQuality(query, false).get(developer);
 
         double days = (DateTimeUtil.stringToLocalDate(query.get("until").toString()).toEpochDay() - DateTimeUtil.stringToLocalDate(query.get("since").toString()).toEpochDay()) * 5.0 / 7;
 
@@ -84,7 +84,7 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
 
 
     @Override
-    public Map<String, JSONObject> getDeveloperCodeQuality(Map<String, Object> query) {
+    public Map<String, JSONObject> getDeveloperCodeQuality(Map<String, Object> query, boolean codeQuality) {
 
         Map<String, Integer> developerWorkload = restInterfaceManager.getDeveloperWorkload(query);
 
@@ -94,7 +94,10 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
         AtomicInteger allAddedIssueCount = new AtomicInteger();
         AtomicInteger allSolvedIssueCount = new AtomicInteger();
 
-        query.put("repoList", SegmentationUtil.splitStringList(query.get("repoList") == null ? null : query.get("repoList").toString()));
+        if(codeQuality) {
+            query.put("repoList", SegmentationUtil.splitStringList(query.get("repoList") == null ? null : query.get("repoList").toString()));
+        }
+
         developerWorkload.keySet().forEach(r -> {
             query.put("solver", null);
             query.put("developer", r);

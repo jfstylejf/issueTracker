@@ -27,7 +27,7 @@ public enum IssueTypeInChineseEnum {
     rule17("[p3c]SimpleDataFormat is unsafe, do not define it as a static variable. If have to, lock or DateUtils class must be used.", "[p3c]SimpleDataFormat不安全，不要将其定义为静态变量。如果必须定义，则必须使用lock或DateUtils类"),
     rule18("Boxing and unboxing should not be immediately reversed", "装箱（创建int/Integer类型值的对象）和拆箱（将对象中原始值解出来）不应连续操作"),
     rule19("Collection sizes and array length comparisons should make sense", "集合大小和数组长度比较应该是有意义的"),
-    rule20("Conditionally executed code should be reachable", "条件执行块应该是可访问的"),
+    rule20("Conditionally executed blocks should be reachable", "条件执行块应该是可访问的"),
     rule21("Empty arrays and collections should be returned instead of null", "应该返回空数组和集合，而不是null"),
     rule22("Instance methods should not write to \"static\" fields", "实例方法不应写入静态字段"),
     rule23("Locks should be released", "保证锁能够释放"),

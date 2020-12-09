@@ -33,9 +33,10 @@ public interface IssueMeasureInfoService {
     /**
      * 返回developer code quality
      * @param query 条件
+     * @param codeQuality is codeQuality
      * @return developer code quality
      */
-    Map<String, JSONObject> getDeveloperCodeQuality(Map<String, Object> query);
+    Map<String, JSONObject> getDeveloperCodeQuality(Map<String, Object> query, boolean codeQuality);
 
     /**
      * 清空缓存
