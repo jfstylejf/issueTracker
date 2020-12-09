@@ -12,9 +12,7 @@ import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -185,16 +183,7 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
             return null;
         }
         //init repoUuid to repoName
-        Map<String, String> repoName = new HashMap<>(64);
-        //get all repo info
-        JSONObject allRepo = restInterfaceManager.getAllRepo(token);
-        for(String projectName : allRepo.keySet()){
-            Iterator<Object> iterator = allRepo.getJSONArray(projectName).stream().iterator();
-            while (iterator.hasNext()){
-                JSONObject next = (JSONObject) iterator.next();
-                repoName.put(next.getString("repo_id"), next.getString("name"));
-            }
-        }
+        Map<String, String> repoName = restInterfaceManager.getAllRepoToRepoName(token);
         //handle issues detail
         issuesDetail.forEach(r -> {
             r.put("projectName", repoName.get(r.getString("repoUuid")));

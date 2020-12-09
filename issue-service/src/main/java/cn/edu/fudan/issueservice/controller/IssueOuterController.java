@@ -266,7 +266,7 @@ public class IssueOuterController {
         Map<String, Object> query = new HashMap<>(16);
 
         String userToken = request.getHeader(TOKEN);
-        JSONObject allRepo = restInterfaceManager.getAllRepo(userToken);
+        Map<String, String> allRepoToRepoName = restInterfaceManager.getAllRepoToRepoName(userToken);
 
         try {
             List<String> repoList = getRepoListByUrlProjectNameRepoUuids(null, projectName, repoUuids, userToken);
@@ -292,7 +292,7 @@ public class IssueOuterController {
         response.setHeader("content-type", "application/octet-stream");
         response.setHeader("Content-Disposition", "attachment; filename=" + "issues.xls");
 
-        try (HSSFWorkbook workbook = ExcelUtil.exportExcel(issueFilterList, allRepo)){
+        try (HSSFWorkbook workbook = ExcelUtil.exportExcel(issueFilterList, allRepoToRepoName)){
             workbook.write(response.getOutputStream());
         } catch (IOException e) {
             e.printStackTrace();

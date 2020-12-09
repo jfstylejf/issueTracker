@@ -105,9 +105,24 @@ public class RestInterfaceManager {
         headers.add("token", userToken);
         HttpEntity<HttpHeaders> request = new HttpEntity<>(headers);
         ResponseEntity<JSONObject> responseEntity = restTemplate.exchange(projectServicePath  + "/project/all",HttpMethod.GET,request,JSONObject.class);
-        String body = responseEntity.getBody().toString();
+        String body = Objects.requireNonNull(responseEntity.getBody()).toString();
 
         return JSONObject.parseObject(body);
+    }
+
+    public Map<String, String> getAllRepoToRepoName(String userToken){
+        Map<String, String> repoName = new HashMap<>(64);
+
+        JSONObject allRepo = getAllRepo(userToken);
+        for(String projectName : allRepo.keySet()){
+            Iterator<Object> iterator = allRepo.getJSONArray(projectName).stream().iterator();
+            while (iterator.hasNext()){
+                JSONObject next = (JSONObject) iterator.next();
+                repoName.put(next.getString("repo_id"), next.getString("name"));
+            }
+        }
+
+        return repoName;
     }
 
     /**
