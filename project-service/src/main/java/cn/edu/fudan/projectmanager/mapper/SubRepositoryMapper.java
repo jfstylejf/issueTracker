@@ -40,7 +40,7 @@ public interface SubRepositoryMapper {
      */
     SubRepository getSubRepoByUuid(@Param("uuid")String uuid);
 
-    SubRepository getSubRepoByRepoUuid(@Param("repo_uuid")String repoUuid);
+    SubRepository  getSubRepoByRepoUuid(@Param("repo_uuid")String repoUuid);
 
     /**
      * 获取repo最新commit时间
@@ -63,7 +63,7 @@ public interface SubRepositoryMapper {
     /**
      * 项目与库的对应关系
      */
-    @Select("SELECT s.project_name, repo_name, repo_uuid, recycled " +
+    @Select("SELECT s.project_name, r.repo_name, repo_uuid, recycled " +
             "FROM sub_repository as s,account_repository as r " +
             "WHERE s.uuid = r.sub_repository_uuid order by project_name;")
     List<Map<String, Object>> getAllProjectRepoRelation();
@@ -73,4 +73,10 @@ public interface SubRepositoryMapper {
      * @param  accountUuid,oldProjectName,newProjectName
      */
     void updateProjectNameSR(@Param("accountUuid") String accountUuid, @Param("oldProjectName")String oldProjectName, @Param("newProjectName")String newProjectName);
+
+    /**
+     * 更新库名
+     * @param  accountUuid,oldProjectName,newProjectName
+     */
+    void updateRepoName(@Param("accountUuid") String accountUuid, @Param("oldRepoName")String oldRepoName, @Param("newRepoName")String newRepoName);
 }

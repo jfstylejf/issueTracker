@@ -190,18 +190,17 @@ public class ProjectController {
 //        }
 //    }
 
-//    @DeleteMapping(value = {"/project/{projectId}"})
-//    public ResponseBean delete(@PathVariable("projectId") String projectId,
-//                         @RequestParam(accountName = "type",required = false,defaultValue = "bug")String type,
-//                         HttpServletRequest request) {
-//        try {
-//            // projectService.remove(projectId, type,request.getHeader(TOKEN));
-//            return new ResponseBean(200, "projectName delete success!", null);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return new ResponseBean(401, "projectName delete failed!", null);
-//        }
-//    }
+    @DeleteMapping(value = {"/project"})
+    public ResponseBean delete(@RequestParam("project_name")String projectName,
+                         HttpServletRequest request) {
+        try {
+            projectControl.deleteProject(projectName,request.getHeader(TOKEN));
+            return new ResponseBean(200, "projectName delete success!", null);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseBean(401, "projectName delete failed!", null);
+        }
+    }
 
     /**
      * description: 添加项目
@@ -219,6 +218,17 @@ public class ProjectController {
         }
     }
 
+    @PutMapping(value = {"/repository"})
+    public ResponseBean updateRepository(HttpServletRequest request,
+                                      @RequestParam("old_repo_name") String oldRepoName,
+                                      @RequestParam("new_repo_name") String newRepoName){
+        try {
+            projectControl.updateRepo(request.getHeader(TOKEN), oldRepoName, newRepoName);
+            return new ResponseBean<>(200, "update success", null);
+        } catch (Exception e) {
+            return new ResponseBean<>(401, "update failed :" + e.getMessage(), null);
+        }
+    }
 
 
     @Autowired
