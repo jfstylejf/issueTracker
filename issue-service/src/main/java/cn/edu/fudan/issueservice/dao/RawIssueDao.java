@@ -65,10 +65,6 @@ public class RawIssueDao {
         return rawIssueMapper.getLastSolvedInfoOfOneIssue(issueId);
     }
 
-    public List<String> getIssueIntroducers(List<String> repoUuids) {
-        return rawIssueMapper.getIssueIntroducers(repoUuids);
-    }
-
     public String getRawIssueUuidByIssueUuidAndCommit(String issueUuid, String commit){
         return rawIssueMapper.getRawIssueUuidByIssueUuidAndCommit(issueUuid, commit);
     }

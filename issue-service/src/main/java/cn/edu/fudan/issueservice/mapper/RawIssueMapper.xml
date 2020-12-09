@@ -211,22 +211,6 @@
         LIMIT 1
     </select>
 
-    <select id="getIssueIntroducers" resultType="String">
-        SELECT distinct developer
-        FROM
-        rawIssue
-        <where>
-            `status` = "add"
-            <if test="repoUuids != null and repoUuids.size > 0">
-                AND repo_id IN
-                <foreach collection="repoUuids" separator="," open="(" close=")" item="repoUuid">
-                    #{repoUuid}
-                </foreach>
-            </if>
-        </where>
-        ORDER BY developer
-    </select>
-
     <select id="getRawIssueUuidByIssueUuidAndCommit" resultType="String">
         SELECT a.uuid FROM rawIssue AS a INNER JOIN commit_view AS b ON a.commit_id = b.commit_id AND a.repo_id = b.repo_id
         <where>

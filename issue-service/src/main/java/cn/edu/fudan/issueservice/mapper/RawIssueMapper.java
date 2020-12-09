@@ -96,13 +96,6 @@ public interface RawIssueMapper {
     Map<String, Object> getLastSolvedInfoOfOneIssue(@Param("issue_id") String issueId);
 
     /**
-     * issueIntroducers
-     * @param repoUuids repoUuid list
-     * @return issueIntroducers
-     */
-    List<String> getIssueIntroducers(@Param("repoUuids")List<String> repoUuids);
-
-    /**
      * 根据commit和issueUuid筛选对应的rawIssue
      * @param issueUuid issueUuid
      * @param commit commit

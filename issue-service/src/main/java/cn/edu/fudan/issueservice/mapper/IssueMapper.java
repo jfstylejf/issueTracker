@@ -201,4 +201,11 @@ public interface IssueMapper {
      * @return issue detail list
      */
     List<JSONObject> getSelfIntroduceOtherSolvedIssueDetail(Map<String, Object> query);
+
+    /**
+     * issueIntroducers
+     * @param repoUuids repoUuid list
+     * @return issueIntroducers
+     */
+    List<String> getIssueIntroducers(List<String> repoUuids);
 }

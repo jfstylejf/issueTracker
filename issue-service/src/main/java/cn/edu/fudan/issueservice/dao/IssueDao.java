@@ -120,4 +120,8 @@ public class IssueDao {
     public List<JSONObject> getSelfIntroduceOtherSolvedIssueDetail(Map<String, Object> query) {
         return issueMapper.getSelfIntroduceOtherSolvedIssueDetail(query);
     }
+
+    public List<String> getIssueIntroducers(List<String> repoUuids) {
+        return issueMapper.getIssueIntroducers(repoUuids);
+    }
 }

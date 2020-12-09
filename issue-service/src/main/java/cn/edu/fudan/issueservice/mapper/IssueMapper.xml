@@ -121,11 +121,12 @@
         select
         distinct b.repo_id as repoId
         from issue as a inner join commit_view as b on a.repo_id = b.repo_id and a.start_commit = b.commit_id
-        <trim prefix="where" prefixOverrides="and | or">
+        <where>
+            manual_status = 'Default'
             <if test="developer != null">
                 and b.developer_unique_name = #{developer}
             </if>
-        </trim>
+        </where>
     </select>
 
 
@@ -208,7 +209,7 @@
     <select id="getExistIssueTypes" resultType="String">
         select distinct type  as types
         from issue
-        where tool = #{tool} order by types
+        where tool = #{tool} AND manual_status = 'Default' order by types
     </select>
 
     <update id="updateOneIssuePriority"  >
@@ -456,6 +457,9 @@
         a.display_id AS displayId, a.status, a.issue_category AS issueCategory, a.producer, a.solver FROM issue AS a INNER JOIN commit_view
         AS b ON a.repo_id = b.repo_id AND a.start_commit = b.commit_id
         <trim prefix="where" prefixOverrides="and">
+            <if test="manual_status != null">
+                AND a.manual_status = #{manual_status}
+            </if>
             <if test="developer != null">
                 AND a.producer = #{developer}
             </if>
@@ -543,7 +547,8 @@
     <select id="getSelfIntroduceSelfSolvedIssueInfo" parameterType="Map" resultType="Integer">
         SELECT DATEDIFF(end_commit_date,start_commit_date) FROM issue
         <where>
-            producer = #{producer} AND tool = #{tool} AND solver = #{producer} AND status = 'Solved'
+            producer = #{producer} AND tool = #{tool} AND solver = #{producer}
+            AND status = 'Solved' AND manual_status = 'Default'
             <if test="repoList != null and repoList.size > 0">
                 AND repo_id IN
                 <foreach collection="repoList" separator="," open="(" close=")" item="repo_id">
@@ -562,7 +567,8 @@
     <select id="getOtherIntroduceSelfSolvedIssueInfo" parameterType="Map" resultType="Integer">
         SELECT DATEDIFF(end_commit_date,start_commit_date) FROM issue
         <where>
-            producer &lt;&gt; #{producer} AND tool = #{tool} AND solver = #{producer} AND status = 'Solved'
+            producer &lt;&gt; #{producer} AND tool = #{tool} AND solver = #{producer}
+            AND status = 'Solved' AND manual_status = 'Default'
             <if test="repoList != null and repoList.size > 0">
                 AND repo_id IN
                 <foreach collection="repoList" separator="," open="(" close=")" item="repo_id">
@@ -581,7 +587,8 @@
     <select id="getSelfIntroduceLivingIssueInfo" parameterType="Map" resultType="Integer">
         SELECT DATEDIFF(end_commit_date,start_commit_date) FROM issue
         <where>
-            producer = #{producer} AND tool = #{tool} AND solver IS NULL AND status = 'Open'
+            producer = #{producer} AND tool = #{tool} AND solver IS NULL
+            AND status = 'Open' AND manual_status = 'Default'
             <if test="repoList != null and repoList.size > 0">
                 AND repo_id IN
                 <foreach collection="repoList" separator="," open="(" close=")" item="repo_id">
@@ -600,7 +607,8 @@
     <select id="getSelfIntroduceOtherSolvedIssueInfo" parameterType="Map" resultType="Integer">
         SELECT DATEDIFF(end_commit_date,start_commit_date) FROM issue
         <where>
-            producer = #{producer} AND tool = #{tool} AND solver &lt;&gt; #{producer} AND status = 'Solved'
+            producer = #{producer} AND tool = #{tool} AND solver &lt;&gt; #{producer}
+            AND status = 'Solved' AND manual_status = 'Default'
             <if test="repoList != null and repoList.size > 0">
                 AND repo_id IN
                 <foreach collection="repoList" separator="," open="(" close=")" item="repo_id">
@@ -621,7 +629,8 @@
         DATEDIFF(end_commit_date,start_commit_date) AS lifeCycle, target_files AS targetFiles, priority, issue_category AS issueCategory
         FROM issue
         <where>
-            producer = #{producer} AND tool = #{tool} AND solver = #{producer} AND status = 'Solved'
+            producer = #{producer} AND tool = #{tool} AND solver = #{producer}
+            AND status = 'Solved' AND manual_status = 'Default'
             <if test="repoList != null and repoList.size > 0">
                 AND repo_id IN
                 <foreach collection="repoList" separator="," open="(" close=")" item="repo_id">
@@ -642,7 +651,8 @@
         DATEDIFF(end_commit_date,start_commit_date) AS lifeCycle, target_files AS targetFiles, priority, issue_category AS issueCategory
         FROM issue
         <where>
-            producer &lt;&gt; #{producer} AND tool = #{tool} AND solver = #{producer} AND status = 'Solved'
+            producer &lt;&gt; #{producer} AND tool = #{tool} AND solver = #{producer}
+            AND status = 'Solved' AND manual_status = 'Default'
             <if test="repoList != null and repoList.size > 0">
                 AND repo_id IN
                 <foreach collection="repoList" separator="," open="(" close=")" item="repo_id">
@@ -663,7 +673,8 @@
         DATEDIFF(end_commit_date,start_commit_date) AS lifeCycle, target_files AS targetFiles, priority, issue_category AS issueCategory
         FROM issue
         <where>
-            producer = #{producer} AND tool = #{tool} AND solver IS NULL AND status = 'Open'
+            producer = #{producer} AND tool = #{tool} AND solver IS NULL
+            AND status = 'Open' AND manual_status = 'Default'
             <if test="repoList != null and repoList.size > 0">
                 AND repo_id IN
                 <foreach collection="repoList" separator="," open="(" close=")" item="repo_id">
@@ -684,7 +695,8 @@
         DATEDIFF(end_commit_date,start_commit_date) AS lifeCycle, target_files AS targetFiles, priority, issue_category AS issueCategory
         FROM issue
         <where>
-            producer = #{producer} AND tool = #{tool} AND solver &lt;&gt; #{producer} AND status = 'Solved'
+            producer = #{producer} AND tool = #{tool} AND solver &lt;&gt; #{producer}
+            AND status = 'Solved' AND manual_status = 'Default'
             <if test="repoList != null and repoList.size > 0">
                 AND repo_id IN
                 <foreach collection="repoList" separator="," open="(" close=")" item="repo_id">
@@ -698,5 +710,20 @@
                 AND <![CDATA[ start_commit_date <= #{until} ]]>
             </if>
         </where>
+    </select>
+
+    <select id="getIssueIntroducers" resultType="String">
+        SELECT DISTINCT producer
+        FROM issue
+        <where>
+            manual_status = 'Default'
+            <if test="repoUuids != null and repoUuids.size > 0">
+                AND repo_id IN
+                <foreach collection="repoUuids" separator="," open="(" close=")" item="repoUuid">
+                    #{repoUuid}
+                </foreach>
+            </if>
+        </where>
+        ORDER BY developer
     </select>
 </mapper>

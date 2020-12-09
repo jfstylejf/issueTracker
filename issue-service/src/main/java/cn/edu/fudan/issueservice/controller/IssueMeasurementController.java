@@ -142,14 +142,14 @@ public class IssueMeasurementController {
         since = DateTimeUtil.timeFormatIsLegal(since, false);
         until = DateTimeUtil.timeFormatIsLegal(until, true);
         List<String> repoList = SegmentationUtil.splitStringList(repoUuids);
-
+        //init query
         Map<String, Object> query = new HashMap<>(18);
         query.put("producer", developer);
         query.put("repoList", repoList);
         query.put("since", since);
         query.put("until", until);
         query.put("tool", tool);
-
+        //check need detail or just number info
         try {
             if (percent == numberInfo) {
                 return new ResponseBean<>(200, success, issueMeasureInfoService.getIssuesLifeCycle(status, target, query));
