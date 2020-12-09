@@ -94,7 +94,7 @@ public class IssueOuterController {
             return new ResponseBean<>(200, success, issueService.getRepoWithIssues(developer));
         } catch (Exception e) {
             e.printStackTrace();
-            return new ResponseBean<>(401, failed + e.getMessage(), null);
+            return new ResponseBean<>(500, failed + e.getMessage(), null);
         }
     }
 
@@ -338,7 +338,7 @@ public class IssueOuterController {
             return new ResponseBean<>(200, success, "issues update priority success!");
         } catch (Exception e) {
             e.printStackTrace();
-            return new ResponseBean<>(401, failed + e.getMessage(), "issues update priority failed!");
+            return new ResponseBean<>(500, failed + e.getMessage(), "issues update priority failed!");
         }
     }
 
@@ -355,7 +355,7 @@ public class IssueOuterController {
             return new ResponseBean<>(200, success, "issues update status success!");
         } catch (Exception e) {
             e.printStackTrace();
-            return new ResponseBean<>(401, failed + e.getMessage(), "issues update status failed!");
+            return new ResponseBean<>(500, failed + e.getMessage(), "issues update status failed!");
         }
     }
 
@@ -372,7 +372,7 @@ public class IssueOuterController {
             return new ResponseBean<>(200, success, issueService.getIssueIntroducers(repoUuidList));
         } catch (Exception e) {
             e.printStackTrace();
-            return new ResponseBean<>(401, failed + e.getMessage(), null);
+            return new ResponseBean<>(500, failed + e.getMessage(), null);
         }
     }
 

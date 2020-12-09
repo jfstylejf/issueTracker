@@ -2,6 +2,7 @@ package cn.edu.fudan.issueservice.dao;
 
 import cn.edu.fudan.issueservice.domain.dbo.Issue;
 import cn.edu.fudan.issueservice.mapper.IssueMapper;
+import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -68,21 +69,6 @@ public class IssueDao {
         return issueMapper.getIssuesByIds(issueIds);
     }
 
-    public List<Map<String, Object>> getSolvedIssueLifeCycle(List<String> repoIdList, String type, String tool, String since, String until,
-                                                       String developer, String status){
-        return issueMapper.getSolvedIssueLifeCycle(repoIdList,type,tool,since,until,developer,status);
-    }
-
-    public List<Map<String, Object>> getSolvedIssueLifeCycleByOtherSolved(List<String> repoIdList,String type,String tool,String since,String until,
-                                                       String developer,String status){
-        return issueMapper.getSolvedIssueLifeCycleByOtherSolved(repoIdList,type,tool,since,until,developer,status);
-    }
-
-    public List<Map<String, Object>> getOpenIssueLifeCycle(List<String> repoIdList,String type,String tool,String since,String until,
-                                                                          String developer,String rawIssueStatus,String issueStatus){
-        return issueMapper.getOpenIssueLifeCycle(repoIdList,type,tool,since,until,developer,rawIssueStatus,issueStatus);
-    }
-
     public List<Map<String, Object>> getIssueFilterList(Map<String, Object> query) {
         return issueMapper.getIssueFilterList(query);
     }
@@ -103,4 +89,35 @@ public class IssueDao {
         issueMapper.updateIssueManualStatus(repoUuid, issueUuid, manualStatus, issueType, tool, currentTime);
     }
 
+    public List<Integer> getSelfIntroduceSelfSolvedIssueInfo(Map<String, Object> query) {
+        return issueMapper.getSelfIntroduceSelfSolvedIssueInfo(query);
+    }
+
+    public List<Integer> getOtherIntroduceSelfSolvedIssueInfo(Map<String, Object> query) {
+        return issueMapper.getOtherIntroduceSelfSolvedIssueInfo(query);
+    }
+
+    public List<Integer> getSelfIntroduceLivingIssueInfo(Map<String, Object> query) {
+        return issueMapper.getSelfIntroduceLivingIssueInfo(query);
+    }
+
+    public List<Integer> getSelfIntroduceOtherSolvedIssueInfo(Map<String, Object> query) {
+        return issueMapper.getSelfIntroduceOtherSolvedIssueInfo(query);
+    }
+
+    public List<JSONObject> getSelfIntroduceSelfSolvedIssueDetail(Map<String, Object> query) {
+        return issueMapper.getSelfIntroduceSelfSolvedIssueDetail(query);
+    }
+
+    public List<JSONObject> getOtherIntroduceSelfSolvedIssueDetail(Map<String, Object> query) {
+        return issueMapper.getOtherIntroduceSelfSolvedIssueDetail(query);
+    }
+
+    public List<JSONObject> getSelfIntroduceLivingIssueDetail(Map<String, Object> query) {
+        return issueMapper.getSelfIntroduceLivingIssueDetail(query);
+    }
+
+    public List<JSONObject> getSelfIntroduceOtherSolvedIssueDetail(Map<String, Object> query) {
+        return issueMapper.getSelfIntroduceOtherSolvedIssueDetail(query);
+    }
 }

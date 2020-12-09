@@ -31,21 +31,6 @@ public interface IssueMeasureInfoService {
     Map<String,Object> getDayAvgSolvedIssue(Map<String, Object> query);
 
     /**
-     * 缺陷类型的生命周期
-     * @param developer 开发者
-     * @param repoIdList repoIdList
-     * @param since 时间段
-     * @param until 终止时间
-     * @param tool 缺陷检测工具
-     * @param status 缺陷状态 ： living self-solved other-solved all
-     * @param percent 0-100 -1[全部显示列表] -2[平均] -3[重数] -4 [最大 最小 平均 中位数 上四分位 下四分位 众数]  [default -4]
-     * @param type 缺陷类型
-     * @param target self other all [default all]
-     * @return 缺陷类型的生命周期
-     */
-    Object getIssueLifecycle(String developer,List<String> repoIdList,String since,String until,String tool,String status,Double percent,String type,String target);
-
-    /**
      * 返回developer code quality
      * @param query 条件
      * @return developer code quality
@@ -56,4 +41,23 @@ public interface IssueMeasureInfoService {
      * 清空缓存
      */
     void clearCache();
+
+    /**
+     * 缺陷类型的生命周期
+     * @param status 缺陷状态 living self-solved other-solved
+     * @param target self other
+     * @param query condition
+     * @return 缺陷类型的生命周期
+     */
+    JSONObject getIssuesLifeCycle(String status, String target, Map<String, Object> query);
+
+    /**
+     * 缺陷类型的生命周期详情
+     * @param status 缺陷状态 living self-solved other-solved
+     * @param target self other
+     * @param query condition
+     * @param token token
+     * @return 缺陷类型的生命周期详情
+     */
+    List<JSONObject> getLifeCycleDetail(String status, String target, Map<String, Object> query, String token);
 }
