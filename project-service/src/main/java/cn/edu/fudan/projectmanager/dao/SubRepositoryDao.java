@@ -50,6 +50,10 @@ public class SubRepositoryDao {
         return subRepositoryMapper.getAllProjectRepoRelation();
     }
 
+    public void updateRepoName(String accountUuid,String oldRepoName, String newRepoName) {
+        subRepositoryMapper.updateRepoName(accountUuid, oldRepoName, newRepoName);
+    }
+
     public void updateProjectNameSR(String accountUuid,String oldProjectName, String newProjectName) {
         subRepositoryMapper.updateProjectNameSR(accountUuid, oldProjectName, newProjectName);
     }

@@ -36,7 +36,7 @@ public interface ProjectControlService {
 
 
     /**
-     * 更新仓库信息
+     * 更新项目信息
      * @param token 用户token
      * @param oldProjectName 旧名
      * @param newProjectName  新名
@@ -45,7 +45,7 @@ public interface ProjectControlService {
     void update(String token, String oldProjectName, String newProjectName) throws Exception;
 
     /**
-     * 删除项目
+     * 删除库
      * @param token 用户token
      * @param subRepoId repo信息
      * @param empty 是否需要清空回收站
@@ -73,4 +73,21 @@ public interface ProjectControlService {
      * @throws Exception e
      */
     List<Map<String, Object>> getProjectAll(String token);
+
+    /**
+     * 删除项目
+     * @param token 用户token
+     * @param projectName projectName
+     * @throws Exception e
+     */
+    void deleteProject(String token, String projectName) throws Exception;
+
+    /**
+     * 更新库信息
+     * @param token 用户token
+     * @param oldRepoName 旧名
+     * @param newRepoName  新名
+     * @throws Exception e
+     */
+    void updateRepo(String token, String oldRepoName, String newRepoName) throws Exception;
 }

@@ -88,13 +88,16 @@ public class ProjectControlServiceImpl implements ProjectControlService {
             throw new RunTimeException("this projectName is private,please provide your git username and password!");
         }
 
-        /// String repoName = repositoryDTO.getRepoName();
-        String repoName = url.substring(url.lastIndexOf("/")).replace("/", "");
+        String repoName = repositoryDTO.getRepoName();
+        if (repoName == null || "".equals(repoName)) {
+            repoName = url.substring(url.lastIndexOf("/")).replace("/", "") + "-" + branch;
+        }
 
         // 一个 Repo目前只扫描一个分支
-        if(accountRepositoryDao.hasRepo(accountUuid, url)) {
+        if(accountRepositoryDao.hasRepo(branch, url)) {
             throw new RunTimeException("The repo accountName has already been used! ");
         }
+
         String projectName = repositoryDTO.getProjectName();
 
         // 普通用户不具备添加项目的权限 上面检查过后不在验证项目是否有被添加过
@@ -149,8 +152,8 @@ public class ProjectControlServiceImpl implements ProjectControlService {
         if (userInfoDTO.getRight() != 0) {
             throw new RunTimeException("this user has no right to change project accountName");
         }
-        // 改变project accountName 该repo的所有project accountName 都会改变 只有超级管理员才会有此权限
-        log.warn("project accountName changed by {}! old accountName is {}, new accountName is {}", userInfoDTO.getUuid(), oldProjectName, newProjectName);
+        // 改变projectName 该repo的所有projectName 都会改变 只有超级管理员才会有此权限
+        log.warn("projectName changed by {}! old projectName is {}, new projectName is {}", userInfoDTO.getUuid(), oldProjectName, newProjectName);
         accountRepositoryDao.updateProjectNameAR(accountUuid, oldProjectName, newProjectName);
         projectDao.updateProjectNameP(accountUuid, oldProjectName, newProjectName);
         accountProjectDao.updateProjectNameAP(accountUuid, oldProjectName, newProjectName);
@@ -207,6 +210,28 @@ public class ProjectControlServiceImpl implements ProjectControlService {
     public List<Map<String, Object>> getProjectAll(String token){
         List<Map<String, Object>> result = projectDao.getProjectAll();
         return result;
+    }
+
+    @Override
+    public void deleteProject(String token, String projectName) throws Exception {
+
+    }
+
+    @Override
+    public void updateRepo(String token, String oldRepoName, String newRepoName) throws Exception {
+        UserInfoDTO userInfoDTO = getUserInfoByToken(token);
+        String accountUuid = userInfoDTO.getUuid();
+
+        if (StringUtils.isEmpty(oldRepoName) || StringUtils.isEmpty(newRepoName) || oldRepoName.equals(newRepoName)) {
+            return;
+        }
+        // 0 表示超级管理员 只有超级管理员能操作
+        if (userInfoDTO.getRight() != 0) {
+            throw new RunTimeException("this user has no right to change project accountName");
+        }
+        // 改变project accountName 该repo的所有project accountName 都会改变 只有超级管理员才会有此权限
+        log.warn("repo name changed by {}! old repoName is {}, new repoName is {}", userInfoDTO.getUuid(), oldRepoName, newRepoName);
+        subRepositoryDao.updateRepoName(accountUuid, oldRepoName, newRepoName);
     }
 
 

@@ -1,7 +1,6 @@
 package cn.edu.fudan.issueservice.util;
 
 import cn.edu.fudan.issueservice.domain.enums.IssueTypeInChineseEnum;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
@@ -13,7 +12,7 @@ import java.util.*;
  */
 public class ExcelUtil {
 
-    public static HSSFWorkbook exportExcel(Map<String, Object> issueFilterList, JSONObject allRepo) {
+    public static HSSFWorkbook exportExcel(Map<String, Object> issueFilterList, Map<String, String> allRepoToRepoName) {
         //创建一个excel
         HSSFWorkbook workbook = new HSSFWorkbook();
         //新建一个sheet页
@@ -66,26 +65,17 @@ public class ExcelUtil {
         cell8.setCellValue("优先级");
         cell8.setCellStyle(style);
         //处理表格数据
-        handleExcelData(workbook, sheet, issueFilterList, allRepo);
+        handleExcelData(workbook, sheet, issueFilterList, allRepoToRepoName);
 
         return workbook;
     }
 
     @SuppressWarnings("unchecked")
-    private static void handleExcelData(HSSFWorkbook workbook, HSSFSheet sheet, Map<String, Object> issueFilterList, JSONObject allRepo) {
-
+    private static void handleExcelData(HSSFWorkbook workbook, HSSFSheet sheet, Map<String, Object> issueFilterList, Map<String, String> allRepoToRepoName) {
+        //获取数据
         List<Map<String, Object>> issueList = (List<Map<String, Object>>) issueFilterList.get("issueList");
         issueList.sort(Comparator.comparingInt(o -> (int) o.get("displayId")));
-
-        Map<String, String> repoName = new HashMap<>(64);
-        for(String projectName : allRepo.keySet()){
-            Iterator<Object> iterator = allRepo.getJSONArray(projectName).stream().iterator();
-            while (iterator.hasNext()){
-                JSONObject next = (JSONObject) iterator.next();
-                repoName.put(next.getString("repo_id"), next.getString("name"));
-            }
-        }
-
+        //单元格样式
         HSSFCellStyle style = workbook.createCellStyle();
         style.setAlignment(HorizontalAlignment.CENTER);
         style.setVerticalAlignment(VerticalAlignment.CENTER);
@@ -103,7 +93,7 @@ public class ExcelUtil {
             cell2.setCellValue((String) issue.get("issueCategory"));
             cell2.setCellStyle(style);
             HSSFCell cell3 = row.createCell(3);
-            cell3.setCellValue(repoName.get((String) issue.get("repoId")));
+            cell3.setCellValue(allRepoToRepoName.get((String) issue.get("repoId")));
             cell3.setCellStyle(style);
             HSSFCell cell4 = row.createCell(4);
             cell4.setCellValue((String) issue.get("targetFiles"));

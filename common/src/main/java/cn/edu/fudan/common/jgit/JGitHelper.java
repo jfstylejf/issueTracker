@@ -15,6 +15,7 @@ import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.treewalk.CanonicalTreeParser;
 import org.eclipse.jgit.util.io.DisabledOutputStream;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -28,26 +29,30 @@ import java.util.stream.Stream;
  **/
 @SuppressWarnings("Duplicates")
 @Slf4j
-public class JGitHelper {
+public class JGitHelper implements Closeable {
 
-    private static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().contains("win");
+    protected static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().contains("win");
 
-    private static final int MERGE_WITH_CONFLICT = -1;
+    protected static final int MERGE_WITH_CONFLICT = -1;
 
-    private static final int MERGE_WITHOUT_CONFLICT = 2;
+    protected static final int MERGE_WITHOUT_CONFLICT = 2;
 
-    private static final int NOT_MERGE = 1;
+    protected static final int NOT_MERGE = 1;
 
-    private Repository repository;
+    protected Repository repository;
 
-    private RevWalk revWalk;
+    protected RevWalk revWalk;
 
-    private Git git;
+    protected Git git;
 
-    private final String format = "yyyy-MM-dd HH:mm:ss";
+    protected final String format = "yyyy-MM-dd HH:mm:ss";
 
-    private final long toMillisecond = 1000L;
+    protected final long toMillisecond = 1000L;
 
+    /**
+     * 通用:JGit构造方法
+     * @param repoPath 代码库路径
+     */
     public JGitHelper(String repoPath) {
         String gitDir =  IS_WINDOWS ? repoPath + "\\.git" : repoPath + "/.git";
         FileRepositoryBuilder builder = new FileRepositoryBuilder();
@@ -63,6 +68,10 @@ public class JGitHelper {
         }
     }
 
+    /**
+     * 通用:判断merge点是否有冲突
+     * @return merge conflict value
+     */
     public static Integer getConflictValue() {
         return MERGE_WITH_CONFLICT;
     }
@@ -71,6 +80,10 @@ public class JGitHelper {
         return MERGE_WITHOUT_CONFLICT;
     }
 
+    /**
+     * 通用:checkout到指定commit
+     * @param commit commit id
+     */
     public void checkout(String commit) {
         try {
             if(commit == null){
@@ -84,6 +97,11 @@ public class JGitHelper {
         }
     }
 
+    /**
+     * 通用:获取commit的author name
+     * @param commit commit id
+     * @return author name
+     */
     public String getAuthorName(String commit) {
         String authorName = null;
         try {
@@ -95,11 +113,21 @@ public class JGitHelper {
         return authorName;
     }
 
+    /**
+     * 通用:获取commit time
+     * @param commit commit id
+     * @return (Date)commit time
+     */
     @SneakyThrows
     public Date getCommitDateTime(String commit) {
         return new SimpleDateFormat(format).parse(getCommitTime(commit));
     }
 
+    /**
+     * 通用:获取commit time
+     * @param commit commit id
+     * @return (String)commit time
+     */
     public String getCommitTime(String commit) {
         String time = null;
         try {
@@ -117,6 +145,10 @@ public class JGitHelper {
         return time;
     }
 
+    /**
+     * 通用:关闭资源
+     */
+    @Override
     public void close() {
         if (repository != null) {
             repository.close();
@@ -124,7 +156,8 @@ public class JGitHelper {
     }
 
     /**
-     * 根据策略获取扫描列表
+     * todo clone-service fix beginScan
+     * 通用:根据策略获取扫描列表
      * @param branch branch
      * @param beginCommit begin commit
      * @return commit list
@@ -171,9 +204,14 @@ public class JGitHelper {
         return scanCommitQueue;
     }
 
-    private Long getLongCommitTime(String version) {
+    /**
+     * 通用:获取commit time
+     * @param commit commit id
+     * @return (Long)commit time
+     */
+    private Long getLongCommitTime(String commit) {
         try {
-            RevCommit revCommit = revWalk.parseCommit(ObjectId.fromString(version));
+            RevCommit revCommit = revWalk.parseCommit(ObjectId.fromString(commit));
             return revCommit.getCommitTime() * toMillisecond;
         }catch (Exception e) {
             log.error(e.getMessage());
@@ -181,6 +219,13 @@ public class JGitHelper {
         }
     }
 
+    /**
+     * 通用:判断是否应该添加到扫描队列
+     * @param parents 该commit的所有parent commit id
+     * @param scanCommitQueue 扫描队列
+     * @param commitMap 未经过扫描策略排序的所有commit
+     * @return true or false
+     */
     private boolean shouldAddToQueue(Set<String> parents, List<String> scanCommitQueue, Map<String, Set<String>> commitMap) {
         for(String parent : parents){
             if(commitMap.containsKey(parent) && !scanCommitQueue.contains(parent)){
@@ -203,6 +248,11 @@ public class JGitHelper {
         return result;
     }
 
+    /**
+     * 通用:获取commit parents
+     * @param commit commit id
+     * @return commit parents id
+     */
     public String[] getCommitParents(String commit) {
         try {
             RevCommit revCommit = revWalk.parseCommit(ObjectId.fromString(commit));
@@ -243,6 +293,11 @@ public class JGitHelper {
         return null;
     }
 
+    /**
+     * 判断是否为merge点
+     * @param commit commit
+     * @return merge value
+     */
     public int mergeJudgment(String commit) {
         Map<String, List<DiffEntry>> diffList = getMappedFileList(commit);
         if (diffList.keySet().size() == NOT_MERGE) {
@@ -262,5 +317,4 @@ public class JGitHelper {
         }
         return MERGE_WITHOUT_CONFLICT;
     }
-
 }

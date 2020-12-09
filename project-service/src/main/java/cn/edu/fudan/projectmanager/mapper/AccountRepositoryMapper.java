@@ -22,11 +22,11 @@ public interface AccountRepositoryMapper {
     void insertAccountRepositories(@Param("list") List<AccountRepository> accountRepositories);
 
     /**
-     * @param accountUuid 用户uuid
+     * @param branch branch
      * @param url repo的URL
      */
-    @Select("SELECT count(*) FROM account_repository,sub_repository WHERE account_uuid = #{accountUuid} and url = #{url}")
-    Integer getRepoCount(@Param("accountUuid")String accountUuid, @Param("url") String url);
+    @Select("SELECT count(*) FROM sub_repository WHERE  url = #{url}  and branch = #{branch}")
+    Integer getRepoCount(@Param("branch")String branch, @Param("url") String url);
 
     /**
      * 更新项目名

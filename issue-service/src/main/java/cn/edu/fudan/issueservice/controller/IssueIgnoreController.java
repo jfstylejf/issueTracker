@@ -49,7 +49,7 @@ public class IssueIgnoreController {
             return new ResponseBean<>(200, success, issueIgnoreService.insertIssueIgnoreRecords(ignoreRecords));
         }catch (Exception e){
             e.printStackTrace();
-            return new ResponseBean<>(401,failed + e.getMessage(), null);
+            return new ResponseBean<>(500,failed + e.getMessage(), null);
         }
     }
 
@@ -62,7 +62,7 @@ public class IssueIgnoreController {
             return new ResponseBean<>(200, success, "delete issue ignore record success");
         }catch (Exception e){
             e.printStackTrace();
-            return new ResponseBean<>(401, failed + e.getMessage(), null);
+            return new ResponseBean<>(500, failed + e.getMessage(), null);
         }
     }
 

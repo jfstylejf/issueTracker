@@ -245,7 +245,7 @@ public class IssueServiceImpl implements IssueService {
 
     @Override
     public List<String> getIssueIntroducers(List<String> repoUuids) {
-        return rawIssueDao.getIssueIntroducers(repoUuids);
+        return issueDao.getIssueIntroducers(repoUuids);
     }
 
     @Override

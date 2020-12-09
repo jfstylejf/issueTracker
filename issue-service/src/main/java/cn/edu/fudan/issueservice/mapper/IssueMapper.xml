@@ -44,11 +44,6 @@
                     select="cn.edu.fudan.issueservice.mapper.IssueTypeMapper.getIssueTypeByTypeName"/>
     </resultMap>
 
-    <resultMap id="issue3" type="Map">
-        <id property="uuid" column="uuid"/>
-        <result property="detail" column="detail"/>
-    </resultMap>
-
     <resultMap id="issue4" type="Issue">
         <id property="uuid" column="uuid"/>
         <result property="type" column="type"/>
@@ -126,11 +121,12 @@
         select
         distinct b.repo_id as repoId
         from issue as a inner join commit_view as b on a.repo_id = b.repo_id and a.start_commit = b.commit_id
-        <trim prefix="where" prefixOverrides="and | or">
+        <where>
+            manual_status = 'Default'
             <if test="developer != null">
                 and b.developer_unique_name = #{developer}
             </if>
-        </trim>
+        </where>
     </select>
 
 
@@ -213,7 +209,7 @@
     <select id="getExistIssueTypes" resultType="String">
         select distinct type  as types
         from issue
-        where tool = #{tool} order by types
+        where tool = #{tool} AND manual_status = 'Default' order by types
     </select>
 
     <update id="updateOneIssuePriority"  >
@@ -269,134 +265,6 @@
                 </foreach>
             </if>
         </where>
-    </select>
-
-    <select id="getSolvedIssueLifeCycle" resultType="java.util.HashMap">
-        select display_id as displayId, uuid, repo_id as repoId, type, status, start_commit_date as startCommitDate, datediff(end_commit_date,start_commit_date) as lifeCycle, target_files as targetFiles, priority, issue_category as issueCategory
-        from issue
-        where uuid in
-        (SELECT a.issue_id
-        FROM
-        rawIssue as a
-        INNER JOIN commit_view as b
-        ON a.repo_id = b.repo_id AND a.commit_id = b.commit_id
-        <trim prefix="where" prefixOverrides="and">
-            <if test="repoIdList != null and repoIdList.size > 0">
-                and a.repo_id in
-                <foreach collection="repoIdList" separator="," open="(" close=")" item="repo_id">
-                    #{repo_id}
-                </foreach>
-            </if>
-
-            <if test="status != null  and status != ''">
-                and a.status = #{status}
-            </if>
-
-            <if test="type != null  and type != ''">
-                and a.type = #{type}
-            </if>
-
-            <if test="developer != null  and developer != ''">
-                and b.developer_unique_name = #{developer}
-            </if>
-
-            <if test="tool != null  and tool != ''">
-                and a.tool = #{tool}
-            </if>
-
-            <if test="since != null and since != '' ">
-                and <![CDATA[ b.commit_time >= #{since} ]]>
-            </if>
-
-            <if test="until != null and until != '' ">
-                and <![CDATA[ b.commit_time <= #{until} ]]>
-            </if>
-        </trim>
-        GROUP BY a.issue_id)
-        and status = "Solved"
-        and manual_status != "Ignore"
-        order by  lifeCycle desc
-    </select>
-
-    <select id="getSolvedIssueLifeCycleByOtherSolved" parameterType="String" resultType="java.util.HashMap">
-        select display_id as displayId, uuid, repo_id as repoId, type, status, start_commit_date as startCommitDate, datediff(end_commit_date,start_commit_date) as lifeCycle, target_files as targetFiles, priority, issue_category as issueCategory
-        from issue
-        where uuid in
-        (SELECT a.issue_id
-        FROM
-        rawIssue as a
-        INNER JOIN commit_view as b
-        ON a.repo_id = b.repo_id AND a.commit_id = b.commit_id
-        <trim prefix="where" prefixOverrides="and">
-            <if test="repoIdList != null and repoIdList.size > 0">
-                and a.repo_id in
-                <foreach collection="repoIdList" separator="," open="(" close=")" item="repo_id">
-                    #{repo_id}
-                </foreach>
-            </if>
-            <if test="status != null  and status != ''">
-                and a.status = #{status}
-            </if>
-            <if test="type != null  and type != ''">
-                and a.type = #{type}
-            </if>
-            <if test="developer != null  and developer != ''">
-                and b.developer_unique_name != #{developer}
-            </if>
-            <if test="tool != null  and tool != ''">
-                and a.tool = #{tool}
-            </if>
-            <if test="since != null and since != '' ">
-                and <![CDATA[ b.commit_time >= #{since} ]]>
-            </if>
-            <if test="until != null and until != '' ">
-                and <![CDATA[ b.commit_time <= #{until} ]]>
-            </if>
-        </trim>
-        GROUP BY a.issue_id)
-        and status = "Solved"
-        and manual_status != "Ignore"
-        order by lifeCycle desc
-    </select>
-
-    <select id="getOpenIssueLifeCycle" resultType="java.util.HashMap">
-        select display_id as displayId, uuid, repo_id as repoId, type, status, start_commit_date as startCommitDate, datediff(now(),start_commit_date) as lifeCycle, target_files as targetFiles, priority, issue_category as issueCategory
-        from issue
-        where uuid in
-        (SELECT a.issue_id
-        FROM
-        rawIssue as a
-        INNER JOIN commit_view as b
-        ON a.repo_id = b.repo_id AND a.commit_id = b.commit_id
-        <trim prefix="where" prefixOverrides="and">
-            <if test="repoIdList != null and repoIdList.size > 0">
-                and a.repo_id in
-                <foreach collection="repoIdList" separator="," open="(" close=")" item="repo_id">
-                    #{repo_id}
-                </foreach>
-            </if>
-            <if test="rawIssueStatus != null  and rawIssueStatus != ''">
-                and a.status = #{rawIssueStatus}
-            </if>
-            <if test="type != null  and type != ''">
-                and a.type = #{type}
-            </if>
-            <if test="developer != null  and developer != ''">
-                and b.developer_unique_name = #{developer}
-            </if>
-            <if test="tool != null  and tool != ''">
-                and a.tool = #{tool}
-            </if>
-            <if test="since != null and since != '' ">
-                and <![CDATA[ b.commit_time >= #{since} ]]>
-            </if>
-            <if test="until != null and until != '' ">
-                and <![CDATA[ b.commit_time <= #{until} ]]>
-            </if>
-        </trim>
-        GROUP BY a.issue_id)
-        and status = #{issueStatus}
-        order by lifeCycle desc
     </select>
 
     <select id="getSolvedIssueFilterListCount" parameterType="Map" resultType="Integer">
@@ -589,6 +457,9 @@
         a.display_id AS displayId, a.status, a.issue_category AS issueCategory, a.producer, a.solver FROM issue AS a INNER JOIN commit_view
         AS b ON a.repo_id = b.repo_id AND a.start_commit = b.commit_id
         <trim prefix="where" prefixOverrides="and">
+            <if test="manual_status != null">
+                AND a.manual_status = #{manual_status}
+            </if>
             <if test="developer != null">
                 AND a.producer = #{developer}
             </if>
@@ -672,4 +543,187 @@
             AND tool = #{tool}
         </if>
     </update>
+
+    <select id="getSelfIntroduceSelfSolvedIssueInfo" parameterType="Map" resultType="Integer">
+        SELECT DATEDIFF(end_commit_date,start_commit_date) FROM issue
+        <where>
+            producer = #{producer} AND tool = #{tool} AND solver = #{producer}
+            AND status = 'Solved' AND manual_status = 'Default'
+            <if test="repoList != null and repoList.size > 0">
+                AND repo_id IN
+                <foreach collection="repoList" separator="," open="(" close=")" item="repo_id">
+                    #{repo_id}
+                </foreach>
+            </if>
+            <if test="since != null and since != '' ">
+                AND <![CDATA[ start_commit_date >= #{since} ]]>
+            </if>
+            <if test="until != null and until != '' ">
+                AND <![CDATA[ start_commit_date <= #{until} ]]>
+            </if>
+        </where>
+    </select>
+
+    <select id="getOtherIntroduceSelfSolvedIssueInfo" parameterType="Map" resultType="Integer">
+        SELECT DATEDIFF(end_commit_date,start_commit_date) FROM issue
+        <where>
+            producer &lt;&gt; #{producer} AND tool = #{tool} AND solver = #{producer}
+            AND status = 'Solved' AND manual_status = 'Default'
+            <if test="repoList != null and repoList.size > 0">
+                AND repo_id IN
+                <foreach collection="repoList" separator="," open="(" close=")" item="repo_id">
+                    #{repo_id}
+                </foreach>
+            </if>
+            <if test="since != null and since != '' ">
+                AND <![CDATA[ start_commit_date >= #{since} ]]>
+            </if>
+            <if test="until != null and until != '' ">
+                AND <![CDATA[ start_commit_date <= #{until} ]]>
+            </if>
+        </where>
+    </select>
+
+    <select id="getSelfIntroduceLivingIssueInfo" parameterType="Map" resultType="Integer">
+        SELECT DATEDIFF(end_commit_date,start_commit_date) FROM issue
+        <where>
+            producer = #{producer} AND tool = #{tool} AND solver IS NULL
+            AND status = 'Open' AND manual_status = 'Default'
+            <if test="repoList != null and repoList.size > 0">
+                AND repo_id IN
+                <foreach collection="repoList" separator="," open="(" close=")" item="repo_id">
+                    #{repo_id}
+                </foreach>
+            </if>
+            <if test="since != null and since != '' ">
+                AND <![CDATA[ start_commit_date >= #{since} ]]>
+            </if>
+            <if test="until != null and until != '' ">
+                AND <![CDATA[ start_commit_date <= #{until} ]]>
+            </if>
+        </where>
+    </select>
+
+    <select id="getSelfIntroduceOtherSolvedIssueInfo" parameterType="Map" resultType="Integer">
+        SELECT DATEDIFF(end_commit_date,start_commit_date) FROM issue
+        <where>
+            producer = #{producer} AND tool = #{tool} AND solver &lt;&gt; #{producer}
+            AND status = 'Solved' AND manual_status = 'Default'
+            <if test="repoList != null and repoList.size > 0">
+                AND repo_id IN
+                <foreach collection="repoList" separator="," open="(" close=")" item="repo_id">
+                    #{repo_id}
+                </foreach>
+            </if>
+            <if test="since != null and since != '' ">
+                AND <![CDATA[ start_commit_date >= #{since} ]]>
+            </if>
+            <if test="until != null and until != '' ">
+                AND <![CDATA[ start_commit_date <= #{until} ]]>
+            </if>
+        </where>
+    </select>
+
+    <select id="getSelfIntroduceSelfSolvedIssueDetail" parameterType="Map" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT display_id AS displayId, uuid, repo_id AS repoUuid, type, status, start_commit_date AS startCommitDate,
+        DATEDIFF(end_commit_date,start_commit_date) AS lifeCycle, target_files AS targetFiles, priority, issue_category AS issueCategory
+        FROM issue
+        <where>
+            producer = #{producer} AND tool = #{tool} AND solver = #{producer}
+            AND status = 'Solved' AND manual_status = 'Default'
+            <if test="repoList != null and repoList.size > 0">
+                AND repo_id IN
+                <foreach collection="repoList" separator="," open="(" close=")" item="repo_id">
+                    #{repo_id}
+                </foreach>
+            </if>
+            <if test="since != null and since != '' ">
+                AND <![CDATA[ start_commit_date >= #{since} ]]>
+            </if>
+            <if test="until != null and until != '' ">
+                AND <![CDATA[ start_commit_date <= #{until} ]]>
+            </if>
+        </where>
+    </select>
+
+    <select id="getOtherIntroduceSelfSolvedIssueDetail" parameterType="Map" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT display_id AS displayId, uuid, repo_id AS repoUuid, type, status, start_commit_date AS startCommitDate,
+        DATEDIFF(end_commit_date,start_commit_date) AS lifeCycle, target_files AS targetFiles, priority, issue_category AS issueCategory
+        FROM issue
+        <where>
+            producer &lt;&gt; #{producer} AND tool = #{tool} AND solver = #{producer}
+            AND status = 'Solved' AND manual_status = 'Default'
+            <if test="repoList != null and repoList.size > 0">
+                AND repo_id IN
+                <foreach collection="repoList" separator="," open="(" close=")" item="repo_id">
+                    #{repo_id}
+                </foreach>
+            </if>
+            <if test="since != null and since != '' ">
+                AND <![CDATA[ start_commit_date >= #{since} ]]>
+            </if>
+            <if test="until != null and until != '' ">
+                AND <![CDATA[ start_commit_date <= #{until} ]]>
+            </if>
+        </where>
+    </select>
+
+    <select id="getSelfIntroduceLivingIssueDetail" parameterType="Map" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT display_id AS displayId, uuid, repo_id AS repoUuid, type, status, start_commit_date AS startCommitDate,
+        DATEDIFF(end_commit_date,start_commit_date) AS lifeCycle, target_files AS targetFiles, priority, issue_category AS issueCategory
+        FROM issue
+        <where>
+            producer = #{producer} AND tool = #{tool} AND solver IS NULL
+            AND status = 'Open' AND manual_status = 'Default'
+            <if test="repoList != null and repoList.size > 0">
+                AND repo_id IN
+                <foreach collection="repoList" separator="," open="(" close=")" item="repo_id">
+                    #{repo_id}
+                </foreach>
+            </if>
+            <if test="since != null and since != '' ">
+                AND <![CDATA[ start_commit_date >= #{since} ]]>
+            </if>
+            <if test="until != null and until != '' ">
+                AND <![CDATA[ start_commit_date <= #{until} ]]>
+            </if>
+        </where>
+    </select>
+
+    <select id="getSelfIntroduceOtherSolvedIssueDetail" parameterType="Map" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT display_id AS displayId, uuid, repo_id AS repoUuid, type, status, start_commit_date AS startCommitDate,
+        DATEDIFF(end_commit_date,start_commit_date) AS lifeCycle, target_files AS targetFiles, priority, issue_category AS issueCategory
+        FROM issue
+        <where>
+            producer = #{producer} AND tool = #{tool} AND solver &lt;&gt; #{producer}
+            AND status = 'Solved' AND manual_status = 'Default'
+            <if test="repoList != null and repoList.size > 0">
+                AND repo_id IN
+                <foreach collection="repoList" separator="," open="(" close=")" item="repo_id">
+                    #{repo_id}
+                </foreach>
+            </if>
+            <if test="since != null and since != '' ">
+                AND <![CDATA[ start_commit_date >= #{since} ]]>
+            </if>
+            <if test="until != null and until != '' ">
+                AND <![CDATA[ start_commit_date <= #{until} ]]>
+            </if>
+        </where>
+    </select>
+
+    <select id="getIssueIntroducers" resultType="String">
+        SELECT DISTINCT producer
+        FROM issue
+        <where>
+            manual_status = 'Default'
+            <if test="repoUuids != null and repoUuids.size > 0">
+                AND repo_id IN
+                <foreach collection="repoUuids" separator="," open="(" close=")" item="repoUuid">
+                    #{repoUuid}
+                </foreach>
+            </if>
+        </where>
+        ORDER BY producer
+    </select>
 </mapper>

@@ -32,6 +32,7 @@ public class InvokeToolService {
 
     public void invokeTools(String repoId, String branch, String startCommit) {
         final int enabled = 1;
+        final String blockChainSecurityDetectorName = "blsd";
         Map<Integer,String> preToolInvokeMap = new HashMap<> ();
 
 
@@ -62,6 +63,10 @@ public class InvokeToolService {
             if (tool.getEnabled() == enabled) {
                 String toolStartCommit = startCommit;
                 String preResult = preToolInvokeMap.get (tool.getId ());
+                if (tool.getToolName().equals(blockChainSecurityDetectorName) && "1".equals (preResult)){
+                    // blsd 工具 只需要调用一次 不需要重复调用检测
+                    continue;
+                }
                 if("0".equals (preResult) && startCommit == null){
                     toolStartCommit = preScan.getStartCommit ();
                 }
