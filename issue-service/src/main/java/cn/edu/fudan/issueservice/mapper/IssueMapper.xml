@@ -724,6 +724,6 @@
                 </foreach>
             </if>
         </where>
-        ORDER BY developer
+        ORDER BY producer
     </select>
 </mapper>

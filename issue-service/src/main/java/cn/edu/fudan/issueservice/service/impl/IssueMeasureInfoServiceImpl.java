@@ -73,7 +73,7 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
 
         JSONObject developerDetail = getDeveloperCodeQuality(query).get(developer);
 
-        double days = (DateTimeUtil.stringToLocalDate(query.get("until").toString()).toEpochDay()-DateTimeUtil.stringToLocalDate(query.get("since").toString()).toEpochDay()) * 5.0 / 7;
+        double days = (DateTimeUtil.stringToLocalDate(query.get("until").toString()).toEpochDay() - DateTimeUtil.stringToLocalDate(query.get("since").toString()).toEpochDay()) * 5.0 / 7;
 
         return new HashMap<String, Object>(6){{
             put("solvedIssuesCount", developerDetail.getInteger("solvedIssueCount"));
