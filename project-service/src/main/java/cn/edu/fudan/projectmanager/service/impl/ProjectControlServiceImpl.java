@@ -170,11 +170,12 @@ public class ProjectControlServiceImpl implements ProjectControlService {
             subRepositoryDao.setRecycled(subRepoUuid);
             return;
         }
+        // TODO 基于 rest 调用所有扫描服务把与该 repo相关的所有数据删除
+
+
 
         accountRepositoryDao.deleteRelation(subRepoUuid);
         subRepositoryDao.deleteRepo(subRepoUuid);
-        // TODO 基于 rest 调用所有扫描服务把与该 repo相关的所有数据删除
-
     }
 
 
