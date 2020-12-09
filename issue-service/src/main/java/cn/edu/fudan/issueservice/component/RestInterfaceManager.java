@@ -105,10 +105,26 @@ public class RestInterfaceManager {
         headers.add("token", userToken);
         HttpEntity<HttpHeaders> request = new HttpEntity<>(headers);
         ResponseEntity<JSONObject> responseEntity = restTemplate.exchange(projectServicePath  + "/project/all",HttpMethod.GET,request,JSONObject.class);
-        String body = responseEntity.getBody().toString();
+        String body = Objects.requireNonNull(responseEntity.getBody()).toString();
 
         return JSONObject.parseObject(body);
     }
+
+    public Map<String, String> getAllRepoToRepoName(String userToken){
+        Map<String, String> repoName = new HashMap<>(64);
+
+        JSONObject allRepo = getAllRepo(userToken);
+        for(String projectName : allRepo.keySet()){
+            Iterator<Object> iterator = allRepo.getJSONArray(projectName).stream().iterator();
+            while (iterator.hasNext()){
+                JSONObject next = (JSONObject) iterator.next();
+                repoName.put(next.getString("repo_id"), next.getString("name"));
+            }
+        }
+
+        return repoName;
+    }
+
 
     /**
      * 根据url返回repoUuid
@@ -315,28 +331,6 @@ public class RestInterfaceManager {
         }
 
         return error;
-    }
-
-    public void deleteSonarProject(String projectName){
-        try{
-            String url = sonarServicePath + "/api/authentication/login?login=admin&password=admin";
-            ResponseEntity<JSONObject> responseEntity = restTemplate.exchange(url, HttpMethod.POST, null, JSONObject.class);
-            List<String> sonarDeleteHeaders = responseEntity.getHeaders().get("Set-Cookie");
-            if(sonarDeleteHeaders == null || sonarDeleteHeaders.size() != 2){
-                logger.error("get sonar delete headers failed !");
-                logger.error("projectName: {} ---> delete sonar project failed !", projectName);
-                return;
-            }
-            HttpHeaders headers = new HttpHeaders();
-            headers.add("X-XSRF-TOKEN", sonarDeleteHeaders.get(0));
-            headers.add("Cookie", sonarDeleteHeaders.get(1));
-            String urlPath = sonarServicePath + "/api/projects/bulk_delete?projects=" + projectName;
-            restTemplate.exchange(urlPath, HttpMethod.POST, new HttpEntity<HttpHeaders>(headers), JSONObject.class);
-            logger.info("projectName: {} ---> delete sonar project success !", projectName);
-        }catch (Exception e){
-            logger.error(e.getMessage());
-            logger.error("projectName: {} ---> delete sonar project failed !", projectName);
-        }
     }
 
     // --------------------------------------------------------measure api ---------------------------------------------------------

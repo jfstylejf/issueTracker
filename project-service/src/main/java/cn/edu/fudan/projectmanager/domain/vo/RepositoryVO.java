@@ -50,7 +50,6 @@ public class RepositoryVO implements Serializable {
 //        repoName = StringUtils.isEmpty(repository.getRepoName()) ?
 //                url.substring(url.lastIndexOf("/")).replace("/", "") :
 //                repository.getRepoName();
-
         repoName = url.substring(url.lastIndexOf("/")).replace("/", "") ;
     }
 

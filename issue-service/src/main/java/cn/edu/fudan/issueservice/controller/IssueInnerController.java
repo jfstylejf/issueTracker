@@ -39,7 +39,7 @@ public class IssueInnerController {
             return new ResponseBean<>(200, "success", "issues delete success!");
         } catch (Exception e) {
             e.printStackTrace();
-            return new ResponseBean<>(401, "failed " + e.getMessage(), "issues delete failed!");
+            return new ResponseBean<>(500, "failed " + e.getMessage(), "issues delete failed!");
         }
     }
 }

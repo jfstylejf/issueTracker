@@ -42,10 +42,10 @@ public class SonarQubeBaseAnalyzer extends BaseAnalyzer {
             log.info("command -> {}",command);
             Process process = rt.exec(command);
             //最多等待sonar脚本执行200秒,超时则认为该commit解析失败
-            boolean timeout = process.waitFor(200L, TimeUnit.SECONDS);
+            boolean timeout = process.waitFor(300L, TimeUnit.SECONDS);
             if (!timeout) {
                 process.destroy();
-                log.error("invoke tool timeout ! (200s)");
+                log.error("invoke tool timeout ! (300s)");
                 return false;
             }
             return process.exitValue() == 0;
@@ -92,22 +92,31 @@ public class SonarQubeBaseAnalyzer extends BaseAnalyzer {
             log.error("get commit {} latest sonar result failed!", commit);
             return false;
         }
-        //获取最新sonar issues数量
+        //解析sonar的issues为平台的rawIssue
+        boolean getRawIssueSuccess = getSonarResult(repoUuid, commit ,repoPath);
+        //删除本次sonar库
+        deleteSonarProject(repoUuid + "_" +commit);
+
+        return getRawIssueSuccess;
+    }
+
+    private boolean getSonarResult(String repoUuid, String commit, String repoPath) {
+        //获取issue数量
         JSONObject sonarIssueResult = restInvoker.getSonarIssueResults(repoUuid + "_" + commit,null,1,false,0);
         try {
             List<Location> allLocations = new ArrayList<> ();
             int pageSize = 100;
             int issueTotal = sonarIssueResult.getIntValue("total");
             log.info("Current commit {}, issueTotal in sonar result is {}", commit, issueTotal);
+            //分页取sonar的issue
             int pages = issueTotal % pageSize > 0 ? issueTotal / pageSize + 1 : issueTotal / pageSize;
             for(int i = 1; i <= pages; i++){
-                //获取第i页的全部issue结果
                 JSONObject sonarResult = restInvoker.getSonarIssueResults(repoUuid + "_" + commit,null, pageSize,false, i);
                 JSONArray sonarRawIssues = sonarResult.getJSONArray("issues");
                 //解析sonar的issues为平台的rawIssue
                 for(int j = 0; j < sonarRawIssues.size(); j++){
                     JSONObject sonarIssue = sonarRawIssues.getJSONObject(j);
-                    //直解析java文件且非test文件夹
+                    //仅解析java文件且非test文件夹
                     String component = sonarIssue.getString ("component");
                     if(FileFilter.javaFilenameFilter(component)){
                         continue;
@@ -123,12 +132,23 @@ public class SonarQubeBaseAnalyzer extends BaseAnalyzer {
                 }
             }
             log.info("Current commit {}, rawIssue total is {}", commit, resultRawIssues.size());
-            //删除本次sonar的库
-            restInvoker.deleteSonarProject(repoUuid + "_" +commit);
             return true;
         } catch (Exception e) {
             e.printStackTrace();
             return false;
+        }
+    }
+
+    private void deleteSonarProject(String projectName) {
+        try {
+            Runtime rt = Runtime.getRuntime();
+            String command = binHome + "deleteSonarProject.sh " + projectName;
+            log.info("command -> {}",command);
+            if(rt.exec(command).waitFor() == 0){
+                log.info("delete sonar project:{} success! ", projectName);
+            }
+        } catch (Exception e) {
+            log.error("delete sonar project:{},cause:{}", projectName, e.getMessage());
         }
     }
 
@@ -224,7 +244,6 @@ public class SonarQubeBaseAnalyzer extends BaseAnalyzer {
         return locations;
     }
 
-
     private Location getLocation(int startLine,int endLine,String rawIssueId,String filePath,String repoPath) {
         Location location = new Location ();
         String locationUuid = UUID.randomUUID().toString();
@@ -264,7 +283,6 @@ public class SonarQubeBaseAnalyzer extends BaseAnalyzer {
 
         return location;
     }
-
 
     private RawIssue getRawIssue(String repoId, String commitId, String category, String rawIssueUuid, JSONObject issue){
         //根据ruleId获取rule的name
@@ -309,14 +327,6 @@ public class SonarQubeBaseAnalyzer extends BaseAnalyzer {
 
     public void setCommitDao(CommitDao commitDao) {
         this.commitDao = commitDao;
-    }
-
-    public static void main(String[] args){
-        SonarQubeBaseAnalyzer sonarQubeBaseAnalyzer = new SonarQubeBaseAnalyzer();
-        String repoPath = "/home/fdse/user/issueTracker/bin/executeSonar.sh /home/fdse/user/issueTracker/repo/github/FudanSELab/IssueTracker-Master-zhonghui20191012_duplicate_fdse-13";
-        String projectName = "test1";
-        String version = "v1";
-        sonarQubeBaseAnalyzer.invoke (projectName, repoPath, version);
     }
 
 }

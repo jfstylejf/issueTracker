@@ -94,7 +94,7 @@ public class IssueOuterController {
             return new ResponseBean<>(200, success, issueService.getRepoWithIssues(developer));
         } catch (Exception e) {
             e.printStackTrace();
-            return new ResponseBean<>(401, failed + e.getMessage(), null);
+            return new ResponseBean<>(500, failed + e.getMessage(), null);
         }
     }
 
@@ -120,7 +120,8 @@ public class IssueOuterController {
             @ApiImplicitParam(name = "detail", value = "是否显示issue的详情\n默认不显示", allowableValues = "true , false"),
             @ApiImplicitParam(name = "asc", value = "是否升序\n默认false", allowableValues = "true , false"),
             @ApiImplicitParam(name = "order", value = "排序方式\n默认为no,不需要排序", allowableValues = "no , quantity , open , solved"),
-            @ApiImplicitParam(name = "issue_uuids", value = "多个issue的uuid\n用英文逗号,作为分隔符")
+            @ApiImplicitParam(name = "issue_uuids", value = "多个issue的uuid\n用英文逗号,作为分隔符"),
+            @ApiImplicitParam(name = "manual_status", value = "缺陷是否被忽略", defaultValue = "Default", allowableValues = "Ignore , Misinformation , To_Review , Default")
     })
     @GetMapping(value = {"/issue/filter"})
     public ResponseBean<Map<String, Object>> filterIssues(HttpServletRequest request, @RequestParam(value = "project_name",required = false) String projectName,
@@ -142,7 +143,8 @@ public class IssueOuterController {
                                                            @RequestParam(value = "detail", required = false, defaultValue = "false") Boolean detail,
                                                            @RequestParam(value = "asc", required = false, defaultValue = "false") Boolean asc,
                                                            @RequestParam(value = "order", required = false, defaultValue = "no") String order,
-                                                           @RequestParam(value = "issue_uuids", required = false) String issueUuids) {
+                                                           @RequestParam(value = "issue_uuids", required = false) String issueUuids,
+                                                           @RequestParam(value = "manual_status", required = false, defaultValue = "Default") String manualStatus) {
         String userToken = request.getHeader(TOKEN);
 
         Map<String, Object> query = new HashMap<>(32);
@@ -185,6 +187,7 @@ public class IssueOuterController {
         query.put("asc", asc);
         query.put("detail", detail);
         query.put("order", order);
+        query.put("manual_status", manualStatus);
         //fixme end_commit 改为 solve_commit 有误差
         //step1 ps = 0 only return total(because fetch time --)  or  ps != 0 do select;
         Map<String, Object> issueFilterList = issueService.getIssueFilterListCount(query);
@@ -266,7 +269,7 @@ public class IssueOuterController {
         Map<String, Object> query = new HashMap<>(16);
 
         String userToken = request.getHeader(TOKEN);
-        JSONObject allRepo = restInterfaceManager.getAllRepo(userToken);
+        Map<String, String> allRepoToRepoName = restInterfaceManager.getAllRepoToRepoName(userToken);
 
         try {
             List<String> repoList = getRepoListByUrlProjectNameRepoUuids(null, projectName, repoUuids, userToken);
@@ -292,7 +295,7 @@ public class IssueOuterController {
         response.setHeader("content-type", "application/octet-stream");
         response.setHeader("Content-Disposition", "attachment; filename=" + "issues.xls");
 
-        try (HSSFWorkbook workbook = ExcelUtil.exportExcel(issueFilterList, allRepo)){
+        try (HSSFWorkbook workbook = ExcelUtil.exportExcel(issueFilterList, allRepoToRepoName)){
             workbook.write(response.getOutputStream());
         } catch (IOException e) {
             e.printStackTrace();
@@ -309,16 +312,17 @@ public class IssueOuterController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "since", value = "起始时间\n格式要求: yyyy-MM-dd", required = true),
             @ApiImplicitParam(name = "until", value = "终止时间\n格式要求: yyyy-MM-dd", required = true),
-            @ApiImplicitParam(name = "repo_uuid", value = "代码库uuid", required = true),
+            @ApiImplicitParam(name = "repo_uuids", value = "多个库的uuid\n库uuid之间用英文逗号,作为分隔符", required = true),
             @ApiImplicitParam(name = "tool", value = "工具名", defaultValue = "sonarqube", allowableValues = "sonarqube"),
     })
     @GetMapping(value = {"/issue/repository/issue-count"})
-    public ResponseBean<List<Map<String, Object>>> getNewTrend(@RequestParam("repo_uuid")String repoUuid,
+    public ResponseBean<List<Map<String, Object>>> getNewTrend(@RequestParam("repo_uuids")String repoUuids,
                               @RequestParam("since")String since,
                               @RequestParam("until")String until,
                               @RequestParam(name="tool", required = false, defaultValue = "sonarqube")String tool) {
+        List<String> repoList = SegmentationUtil.splitStringList(repoUuids);
         try{
-            return new ResponseBean<>(200,success, issueService.getRepoIssueCounts(repoUuid, since, until, tool));
+            return new ResponseBean<>(200,success, issueService.getRepoIssueCounts(repoList, since, until, tool));
         }catch (Exception e){
             return new ResponseBean<>(500, failed + e.getMessage(),null);
         }
@@ -337,7 +341,7 @@ public class IssueOuterController {
             return new ResponseBean<>(200, success, "issues update priority success!");
         } catch (Exception e) {
             e.printStackTrace();
-            return new ResponseBean<>(401, failed + e.getMessage(), "issues update priority failed!");
+            return new ResponseBean<>(500, failed + e.getMessage(), "issues update priority failed!");
         }
     }
 
@@ -354,7 +358,7 @@ public class IssueOuterController {
             return new ResponseBean<>(200, success, "issues update status success!");
         } catch (Exception e) {
             e.printStackTrace();
-            return new ResponseBean<>(401, failed + e.getMessage(), "issues update status failed!");
+            return new ResponseBean<>(500, failed + e.getMessage(), "issues update status failed!");
         }
     }
 
@@ -371,7 +375,7 @@ public class IssueOuterController {
             return new ResponseBean<>(200, success, issueService.getIssueIntroducers(repoUuidList));
         } catch (Exception e) {
             e.printStackTrace();
-            return new ResponseBean<>(401, failed + e.getMessage(), null);
+            return new ResponseBean<>(500, failed + e.getMessage(), null);
         }
     }
 

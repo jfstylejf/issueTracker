@@ -5,15 +5,16 @@ import cn.edu.fudan.issueservice.component.RestInterfaceManager;
 import cn.edu.fudan.issueservice.domain.ResponseBean;
 import cn.edu.fudan.issueservice.service.IssueMeasureInfoService;
 import cn.edu.fudan.issueservice.util.DateTimeUtil;
+import cn.edu.fudan.issueservice.util.SegmentationUtil;
 import com.alibaba.fastjson.JSONObject;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -34,6 +35,8 @@ public class IssueMeasurementController {
 
     private final String failed = "failed ";
 
+    private final String TOKEN = "token";
+
     @ApiOperation(value = "获取issueTypeCounts", notes = "@return List<Map.Entry<String, JSONObject>>\n[\n" +
             "        {\n" +
             "            \"String literals should not be duplicated\": {\n" +
@@ -46,17 +49,18 @@ public class IssueMeasurementController {
             "        }\n]", httpMethod = "GET")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "tool", value = "工具名", dataType = "String", required = true, defaultValue = "sonarqube", allowableValues = "sonarqube"),
-            @ApiImplicitParam(name = "repo_uuid", value = "代码库uuid", dataType = "String", required = true),
+            @ApiImplicitParam(name = "repo_uuids", value = "多个库的uuid\n库uuid之间用英文逗号,作为分隔符", dataType = "String", required = true),
             @ApiImplicitParam(name = "order", value = "排序方式", dataType = "String", defaultValue = "Default", allowableValues = "Default, Total, Ignore, Misinformation, To_Review"),
             @ApiImplicitParam(name = "commit", value = "commit的uuid", dataType = "String"),
     })
     @GetMapping(value = "/measurement/issue-type-counts")
-    public ResponseBean<List<Map.Entry<String, JSONObject>>> getIssueTypeCountsByToolAndRepoUuid(@RequestParam("repo_uuid") String repoUuid,
+    public ResponseBean<List<Map.Entry<String, JSONObject>>> getIssueTypeCountsByToolAndRepoUuid(@RequestParam("repo_uuids") String repoUuids,
                                                                                      @RequestParam("tool") String category,
                                                                                      @RequestParam(value = "order", required = false, defaultValue = "Default") String order,
                                                                                      @RequestParam(value = "commit", required = false) String commitUuid) {
+        List<String> repoList = SegmentationUtil.splitStringList(repoUuids);
         try{
-            return new ResponseBean<>(200, success, issueMeasureInfoService.getNotSolvedIssueCountByToolAndRepoUuid(repoUuid, category, order, commitUuid));
+            return new ResponseBean<>(200, success, issueMeasureInfoService.getNotSolvedIssueCountByToolAndRepoUuid(repoList, category, order, commitUuid));
         }catch (Exception e){
             e.printStackTrace();
             return new ResponseBean<>(500, failed + e.getMessage(),null);
@@ -101,7 +105,7 @@ public class IssueMeasurementController {
             return new ResponseBean<>(200, success, issueMeasureInfoService.getDayAvgSolvedIssue(query));
         } catch (Exception e) {
             e.printStackTrace();
-            return new ResponseBean<>(401, failed + e.getMessage(), null);
+            return new ResponseBean<>(500, failed + e.getMessage(), null);
         }
     }
 
@@ -120,40 +124,41 @@ public class IssueMeasurementController {
             @ApiImplicitParam(name = "repo_uuids", value = "多个库的uuid\n库uuid之间用英文逗号,作为分隔符"),
             @ApiImplicitParam(name = "since", value = "起始时间\n格式要求: yyyy-MM-dd"),
             @ApiImplicitParam(name = "until", value = "终止时间\n格式要求: yyyy-MM-dd"),
-            @ApiImplicitParam(name = "status", value = "issue状态\n不传默认all", allowableValues = "all , Open , Solved"),
+            @ApiImplicitParam(name = "status", value = "issue状态", allowableValues = "living , other_solved , self_solved"),
             @ApiImplicitParam(name = "percent", value = "-1返回数量\n-2返回详情\n不传默认-2", allowableValues = "-1 , -2"),
-            @ApiImplicitParam(name = "type", value = "issue的类型"),
-            @ApiImplicitParam(name = "target", value = "缺陷时谁引入\nself 自己引入,other 他人引入", defaultValue = "all", allowableValues = "self , other , all"),
+            @ApiImplicitParam(name = "target", value = "缺陷时谁引入\nself 自己引入,other 他人引入", allowableValues = "self , other"),
     })
     @GetMapping(value = "/codewisdom/issue/lifecycle")
     public ResponseBean<Object> getIssueLifecycleByConditions(@RequestParam(value = "author",required = false) String developer,
-                                               @RequestParam(value = "repo_uuids",required = false) String repoIdList,
+                                               @RequestParam(value = "repo_uuids",required = false) String repoUuids,
                                                @RequestParam(value = "since",required = false) String since,
                                                @RequestParam(value = "until",required = false) String until,
-                                               @RequestParam(value = "tool",required = false) String tool,
-                                               @RequestParam(value = "status",required = false,defaultValue = "all") String status,
+                                               @RequestParam(value = "tool",required = false, defaultValue = "sonarqube") String tool,
+                                               @RequestParam(value = "status") String status,
                                                @RequestParam(value = "percent",required = false,defaultValue = "-2") Double percent,
-                                               @RequestParam(value = "type",required = false) String type,
-                                               @RequestParam(value = "target",required = false,defaultValue = "all") String target) {
-
+                                               @RequestParam(value = "target") String target, HttpServletRequest request) {
+        double numberInfo = -2;
+        //handle the requirement
         since = DateTimeUtil.timeFormatIsLegal(since, false);
         until = DateTimeUtil.timeFormatIsLegal(until, true);
-
-        //repoList是最后sql中查询用的repoId列表
-        List<String> repoList = new ArrayList<>();
-        if(StringUtils.isEmpty(repoIdList)) {
-            repoList = null;
-        }else {
-            String[] repoIdArray = repoIdList.split(",");
-            //先把前端给的repo加入到repoList
-            repoList.addAll(Arrays.asList(repoIdArray));
-        }
-
+        List<String> repoList = SegmentationUtil.splitStringList(repoUuids);
+        //init query
+        Map<String, Object> query = new HashMap<>(18);
+        query.put("producer", developer);
+        query.put("repoList", repoList);
+        query.put("since", since);
+        query.put("until", until);
+        query.put("tool", tool);
+        //check need detail or just number info
         try {
-            return new ResponseBean<>(200, success, issueMeasureInfoService.getIssueLifecycle(developer, repoList, since, until, tool, status, percent, type, target));
-        } catch (Exception e) {
+            if (percent == numberInfo) {
+                return new ResponseBean<>(200, success, issueMeasureInfoService.getIssuesLifeCycle(status, target, query));
+            }
+            String token = request.getHeader(TOKEN);
+            return new ResponseBean<>(200, success, issueMeasureInfoService.getLifeCycleDetail(status, target, query, token));
+        } catch (Exception e){
             e.printStackTrace();
-            return new ResponseBean<>(401, failed + e.getMessage(), Collections.emptyList());
+            return new ResponseBean<>(500, failed + e.getMessage(), null);
         }
     }
 
@@ -182,8 +187,13 @@ public class IssueMeasurementController {
 
         Map<String, Object> query = new HashMap<>(10);
 
-        query.put("since", DateTimeUtil.timeFormatIsLegal(since, false));
-        query.put("until", DateTimeUtil.timeFormatIsLegal(until, true));
+        String timeError = "time format error";
+        if(timeError.equals(DateTimeUtil.timeFormatIsLegal(since, false)) || timeError.equals(DateTimeUtil.timeFormatIsLegal(until, true))){
+            return new ResponseBean<>(400, "The input time format error,should be yyyy-MM-dd.", null);
+        }
+
+        query.put("since", since);
+        query.put("until", until);
         query.put("developer", developer);
         query.put("tool", tool);
         query.put("repoList", repoList);
@@ -194,7 +204,7 @@ public class IssueMeasurementController {
             return new ResponseBean<>(200, success, issueMeasureInfoService.getDeveloperCodeQuality(query));
         } catch (Exception e) {
             e.printStackTrace();
-            return new ResponseBean<>(401, failed + e.getMessage(), null);
+            return new ResponseBean<>(500, failed + e.getMessage(), null);
         }
     }
 

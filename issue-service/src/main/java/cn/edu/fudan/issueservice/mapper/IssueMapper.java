@@ -1,6 +1,7 @@
 package cn.edu.fudan.issueservice.mapper;
 
 import cn.edu.fudan.issueservice.domain.dbo.Issue;
+import com.alibaba.fastjson.JSONObject;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
@@ -83,11 +84,11 @@ public interface IssueMapper {
     /**
      * get not solved issue all list by category and repo id
      *
-     * @param repoId get issue repo id
+     * @param repoUuids get issue repo id
      * @param tool get issue type
      * @return List<Issue>
      */
-    List<Issue> getNotSolvedIssueAllListByToolAndRepoId(@Param("repo_id") String repoId,@Param("tool")  String tool);
+    List<Issue> getNotSolvedIssueAllListByToolAndRepoId(@Param("repoUuids") List<String> repoUuids,@Param("tool")  String tool);
 
     /**
      * 获取指定repocategory的issue列表且status不等于statusLis中任何一个。
@@ -104,46 +105,6 @@ public interface IssueMapper {
      * @return 获取指定缺陷id列表的缺陷集
      */
     List<Issue> getIssuesByIds(@Param("issueId_list")List<String> issueIdList);
-
-    /**
-     * 如果status为solved，表示这个developer所解决的(在RawIssue中解决)issue并且issue的最终状态为Solved
-     * @param repoIdList repoIdList
-     * @param type 缺陷类型
-     * @param tool 缺陷检测工具
-     * @param since 起始时间
-     * @param until 结束时间
-     * @param developer 开发者
-     * @param rawIssueStatus 开发者对rawIssue的操作状态
-     * @return 如果status为solved，表示这个developer所解决的(在RawIssue中解决)issue并且issue的最终状态为Solved
-     */
-    List<Map<String, Object>> getSolvedIssueLifeCycle(@Param("repoIdList")List<String> repoIdList,@Param("type")String type,@Param("tool")String tool,@Param("since")String since,@Param("until")String until,@Param("developer")String developer,@Param("status")String rawIssueStatus);
-
-    /**
-     * 如果status为solved，表示这个developer以外的其他开发者所解决的(在RawIssue中解决)issue并且issue的最终状态为Solved
-     * @param repoIdList repoIdList
-     * @param type 缺陷类型
-     * @param tool 缺陷检测工具
-     * @param since 起始时间
-     * @param until 结束时间
-     * @param developer 开发者
-     * @param rawIssueStatus 开发者对rawIssue的操作状态
-     * @return 如果status为solved，表示这个developer以外的其他开发者所解决的(在RawIssue中解决)issue并且issue的最终状态为Solved
-     */
-    List<Map<String, Object>> getSolvedIssueLifeCycleByOtherSolved(@Param("repoIdList")List<String> repoIdList,@Param("type")String type,@Param("tool")String tool,@Param("since")String since,@Param("until")String until,@Param("developer")String developer,@Param("status")String rawIssueStatus);
-
-    /**
-     * 根据rawIssue、commit_view、issue三表来查询issue信息
-     * @param repoIdList repoIdList
-     * @param type 缺陷类型
-     * @param tool 缺陷检测工具
-     * @param since 起始时间
-     * @param until 结束时间
-     * @param developer 开发者
-     * @param rawIssueStatus 开发者对rawIssue的操作状态
-     * @param issueStatus issue表的status
-     * @return 根据rawIssue、commit_view、issue三表来查询issue信息
-     */
-    List<Map<String, Object>> getOpenIssueLifeCycle(@Param("repoIdList")List<String> repoIdList,@Param("type")String type,@Param("tool")String tool,@Param("since")String since,@Param("until")String until,@Param("developer")String developer,@Param("rawIssueStatus")String rawIssueStatus,@Param("issueStatus")String issueStatus);
 
     /**
      * 返回筛选后issues数量
@@ -184,4 +145,67 @@ public interface IssueMapper {
      */
     void updateIssueManualStatus(@Param("repoUuid")String repoUuid, @Param("issueUuid")String issueUuid, @Param("manualStatus")String manualStatus,
                                  @Param("issueType")String issueType, @Param("tool")String tool, @Param("currentTime") String currentTime);
+
+    /**
+     * 获取自己引入自己解决的issue
+     * @param query condition
+     * @return issue date list
+     */
+    List<Integer> getSelfIntroduceSelfSolvedIssueInfo(Map<String, Object> query);
+
+    /**
+     * 获取他人引入自己解决的issue
+     * @param query condition
+     * @return issue date list
+     */
+    List<Integer> getOtherIntroduceSelfSolvedIssueInfo(Map<String, Object> query);
+
+    /**
+     * 获取自己引入未解决的issue
+     * @param query condition
+     * @return issue date list
+     */
+    List<Integer> getSelfIntroduceLivingIssueInfo(Map<String, Object> query);
+
+    /**
+     * 获取自己引入他人解决的issue
+     * @param query condition
+     * @return issue date list
+     */
+    List<Integer> getSelfIntroduceOtherSolvedIssueInfo(Map<String, Object> query);
+
+    /**
+     * 获取自己引入自己解决的issue detail
+     * @param query condition
+     * @return issue detail list
+     */
+    List<JSONObject> getSelfIntroduceSelfSolvedIssueDetail(Map<String, Object> query);
+
+    /**
+     * 获取他人引入自己解决的issue detail
+     * @param query condition
+     * @return issue detail list
+     */
+    List<JSONObject> getOtherIntroduceSelfSolvedIssueDetail(Map<String, Object> query);
+
+    /**
+     * 获取自己引入未解决的issue detail
+     * @param query condition
+     * @return issue detail list
+     */
+    List<JSONObject> getSelfIntroduceLivingIssueDetail(Map<String, Object> query);
+
+    /**
+     * 获取自己引入他人解决的issue detail
+     * @param query condition
+     * @return issue detail list
+     */
+    List<JSONObject> getSelfIntroduceOtherSolvedIssueDetail(Map<String, Object> query);
+
+    /**
+     * issueIntroducers
+     * @param repoUuids repoUuid list
+     * @return issueIntroducers
+     */
+    List<String> getIssueIntroducers(List<String> repoUuids);
 }

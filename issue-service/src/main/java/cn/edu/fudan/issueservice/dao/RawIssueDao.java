@@ -37,6 +37,10 @@ public class RawIssueDao {
         return rawIssueMapper.getRawIssueByCommitIDAndTool(repoUuid,tool, commitId);
     }
 
+    public List<RawIssue> getRawIssueByRepoList(List<String> repoUuids,String tool,String commitId) {
+        return rawIssueMapper.getRawIssueByRepoList(repoUuids,tool, commitId);
+    }
+
     public List<Map<String, Object>> getRawIssueByIssueId(String issueId) {
         return rawIssueMapper.getRawIssueByIssueId(issueId);
     }
@@ -53,20 +57,12 @@ public class RawIssueDao {
         return rawIssueMapper.getRawIssueByRepoIdAndTool(repoId,tool);
     }
 
-    public String getAdderOfOneIssue(String issueId){
-        return rawIssueMapper.getAdderOfOneIssue(issueId);
-    }
-
     public String getLastSolverOfOneIssue(String issueId){
         return rawIssueMapper.getLastSolverOfOneIssue(issueId);
     }
 
     public Map<String, Object> getLastSolvedInfoOfOneIssue(String issueId){
         return rawIssueMapper.getLastSolvedInfoOfOneIssue(issueId);
-    }
-
-    public List<String> getIssueIntroducers(List<String> repoUuids) {
-        return rawIssueMapper.getIssueIntroducers(repoUuids);
     }
 
     public String getRawIssueUuidByIssueUuidAndCommit(String issueUuid, String commit){

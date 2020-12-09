@@ -1,7 +1,6 @@
 package cn.edu.fudan.issueservice.component;
 
 import org.junit.Before;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.InjectMocks;
@@ -15,10 +14,5 @@ public class RestInterfaceManagerTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-    }
-
-    @Test
-    public void deleteSonarProjectTest() {
-        restInterfaceManager.deleteSonarProject("0744a10e-65af-11e9-9ddc-f93dfaa9da61");
     }
 }

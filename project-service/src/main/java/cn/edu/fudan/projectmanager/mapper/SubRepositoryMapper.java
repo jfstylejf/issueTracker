@@ -31,7 +31,7 @@ public interface SubRepositoryMapper {
      * 更新subRepo表
      * @param subRepository s
      */
-    void updateSubRepository(@Param("subRepository")SubRepository subRepository);
+    void updateSubRepository(SubRepository subRepository);
 
     /**
      * 通过uuid得到subRepo
