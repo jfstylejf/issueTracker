@@ -3,6 +3,10 @@ package cn.edu.fudan.issueservice.domain.enums;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+/**
+ * @author Beethoven
+ */
+
 @Getter
 public enum IssueStatusEnum {
 
@@ -19,21 +23,12 @@ public enum IssueStatusEnum {
     SOLVED("Solved"),
     TO_REVIEW("To_Review");
 
-    private String name;
+    private final String name;
     IssueStatusEnum(String name) {
         this.name = name;
     }
 
     public String getName() {
         return name;
-    }
-
-    public static IssueStatusEnum getStatusByName(String name){
-        for(IssueStatusEnum status : IssueStatusEnum.values()){
-            if(status.getName().equals(name)){
-                return status;
-            }
-        }
-        return null;
     }
 }

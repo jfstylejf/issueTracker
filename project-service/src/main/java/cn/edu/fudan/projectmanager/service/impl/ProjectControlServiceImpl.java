@@ -1,10 +1,13 @@
 package cn.edu.fudan.projectmanager.service.impl;
 
 import cn.edu.fudan.projectmanager.component.RestInterfaceManager;
-import cn.edu.fudan.projectmanager.dao.RepoUserDao;
+import cn.edu.fudan.projectmanager.dao.AccountProjectDao;
+import cn.edu.fudan.projectmanager.dao.AccountRepositoryDao;
+import cn.edu.fudan.projectmanager.dao.ProjectDao;
 import cn.edu.fudan.projectmanager.dao.SubRepositoryDao;
-import cn.edu.fudan.projectmanager.domain.NeedDownload;
-import cn.edu.fudan.projectmanager.domain.RepoUser;
+import cn.edu.fudan.projectmanager.domain.AccountRoleEnum;
+import cn.edu.fudan.projectmanager.domain.topic.NeedDownload;
+import cn.edu.fudan.projectmanager.domain.AccountRepository;
 import cn.edu.fudan.projectmanager.domain.SubRepository;
 import cn.edu.fudan.projectmanager.domain.dto.RepositoryDTO;
 import cn.edu.fudan.projectmanager.domain.dto.UserInfoDTO;
@@ -47,8 +50,10 @@ public class ProjectControlServiceImpl implements ProjectControlService {
     private static Map<String, UserInfoDTO> userInfos = new ConcurrentHashMap<>(32);
     private RestInterfaceManager rest;
 
-    private RepoUserDao repoUserDao;
+    private AccountRepositoryDao accountRepositoryDao;
     private SubRepositoryDao subRepositoryDao;
+    private ProjectDao projectDao;
+    private AccountProjectDao accountProjectDao;
 
     private KafkaTemplate kafkaTemplate;
 
@@ -84,11 +89,15 @@ public class ProjectControlServiceImpl implements ProjectControlService {
         }
 
         String repoName = repositoryDTO.getRepoName();
+        if (repoName == null || "".equals(repoName)) {
+            repoName = url.substring(url.lastIndexOf("/")).replace("/", "") + "-" + branch;
+        }
 
         // 一个 Repo目前只扫描一个分支
-        if(repoUserDao.hasRepo(accountUuid, url)) {
-            throw new RunTimeException("The repo name has already been used! ");
+        if(accountRepositoryDao.hasRepo(branch, url)) {
+            throw new RunTimeException("The repo accountName has already been used! ");
         }
+
         String projectName = repositoryDTO.getProjectName();
 
         // 普通用户不具备添加项目的权限 上面检查过后不在验证项目是否有被添加过
@@ -104,16 +113,15 @@ public class ProjectControlServiceImpl implements ProjectControlService {
         //subRepository表中插入信息
         int effectRow = subRepositoryDao.insertOneRepo(subRepo);
 
+        AccountRepository accountRepository = AccountRepository.builder().uuid(UUID.randomUUID().toString()).
+                repoName(repoName).accountUuid(accountUuid).
+                subRepositoryUuid(uuid).projectName(projectName).build();
+        accountRepositoryDao.insertAccountRepository(accountRepository);
         if (effectRow != 0) {
             //只有subRepository表中不存在才会下载，向RepoManager这个Topic发送消息，请求开始下载
             send(uuid, url, isPrivate, username, password, branch, repoSource);
         }
-
-
-        RepoUser repoUser = RepoUser.builder().uuid(UUID.randomUUID().toString()).
-                name(repoName).accountUuid(accountUuid).
-                subRepositoryUuid(uuid).projectName(projectName).build();
-        repoUserDao.insertRepoUser(repoUser);
+        log.info("success add repo {}", url);
     }
 
     @Override
@@ -133,32 +141,23 @@ public class ProjectControlServiceImpl implements ProjectControlService {
     }
 
     @Override
-    public void update(String token, String oldName, String newName, String type) throws Exception {
+    public void update(String token, String oldProjectName, String newProjectName) throws Exception {
         UserInfoDTO userInfoDTO = getUserInfoByToken(token);
         String accountUuid = userInfoDTO.getUuid();
-        final String project = "project";
-        final String repository = "repository";
-        if (StringUtils.isEmpty(oldName) || StringUtils.isEmpty(newName) || oldName.equals(newName)) {
+
+        if (StringUtils.isEmpty(oldProjectName) || StringUtils.isEmpty(newProjectName) || oldProjectName.equals(newProjectName)) {
             return;
         }
-
-
-        if (repository.equals(type)) {
-            repoUserDao.updateRepoName(accountUuid, oldName, newName);
-        }
-
         // 0 表示超级管理员 只有超级管理员能操作
-        if (project.equals(type) && userInfoDTO.getRight() != 0) {
-            throw new RunTimeException("this user has no right to change project name");
+        if (userInfoDTO.getRight() != 0) {
+            throw new RunTimeException("this user has no right to change project accountName");
         }
-
-        // TODO 两种操作 1：修改所有的project名称 2：改变repo的所属组
-
-        // 改变project name 该repo的所有project name 都会改变 只有超级管理员才会有此权限
-        log.warn("project name changed by {}! old name is {}, new name is {}", userInfoDTO.getUuid(), oldName, newName);
-
-        /// repoUserDao.updateProjectName();
-
+        // 改变projectName 该repo的所有projectName 都会改变 只有超级管理员才会有此权限
+        log.warn("projectName changed by {}! old projectName is {}, new projectName is {}", userInfoDTO.getUuid(), oldProjectName, newProjectName);
+        accountRepositoryDao.updateProjectNameAR(accountUuid, oldProjectName, newProjectName);
+        projectDao.updateProjectNameP(accountUuid, oldProjectName, newProjectName);
+        accountProjectDao.updateProjectNameAP(accountUuid, oldProjectName, newProjectName);
+        subRepositoryDao.updateProjectNameSR(accountUuid, oldProjectName, newProjectName);
     }
 
     @Override
@@ -167,18 +166,19 @@ public class ProjectControlServiceImpl implements ProjectControlService {
         UserInfoDTO userInfoDTO = getUserInfoByToken(token);
         // 0 表示超级管理员 只有超级管理员能操作
         if ( userInfoDTO.getRight() != 0) {
-            throw new RunTimeException("this user has no right to change project name");
+            throw new RunTimeException("this user has no right to change project accountName");
         }
 
         if (! empty) {
             subRepositoryDao.setRecycled(subRepoUuid);
             return;
         }
-
-        repoUserDao.deleteRelation(subRepoUuid);
-        subRepositoryDao.deleteRepo(subRepoUuid);
         // TODO 基于 rest 调用所有扫描服务把与该 repo相关的所有数据删除
 
+
+
+        accountRepositoryDao.deleteRelation(subRepoUuid);
+        subRepositoryDao.deleteRepo(subRepoUuid);
     }
 
 
@@ -186,7 +186,52 @@ public class ProjectControlServiceImpl implements ProjectControlService {
     @SneakyThrows
     public List<SubRepository> query(String token){
         UserInfoDTO userInfoDTO = getUserInfoByToken(token);
-        return subRepositoryDao.getAllSubRepoByAccountUuid(userInfoDTO.getUuid());
+        String userUuid = userInfoDTO.getUuid();
+
+        // 用户权限为admin时 查询所有的repo
+        if (userInfoDTO.getRight().equals(AccountRoleEnum.ADMIN.getRight())) {
+            userUuid = null;
+        }
+
+        // todo 用户权限为 DEVELOPER 时不允许查询项目列表
+
+        return subRepositoryDao.getAllSubRepoByAccountUuid(userUuid);
+    }
+
+    @Override
+    public void addOneProject(String token, String projectName) throws Exception {
+        UserInfoDTO userInfoDTO = getUserInfoByToken(token);
+        String accountUuid = userInfoDTO.getUuid();
+        //project表中插入信息
+        projectDao.insertOneProject(accountUuid,projectName);
+    }
+
+    @Override
+    public List<Map<String, Object>> getProjectAll(String token){
+        List<Map<String, Object>> result = projectDao.getProjectAll();
+        return result;
+    }
+
+    @Override
+    public void deleteProject(String token, String projectName) throws Exception {
+
+    }
+
+    @Override
+    public void updateRepo(String token, String oldRepoName, String newRepoName) throws Exception {
+        UserInfoDTO userInfoDTO = getUserInfoByToken(token);
+        String accountUuid = userInfoDTO.getUuid();
+
+        if (StringUtils.isEmpty(oldRepoName) || StringUtils.isEmpty(newRepoName) || oldRepoName.equals(newRepoName)) {
+            return;
+        }
+        // 0 表示超级管理员 只有超级管理员能操作
+        if (userInfoDTO.getRight() != 0) {
+            throw new RunTimeException("this user has no right to change project accountName");
+        }
+        // 改变project accountName 该repo的所有project accountName 都会改变 只有超级管理员才会有此权限
+        log.warn("repo name changed by {}! old repoName is {}, new repoName is {}", userInfoDTO.getUuid(), oldRepoName, newRepoName);
+        subRepositoryDao.updateRepoName(accountUuid, oldRepoName, newRepoName);
     }
 
 
@@ -227,9 +272,17 @@ public class ProjectControlServiceImpl implements ProjectControlService {
     }
 
     @Autowired
-    public void setRepoUserDao(RepoUserDao repoUserDao) {
-        this.repoUserDao = repoUserDao;
+    public void setAccountRepositoryDao(AccountRepositoryDao accountRepositoryDao) {
+        this.accountRepositoryDao = accountRepositoryDao;
     }
+
+    @Autowired
+    public void setProjectDao(ProjectDao projectDao) {
+        this.projectDao = projectDao;
+    }
+
+    @Autowired
+    public void setAccountProjectDao(AccountProjectDao accountProjectDao) {this.accountProjectDao = accountProjectDao;}
 
     @Autowired
     public void setKafkaTemplate(KafkaTemplate kafkaTemplate) {

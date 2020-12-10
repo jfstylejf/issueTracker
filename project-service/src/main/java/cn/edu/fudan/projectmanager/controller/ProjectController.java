@@ -5,6 +5,9 @@ import cn.edu.fudan.projectmanager.domain.SubRepository;
 import cn.edu.fudan.projectmanager.domain.dto.RepositoryDTO;
 import cn.edu.fudan.projectmanager.domain.vo.RepositoryVO;
 import cn.edu.fudan.projectmanager.service.ProjectControlService;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,11 +28,15 @@ public class ProjectController {
     private final String TOKEN = "token";
 
     /**
-     * description: 添加项目
-     * @param repositoryDTO url isPrivate username password name type branch
+     * description: 添加库
+     * @param repositoryDTO url isPrivate username password accountName type branch
      * @param request header
      */
-    @PostMapping(value = {"/project"})
+    @ApiOperation(value="添加新的库",httpMethod = "POST")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "repositoryDTO", value = "库的信息", dataType = "RepositoryDTO", required = true)
+    })
+    @PostMapping(value = {"/repository"})
     public ResponseBean addProject(HttpServletRequest request, @RequestBody RepositoryDTO repositoryDTO) {
         String token = request.getHeader(TOKEN);
         try {
@@ -91,18 +98,21 @@ public class ProjectController {
 
 
     @PutMapping(value = {"/project"})
-    public ResponseBean updateProject(HttpServletRequest request, @RequestParam("old_name") String oldName,
-                                      @RequestParam("new_name") String newName,
-                                      @RequestParam(value = "type", required = false, defaultValue = "repository") String type){
+    public ResponseBean updateProject(HttpServletRequest request,
+                                      @RequestParam("old_project_name") String oldProjectName,
+                                      @RequestParam("new_project_name") String newProjectName){
         try {
-            projectControl.update(request.getHeader(TOKEN), oldName, newName, type);
+            projectControl.update(request.getHeader(TOKEN), oldProjectName, newProjectName);
             return new ResponseBean<>(200, "update success", null);
         } catch (Exception e) {
             return new ResponseBean<>(401, "update failed :" + e.getMessage(), null);
         }
     }
 
-
+    @ApiOperation(value="获取所有库信息",httpMethod = "GET")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "recycled", value = "是否被回收", dataType = "int", required = false,defaultValue = "0"),
+    })
     @GetMapping(value = {"/project"})
     public ResponseBean<List<RepositoryVO>> query(HttpServletRequest request,
                               @RequestParam(name = "recycled",required = false, defaultValue = "0") int recycled) {
@@ -112,88 +122,50 @@ public class ProjectController {
         subRepositories.stream().filter(s -> s.getRecycled() == recycled).
                 forEach(s -> repositoryVos.add(new RepositoryVO(s)));
 
-        return new ResponseBean<>(200, "update success", repositoryVos);
+        return new ResponseBean<>(200, "success", repositoryVos);
     }
 
-//    //jeff get projectName list by module
-//    @Deprecated
-//    @GetMapping(value = {"/projectByModule"})
-//    public ResponseBean query(HttpServletRequest request,
-//                        @RequestParam("module") String module,
-//                        @RequestParam(name = "type",required = false,defaultValue = "bug")String type) {
-//        String userToken = request.getHeader(TOKEN);
-//        return projectService.getProjectListByModule(userToken,type,module);
-//    }
-//
-//    @Deprecated
-//    @GetMapping(value = {"/project/filter"})
-//    public ResponseBean keyWordQuery(HttpServletRequest request,
-//                               @RequestParam(name = "key_word", required = false )String keyWord,
-//                               @RequestParam(name = "repo",required = false) String module,
-//                               @RequestParam(name = "type",required = false, defaultValue = "bug")String type,
-//                               @RequestParam(name = "isRecycled",required = false, defaultValue = "0") int isRecycled) {
-//        String userToken = request.getHeader(TOKEN);
-//        return projectService.getProjectListByKeyWord(userToken, module, keyWord, type, isRecycled);
-//    }
 
-//    @GetMapping(value = {"/project/name"})
-//    public ResponseBean getProjectName(HttpServletRequest request,
-//                                 @RequestParam("repoUuid") String repoId,
-//                                 @RequestParam(name = "category",required = false,defaultValue = "bug")String category) {
-//        String userToken = request.getHeader(TOKEN);
-//        try {
-//            return projectService.getProjectByRepoIdAndCategory(userToken, repoId,category).getName();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return new ResponseBean(401, "projectName add failed! No such repo found!", null);
-//        }
-//
-//    }
-//
-//    @GetMapping(value = {"/project/search"})
-//    public ResponseBean getProjectByCondition(HttpServletRequest request,
-//                                        @RequestParam(name = "category",required = false)String category,
-//                                        @RequestParam(name = "name", required = false)String name,
-//                                        @RequestParam(name = "module", required = false)String module
-//    ){
-//        String userToken = request.getHeader(TOKEN);
-//        try {
-//            return new ResponseBean(200, "get success", projectService.getProjectsByCondition(userToken, category,name,module));
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return new ResponseBean(401, "operate failed", null);
-//        }
-//
-//    }
-//
-//    @GetMapping(value = {"/project/recycle"})
-//    public ResponseBean projectRecycle(HttpServletRequest request,
-//                                 @RequestParam(name = "projectId")String projectId,
-//                                 @RequestParam(name = "isRecycled", required = false,defaultValue = "0") int isRecycled){
-//        String userToken = request.getHeader(TOKEN);
-//        try {
-//            projectService.recycle(projectId,userToken,isRecycled);
-//            return new ResponseBean(200, "success", null);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return new ResponseBean(401, "failed", null);
-//        }
-//    }
-
-//    @DeleteMapping(value = {"/project/{projectId}"})
-//    public ResponseBean delete(@PathVariable("projectId") String projectId,
-//                         @RequestParam(name = "type",required = false,defaultValue = "bug")String type,
-//                         HttpServletRequest request) {
-//        try {
-//            // projectService.remove(projectId, type,request.getHeader(TOKEN));
-//            return new ResponseBean(200, "projectName delete success!", null);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return new ResponseBean(401, "projectName delete failed!", null);
-//        }
-//    }
+    @DeleteMapping(value = {"/project"})
+    public ResponseBean delete(@RequestParam("project_name")String projectName,
+                         HttpServletRequest request) {
+        try {
+            projectControl.deleteProject(projectName,request.getHeader(TOKEN));
+            return new ResponseBean(200, "projectName delete success!", null);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseBean(401, "projectName delete failed!", null);
+        }
+    }
 
 
+    /**
+     * description: 添加项目
+     * @param projectName
+     * @param request header
+     */
+    @PostMapping(value = {"/project"})
+    public ResponseBean addNewProject(HttpServletRequest request, @RequestParam ("project_name") String projectName) {
+        String token = request.getHeader(TOKEN);
+        try {
+            projectControl.addOneProject(token, projectName);
+            return new ResponseBean<>(200, "add success", null);
+        } catch (Exception e) {
+            return new ResponseBean<>(401, "add failed :" + e.getMessage(), null);
+        }
+    }
+
+    @PutMapping(value = {"/repository"})
+    public ResponseBean updateRepository(HttpServletRequest request,
+                                      @RequestParam("old_repo_name") String oldRepoName,
+                                      @RequestParam("new_repo_name") String newRepoName){
+        try {
+            projectControl.updateRepo(request.getHeader(TOKEN), oldRepoName, newRepoName);
+            return new ResponseBean<>(200, "update success", null);
+        } catch (Exception e) {
+            return new ResponseBean<>(401, "update failed :" + e.getMessage(), null);
+        }
+    }
 
 
     @Autowired

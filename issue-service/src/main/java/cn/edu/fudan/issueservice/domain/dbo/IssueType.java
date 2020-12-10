@@ -1,5 +1,8 @@
 package cn.edu.fudan.issueservice.domain.dbo;
 
+/**
+ * @author Beethoven
+ */
 public class IssueType {
 
 

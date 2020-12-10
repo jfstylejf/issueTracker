@@ -48,7 +48,7 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
                 log.error("repositoryId and developer is null");
                 return cloneMessages;
             }
-            // 单个repo 维度 存放的是用户的git name
+            // 单个repo 维度 存放的是用户的git accountName
             List<String> developerList = repoCommitMapper.getAllDeveloper(repositoryId);
             // 聚合 key gitName value trueName
             Map<String, String> trueNameGitName = getName(developerList);
@@ -95,7 +95,7 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
         Map<String, String> result = new HashMap<>(developerList.size() >> 1);
         List<Map<String, String>> trueName = repoCommitMapper.getAllTrueName();
         for (Map<String, String> m : trueName) {
-            String name = m.get("name");
+            String name = m.get("accountName");
             String gitName = m.get("account_gitname");
             if (developerList.contains(gitName)) {
                 result.put(gitName, name);

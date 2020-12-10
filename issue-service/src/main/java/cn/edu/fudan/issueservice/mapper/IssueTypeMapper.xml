@@ -2,15 +2,6 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.edu.fudan.issueservice.mapper.IssueTypeMapper">
-
-    <resultMap id="issueType" type="IssueType">
-        <id property="uuid" column="uuid"/>
-        <result property="type" column="type"/>
-        <result property="specificationSource" column="specification_source"/>
-        <result property="category" column="category"/>
-        <result property="description" column="description"/>
-    </resultMap>
-
     <resultMap id="issueTypeWithoutDescription" type="IssueType">
         <id property="uuid" column="uuid"/>
         <result property="type" column="type"/>
@@ -20,33 +11,9 @@
 
     </resultMap>
 
-
-    <insert id="insertIssueTypeList" parameterType="List">
-        insert into issue_type
-        (
-        uuid,
-        type,
-        specification_source,
-        category,
-        description,
-        language
-        )
-        VALUES
-        <foreach collection="list" item="item" index="index" separator=",">
-            (
-            #{item.uuid},
-            #{item.type},
-            #{item.specificationSource},
-            #{item.category},
-            #{item.description},
-            #{item.language}
-            )
-        </foreach>
-    </insert>
-
     <select id="getIssueTypeByTypeName" parameterType="String" resultMap="issueTypeWithoutDescription">
         select uuid,type,specification_source,category,language from issue_type where type =#{type}
+        limit 1
     </select>
-
 </mapper>
 

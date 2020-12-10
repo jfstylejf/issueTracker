@@ -1,26 +1,26 @@
 package cn.edu.fudan.accountservice.service.impl;
 
 import cn.edu.fudan.accountservice.dao.AccountDao;
-import cn.edu.fudan.accountservice.domain.Account;
-import cn.edu.fudan.accountservice.domain.AccountInfo;
-import cn.edu.fudan.accountservice.domain.ResponseBean;
-import cn.edu.fudan.accountservice.domain.Tool;
+import cn.edu.fudan.accountservice.domain.*;
+import cn.edu.fudan.accountservice.mapper.AccountAuthorMapper;
 import cn.edu.fudan.accountservice.service.AccountService;
 import cn.edu.fudan.accountservice.util.Base64Util;
 import cn.edu.fudan.accountservice.util.MD5Util;
+import cn.edu.fudan.common.http.ResponseEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 
 @Service
 public class AccountServiceImpl implements AccountService {
 
     private StringRedisTemplate stringRedisTemplate;
-
+    private AccountAuthorMapper accountAuthorMapper;
 
     @Autowired
     public void setStringRedisTemplate(StringRedisTemplate stringRedisTemplate) {
@@ -35,7 +35,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public ResponseBean login(String username, String encodedPassword) {
+    public AccountVO login(String username, String encodedPassword) {
         //Base64解密
         String password = Base64Util.decodePassword(encodedPassword);
         //首次登录或token过期重新登录，返回新的token
@@ -45,26 +45,17 @@ public class AccountServiceImpl implements AccountService {
             String userToken = MD5Util.md5(encodePassword);
             int userRight = account.getRight();
             stringRedisTemplate.opsForValue().set("login:" + userToken, username);
-            stringRedisTemplate.expire("login:" + userToken, 7, TimeUnit.DAYS);//token保存7天
-            return new ResponseBean(200, "登录成功!", new AccountInfo(username, userToken, userRight));
+            //token保存7天
+            stringRedisTemplate.expire("login:" + userToken, 7, TimeUnit.DAYS);
+            return new AccountVO(username, userToken, userRight);
         } else {
-            return new ResponseBean(401, "用户名或密码错误!", null);
+            return null;
         }
-    }
-
-    @Override
-    public String getUserNameByToken(String userToken) {
-        return stringRedisTemplate.opsForValue().get("login:" + userToken);
     }
 
     @Override
     public boolean isAccountNameExist(String accountName) {
         return accountDao.isAccountNameExist(accountName);
-    }
-
-    @Override
-    public boolean isNameExist(String name) {
-        return accountDao.isNameExist(name);
     }
 
     @Override
@@ -77,7 +68,7 @@ public class AccountServiceImpl implements AccountService {
         List<Map<String,String>> result = accountDao.getStatusByName(name);
         Map<String, Integer> nameStatus = new HashMap<>(8);
         for(Map<String,String> m : result){
-            String authorName = m.get("name");
+            String authorName = m.get("accountName");
             String authorStatus = m.get("account_status");
             nameStatus.put(authorName,Integer.valueOf(authorStatus));
         }
@@ -89,7 +80,6 @@ public class AccountServiceImpl implements AccountService {
         if(statusInfo.size()!=0){
             accountDao.updateAccountStatus(statusInfo);
         }
-        return;
     }
 
     @Override
@@ -113,7 +103,7 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public void addAccount(Account account) {
-        if (account.getAccountName() == null || account.getPassword() == null || account.getEmail() == null || account.getName() == null) {
+        if (account.getAccountName() == null || account.getPassword() == null || account.getEmail() == null) {
             throw new RuntimeException("param loss");
         }
         if (isAccountNameExist(account.getAccountName())) {
@@ -123,9 +113,6 @@ public class AccountServiceImpl implements AccountService {
             throw new RuntimeException("email has been used!");
         }
 
-        if (isNameExist(account.getName())) {
-            throw new RuntimeException("nickName has been used!");
-        }
         account.setUuid(UUID.randomUUID().toString());
         account.setPassword(MD5Util.md5(account.getAccountName() + account.getPassword()));
         accountDao.addAccount(account);
@@ -150,7 +137,7 @@ public class AccountServiceImpl implements AccountService {
     public void updateToolsEnable(List<Tool> tools) {
         String accountName = tools.get(0).getAccountName();
         int right = accountDao.getAccountByAccountName(accountName).getRight();
-        if(right == 1){
+        if(right == AccountRoleEnum.ADMIN.getRight()){
             accountDao.updateToolsEnable(tools);
         }
 
@@ -174,53 +161,20 @@ public class AccountServiceImpl implements AccountService {
         return accountDao.getRightByAccountName(username);
     }
 
-
-    private static List<String> getDifferent(List<String> oldGitname, List<String> gitname)
-    {
-        List<String> diff = new ArrayList<String>();
-        Map<String,Integer> map = new HashMap<String,Integer>(gitname.size());
-
-        for (String name : gitname) {
-            map.put(name, 1);
-        }
-        for (String name : oldGitname) {
-            if(map.get(name)!=null)
-            {
-                map.put(name, 2);
-                continue;
-            }
-            diff.add(name);
-        }
-        for(Map.Entry<String, Integer> entry:map.entrySet())
-        {
-            if(entry.getValue()==1)
-            {
-                diff.add(entry.getKey());
-            }
-        }
-        return diff;
-    }
-
-    public void updateAccountInfo(Account account) {
-
-        account.setUuid(UUID.randomUUID().toString());
-        account.setPassword(MD5Util.md5(account.getAccountName() + account.getPassword()));
-        accountDao.addAccount(account);
-    }
-
     @Override
-    public void getGitName(List<String> gitname)
-    {
-        List<String> oldGitname = accountDao.getAccountGitname();
-        List<String> diffList = getDifferent(gitname,oldGitname);
-        for (String gitName : diffList) {
-            Account account = new Account();
-            account.setAccountName(gitName);
-            account.setGitname(gitName);
-            account.setUuid(UUID.randomUUID().toString());
-            account.setPassword(MD5Util.md5(account.getAccountName() + account.getPassword()));
-            accountDao.addAccount(account);
+    public void addNewAccounts(List<String> gitNames) {
+        List<Account> accounts = gitNames.stream().
+                filter(gitName -> !accountDao.getAccountGitname().contains(gitName)).
+                map(Account::newInstance).
+                collect(Collectors.toList());
+        accountDao.addAccounts(accounts);
+        accountAuthorMapper.batchInsertAccountAuthor(accounts.stream().map(AccountAuthor::newInstanceOf).collect(Collectors.toList()));
 
-        }
+        // todo 查询新增人员在哪个项目 后续更新account_project 表
+    }
+
+    @Autowired
+    public void setAccountAuthorMapper(AccountAuthorMapper accountAuthorMapper) {
+        this.accountAuthorMapper = accountAuthorMapper;
     }
 }

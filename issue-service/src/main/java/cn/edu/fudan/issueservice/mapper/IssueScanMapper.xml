@@ -15,8 +15,6 @@
         <result property="resultSummary" column="result_summary"/>
     </resultMap>
 
-
-
     <insert id="insertOneScan" parameterType="IssueScan">
         insert into issue_scan
         (
@@ -86,7 +84,6 @@
         order by commit_time
     </select>
 
-
     <select id="getLatestIssueScanByRepoIdAndTool" parameterType="String" resultMap="issueScan">
         select * from issue_scan
         <where>
@@ -98,4 +95,15 @@
         order by commit_time desc limit 1
     </select>
 
+    <select id="getScannedCommitList" resultType="String">
+        SELECT commit_id FROM issue_scan
+        <trim prefix="where" prefixOverrides="and">
+            <if test="repoUuid != null and repoUuid != ''">
+                and repo_id = #{repoUuid}
+            </if>
+            <if test="tool != null and tool != ''">
+                and tool = #{tool}
+            </if>
+        </trim>
+    </select>
 </mapper>

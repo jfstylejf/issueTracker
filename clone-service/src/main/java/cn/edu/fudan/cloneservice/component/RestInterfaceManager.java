@@ -39,18 +39,28 @@ public class RestInterfaceManager {
 
     //---------------------------------------------code service---------------------------------------------------------
     public String getRepoPath(String repoId){
-        String repoPath=null;
-        JSONObject response=restTemplate.getForObject(codeServicePath + "?repo_id=" + repoId, JSONObject.class).getJSONObject("data");
-        if (response != null ){
-            if(response.getString("status").equals("Successful")) {
-                repoPath=response.getString("content");
-                log.info("repoHome -> {}" ,repoPath);
-            }else{
-                log.error("get repoHome fail -> {}",response.getString("content"));
-                log.error("repoId -> {}",repoId);
+        String repoPath = null;
+        int tryCount = 0;
+        while (tryCount < 5) {
+
+            try{
+                JSONObject response = restTemplate.getForObject(codeServicePath + "?repo_id=" + repoId , JSONObject.class);
+                if (response != null && response.getJSONObject("data") != null && "Successful".equals(response.getJSONObject ("data").getString ("status"))) {
+                    repoPath = response.getJSONObject("data").getString ("content");
+                } else {
+                    log.error("code service response null!");
+                }
+                break;
+            }catch (Exception e){
+                log.error("getRepoPath Exception！ {}", e.getMessage());
+                try{
+                    TimeUnit.SECONDS.sleep(20);
+                }catch(Exception sleepException){
+                    e.printStackTrace();
+                }
+
+                tryCount++;
             }
-        } else {
-            log.error("code service response null!");
         }
         return repoPath;
     }

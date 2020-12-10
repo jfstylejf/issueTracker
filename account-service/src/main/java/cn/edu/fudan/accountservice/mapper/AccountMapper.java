@@ -23,25 +23,10 @@ public interface AccountMapper {
     Account login(@Param("accountName") String accountName, @Param("password") String password);
 
     /**
-     * add account
-     *
-     * @param account Account type
-     */
-    void addAccount(Account account);
-
-    /**
-     * get account id by name
-     *
-     * @param name get user name
-     * @return String type
-     */
-    String getAccountIdByName(@Param("name") String name);
-
-    /**
      * get account by email
      *
      *
-     * @param email get user name
+     * @param email get user accountName
      * @return Account
      */
     Account getAccountByEmail(@Param("email") String email);
@@ -49,15 +34,15 @@ public interface AccountMapper {
     /**
      * get account by status
      *
-     * @param name get user name
+     * @param name get user accountName
      * @return Account
      */
     List<Map<String,String>> getStatusByName(@Param("name_list") List<String> name);
 
-    List<Account> getAccountStatus();
+    List<Account> getAllAccount();
 
     /**
-     * update statusInfo by account name
+     * update statusInfo by account accountName
      *
      * @param statusInfo
      * @return null
@@ -65,9 +50,9 @@ public interface AccountMapper {
     void updateStatusInfo(List<Account> statusInfo);
 
     /**
-     * get account by account name
+     * get account by account accountName
      *
-     * @param accountName get account name
+     * @param accountName get account accountName
      * @return Account
      */
     Account getAccountByAccountName(String accountName);
@@ -85,13 +70,21 @@ public interface AccountMapper {
 
     String getAccountNameById(String id);
 
+    /**
+     *  一次插入多个账户
+     * @param accounts 多个账户
+     */
+    void addAccounts(List<Account> accounts);
+
+
     @Select("select uuid,account_right from account where account_name = #{accountName}")
     List<Map<String,Object>> getRightByAccountName(String accountName);
 
     /**
-     * get git name
+     * get git accountName
      *
      * @return List<String>
      */
-    List<String> getOldAccountGitname();
+    @Select("SELECT account_gitname FROM account_author;")
+    List<String> getOldAccountGitName();
 }

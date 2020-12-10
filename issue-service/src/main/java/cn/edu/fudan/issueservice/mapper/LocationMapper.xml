@@ -17,7 +17,6 @@
         <result property="code" column="code"/>
     </resultMap>
 
-
     <insert id="insertLocationList" parameterType="List">
         insert into location
         (
@@ -51,12 +50,6 @@
         </foreach>
     </insert>
 
-    <delete id="deleteLocationByRepoIdAndTool" parameterType="String">
-        DELETE a FROM location a INNER JOIN rawIssue c ON a.rawIssue_id= c.uuid WHERE c.repo_id=#{repo_id} and c.tool = #{tool};
-
-    </delete>
-
-
     <delete id="deleteLocationByRawIssueIds" >
         DELETE from location
         <where>
@@ -70,6 +63,12 @@
 
     <select id="getLocations" parameterType="Location" resultMap="location">
         select * from location where rawIssue_id =#{uuid}
+    </select>
+
+    <select id="getLocationsByRawIssueUuid" parameterType="String" resultType="java.util.HashMap">
+        SELECT uuid, start_line as startLine,end_line as endLine, bug_lines as bugLines, start_token as startToken,
+        end_token as endToken, file_path as filePath, class_name as className,method_name as methodName, code
+        FROM location WHERE rawIssue_id =#{uuid}
     </select>
 
 </mapper>

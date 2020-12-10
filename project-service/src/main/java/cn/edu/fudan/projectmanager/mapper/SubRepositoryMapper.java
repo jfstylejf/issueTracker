@@ -40,7 +40,7 @@ public interface SubRepositoryMapper {
      */
     SubRepository getSubRepoByUuid(@Param("uuid")String uuid);
 
-    SubRepository getSubRepoByRepoUuid(@Param("repo_uuid")String repoUuid);
+    SubRepository  getSubRepoByRepoUuid(@Param("repo_uuid")String repoUuid);
 
     /**
      * 获取repo最新commit时间
@@ -51,22 +51,32 @@ public interface SubRepositoryMapper {
     Date getLatestCommitTime(@Param("repo_id") String repoUuid);
 
 
-    List<SubRepository> getAllSubRepoByAccountId(String accountUuid);
+    List<SubRepository> getAllSubRepoByAccountId(@Param("account_uuid") String accountUuid);
 
 
     @Update("UPDATE `sub_repository` SET `recycled` = '1' WHERE `uuid` = #{subRepoUuid};")
-    void setRecycled(String subRepoUuid);
+    void setRecycled(@Param("subRepoUuid") String subRepoUuid);
 
     @Delete("DELETE FROM `sub_repository` WHERE `uuid` = #{subRepoUuid};")
-    void deleteRepo(String subRepoUuid);
+    void deleteRepo(@Param("subRepoUuid") String subRepoUuid);
 
     /**
      * 项目与库的对应关系
      */
-    @Select("SELECT s.project_name, name, repo_uuid, recycled " +
-            "FROM sub_repository as s,repo_user as r " +
+    @Select("SELECT s.project_name, r.repo_name, repo_uuid, recycled " +
+            "FROM sub_repository as s,account_repository as r " +
             "WHERE s.uuid = r.sub_repository_uuid order by project_name;")
     List<Map<String, Object>> getAllProjectRepoRelation();
 
+    /**
+     * 更新项目名
+     * @param  accountUuid,oldProjectName,newProjectName
+     */
+    void updateProjectNameSR(@Param("accountUuid") String accountUuid, @Param("oldProjectName")String oldProjectName, @Param("newProjectName")String newProjectName);
 
+    /**
+     * 更新库名
+     * @param  accountUuid,oldProjectName,newProjectName
+     */
+    void updateRepoName(@Param("accountUuid") String accountUuid, @Param("oldRepoName")String oldRepoName, @Param("newRepoName")String newRepoName);
 }

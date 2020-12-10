@@ -6,10 +6,7 @@ import cn.edu.fudan.accountservice.mapper.AccountMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Repository
 public class AccountDao {
@@ -34,24 +31,16 @@ public class AccountDao {
         return getAccountByAccountName(accountName) != null;
     }
 
-    public boolean isNameExist(String name) {
-        return accountMapper.getAccountIdByName(name) != null;
-    }
-
     public boolean isEmailExist(String email) {
         return accountMapper.getAccountByEmail(email) != null;
     }
 
     public List<Map<String,String>> getStatusByName(List name){return accountMapper.getStatusByName(name);}
 
-    public List<Account> getAccountStatus(){ return accountMapper.getAccountStatus(); }
+    public List<Account> getAccountStatus(){ return accountMapper.getAllAccount(); }
 
     public void updateAccountStatus(List<Account> statusInfo){
         accountMapper.updateStatusInfo(statusInfo);
-    }
-
-    public void addAccount(Account account) {
-        accountMapper.addAccount(account);
     }
 
     public List<String> getAllAccountId() {
@@ -78,9 +67,15 @@ public class AccountDao {
         return accountInfo;
     }
 
-    public List<String> getAccountGitname()
-    {
-        return accountMapper.getOldAccountGitname();
+    public List<String> getAccountGitname() {
+        return accountMapper.getOldAccountGitName();
+    }
 
+    public void addAccounts(List<Account> accounts) {
+        accountMapper.addAccounts(accounts);
+    }
+
+    public void addAccount(Account account) {
+        addAccounts(Collections.singletonList(account));
     }
 }

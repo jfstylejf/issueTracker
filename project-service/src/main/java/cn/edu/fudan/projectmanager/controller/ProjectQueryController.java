@@ -1,12 +1,15 @@
 package cn.edu.fudan.projectmanager.controller;
 
+import cn.edu.fudan.projectmanager.domain.ResponseBean;
 import cn.edu.fudan.projectmanager.domain.SubRepository;
 import cn.edu.fudan.projectmanager.domain.vo.RepositoryVO;
-import cn.edu.fudan.projectmanager.service.RepoUserService;
+import cn.edu.fudan.projectmanager.service.AccountRepositoryService;
+import cn.edu.fudan.projectmanager.service.ProjectControlService;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -21,17 +24,35 @@ import java.util.Map;
 public class ProjectQueryController {
 
 
-    private RepoUserService repoUser;
+    private AccountRepositoryService repoUser;
+    private ProjectControlService projectControl;
+    private final String TOKEN = "token";
 
     /**
-     * todo issue 所有项目和库的对应关系
+     * todo issue 得到所有库信息
      * @param recycled {@link cn.edu.fudan.projectmanager.domain.SubRepository} EMPTY RESERVATIONS ALL
-     * @return    k projectName v: list [k: repo_id, name]
+     * @return    k projectName v: list [k: repo_id, accountName]
      */
-    @ApiOperation(value = " 得到所有项目和库的对应关系", notes = "@return Map < String, List < Map < String, String > > >  k projectName v: list [k: repo_id, name]")
+    @ApiOperation(value = " 得到所有库信息", notes = "@return Map < String, List < Map < String, String > > >  k projectName v: list [k: repo_id, accountName]")
     @GetMapping(value = "/project/all")
     public Map<String, List<Map<String, String>>> getProjectAndRepoRelation(@RequestParam(name = "recycled", required = false, defaultValue = "0") int recycled) {
         return repoUser.getProjectAndRepoRelation(recycled);
+    }
+
+    /**
+     * todo issue 所有项目信息
+     * @param
+     * @return
+     */
+    @ApiOperation(value = " 得到所有库信息", notes = "@return List<Map<Integer, String>>")
+    @GetMapping(value = {"/project/list"})
+    public ResponseBean<List<Map<String, Object>>> getProjectList(HttpServletRequest request) {
+        String token = request.getHeader(TOKEN);
+        try {
+            return new ResponseBean<>(200, "add success", projectControl. getProjectAll(token));
+        } catch (Exception e) {
+            return new ResponseBean<>(401, "add failed :" + e.getMessage(), null);
+        }
     }
 
     /**
@@ -98,7 +119,11 @@ public class ProjectQueryController {
 
 
     @Autowired
-    public void setRepoUser(RepoUserService repoUser) {
+    public void setRepoUser(AccountRepositoryService repoUser) {
         this.repoUser = repoUser;
+    }
+    @Autowired
+    public void setProjectControl(ProjectControlService projectControl) {
+        this.projectControl = projectControl;
     }
 }

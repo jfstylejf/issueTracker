@@ -16,10 +16,11 @@
         <result property="recycled" column="recycled"/>
         <result property="importAccountUuid" column="import_account_uuid"/>
         <result property="scanStart" column="scan_start"/>
-        <result property="repoName" column="name"/>
+        <result property="repoName" column="repo_name"/>
     </resultMap>
 
-    <insert id="insertOneRepo" parameterType="subRepository">
+
+    <insert id="insertOneRepo" parameterType="cn.edu.fudan.projectmanager.domain.SubRepository">
         insert ignore into sub_repository
         (
         uuid,
@@ -50,9 +51,9 @@
         )
     </insert>
 
-    <update id="updateSubRepository" parameterType="subRepository">
+    <update id="updateSubRepository" parameterType="cn.edu.fudan.projectmanager.domain.SubRepository">
         update sub_repository
-        <set>
+        <trim prefix="set" suffixOverrides=",">
             <if test="language != null">
                 language = #{language},
             </if>
@@ -71,7 +72,7 @@
             <if test="recycled != null">
                 recycled = #{recycled},
             </if>
-        </set>
+        </trim>
         where uuid = #{uuid}
     </update>
 
@@ -93,9 +94,30 @@
 
     <select id="getAllSubRepoByAccountId" resultMap="subRepository" parameterType="String">
         SELECT s.uuid , url, language, branch, repo_source, download_status,
-               latest_commit_time, repo_uuid, s.project_name, recycled, import_account_uuid, scan_start, name
-        FROM sub_repository as s inner join repo_user as r
-        WHERE r.account_uuid = #{accountUuid} and s.uuid = r.sub_repository_uuid ;
+               latest_commit_time, repo_uuid, s.project_name, recycled, import_account_uuid, scan_start, r.repo_name
+        FROM sub_repository as s inner join account_repository as r
+        <where>
+            s.uuid = r.sub_repository_uuid
+            <if test="account_uuid != null">
+                AND r.account_uuid = #{account_uuid}
+            </if>
+        </where>
     </select>
+
+    <update id="updateProjectNameSR" parameterType="String">
+        update sub_repository
+        <set>
+            project_name = #{newProjectName},
+        </set>
+        where   project_name = #{oldProjectName}
+    </update>
+
+    <update id="updateRepoName" parameterType="String">
+        update sub_repository
+        <set>
+            repo_name = #{newRepoName},
+        </set>
+        where   repo_name = #{oldRepoName}
+    </update>
 
 </mapper>

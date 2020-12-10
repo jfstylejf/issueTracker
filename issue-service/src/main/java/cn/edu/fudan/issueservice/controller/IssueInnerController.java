@@ -9,6 +9,9 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * @author Beethoven
+ */
 @Api(value = "issue inner", tags = {"用于删除issue的相关接口"})
 @RestController
 public class IssueInnerController {
@@ -33,11 +36,10 @@ public class IssueInnerController {
     public ResponseBean<String> deleteIssues(@PathVariable("tool")String tool,@PathVariable("repo-uuid") String repoUuid) {
         try {
             issueService.deleteIssueByRepoIdAndTool(repoUuid,tool);
-            return new ResponseBean(200, "success", "issues delete success!");
+            return new ResponseBean<>(200, "success", "issues delete success!");
         } catch (Exception e) {
             e.printStackTrace();
-            return new ResponseBean(401, e.getMessage(), "issues delete failed!");
+            return new ResponseBean<>(500, "failed " + e.getMessage(), "issues delete failed!");
         }
     }
-
 }

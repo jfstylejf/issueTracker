@@ -2,9 +2,9 @@ package cn.edu.fudan.accountservice.service;
 
 
 import cn.edu.fudan.accountservice.domain.Account;
-import cn.edu.fudan.accountservice.domain.ResponseBean;
+import cn.edu.fudan.accountservice.domain.AccountVO;
 import cn.edu.fudan.accountservice.domain.Tool;
-import com.sun.org.apache.xpath.internal.objects.XObject;
+import cn.edu.fudan.common.http.ResponseEntity;
 
 import java.util.List;
 import java.util.Map;
@@ -15,35 +15,19 @@ public interface AccountService {
     /**
      * login
      *
-     * @param username get user name
+     * @param username get user accountName
      * @param password get user password
-     * @return ResponseBean
+     * @return ResponseEntity
      */
-    ResponseBean login(String username, String password);
+    AccountVO login(String username, String password);
 
     /**
-     * get user name by token
+     * is account accountName exist
      *
-     * @param userToken get user token
-     * @return String
-     */
-    String getUserNameByToken(String userToken);
-
-    /**
-     * is account name exist
-     *
-     * @param accountName get user account name
+     * @param accountName get user account accountName
      * @return boolean
      */
     boolean isAccountNameExist(String accountName);
-
-    /**
-     * is name exist
-     *
-     * @param name get user name
-     * @return boolean
-     */
-    boolean isNameExist(String name);
 
     /**
      * is email exist
@@ -54,10 +38,10 @@ public interface AccountService {
     boolean isEmailExist(String email);
 
     /**
-     * get status by name
+     * get status by accountName
      *
      * @param name get user status
-     * @return status and name
+     * @return status and accountName
      */
     Object getStatusByName(List name);
 
@@ -113,8 +97,9 @@ public interface AccountService {
 
     /**
      * 查询 account_author表中的所有 gitname
+     * @param gitname  新增用户的git 名字
      */
-    void getGitName(List<String> gitname);
+    void addNewAccounts(List<String> gitname);
 
 
 }

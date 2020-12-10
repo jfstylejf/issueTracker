@@ -20,7 +20,7 @@ public interface TagMapper {
 
     void modifyMultiTaggedItem(List<ModifyTaggedItem> list);
 
-    String getUuidByNameAndScope(@Param("name") String name, @Param("scope") String scope);
+    String getUuidByNameAndScope(@Param("accountName") String name, @Param("scope") String scope);
 
     void deleteOneTag(@Param("tag_id") String tagId);
 
@@ -30,7 +30,7 @@ public interface TagMapper {
 
     void modifyOneTagged(@Param("old_tag_id") String oldTagId, @Param("new_tag_id") String newTagId, @Param("item_id") String itemId);
 
-    void modifyOneTag(@Param("tag_id") String tagId, @Param("name") String name);
+    void modifyOneTag(@Param("tag_id") String tagId, @Param("accountName") String name);
 
     Integer hasBeenTagged(@Param("tag_id") String tag_id, @Param("item_id") String item_id);
 
@@ -50,7 +50,7 @@ public interface TagMapper {
     List<WeakHashMap<Object,Object>> getItemIdsAndCountByTagIdsAndRepoId(@Param("list") List<String> list, @Param("repo_id") String repoId);
 
 
-    List<Tag> getTagsByCondition(@Param("uuid") String uuid,@Param("name") String name,@Param("scope") String scope);
+    List<Tag> getTagsByCondition(@Param("uuid") String uuid,@Param("accountName") String name,@Param("scope") String scope);
 
     /**
      * 根据item id 与 scope 获取相应的tag id

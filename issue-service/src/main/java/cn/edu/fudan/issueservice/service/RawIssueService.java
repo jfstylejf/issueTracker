@@ -12,11 +12,20 @@ import java.util.Map;
  **/
 public interface RawIssueService {
 
-    void deleteRawIssueByRepoIdAndTool(String repoId,String tool);
+    /**
+     * 根据issueId返回rawIssueList
+     * @param issueId issue_uuid
+     * @return rawIssueList
+     */
+    List<Map<String, Object>> getRawIssueByIssueId(String issueId);
 
-    List<RawIssue> getRawIssueByIssueId(String issueId);
-
-    Map<String, Object> getCode(String project_id, String commit_id, String file_path);
-
-    Object getRawIssueList(String issue_id,Integer page,Integer size,String status);
+    /**
+     * 根据条件返回rawIssueList
+     * @param issueId issue_uuid
+     * @param page 页号
+     * @param size 页大小
+     * @param status 状态
+     * @return rawIssueList
+     */
+    Object getRawIssueList(String issueId, Integer page, Integer size, String status);
 }

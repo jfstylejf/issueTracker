@@ -3,7 +3,7 @@ package cn.edu.fudan.projectmanager.service;
 import cn.edu.fudan.projectmanager.dao.SubRepositoryDao;
 import cn.edu.fudan.projectmanager.domain.*;
 import cn.edu.fudan.projectmanager.domain.message.RepoUpdateInfo;
-import com.alibaba.fastjson.JSONArray;
+import cn.edu.fudan.projectmanager.domain.topic.CompleteDownLoad;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -11,10 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author fancying
@@ -48,15 +45,6 @@ public class KafkaConsumerService {
         log.info("update sub repo[{}] success", subRepository.getUuid());
     }
 
-//    @KafkaListener(id = "repoIn", topics = {"repoIn"}, groupId = "repoIn")
-//    public void repoIn(ConsumerRecord<String, String> consumerRecord) throws ParseException {
-//        String msg = consumerRecord.value();
-//        log.info("Auto-Scan  -> topic :" + consumerRecord.topic() + ";  msg :" + msg);
-//        RepoBasicInfo repoBasicInfo = JSONObject.parseObject(msg, RepoBasicInfo.class);
-//        projectDao.addOneProject(Project.createOneProjectByRepoBasicInfo(repoBasicInfo, "bug"));
-//        projectDao.addOneProject(Project.createOneProjectByRepoBasicInfo(repoBasicInfo, "clone"));
-//    }
-
     /**
      * repo_updated_r1p1
      */
@@ -79,7 +67,8 @@ public class KafkaConsumerService {
                 subRepositoryDao.updateRepository(subRepository);
             }
         } catch (Exception e) {
-            log.error("projectName update failed!");
+            log.error("repo:{} update failed!", repoId);
+            log.error(e.getMessage());
         }
     }
 

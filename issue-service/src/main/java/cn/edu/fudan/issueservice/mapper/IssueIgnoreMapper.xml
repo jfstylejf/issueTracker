@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.edu.fudan.issueservice.mapper.IssueIgnoreMapper">
+    <insert id="insertIssueIgnoreRecords">
+        insert into ignore_record
+        (
+        uuid,
+        account_uuid,
+        account_name,
+        level,
+        type,
+        tool,
+        repo_uuid,
+        repo_name,
+        branch,
+        ignore_time,
+        issue_uuid,
+        raw_issue,
+        commit_uuid,
+        tag,
+        message
+        )
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.uuid},
+            #{item.accountUuid},
+            #{item.accountName},
+            #{item.level},
+            #{item.type},
+            #{item.tool},
+            #{item.repoUuid},
+            #{item.repoName},
+            #{item.branch},
+            #{item.ignoreTime},
+            #{item.issueUuid},
+            #{item.rawIssue},
+            #{item.commmitUuid},
+            #{item.tag},
+            #{item.message}
+            )
+        </foreach>
+    </insert>
+</mapper>

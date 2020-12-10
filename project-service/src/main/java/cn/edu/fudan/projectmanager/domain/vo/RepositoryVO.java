@@ -45,9 +45,12 @@ public class RepositoryVO implements Serializable {
         latestCommitTime = repository.getLatestCommitTime();
         projectName = repository.getProjectName();
         scanStart = repository.getScanStart();
-        repoName = StringUtils.isEmpty(repository.getRepoName()) ?
-                url.substring(url.lastIndexOf("/")).replace("/", "") :
-                repository.getRepoName();
+
+        /// NOTE：repoName 默认就是URL后面几位 不允许修改
+//        repoName = StringUtils.isEmpty(repository.getRepoName()) ?
+//                url.substring(url.lastIndexOf("/")).replace("/", "") :
+//                repository.getRepoName();
+        repoName = url.substring(url.lastIndexOf("/")).replace("/", "") ;
     }
 
 

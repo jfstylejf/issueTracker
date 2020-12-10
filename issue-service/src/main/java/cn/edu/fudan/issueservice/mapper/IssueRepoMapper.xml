@@ -99,17 +99,39 @@
     <select id="getIssueRepoByCondition" parameterType="String" resultMap="issueRepo">
         select * from issue_repo
         <where>
-            repo_id=#{repo_id}
+            repo_id = #{repo_id}
             <if test="tool != null and tool != ''">
-                and tool=#{tool}
+                and tool = #{tool}
             </if>
             <if test="nature != null and nature != ''">
-                and nature=#{nature}
+                and nature = #{nature}
             </if>
         </where>
     </select>
 
+    <select id="getNotScanCommitsCount" resultType="java.util.HashMap">
+        SELECT total_commit_count, scanned_commit_count FROM issue_repo
+        <trim prefix="where" prefixOverrides="and">
+            <if test="repoUuid != null and repoUuid != ''">
+                and repo_id = #{repoUuid}
+            </if>
+            <if test="tool != null and tool != ''">
+                and tool = #{tool}
+            </if>
+        </trim>
+    </select>
 
-
+    <select id="getMainIssueRepo" resultMap="issueRepo">
+        SELECT * FROM issue_repo
+        <where>
+            nature = 'main'
+            <if test="repoUuid != null and repoUuid != ''">
+                and repo_id = #{repoUuid}
+            </if>
+            <if test="tool != null and tool != ''">
+                and tool = #{tool}
+            </if>
+        </where>
+    </select>
 </mapper>
 

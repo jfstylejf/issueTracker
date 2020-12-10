@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.edu.fudan.projectmanager.mapper.AccountRepositoryMapper">
+
+    <resultMap id="accountRepository" type="AccountRepository">
+        <id property="uuid" column="uuid"/>
+        <result property="repoName" column="repo_name"/>
+        <result property="importTime" column="import_time"/>
+        <result property="accountUuid" column="account_uuid"/>
+        <result property="subRepositoryUuid" column="sub_repository_uuid"/>
+        <result property="projectName" column="project_name"/>
+    </resultMap>
+
+
+    <insert id="insertAccountRepositories" parameterType="List">
+        INSERT  IGNORE INTO account_repository
+        (
+            uuid,
+            repo_name,
+            account_uuid,
+            sub_repository_uuid,
+            project_name
+        )
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+            #{item.uuid},
+            #{item.repoName},
+            #{item.accountUuid},
+            #{item.subRepositoryUuid},
+            #{item.projectName}
+            )
+        </foreach>
+    </insert>
+
+    <update id="updateProjectNameAR" parameterType="String">
+        update account_repository
+        <set>
+            project_name = #{newProjectName},
+        </set>
+        where   project_name = #{oldProjectName}
+    </update>
+
+
+</mapper>

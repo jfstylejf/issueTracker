@@ -1,9 +1,16 @@
 package cn.edu.fudan.accountservice.domain;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 /**
  * @author zyh
  * @date 2020/2/25
  */
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Tool {
     private String uuid;
     private String toolType;
@@ -14,60 +21,7 @@ public class Tool {
      * 0表示不使用工具，1表示使用工具
      */
     private int enabled;
-
     private int installed;
-
     private String accountName;
 
-    public String getAccountName() {
-        return accountName;
-    }
-
-    public String getUuid() {
-        return uuid;
-    }
-
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
-    }
-
-    public String getToolType() {
-        return toolType;
-    }
-
-    public void setToolType(String toolType) {
-        this.toolType = toolType;
-    }
-
-    public String getToolName() {
-        return toolName;
-    }
-
-    public void setToolName(String toolName) {
-        this.toolName = toolName;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public int getEnabled() {
-        return enabled;
-    }
-
-    public void setEnabled(int enabled) {
-        this.enabled = enabled;
-    }
-
-    public int getInastalled() {
-        return installed;
-    }
-
-    public void setInastalled(int installed) {
-        this.installed = installed;
-    }
 }

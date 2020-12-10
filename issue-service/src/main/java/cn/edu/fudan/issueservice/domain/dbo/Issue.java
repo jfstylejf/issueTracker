@@ -1,11 +1,13 @@
 package cn.edu.fudan.issueservice.domain.dbo;
 
-import cn.edu.fudan.issueservice.domain.dbo.IssueType;
 import lombok.Data;
 
 import java.util.Date;
 import java.util.List;
 
+/**
+ * @author Beethoven
+ */
 @Data
 public class Issue {
 
@@ -32,7 +34,8 @@ public class Issue {
     /**
      * 默认并不知道该issue的引入者
      */
-    private String producer = "DefaultNull";
+    private String producer;
+    private String solver;
 
 
     /**
@@ -48,7 +51,7 @@ public class Issue {
     public Issue() {
     }
 
-    public Issue(String uuid, String type, String tool, String start_commit, Date start_commit_date, String end_commit, Date end_commit_date, String repo_id, String target_files, Date create_time, Date update_time ,int displayId) {
+    public Issue(String uuid, String type, String tool, String start_commit, Date start_commit_date, String end_commit, Date end_commit_date, String repo_id, String target_files, Date create_time, Date update_time ,int displayId, int priority, String producer, String solver) {
         this.uuid = uuid;
         this.type = type;
         this.tool = tool;
@@ -77,8 +80,10 @@ public class Issue {
             this.update_time = (Date) update_time.clone();
         }
         this.displayId = displayId;
+        this.priority = priority;
+        this.producer = producer;
+        this.solver = solver;
     }
-
 
     public Date getCreate_time() {
         if(create_time == null){

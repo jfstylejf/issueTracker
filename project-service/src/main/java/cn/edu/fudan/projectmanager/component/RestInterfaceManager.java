@@ -82,7 +82,6 @@ public class RestInterfaceManager {
         return restTemplate.getForObject(repoServicePath + "/" + repoId, JSONObject.class);
     }
 
-
     public void deleteIgnoreRecord(String account_id, String repoId) {
         restTemplate.delete(tagServicePath + "/inner/tags/ignore?repo-id=" + repoId + "&account-id=" + account_id);
     }

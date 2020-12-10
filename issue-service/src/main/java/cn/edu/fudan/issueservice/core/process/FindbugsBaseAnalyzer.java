@@ -15,9 +15,6 @@ import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -34,6 +31,7 @@ import java.util.regex.Pattern;
  * create: 2020-05-20 15:55
  **/
 @Slf4j
+@Deprecated
 public class FindbugsBaseAnalyzer extends BaseAnalyzer {
 
     private String resultFileHome;

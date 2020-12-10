@@ -44,6 +44,8 @@ public class RestInterfaceManager {
 
     @Value("${issue.service.path}")
     private String issueServicePath;
+    @Value("${block.service.path}")
+    private String blockServicePath;
 
     private RestTemplate restTemplate;
 
@@ -115,6 +117,22 @@ public class RestInterfaceManager {
     public JSONObject getProjectsOfRepo(String repoId) {
         String path =  projectServicePath + "/inner/project?repo_uuid=" + repoId;
         log.debug("get request path is {}", path);
+
+        try {
+            // 最多等待180秒
+            for (int i = 1; i <= 180; i++) {
+                TimeUnit.SECONDS.sleep(5);
+                JSONObject res = restTemplate.getForObject(path , JSONObject.class);
+                if (res == null || res.isEmpty()){
+                    log.warn("repo : [{}] info is null, continue waiting", repoId);
+                    continue;
+                }
+                return res;
+            }
+        }catch (InterruptedException e) {
+            log.error(e.getMessage());
+        }
+
         return restTemplate.getForObject(path , JSONObject.class);
     }
 
@@ -223,6 +241,7 @@ public class RestInterfaceManager {
     }
 
     public boolean invokeTools(String toolType, String toolName, String repoId, String branch, String beginCommit) {
+        final String blockChainSecurityDetectorToolName = "blsd";
         boolean result = false;
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("repoUuid",repoId);
@@ -231,7 +250,18 @@ public class RestInterfaceManager {
         // toolName 和 toolType 都来自于 Tool表
         String servicePath = getServicePathByToolType(toolType) + "/" + toolType + "/" + toolName;
         try {
-            JSONObject requestResult = restTemplate.postForObject( servicePath, jsonObject, JSONObject.class);
+            // 调用区块链检测工具
+            if(blockChainSecurityDetectorToolName.equals(toolName)){
+                JSONObject requestResult = restTemplate.postForObject(servicePath + "?beginCommit=&branch=&repoUuid=" + repoId, jsonObject, JSONObject.class);
+                if(requestResult != null){
+                    String code = requestResult.getString("code");
+                    if("200".equals(code)){
+                        result = true;
+                    }
+                }
+            }
+            // 调用其他工具
+            JSONObject requestResult = restTemplate.postForObject(servicePath, jsonObject, JSONObject.class);
             if(requestResult != null){
                 int code = requestResult.getInteger("code");
                 if(code == HttpStatus.OK.value()){

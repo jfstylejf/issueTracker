@@ -13,8 +13,7 @@ public interface IssueScanService {
 
     IssueRepo getScanStatus(String  repoId, String toolName) throws Exception;
 
-    Map<String, Object> getCommits(String repoId, Integer page, Integer size, Boolean isWhole, String tool);
+    Map<String, Object> getCommitsCount(String repoUuid, String tool);
 
-    Integer getStockCommit(RepoResourceDTO repoResourceDTO, String toolName, String branch );
-
+    Map<String, Object> getCommits(String repoUuid, Integer page, Integer size, Boolean isWhole, String tool);
 }

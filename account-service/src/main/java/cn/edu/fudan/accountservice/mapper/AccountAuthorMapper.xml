@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.edu.fudan.accountservice.mapper.AccountAuthorMapper">
+
+
+    <insert id="batchInsertAccountAuthor" parameterType="List">
+        INSERT INTO account_author
+            (account_uuid, account_name, account_gitname)
+        VALUES
+        <foreach collection="list" item="account" separator=",">
+            #{account.accountUuid}, #{account.name}, #{account.accountGitName}
+        </foreach>
+    </insert>
+
+
+</mapper>
