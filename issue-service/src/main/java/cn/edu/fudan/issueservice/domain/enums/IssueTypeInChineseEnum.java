@@ -39,8 +39,9 @@ public enum IssueTypeInChineseEnum {
     rule29("Strings and Boxed types should be compared using \"equals()\"", "字符串和包装类型对比时应该使用equals方法"),
     rule30("Try-with-resources should be used", "应该使用Try-with-resources"),
     rule31("Week Year (\"YYYY\") should not be used for date formatting", "星期 年（“YYYY”）不应用于日期格式"),
-    rule32("Zero should not be a possible denominator", "零不应该是一个分母");
-
+    rule32("Zero should not be a possible denominator", "零不应该是一个分母"),
+    //106和85规则名不同
+    rule33("Conditionally executed code should be reachable", "条件执行块应该是可访问的");
     private final String name;
     private final String nameInChinese;
 
