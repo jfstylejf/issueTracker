@@ -1,6 +1,8 @@
 package cn.edu.fudan.common.component;
 
 import com.alibaba.fastjson.JSONObject;
+import lombok.Getter;
+import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

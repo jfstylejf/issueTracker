@@ -1,4 +1,4 @@
-package scan;
+package cn.edu.fudan.common.scan;
 
 import cn.edu.fudan.common.domain.ScanInfo;
 

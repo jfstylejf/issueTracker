@@ -74,7 +74,7 @@ public class InvokeToolService {
                 boolean status = restInvoker.invokeTools(tool.getToolType(), tool.getToolName(), repoId, branch, toolStartCommit);
                 if (status) {
                     currentToolInvokeMap.put (String.valueOf (tool.getId ()),"1");
-                    log.info("tool {} start scan", tool.getToolName());
+                    log.info("tool {} start cn.edu.fudan.common.scan", tool.getToolName());
                 } else {
                     currentToolInvokeMap.put (String.valueOf (tool.getId ()),"0");
                     log.error("tool {} invoke failed", tool.getToolName());

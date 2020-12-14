@@ -77,7 +77,7 @@ public class ScanServiceImpl implements ScanService {
     }
 
     private void beginScan(String repoUuid, String branch, String beginCommit, boolean isUpdate) {
-        log.info("{} -> start clone scan", Thread.currentThread().getName());
+        log.info("{} -> start clone cn.edu.fudan.common.scan", Thread.currentThread().getName());
         String repoPath = rest.getRepoPath(repoUuid);
         if (repoPath == null) {
             log.error("{} : can't get repoPath", repoUuid);
@@ -111,7 +111,7 @@ public class ScanServiceImpl implements ScanService {
             long cost = (end - start)/(1000);
             cloneRepo.setScanTime((int)((end - start)/1000));
             cloneRepoDao.updateScan(cloneRepo);
-            log.info("repo:{} -> took {} minutes to complete the clone scan and measure scan", repoUuid, cost);
+            log.info("repo:{} -> took {} minutes to complete the clone cn.edu.fudan.common.scan and measure cn.edu.fudan.common.scan", repoUuid, cost);
         }
         rest.freeRepoPath(repoUuid, repoPath);
     }
@@ -132,7 +132,7 @@ public class ScanServiceImpl implements ScanService {
 
     private void checkAfterScan(String repoUuid, String branch) {
         if (! scanStatus.keySet().contains(repoUuid)) {
-            log.error("{} : not in scan map", repoUuid);
+            log.error("{} : not in cn.edu.fudan.common.scan map", repoUuid);
             return;
         }
         //扫完再次判断是否有更新请求

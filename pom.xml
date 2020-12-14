@@ -16,7 +16,7 @@
         <module>account-service</module>
         <module>clone-service</module>
         <module>project-service</module>
-        <module>scan-service</module>
+        <module>cn.edu.fudan.common.scan-service</module>
         <module>issue-service</module>
         <module>tag-service</module>
         <module>event-service</module>

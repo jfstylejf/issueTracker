@@ -1,4 +1,4 @@
-package scan;
+package cn.edu.fudan.common.scan;
 
 import cn.edu.fudan.common.component.RestInterfaceManager;
 import cn.edu.fudan.common.domain.ScanInfo;
@@ -37,44 +37,44 @@ public abstract class AbstractScanServiceImpl implements ScanService {
             this.scanStatusMap.putIfAbsent(repoId, false);
         }
 
-        this.prepareForScan(repoId, branch, beginCommit);
+        prepareForScan(repoId, branch, beginCommit);
     }
 
     private void prepareForScan(String repoId, String branch, String beginCommit) {
-        ScanInfo scanInfo = this.getScanStatus(repoId);
+        ScanInfo scanInfo = getScanStatus(repoId);
         if (beginCommit != null) {
             if (scanInfo != null) {
                 log.warn("{} : already scanned before", repoId);
-                this.checkAfterScan(repoId, branch);
+                checkAfterScan(repoId, branch);
                 return;
             }
 
-            this.beginScan(repoId, branch, beginCommit, false);
+            beginScan(repoId, branch, beginCommit, false);
         }
 
         if (beginCommit == null) {
             if (scanInfo == null || scanInfo.getLatestCommit() == null) {
                 log.warn("{} : hasn't scanned before", repoId);
-                this.checkAfterScan(repoId, branch);
+                checkAfterScan(repoId, branch);
                 return;
             }
 
             if (ScanInfo.Status.SCANNING.equals(scanInfo.getStatus())) {
                 log.warn("{} : already scanning", repoId);
-                this.checkAfterScan(repoId, branch);
+                checkAfterScan(repoId, branch);
                 return;
             }
 
-            this.beginScan(repoId, branch, scanInfo.getLatestCommit(), true);
+            beginScan(repoId, branch, scanInfo.getLatestCommit(), true);
         }
 
-        this.checkAfterScan(repoId, branch);
+        checkAfterScan(repoId, branch);
     }
 
     private void beginScan(String repoId, String branch, String beginCommit, boolean isUpdate) {
         // 获取repo所在路径
-        if (this.useCustomPath()) {
-            repoPath.set(this.getCustomPath(repoId));
+        if (useCustomPath()) {
+            repoPath.set(getCustomPath(repoId));
         } else {
             String path = this.restInterfaceManager.getCodeServiceRepo(repoId);
             if (path == null) {
@@ -84,20 +84,20 @@ public abstract class AbstractScanServiceImpl implements ScanService {
             repoPath.set(path);
         }
 
-        this.setJGitHelper(repoPath.get());
+        setJGitHelper(repoPath.get());
         List<String> commitList = this.jGitHelper.getScanCommitListByBranchAndBeginCommit(branch, beginCommit);
         log.info("commit size : {}" , commitList.size());
         ScanInfo scanInfo = new ScanInfo(UUID.randomUUID().toString(), ScanInfo.Status.SCANNING, commitList.size(), 0, new Date(), repoId, branch);
-        this.insertScanInfo(scanInfo);
-        boolean success = this.scanCommitList(repoId, branch, repoPath.get(), this.jGitHelper, commitList, isUpdate, scanInfo);
+        insertScanInfo(scanInfo);
+        boolean success = scanCommitList(repoId, branch, repoPath.get(), this.jGitHelper, commitList, isUpdate, scanInfo);
         scanInfo.setStatus(success ? ScanInfo.Status.COMPLETE : ScanInfo.Status.FAILED);
-        this.updateScanInfo(scanInfo);
+        updateScanInfo(scanInfo);
         this.restInterfaceManager.freeRepo(repoId, repoPath.get());
     }
 
     private void checkAfterScan(String repoId, String branch) {
         if (!this.scanStatusMap.keySet().contains(repoId)) {
-            log.error("{} : not in scan map", repoId);
+            log.error("{} : not in cn.edu.fudan.common.scan map", repoId);
         } else {
             synchronized(this.lock) {
                 boolean newUpdate = (Boolean)this.scanStatusMap.get(repoId);
@@ -109,7 +109,7 @@ public abstract class AbstractScanServiceImpl implements ScanService {
                 this.scanStatusMap.put(repoId, false);
             }
 
-            this.prepareForScan(repoId, branch, (String)null);
+            prepareForScan(repoId, branch, null);
         }
     }
 

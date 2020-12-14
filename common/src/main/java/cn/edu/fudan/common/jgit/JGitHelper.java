@@ -1,5 +1,6 @@
 package cn.edu.fudan.common.jgit;
 
+import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jgit.api.CheckoutCommand;
@@ -29,6 +30,7 @@ import java.util.stream.Stream;
  **/
 @SuppressWarnings("Duplicates")
 @Slf4j
+@NoArgsConstructor
 public class JGitHelper implements Closeable {
 
     protected static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().contains("win");
@@ -58,8 +60,8 @@ public class JGitHelper implements Closeable {
         FileRepositoryBuilder builder = new FileRepositoryBuilder();
         try {
             repository = builder.setGitDir(new File(gitDir))
-                    .readEnvironment() // scan environment GIT_* variables
-                    .findGitDir() // scan up the file system tree
+                    .readEnvironment() // cn.edu.fudan.common.scan environment GIT_* variables
+                    .findGitDir() // cn.edu.fudan.common.scan up the file system tree
                     .build();
             git = new Git(repository);
             revWalk = new RevWalk(repository);

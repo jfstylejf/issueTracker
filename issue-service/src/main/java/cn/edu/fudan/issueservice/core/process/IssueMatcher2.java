@@ -72,7 +72,7 @@ public class IssueMatcher2 {
 //            jGitHelper.checkout(commitId);
 //            //判断当前commit是否是第一个扫描的commit
 //            List<String> parentCommits =  getPreScanSuccessfullyCommit(repoUuid, commitId, jGitHelper, toolName);
-//            parentCommits.forEach(c -> log.debug ( "{} --> pre scan success commit --> {} ",commitId, c));
+//            parentCommits.forEach(c -> log.debug ( "{} --> pre cn.edu.fudan.common.scan success commit --> {} ",commitId, c));
 //
 //            if (analyzeRawIssues == null || analyzeRawIssues.isEmpty()) {
 //                log.warn("all issues were solved or raw issue insert error , commit id -->  {}", commitId);

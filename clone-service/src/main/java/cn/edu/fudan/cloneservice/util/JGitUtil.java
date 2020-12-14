@@ -55,8 +55,8 @@ public class JGitUtil {
         FileRepositoryBuilder builder = new FileRepositoryBuilder();
         try {
             repository = builder.setGitDir(new File(gitDir))
-                    .readEnvironment() // scan environment GIT_* variables
-                    .findGitDir() // scan up the file system tree
+                    .readEnvironment() // cn.edu.fudan.common.scan environment GIT_* variables
+                    .findGitDir() // cn.edu.fudan.common.scan up the file system tree
                     .build();
             git = new Git(repository);
             revWalk = new RevWalk(repository);
@@ -115,8 +115,8 @@ public class JGitUtil {
         Repository repository;
         try {
             repository = repositoryBuilder.setGitDir(new File(repoPath + "/.git"))
-                    .readEnvironment() // scan environment GIT_* variables
-                    .findGitDir() // scan up the file system tree
+                    .readEnvironment() // cn.edu.fudan.common.scan environment GIT_* variables
+                    .findGitDir() // cn.edu.fudan.common.scan up the file system tree
                     .setMustExist(true)
                     .build();
             Git git = new Git(repository);
@@ -206,8 +206,8 @@ public class JGitUtil {
         try {
             FileRepositoryBuilder repositoryBuilder = new FileRepositoryBuilder();
             Repository repository = repositoryBuilder.setGitDir(new File(repoPath + "/.git"))
-                    .readEnvironment() // scan environment GIT_* variables
-                    .findGitDir() // scan up the file system tree
+                    .readEnvironment() // cn.edu.fudan.common.scan environment GIT_* variables
+                    .findGitDir() // cn.edu.fudan.common.scan up the file system tree
                     .setMustExist(true)
                     .build();
             // find the current commit id
