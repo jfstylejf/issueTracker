@@ -41,7 +41,7 @@ public class ScanController {
         String startTime;
         try {
             if (requestParam.getRepoId() == null && requestParam.getBranch() == null) {
-                return new ResponseBean(HttpStatus.BAD_REQUEST.value(), HttpStatus.BAD_REQUEST.name(), null);
+                return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(), HttpStatus.BAD_REQUEST.name(), null);
             }
             repoId = requestParam.getRepoId();
             branch = requestParam.getBranch();
@@ -55,9 +55,9 @@ public class ScanController {
                 scanService.scan(repoId, branch);
             }
 
-            return new ResponseBean(HttpStatus.OK.value(), HttpStatus.OK.name(), null);
+            return new ResponseBean<>(HttpStatus.OK.value(), HttpStatus.OK.name(), null);
         } catch (Exception e) {
-            return new ResponseBean(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null);
+            return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null);
         }
     }
 
@@ -70,9 +70,26 @@ public class ScanController {
     public ResponseBean getScanStatus(@RequestParam(name = "repo_id") String repoId) {
 
         try {
-            return new ResponseBean(HttpStatus.OK.value(), HttpStatus.OK.name(), scanInfoService.getAllScanStatus(repoId));
+            return new ResponseBean<>(HttpStatus.OK.value(), HttpStatus.OK.name(), scanInfoService.getAllScanStatus(repoId));
         } catch (Exception e) {
-            return new ResponseBean(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null);
+            return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null);
+        }
+
+    }
+
+    @ApiOperation(value = "删除指定repo信息", notes = "删除指定repo信息", httpMethod = "DELETE")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "repo_uuid", value = "repo的uuid", dataType = "String", required = true)
+    })
+    @DeleteMapping(value = {"/scan/{repo_uuid}"})
+    @CrossOrigin
+    public ResponseBean deleteOneRepo(@PathVariable(name = "repo_uuid") String repoId) {
+
+        try {
+            scanInfoService.deleteOneRepo(repoId);
+            return new ResponseBean<>(HttpStatus.OK.value(), "delete success!", null);
+        } catch (Exception e) {
+            return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(), "delete failed!", null);
         }
 
     }

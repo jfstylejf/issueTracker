@@ -13,5 +13,10 @@ public interface ScanInfoService {
      */
     Object getAllScanStatus(String repoId);
 
+    /**
+     * 删除指定repo得所有信息
+     * @param repoId
+     */
+    void deleteOneRepo(String repoId);
 
 }
