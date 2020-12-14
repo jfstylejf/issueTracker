@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.Optional;
 
@@ -42,7 +43,10 @@ public class RestInterfaceManager {
     }
 
     public void freeRepo(String repoId, String path) {
-        ((JSONObject)Optional.ofNullable(this.restTemplate.getForObject(this.codeServiceRepoFreePath + this.beginWithRepoParam + repoId + "&path=" + path, JSONObject.class, new Object[0])).orElse(new JSONObject())).getJSONObject("data").getString("status");
+        (Optional.ofNullable(this.restTemplate
+                .getForObject(this.codeServiceRepoFreePath + this.beginWithRepoParam + repoId + "&path=" + path, JSONObject.class, new Object[0]))
+                .orElse(new JSONObject())).getJSONObject("data")
+                .getString("status");
     }
 
     @Autowired

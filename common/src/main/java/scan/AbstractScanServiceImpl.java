@@ -72,6 +72,7 @@ public abstract class AbstractScanServiceImpl implements ScanService {
     }
 
     private void beginScan(String repoId, String branch, String beginCommit, boolean isUpdate) {
+        // 获取repo所在路径
         if (this.useCustomPath()) {
             repoPath.set(this.getCustomPath(repoId));
         } else {
@@ -80,13 +81,12 @@ public abstract class AbstractScanServiceImpl implements ScanService {
                 log.error("{} : can't get repoPath", repoId);
                 return;
             }
-
             repoPath.set(path);
         }
 
-        this.setJGitHelper((String)repoPath.get());
+        this.setJGitHelper(repoPath.get());
         List<String> commitList = this.jGitHelper.getScanCommitListByBranchAndBeginCommit(branch, beginCommit);
-        log.info("commit size : " + commitList.size());
+        log.info("commit size : {}" , commitList.size());
         ScanInfo scanInfo = new ScanInfo(UUID.randomUUID().toString(), ScanInfo.Status.SCANNING, commitList.size(), 0, new Date(), repoId, branch);
         this.insertScanInfo(scanInfo);
         boolean success = this.scanCommitList(repoId, branch, repoPath.get(), this.jGitHelper, commitList, isUpdate, scanInfo);
@@ -113,16 +113,40 @@ public abstract class AbstractScanServiceImpl implements ScanService {
         }
     }
 
+    /**
+     * 由子类实现，用于自定义传入repo的路径
+     * @param repoUuid repoUuid
+     * @return repo路径
+     */
     public abstract String getCustomPath(String repoUuid);
 
+    /**
+     * 由子类实现，根据路径生成具体的jGitHelper
+     * @param repoPath repo路径
+     */
     public abstract void setJGitHelper(String repoPath);
 
     public <T extends JGitHelper> void setJGitHelper(T jGitHelper) {
         this.jGitHelper = jGitHelper;
     }
 
+    /**
+     * 由子类实现具体扫描流程
+     * @param repoId repoUuid
+     * @param branch repo分支
+     * @param repoPath repo路径
+     * @param jGitHelper jGitHelper
+     * @param commitList 扫描列表
+     * @param isUpdate 是否为更新扫描，false表示初次扫描，true表示更新扫描
+     * @param scanInfo 扫描信息
+     * @return 扫描是否完成 true: 完成；false: 未完成
+     */
     public abstract boolean scanCommitList(String repoId, String branch, String repoPath, JGitHelper jGitHelper, List<String> commitList, boolean isUpdate, ScanInfo scanInfo);
 
+    /**
+     * 由子类实现，用于决定是否使用自定义路径
+     * @return true: 是，false: 否
+     */
     public abstract boolean useCustomPath();
 
     public <T extends RestInterfaceManager> void setRestInterfaceManager(T restInterfaceManager) {
