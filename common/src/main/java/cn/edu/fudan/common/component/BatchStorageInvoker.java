@@ -9,6 +9,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 
+/**
+ * @author Song Rui
+ */
 @Component
 public class BatchStorageInvoker {
     private static final Logger log = LoggerFactory.getLogger(BatchStorageInvoker.class);

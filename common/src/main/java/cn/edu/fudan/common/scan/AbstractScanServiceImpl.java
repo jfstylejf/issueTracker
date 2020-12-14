@@ -121,6 +121,12 @@ public abstract class AbstractScanServiceImpl implements ScanService {
     public abstract String getCustomPath(String repoUuid);
 
     /**
+     * 由子类实现，用于决定是否使用自定义路径
+     * @return true: 是，false: 否
+     */
+    public abstract boolean useCustomPath();
+
+    /**
      * 由子类实现，根据路径生成具体的jGitHelper
      * @param repoPath repo路径
      */
@@ -142,12 +148,6 @@ public abstract class AbstractScanServiceImpl implements ScanService {
      * @return 扫描是否完成 true: 完成；false: 未完成
      */
     public abstract boolean scanCommitList(String repoId, String branch, String repoPath, JGitHelper jGitHelper, List<String> commitList, boolean isUpdate, ScanInfo scanInfo);
-
-    /**
-     * 由子类实现，用于决定是否使用自定义路径
-     * @return true: 是，false: 否
-     */
-    public abstract boolean useCustomPath();
 
     public <T extends RestInterfaceManager> void setRestInterfaceManager(T restInterfaceManager) {
         this.restInterfaceManager = restInterfaceManager;
