@@ -50,6 +50,7 @@ public class JGitHelper implements Closeable {
      */
     public JGitHelper(String repoPath) {
         String gitDir =  IS_WINDOWS ? repoPath + "\\.git" : repoPath + "/.git";
+
         FileRepositoryBuilder builder = new FileRepositoryBuilder();
         try {
             repository = builder.setGitDir(new File(gitDir))
