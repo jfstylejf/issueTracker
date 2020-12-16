@@ -12,7 +12,6 @@ import java.util.List;
 /**
  * @author Song Rui
  */
-@Component
 public class BatchStorageInvoker {
     private static final Logger log = LoggerFactory.getLogger(BatchStorageInvoker.class);
     private static final int PAGE_SIZE = 5000;

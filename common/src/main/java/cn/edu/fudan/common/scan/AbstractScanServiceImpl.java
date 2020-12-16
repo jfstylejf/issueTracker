@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-@Service
 public abstract class AbstractScanServiceImpl implements ScanService {
     private static final Logger log = LoggerFactory.getLogger(AbstractScanServiceImpl.class);
     private static ThreadLocal<String> repoPath = new ThreadLocal();

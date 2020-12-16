@@ -3,7 +3,6 @@ package cn.edu.fudan.common.component;
 import com.alibaba.fastjson.JSONObject;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Optional;
