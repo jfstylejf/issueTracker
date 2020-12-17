@@ -103,7 +103,7 @@ public class ProjectControlServiceImpl implements ProjectControlService {
         String uuid = UUID.randomUUID().toString();
         SubRepository subRepo = SubRepository.builder().
                 uuid(uuid).url(url).
-                branch(branch).repoSource(repoSource).
+                branch(branch).repoSource(repoSource).repoName(repoName).
                 projectName(projectName).importAccountUuid(accountUuid).
                 downloadStatus(SubRepository.DOWNLOADING).recycled(SubRepository.RESERVATIONS).build();
 
@@ -198,6 +198,15 @@ public class ProjectControlServiceImpl implements ProjectControlService {
     public void addOneProject(String token, String projectName) throws Exception {
         UserInfoDTO userInfoDTO = getUserInfoByToken(token);
         String accountUuid = userInfoDTO.getUuid();
+        // 0 表示超级管理员 只有超级管理员能操作
+        if ( userInfoDTO.getRight() != 0) {
+            throw new RunTimeException("this user has no right to add project");
+        }
+
+        if(projectName.equals(projectDao.getProjectAll().toString()))
+        {
+            throw new RunTimeException("project name has been used");
+        }
         //project表中插入信息
         projectDao.insertOneProject(accountUuid,projectName);
     }
@@ -223,9 +232,9 @@ public class ProjectControlServiceImpl implements ProjectControlService {
         }
         // 0 表示超级管理员 只有超级管理员能操作
         if (userInfoDTO.getRight() != 0) {
-            throw new RunTimeException("this user has no right to change project accountName");
+            throw new RunTimeException("this user has no right to change repo Name");
         }
-        // 改变project accountName 该repo的所有project accountName 都会改变 只有超级管理员才会有此权限
+        // 改变repo name 只有超级管理员才会有此权限
         log.warn("repo name changed by {}! old repoName is {}, new repoName is {}", userInfoDTO.getUuid(), oldRepoName, newRepoName);
         subRepositoryDao.updateRepoName(accountUuid, oldRepoName, newRepoName);
     }
