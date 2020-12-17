@@ -9,6 +9,7 @@ import cn.edu.fudan.issueservice.domain.enums.ToolEnum;
 import cn.edu.fudan.issueservice.util.ASTUtil;
 import cn.edu.fudan.issueservice.util.AstParserUtil;
 import cn.edu.fudan.issueservice.util.FileFilter;
+import cn.edu.fudan.issueservice.util.JGitHelper;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
@@ -125,7 +126,7 @@ public class SonarQubeBaseAnalyzer extends BaseAnalyzer {
                     //解析location
                     List<Location> locations = getLocations(rawIssueUuid, sonarIssue, repoPath, allLocations);
                     //解析rawIssue
-                    RawIssue rawIssue = getRawIssue(repoUuid, commit, ToolEnum.SONAR.getType(), rawIssueUuid, sonarIssue);
+                    RawIssue rawIssue = getRawIssue(repoUuid, commit, ToolEnum.SONAR.getType(), rawIssueUuid, sonarIssue, repoPath);
                     rawIssue.setLocations (locations);
                     rawIssue.setStatus (RawIssueStatus.DEFAULT.getType ());
                     resultRawIssues.add(rawIssue);
@@ -284,7 +285,7 @@ public class SonarQubeBaseAnalyzer extends BaseAnalyzer {
         return location;
     }
 
-    private RawIssue getRawIssue(String repoId, String commitId, String category, String rawIssueUuid, JSONObject issue){
+    private RawIssue getRawIssue(String repoId, String commitId, String category, String rawIssueUuid, JSONObject issue, String repoPath){
         //根据ruleId获取rule的name
         String issueName=null;
         JSONObject rule = restInvoker.getRuleInfo(issue.getString("rule"),null,null);
@@ -312,11 +313,18 @@ public class SonarQubeBaseAnalyzer extends BaseAnalyzer {
         rawIssue.setScan_id(ToolEnum.SONAR.getType ());
         rawIssue.setCommit_id(commitId);
         rawIssue.setRepo_id(repoId);
+
+        // 1.配置jGit资源
+        JGitHelper jGitInvoker = new JGitHelper (repoPath);
+        // 2.从JGit获取该commit的author name
+        String developerUniqueName = jGitInvoker.getAuthorName(commitId);
+        // 3.这里是尝试获取人员聚合后的developer_unique_name
         Map<String, Object> commitViewInfo = commitDao.getCommitViewInfoByCommitId(repoId, commitId);
-        String developerUniqueName = (String) commitViewInfo.get("developer_unique_name");
-        if(StringUtils.isEmpty(developerUniqueName)){
-            developerUniqueName = (String) commitViewInfo.get("developer");
+        if (commitViewInfo != null) {
+            // 如果commitView表里有该commit，并且developer_unique_name字段的值不为空，则就用这个developer_unique_name
+            developerUniqueName = commitViewInfo.get("developer_unique_name") == null ? developerUniqueName : (String) commitViewInfo.get("developer_unique_name");
         }
+        // 否则直接用JGit获取到的该commit的author name
         rawIssue.setDeveloperName(developerUniqueName);
         return rawIssue;
     }
