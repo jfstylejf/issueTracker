@@ -27,8 +27,8 @@ public class AccountRepositoryDao {
     }
 
 
-    public Boolean hasRepo(String accountUuid, String url) {
-        return accountRepositoryMapper.getRepoCount(accountUuid, url) == 1;
+    public Boolean hasRepo(String branch, String url) {
+        return accountRepositoryMapper.getRepoCount(branch, url) == 1;
     }
 
     public void updateProjectNameAR(String accountUuid, String oldProjectName, String newProjectName) {

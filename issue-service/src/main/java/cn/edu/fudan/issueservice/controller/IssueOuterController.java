@@ -282,11 +282,15 @@ public class IssueOuterController {
         if(timeError.equals(DateTimeUtil.timeFormatIsLegal(since, false)) || timeError.equals(DateTimeUtil.timeFormatIsLegal(until, true))){
             return;
         }
+
+        String[] queryName = {"status"};
+        String[] spiltStrings = {status};
+        SegmentationUtil.splitString(queryName, spiltStrings, query);
+
         query.put("since", since);
         query.put("until", until);
         query.put("toolName", toolName);
         query.put("introducer", introducer);
-        query.put("status", status);
         query.put("priority", priority);
 
         Map<String, Object> issueFilterList = issueService.getIssueFilterListCount(query);

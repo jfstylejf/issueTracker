@@ -346,6 +346,29 @@ public class JGitHelper implements Closeable {
         return aggregationCommits;
     }
 
+    /**
+     *
+     * @param startTime 给定的日期时间 如 2020-12-01 12:00:00
+     * @return 返回startTime 这个时间之后的第一个commit的commit id
+     */
+    public String getFirstCommitIdAfterGivenTime(LocalDateTime startTime){
+        String startTimeString = DateTimeUtil.localDateTimeToString(startTime);
+        List<RevCommit> commitList = new ArrayList<>();
+        try {
+            int startTimeStamp = Integer.valueOf(timeTotimeStamp(startTimeString));
+            Iterable<RevCommit> commits = git.log().call();
+            for (RevCommit revCommit: commits) {
+                if (startTimeStamp<revCommit.getCommitTime()) {
+                    commitList.add(revCommit);
+                }
+            }
+            commitList.sort(Comparator.comparingInt(RevCommit::getCommitTime));
+        } catch (GitAPIException e) {
+            e.printStackTrace();
+        }
+        return commitList.get(0).getName();
+    }
+
 
     public String getLatestCommitId(String branchName){
         try {

@@ -76,13 +76,9 @@ public class TimeAggregationStrategy implements  FirstScanCommitFilterStrategy {
 
             //如果聚合点为空集,则将时间前推3个月
             if(aggregationCommits.isEmpty ()){
-                if(firstScanCommitTime.isBefore (firstCommitDate)){
-                    break;
-                }
                 firstScanCommitTime = firstScanCommitTime.minusMonths (3);
                 continue;
             }
-
 
             for(RevCommit commit : aggregationCommits){
                 String commitTime = jGitHelper.getCommitTime(commit.getName());
@@ -106,6 +102,9 @@ public class TimeAggregationStrategy implements  FirstScanCommitFilterStrategy {
 
             firstScanCommitTime = firstScanCommitTime.minusMonths (3);
 
+            if(firstScanCommitTime.isBefore (firstCommitDate)){
+                break;
+            }
 
         }
 
@@ -116,6 +115,27 @@ public class TimeAggregationStrategy implements  FirstScanCommitFilterStrategy {
         return baseCommitId;
     }
 
+    @Override
+    public String filterWithoutAggregationCommit(RepoResourceDTO repoResourceDTO, String repoId, String branch, Object argument) {
+        String repoPath = restInvoker.getRepoPath(repoResourceDTO.getRepoId());
+        repoResourceDTO.setRepoPath(repoPath);
+        if(repoPath == null){
+            throw new RuntimeException("cant get repo path");
+        }
+        //第一步参数转换
+        Integer scanStartTime =  (Integer) argument;
+        log.info ("start from " + scanStartTime + "month ago.");
+
+        //第二步获取最新的commit的信息
+        JGitHelper jGitHelper = new JGitHelper(repoPath);
+        String latestCommit = jGitHelper.getLatestCommitId(branch);
+        String latestCommitTimeString = jGitHelper.getCommitTime(latestCommit);
+
+        //第三步根据参数以及最新的commit，获取起始的扫描时间
+        LocalDateTime latestCommitTime  = DateTimeUtil.stringToLocalDate(latestCommitTimeString);
+        LocalDateTime firstScanCommitTime = latestCommitTime.minusMonths(scanStartTime);
+        return jGitHelper.getFirstCommitIdAfterGivenTime(firstScanCommitTime);
+    }
 
     @Autowired
     public void setRestInvoker(RestInterfaceManager restInvoker) {

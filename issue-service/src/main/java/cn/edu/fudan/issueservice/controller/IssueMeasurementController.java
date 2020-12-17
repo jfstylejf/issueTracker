@@ -201,7 +201,7 @@ public class IssueMeasurementController {
 
         try {
             //fixme end_commit 改为 solve_commit 有误差
-            return new ResponseBean<>(200, success, issueMeasureInfoService.getDeveloperCodeQuality(query));
+            return new ResponseBean<>(200, success, issueMeasureInfoService.getDeveloperCodeQuality(query, true));
         } catch (Exception e) {
             e.printStackTrace();
             return new ResponseBean<>(500, failed + e.getMessage(), null);

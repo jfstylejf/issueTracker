@@ -52,38 +52,27 @@ public class IssueServiceImpl implements IssueService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     @Async
-    public void deleteIssueByRepoIdAndTool(String repoUuid,String tool) {
-        logger.info("start to delete issue -> repoUuid={} , tool={}",repoUuid,tool);
-        //先获取该repo 相应tool 的所有rawIssue
+    public void deleteIssueByRepoIdAndTool(String repoUuid, String tool) {
+        logger.info("start to delete issue -> repoUuid={} , tool={}", repoUuid, tool);
+        //根据rawIssue来删库(便于控制每次删除的数量,防止超时锁表)
         List<RawIssue>  rawIssues = rawIssueDao.getRawIssueByRepoIdAndTool(repoUuid, tool);
-        int rawIssueListSize = rawIssues.size();
-        String[] rawIssueIds = new String[rawIssueListSize];
-        for(int i = 0 ; i < rawIssues.size () ; i++){
-            rawIssueIds[i] = rawIssues.get (i).getUuid ();
-        }
-
-        int deleteLocationByRawIssueCount = 0;
-        //先删除location 和 raw issue,一次性删除太多会超时
-        while(deleteLocationByRawIssueCount < rawIssueListSize){
-            int firstIndex = deleteLocationByRawIssueCount;
-            deleteLocationByRawIssueCount += 4000;
-            int maxLength = Math.min(deleteLocationByRawIssueCount, rawIssueListSize);
-
-            List<String> partOfRawIssueIds = new ArrayList<>(Arrays.asList(rawIssueIds).subList(firstIndex, maxLength));
-
+        List<String> rawIssueUuidList = new ArrayList<>();
+        rawIssues.forEach(rawIssue -> rawIssueUuidList.add(rawIssue.getUuid()));
+        //每次删除5000条rawIssue,防止超时锁表
+        int deleteRawIssueCount = 0;
+        while(deleteRawIssueCount < rawIssues.size()){
+            int firstIndex = deleteRawIssueCount;
+            deleteRawIssueCount += 5000;
+            List<String> partOfRawIssueIds = new ArrayList<>(rawIssueUuidList.subList(firstIndex, Math.min(deleteRawIssueCount, rawIssues.size())));
             locationDao.deleteLocationByRawIssueIds(partOfRawIssueIds);
             rawIssueDao.deleteRawIssueByIds (partOfRawIssueIds);
         }
-
-        //再删除issue  以及其他信息
+        //删除issue,issue_repo,issue_scan,scan_result表记录
         issueDao.deleteIssueByRepoIdAndTool (repoUuid, tool);
-
-        scanResultDao.deleteScanResultsByRepoIdAndCategory (repoUuid, tool);
-
         issueRepoDao.delIssueRepo (repoUuid, null, tool);
-
         issueScanDao.deleteIssueScanByRepoIdAndTool (repoUuid, tool);
-
+        scanResultDao.deleteScanResultsByRepoIdAndCategory (repoUuid, tool);
+        //完成删库
         logger.info("finish deleting issues -> repoUuid={} , tool={}",repoUuid,tool);
     }
 

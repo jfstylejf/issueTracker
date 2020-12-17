@@ -89,12 +89,15 @@ public class ProjectControlServiceImpl implements ProjectControlService {
         }
 
         String repoName = repositoryDTO.getRepoName();
-        //String repoName = url.substring(url.lastIndexOf("/")).replace("/", "");
+        if (repoName == null || "".equals(repoName)) {
+            repoName = url.substring(url.lastIndexOf("/")).replace("/", "") + "-" + branch;
+        }
 
         // 一个 Repo目前只扫描一个分支
-        if(accountRepositoryDao.hasRepo(accountUuid, url)) {
+        if(accountRepositoryDao.hasRepo(branch, url)) {
             throw new RunTimeException("The repo accountName has already been used! ");
         }
+
         String projectName = repositoryDTO.getProjectName();
 
         // 普通用户不具备添加项目的权限 上面检查过后不在验证项目是否有被添加过
@@ -170,11 +173,12 @@ public class ProjectControlServiceImpl implements ProjectControlService {
             subRepositoryDao.setRecycled(subRepoUuid);
             return;
         }
+        // TODO 基于 rest 调用所有扫描服务把与该 repo相关的所有数据删除
+
+
 
         accountRepositoryDao.deleteRelation(subRepoUuid);
         subRepositoryDao.deleteRepo(subRepoUuid);
-        // TODO 基于 rest 调用所有扫描服务把与该 repo相关的所有数据删除
-
     }
 
 
