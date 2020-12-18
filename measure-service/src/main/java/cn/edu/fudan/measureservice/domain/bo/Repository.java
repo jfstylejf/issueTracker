@@ -23,9 +23,10 @@ public class Repository {
     private String repoName;
     private List<BaseData> baseDataList;
 
-    public Repository(Query query, String projectName) {
+    public Repository(Query query, String repoName, String projectName) {
         this.query = query;
         this.projectName = projectName;
+        this.repoName = repoName;
         baseDataList = new ArrayList<>();
         MeasureInfo measure = new MeasureInfo(query);
         IssueInfo issue = new IssueInfo(query);

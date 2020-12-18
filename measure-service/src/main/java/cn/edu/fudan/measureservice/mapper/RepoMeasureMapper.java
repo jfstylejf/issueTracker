@@ -20,31 +20,15 @@ public interface RepoMeasureMapper {
 
     List<CommitInfoDeveloper> getCommitInfoDeveloperListByDuration(@Param("repo_id")String repo_id,@Param("since")String since,@Param("until")String until,@Param("developer_name")String developer_name);
 
+    @Deprecated
     Integer getAddLinesByDuration(@Param("repo_id")String repo_id,@Param("since")String since,@Param("until")String until,@Param("developer_name")String developerName);
 
+    @Deprecated
     Integer getDelLinesByDuration(@Param("repo_id")String repo_id,@Param("since")String since,@Param("until")String until,@Param("developer_name")String developerName);
 
+    @Deprecated
     int getCommitCountsByDuration(@Param("repo_id")String repo_id,@Param("since")String since,@Param("until")String until,@Param("developer_name")String developerName);
 
-    /**
-     * 获取开发者参与库的合法提交次数（去除Merge）
-     * @param repoUuidList
-     * @param since
-     * @param until
-     * @param developerName
-     * @return
-     */
-    List<Map<String,Object>> getValidCommitCountsByAllRepo(@Param("repoUuidList")List<String> repoUuidList,@Param("since")String since,@Param("until")String until,@Param("developer_name")String developerName);
-
-    /**
-     * 获取开发者不规范提交明细
-     * @param repoUuidList
-     * @param since
-     * @param until
-     * @param developerName
-     * @return List<Map<String,Object>  key : developer,commit_time,commit_id,commit_msg
-     */
-    List<Map<String,Object>> getInvalidCommitMsg(@Param("repoUuidList")List<String> repoUuidList,@Param("since")String since,@Param("until")String until,@Param("developer_name")String developerName);
 
     /**
      * 获取该条件内开发者提交次数（去除Merge）
@@ -56,15 +40,6 @@ public interface RepoMeasureMapper {
      */
     int getDeveloperValidCommitCount(@Param("repoUuid")String repoUuid,@Param("since")String since,@Param("until")String until,@Param("developer_name")String developerName);
 
-    /**
-     * 获取开发者所有commit中关联有jira任务的个数
-     * @param repoUuidList
-     * @param since
-     * @param until
-     * @param developerName
-     * @return
-     */
-    int getJiraCountByCondition(@Param("repoUuidList")List<String> repoUuidList,@Param("since")String since,@Param("until")String until,@Param("developer_name")String developerName);
 
     int getChangedFilesByDuration(@Param("repo_id")String repo_id,@Param("since")String since,@Param("until")String until,@Param("developer_name")String developerName);
 
@@ -83,22 +58,27 @@ public interface RepoMeasureMapper {
      */
     List<RepoMeasure> getRepoMeasureByDeveloperAndrepoUuid(@Param("repo_id")String repo_id,@Param("developer_name")String developer_name ,@Param("since")String since,@Param("until")String until);
 
-    List<Map<String, Object>> getDeveloperRankByCommitCount(@Param("repo_id")String repo_id, @Param("since")String since, @Param("until")String until);
-
-    List<Map<String, Object>> getDeveloperRankByLoc(@Param("repo_id")String repo_id, @Param("since")String since, @Param("until")String until);
-
+    @Deprecated
     int getRepoLOCByDuration(@Param("repo_id")String repo_id,@Param("since")String since,@Param("until")String until,@Param("developer_name")String developerName);
 
+    @Deprecated
     List<Map<String, Object>> getDeveloperListByrepoUuidList(@Param("repoUuidList")List<String> repoUuidList);
 
     List<Map<String, Object>> getDeveloperDutyTypeListByrepoUuid(@Param("repoUuidList")List<String> repoUuidList);
 
     String getLastScannedCommitId(@Param("repo_id")String repoUuid);
 
+    @Deprecated
     int getLOCByCondition(@Param("repo_id")String repoUuid,@Param("developer_name")String developerName,@Param("since")String since,@Param("until")String until);
 
-    List<Map<String, Object>> getCommitDays(@Param("repo_id")String repoUuid,@Param("developer_name")String developerName,@Param("since")String since,@Param("until")String until);
-
+    /**
+     * 获取开发者参与库列表（且在sub_repository下）
+     * @param developerName 开发者姓名
+     * @param since 查询起始时间
+     * @param until 查询结束时间
+     * @return
+     */
+    @Deprecated
     List<String> getRepoListByDeveloper(@Param("developer_name")String developerName,@Param("since")String since,@Param("until")String until);
 
     String getFirstCommitDateByCondition(@Param("repoUuidList")List<String> repoUuidList,@Param("developer")String developerName);
@@ -116,22 +96,5 @@ public interface RepoMeasureMapper {
      * @return
      */
     String getDeveloperType(@Param("developer")String developer);
-
-    /**
-     * 根据项目返回参与的开发者列表
-     * @param repoUuidList
-     * @return
-     */
-    List<String> getDeveloperList(@Param("repoUuidList")List<String> repoUuidList,@Param("since") String since,@Param("until") String until);
-
-    /**
-     * 获取该情况下的开发者参与Jira任务数
-     * @param developer
-     * @param repoUuid
-     * @param since
-     * @param until
-     * @return int jiraCount
-     */
-    int getJiraCount(@Param("developer")String developer,@Param("repoUuid")String repoUuid,@Param("since")String since,@Param("until")String until);
 
 }

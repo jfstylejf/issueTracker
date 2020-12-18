@@ -1,16 +1,21 @@
 package cn.edu.fudan.measureservice.service.impl;
 
 import cn.edu.fudan.measureservice.component.RestInterfaceManager;
+import cn.edu.fudan.measureservice.dao.MeasureDao;
+import cn.edu.fudan.measureservice.dao.ProjectDao;
 import cn.edu.fudan.measureservice.domain.*;
+import cn.edu.fudan.measureservice.domain.dto.Query;
 import cn.edu.fudan.measureservice.mapper.RepoMeasureMapper;
 import cn.edu.fudan.measureservice.service.MeasureRepoService;
 import cn.edu.fudan.measureservice.util.DateTimeUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -23,6 +28,9 @@ import java.util.stream.Collectors;
 public class MeasureRepoServiceImpl implements MeasureRepoService {
 
     private Logger logger = LoggerFactory.getLogger(MeasureRepoServiceImpl.class);
+
+    private ProjectDao projectDao;
+    private MeasureDao measureDao;
 
     @Value("${repoHome}")
     private String repoHome;
@@ -38,8 +46,6 @@ public class MeasureRepoServiceImpl implements MeasureRepoService {
     private RepoMeasureMapper repoMeasureMapper;
 
     private static DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-    private static String defaultStartTime = "2018-01-01";
-
 
     public MeasureRepoServiceImpl(RestInterfaceManager restInterfaceManager, RepoMeasureMapper repoMeasureMapper) {
         this.restInterfaceManager = restInterfaceManager;
@@ -199,78 +205,84 @@ public class MeasureRepoServiceImpl implements MeasureRepoService {
     }
 
 
-
-
+    /**
+     * 某段时间内，该项目中提交次数最多的前三名开发者的姓名以及对应的commit次数
+     * @param query 查询条件
+     * @param projectName 项目名
+     * @return key : developerName , countNum
+     */
     @Override
-    public Object getDeveloperRankByCommitCount(String repo_id, String since, String until){
-        return repoMeasureMapper.getDeveloperRankByCommitCount(repo_id, since, until);
+    public List<Map<String,Object>> getDeveloperRankByCommitCount(Query query,String projectName){
+        List<String> repoUuidList = projectDao.getProjectIntegratedRepoList(query,projectName);
+        query.setRepoUuidList(repoUuidList);
+        return projectDao.getDeveloperRankByCommitCount(query);
     }
 
+    /**
+     * 获取所查询库列表中前3名增加代码物理行数的开发者
+     * @param query 查询条件
+     * @param projectName 项目名
+     * @return key : developerName , developerLoc
+     */
     @Override
-    public Object getDeveloperRankByLoc(String repo_id, String since, String until){
-        List<Map<String, Object>> result = repoMeasureMapper.getDeveloperRankByLoc(repo_id, since, until);
-        //如果LOC数据为0，则删除这条数据
-        if (null != result && result.size() > 0) {
-            for (int i = result.size() - 1; i >= 0; i--) {
-                Map<String, Object> map = result.get(i);
-                Object obj;
-                //取出map中第一个元素
-                for (Map.Entry<String, Object> entry : map.entrySet()) {
-                    obj = entry.getValue();
-                    if (obj != null) {
-                        //将Object类型转换为int类型
-                        if (Integer.parseInt(String.valueOf(obj)) == 0) {
-                            result.remove(i);
-                        }
-                        break;
-                    }
-                }
-            }
-        }
-        return result;
+    public List<Map<String, Object>> getDeveloperRankByLoc(Query query ,String projectName){
+        List<String> repoUuidList = projectDao.getProjectIntegratedRepoList(query,projectName);
+        query.setRepoUuidList(repoUuidList);
+        return measureDao.getDeveloperRankByLoc(query);
     }
 
 
-
-
-
+    /**
+     * 获取某段时间内，每天的所有提交次数和物理行数
+     * @param query 查询条件
+     * @param projectName 项目名
+     * @return List<Map<String, Object>> key : commit_date, LOC,commit_count
+     */
     @Override
-    public Object getCommitCountLOCDaily(String repo_id, String since, String until){
+    public List<Map<String, Object>> getDailyCommitCountAndLOC(Query query ,String projectName){
         List<Map<String, Object>> result = new ArrayList<>();
-        LocalDate indexDay;
-        LocalDate untilDay;
-        if(since!=null && !"".equals(since)) {
-            indexDay = LocalDate.parse(since,dtf);
+        List<String> repoUuidList = projectDao.getProjectIntegratedRepoList(query,projectName);
+        query.setRepoUuidList(repoUuidList);
+        LocalDate until = LocalDate.parse(query.getUntil(),dtf);
+        LocalDate since;
+        int timeDiff = 0;
+        if(query.getSince()!=null && !"".equals(query.getSince())) {
+            since = LocalDate.parse(query.getSince(),dtf);
+            timeDiff = (int) (until.toEpochDay() - since.toEpochDay());
         }else {
-            indexDay = LocalDate.parse(defaultStartTime,dtf);
+            since = until.minusDays(7);
+            timeDiff = 7;
         }
-        if (until!=null && !"".equals(until)) {
-            untilDay = LocalDate.parse(until,dtf);
-        }else {
-            LocalDateTime ldf = LocalDateTime.now();
-            untilDay = LocalDate.parse(ldf.format(dtf),dtf);
-        }
-        while(untilDay.isAfter(indexDay) || untilDay.isEqual(indexDay)){
-            Map<String, Object> map = new HashMap<>();
-            int LOC = repoMeasureMapper.getRepoLOCByDuration(repo_id, indexDay.toString(), indexDay.toString(),null);
-            int commitCounts = repoMeasureMapper.getCommitCountsByDuration(repo_id, indexDay.toString(), indexDay.plusDays(1).toString(),null);
-            //这里只返回有commit的数据，并不是每天都返回
-//            if (CommitCounts > 0){
-//                map.put("commit_date", indexDay.toString());
-//                map.put("LOC", LOC);
-//                map.put("commit_count", CommitCounts);
-//                result.add(map);
-//            }
+        LocalDate tempSince = since;
+        for (int i=0 ;i<timeDiff; i++) {
+            query.setSince(dtf.format(tempSince));
+            query.setUntil(dtf.format(tempSince.plusDays(1)));
+            Map<String, Object> map = new HashMap<>(6);
+            int loc = measureDao.getLocByCondition(query);
+            int commitCounts = projectDao.getDeveloperCommitCountsByDuration(query);
             //现在采用返回每天的数据，无论当天是否有commit
-            map.put("commit_date", indexDay.toString());
-            map.put("LOC", LOC);
+            map.put("commit_date", dtf.format(tempSince));
+            map.put("LOC", loc);
             map.put("commit_count", commitCounts);
             result.add(map);
-            indexDay = indexDay.plusDays(1);
+            tempSince = tempSince.plusDays(1);
         }
         return result;
     }
 
+    /**
+     * 删除所属repo下repo_measure表数据
+     * @param query 查询条件
+     */
+    @Override
+    public void deleteRepoMsg(Query query) {
+        projectDao.deleteRepoMsg(query);
+    }
 
+    @Autowired
+    public void setProjectDao(ProjectDao projectDao) {this.projectDao = projectDao;}
+
+    @Autowired
+    public void setMeasureDao(MeasureDao measureDao) {this.measureDao = measureDao;};
 
 }

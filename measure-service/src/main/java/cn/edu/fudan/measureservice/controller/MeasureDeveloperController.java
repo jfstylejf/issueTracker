@@ -8,6 +8,7 @@ import cn.edu.fudan.measureservice.service.MeasureDeveloperService;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.http.HttpRequest;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -60,7 +61,9 @@ public class MeasureDeveloperController {
             @RequestParam(value="developer",required = false)String developer,
             @RequestParam(value="since",required = false)String since,
             @RequestParam(value="until",required = false)String until,
-            @RequestParam(value ="repo_uuid" ,required = false)String repoUuid
+            @RequestParam(value = "project_name",required = false) String projectName,
+            @RequestParam(value ="repo_uuid" ,required = false)String repoUuid,
+            HttpServletRequest request
     ){
         try{
             if(until==null || "".equals(until)) {
@@ -68,7 +71,15 @@ public class MeasureDeveloperController {
             }else {
                 until = dtf.format(LocalDate.parse(until,dtf));
             }
-            return new ResponseBean<>(200,"success",(Map<String, Object>) measureDeveloperService.getDeveloperWorkLoad(developer,since,until,repoUuid));
+            String token = request.getHeader("token");
+            List<String> repoUuidList;
+            if(repoUuid!=null && !"".equals(repoUuid)) {
+                repoUuidList = Arrays.asList(repoUuid.split(split));
+            }else {
+                repoUuidList = null;
+            }
+            Query query = new Query(token,since,until,developer,repoUuidList);
+            return new ResponseBean<>(200,"success",(Map<String, Object>) measureDeveloperService.getDeveloperWorkLoad(query,projectName));
         }catch (Exception e){
             e.printStackTrace();
             return new ResponseBean<>(401,"failed" + e.getMessage(),null);
@@ -175,6 +186,7 @@ public class MeasureDeveloperController {
     @GetMapping("/measure/commit-standard")
     @CrossOrigin
     public ResponseBean<Object> getCommitStandard(@RequestParam(value = "developer",required = false)String developer,
+                                          @RequestParam(value = "project_name",required = false) String projectName,
                                           @RequestParam(value = "repo_uuids",required = false)String repoUuidList,
                                           @RequestParam(value = "since", required = false)String since,
                                           @RequestParam(value = "until", required = false)String until,
@@ -185,15 +197,19 @@ public class MeasureDeveloperController {
         try{
             if(until==null || "".equals(until)) {
                 until = dtf.format(LocalDate.now().plusDays(1));
+            }else {
+                until = dtf.format(LocalDate.parse(until,dtf).plusDays(1));
             }
             String token = request.getHeader("token");
             String condition ;
+            Query query = new Query(token,since,until,developer,Arrays.asList(repoUuidList.split(split)));
             if(developer==null) {
                 condition = "1";
-                return new ResponseBean<>(200,"success", measureDeveloperService.getCommitStandard(null,repoUuidList,since,until,token,condition));
+                query.setDeveloper(null);
+                return new ResponseBean<>(200,"success", measureDeveloperService.getCommitStandard(query,projectName,condition));
             }else {
                 condition = "2";
-                List<Map<String,Object>> invalidCommitList = measureDeveloperService.getCommitStandard(developer,repoUuidList,since,until,token,condition);
+                List<Map<String,Object>> invalidCommitList = measureDeveloperService.getCommitStandard(query,projectName,condition);
                 Map<String,Object> map = new HashMap<>();
                 map.put("totalCount",invalidCommitList.size());
                 map.put("invalidCommitList",invalidCommitList.subList((page - 1) * ps , page * ps > invalidCommitList.size() ? invalidCommitList.size() : page * ps ));
@@ -288,7 +304,12 @@ public class MeasureDeveloperController {
             }
             until = dtf.format(localDate);
             String token = request.getHeader("token");
-            Query query = new Query(token,since,until,developer, Arrays.asList(repoUuidList.split(split)));
+            Query query;
+            if(repoUuidList!=null) {
+                query = new Query(token,since,until,developer, Arrays.asList(repoUuidList.split(split)));
+            }else {
+                query = new Query(token,since,until,developer,null);
+            }
             return new ResponseBean<>(200,"success",(List<Map<String, Object>>) measureDeveloperService.getDeveloperList(repoUuidList,token));
         }catch (Exception e){
             e.printStackTrace();

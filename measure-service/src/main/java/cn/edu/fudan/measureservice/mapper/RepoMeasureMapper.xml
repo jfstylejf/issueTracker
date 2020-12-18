@@ -216,90 +216,6 @@
         </where>
     </select>
 
-    <select id="getValidCommitCountsByAllRepo" resultType="java.util.HashMap">
-        SELECT developer_unique_name,left(commit_time,10) as commit_time,commit_id,message
-        from commit_view
-        <where>
-            <trim prefixOverrides="and">
-                <if test="developer_name != null and developer_name != '' ">
-                    and developer_unique_name = #{developer_name}
-                </if>
-
-                <if test="repoUuidList != null and repoUuidList.size >0 ">
-                    and repo_id in
-                    <foreach collection="repoUuidList" separator="," open="(" close=")" item="repoUuid">
-                        #{repoUuid}
-                    </foreach>
-                </if>
-
-                <if test="since != null and since != '' ">
-                    and <![CDATA[ commit_time >= #{since} ]]>
-                </if>
-
-                <if test="until != null and until != '' ">
-                    and <![CDATA[ commit_time <= #{until} ]]>
-                </if>
-                and message NOT LIKE '%Merge%'
-            </trim>
-        </where>
-        ORDER By commit_time desc
-    </select>
-
-    <select id="getInvalidCommitMsg" resultType="java.util.HashMap">
-        SELECT developer_unique_name,left(commit_time,10) as commit_time,commit_id,message FROM commit_view
-        WHERE commit_id in (
-            select commit_id  from commit_view
-            <where>
-                <trim prefixOverrides="and">
-                    <if test="developer_name != null and developer_name != '' ">
-                        and developer_unique_name = #{developer_name}
-                    </if>
-
-                    <if test="repoUuidList != null and repoUuidList.size >0 ">
-                        and repo_id in
-                        <foreach collection="repoUuidList" separator="," open="(" close=")" item="repoUuid">
-                            #{repoUuid}
-                        </foreach>
-                    </if>
-
-                    <if test="since != null and since != '' ">
-                        and <![CDATA[ commit_time >= #{since} ]]>
-                    </if>
-
-                    <if test="until != null and until != '' ">
-                        and <![CDATA[ commit_time <= #{until} ]]>
-                    </if>
-                </trim>
-            </where>
-            and commit_id not in (
-                select commit_id  from jira_history
-                <where>
-                    <trim prefixOverrides="and">
-                        <if test="developer_name != null and developer_name != '' ">
-                            and unique_name = #{developer_name}
-                        </if>
-
-                        <if test="repoUuidList != null and repoUuidList.size >0 ">
-                            and repo_id in
-                            <foreach collection="repoUuidList" separator="," open="(" close=")" item="repoUuid">
-                                #{repoUuid}
-                            </foreach>
-                        </if>
-
-                        <if test="since != null and since != '' ">
-                            and <![CDATA[ commit_time >= #{since} ]]>
-                        </if>
-
-                        <if test="until != null and until != '' ">
-                            and <![CDATA[ commit_time <= #{until} ]]>
-                        </if>
-                    </trim>
-                </where>
-            )
-        )
-        and message not like '%Merge%'
-        ORDER BY commit_time DESC
-    </select>
 
     <select id="getDeveloperValidCommitCount" resultType="int">
         SELECT count(*) FROM commit_view
@@ -436,39 +352,6 @@
         select * from commit where repo_id= #{repo_id} order by commit_time desc limit 0,58;
     </select>
 
-    <select id="getDeveloperRankByCommitCount" parameterType="String" resultType="java.util.HashMap">
-        SELECT
-            developer_name,
-            COUNT(*) AS `counts`
-        FROM
-            repo_measure
-        WHERE
-            repo_id = #{repo_id}
-            and
-            DATE(commit_time) BETWEEN #{since} AND #{until}
-        GROUP BY
-            developer_name
-        ORDER BY
-            COUNT(*) DESC
-        LIMIT 5;
-    </select>
-
-    <select id="getDeveloperRankByLoc" parameterType="String" resultType="java.util.HashMap">
-        SELECT
-            developer_name,
-            SUM( add_lines ) + SUM( del_lines ) AS counts
-        FROM
-            repo_measure
-        WHERE
-            repo_id = #{repo_id}
-            and
-            DATE(commit_time) BETWEEN #{since} AND #{until}
-        GROUP BY
-            developer_name
-        ORDER BY
-            counts DESC
-        LIMIT 5;
-    </select>
 
     <select id="getRepoLOCByDuration" resultType="int">
         select
@@ -565,32 +448,6 @@
         </where>
     </select>
 
-    <select id="getCommitDays" parameterType="String" resultType="java.util.HashMap">
-        SELECT
-        DATE_FORMAT(commit_time,'%Y%m%d') commitDays
-        FROM
-        repo_measure
-        <where>
-            <trim prefixOverrides="and">
-                <if test="developer_name != null and developer_name != '' ">
-                    and developer_name = #{developer_name}
-                </if>
-
-                <if test="repo_id != null and repo_id != '' ">
-                    and repo_id = #{repo_id}
-                </if>
-
-                <if test="since != null and since != '' ">
-                    and <![CDATA[ commit_time >= #{since} ]]>
-                </if>
-
-                <if test="until != null and until != '' ">
-                    and <![CDATA[ commit_time <= #{until} ]]>
-                </if>
-            </trim>
-        </where>
-        group by commitDays
-    </select>
 
     <select id="getRepoListByDeveloper" parameterType="String" resultType="String">
         SELECT
@@ -734,55 +591,6 @@
 	        account_name = #{developer}
     </select>
 
-    <select id="getDeveloperList" resultType="String">
-        SELECT
-            distinct developer_unique_name
-        FROM
-            commit_view
-        <where>
-            <trim prefixOverrides="and">
-                <if test="repoUuidList != null and repoUuidList.size > 0">
-                    and repo_id in
-                    <foreach collection="repoUuidList" separator="," open="(" close=")" item="repoUuid">
-                        #{repoUuid}
-                    </foreach>
-                 </if>
-                <if test="since != null and since != '' ">
-                    and <![CDATA[ commit_time >= #{since} ]]>
-                </if>
 
-                <if test="until != null and until != '' ">
-                    and <![CDATA[ commit_time <= #{until} ]]>
-                </if>
-            </trim>
-        </where>
-    </select>
-
-    <select id="getJiraCount" parameterType="String" resultType="int">
-        SELECT
-        count(*)
-        FROM
-        jira_history
-        <where>
-            <trim prefixOverrides="and">
-                <if test="developer != null and developer != '' ">
-                    and unique_name = #{developer}
-                </if>
-
-                <if test="repoUuid != null and repoUuid != '' ">
-                    and repo_id = #{repoUuid}
-                </if>
-
-                <if test="since != null and since != '' ">
-                    and <![CDATA[ commit_time >= #{since} ]]>
-                </if>
-
-                <if test="until != null and until != '' ">
-                    and <![CDATA[ commit_time <= #{until} ]]>
-                </if>
-
-            </trim>
-        </where>
-    </select>
 
 </mapper>

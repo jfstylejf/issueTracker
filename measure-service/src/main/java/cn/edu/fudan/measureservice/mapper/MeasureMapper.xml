@@ -7,7 +7,7 @@
         SELECT
         developer_name as developerName, sum(add_lines) as addLines, sum(del_lines) as delLines, count(*) as commitCount, sum(changed_files) as changedFiles
         FROM
-        repo_measure
+        issueTracker.repo_measure
         <where>
             <trim prefixOverrides="and">
                 <if test="developer_name != null and developer_name != '' ">
@@ -33,22 +33,12 @@
         group by developerName
     </select>
 
-    <select id="getAddLinesByDuration" resultType="int">
-        select IFNULL(SUM(add_lines),0) from repo_measure where repo_id = #{repoUuid} and DATE(commit_time) BETWEEN #{since} AND #{until}
-        <if test="developer_name != null and developer_name != ''" >
-            and developer_name = #{developer_name}
-        </if>
-    </select>
-
-    <select id="getLOCByCondition" parameterType="String" resultType="int">
-        SELECT
-        IFNULL(SUM( add_lines ) + SUM( del_lines ),0)
-        FROM
-        repo_measure
+    <select id="getDeveloperAddLines" resultType="int">
+        SELECT IFNULL(SUM(add_lines),0) FROM issueTracker.repo_measure
         <where>
             <trim prefixOverrides="and">
-                <if test="developer_name != null and developer_name != '' ">
-                    and developer_name = #{developer_name}
+                <if test="developer != null and developer != '' ">
+                    and developer_name = #{developer}
                 </if>
 
                 <if test="repoUuid != null and repoUuid != '' ">
@@ -66,18 +56,71 @@
         </where>
     </select>
 
-    <select id="getCommitCountsByDuration" resultType="int">
-        select
-        COUNT(*) as commit_counts
-        from repo_measure
+    <select id="getDeveloperRankByLoc" parameterType="String" resultType="java.util.HashMap">
+        SELECT
+        developer_name ,
+        SUM( add_lines ) + SUM( del_lines ) AS counts
+        FROM
+        issueTracker.repo_measure
         <where>
             <trim prefixOverrides="and">
-                <if test="developer_name != null and developer_name != '' ">
-                    and developer_name = #{developer_name}
+
+                <if test="repoUuidList != null and repoUuidList.size >0 ">
+                    and repo_id in
+                    <foreach collection="repoUuidList" separator="," open="(" close=")" item="repoUuid">
+                        #{repoUuid}
+                    </foreach>
                 </if>
 
-                <if test="repoUuid != null and repoUuid != '' ">
-                    and repo_id = #{repoUuid}
+                <if test="since != null and since != '' ">
+                    and <![CDATA[ commit_time >= #{since} ]]>
+                </if>
+
+                <if test="until != null and until != '' ">
+                    and <![CDATA[ commit_time <= #{until} ]]>
+                </if>
+
+            </trim>
+        </where>
+        GROUP BY
+        developer_name
+        ORDER BY
+        counts DESC
+        LIMIT 3;
+    </select>
+
+    <select id="getMsgNumByRepo" resultType="int">
+        SELECT count(uuid) FROM issueTracker.repo_measure
+        <where>
+            <trim prefixOverrides="and">
+
+                <if test="repoUuidList != null and repoUuidList.size >0 ">
+                    and repo_id in
+                    <foreach collection="repoUuidList" separator="," open="(" close=")" item="repoUuid">
+                        #{repoUuid}
+                    </foreach>
+                </if>
+
+            </trim>
+        </where>
+    </select>
+
+    <select id="getLocByCondition" parameterType="String" resultType="int">
+        SELECT
+        IFNULL(SUM( add_lines ) + SUM( del_lines ),0)
+        FROM
+        issueTracker.repo_measure
+        <where>
+            <trim prefixOverrides="and">
+                <if test="developer != null and developer != '' ">
+                    and developer_name = #{developer}
+                </if>
+
+                <if test="repoUuidList != null and repoUuidList.size >0 ">
+                    and repo_id in
+                    <foreach collection="repoUuidList" separator="," open="(" close=")" item="repoUuid">
+                        #{repoUuid}
+                    </foreach>
                 </if>
 
                 <if test="since != null and since != '' ">

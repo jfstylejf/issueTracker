@@ -3,6 +3,7 @@ package cn.edu.fudan.measureservice.domain.d0;
 import cn.edu.fudan.measureservice.dao.MeasureDao;
 import cn.edu.fudan.measureservice.domain.dto.Query;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Map;
 
@@ -12,7 +13,6 @@ import java.util.Map;
 @Slf4j
 public class MeasureInfo extends BaseData {
 
-    private Query query;
 
     private MeasureDao measureDao;
 
@@ -38,12 +38,12 @@ public class MeasureInfo extends BaseData {
     private int totalCommitCount;
 
     public MeasureInfo(Query query) {
-        this.query = query;
+        super(query);
     }
 
     @Override
     public void dataInjection() {
-        log.debug("{} in repo : {} start to get MeasureInfo",query.getDeveloper(),query.getRepoUuidList());
+        log.debug("{} : in repo : {} start to get MeasureInfo",query.getDeveloper(),query.getRepoUuidList());
         /**
          *  key : getDeveloperAddLine
          *  value {@link MeasureDao}
@@ -53,9 +53,9 @@ public class MeasureInfo extends BaseData {
          *  key : getLocByCondition
          *  value {@link MeasureDao}
          */
-        Map<String,Object> LocMap = measureDao.getLocByCondition(query);
-        developerLoc = (int) LocMap.get("developerLoc");
-        totalLoc = (int) LocMap.get("totalLoc");
+        Map<String,Object> locMap = measureDao.getDeveloperLocByCondition(query);
+        developerLoc = (int) locMap.get("developerLoc");
+        totalLoc = (int) locMap.get("totalLoc");
         /**
          *  key : getCommitCountsByDuration
          *  value {@link MeasureDao}
@@ -67,6 +67,7 @@ public class MeasureInfo extends BaseData {
         log.debug("{} in repo : {} get MeasureInfo success",query.getDeveloper(),query.getRepoUuidList());
     }
 
+    @Autowired
     public void setMeasureDao(MeasureDao measureDao) {
         this.measureDao = measureDao;
     }

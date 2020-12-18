@@ -4,30 +4,39 @@ import cn.edu.fudan.measureservice.domain.CommitBaseInfoDuration;
 import cn.edu.fudan.measureservice.domain.Granularity;
 import cn.edu.fudan.measureservice.domain.RepoMeasure;
 import cn.edu.fudan.measureservice.domain.ResponseBean;
+import cn.edu.fudan.measureservice.domain.dto.Query;
 import cn.edu.fudan.measureservice.service.MeasureRepoService;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
+import lombok.Synchronized;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import sun.nio.ch.ThreadPool;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.*;
 
 @RestController
 public class MeasureRepoController {
 
+    @Resource(name = "myThreadPool")
+    private ExecutorService threadPool;
 
     private MeasureRepoService measureRepoService;
 
+
+    private static final String split = ",";
     private static DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-    public MeasureRepoController(MeasureRepoService measureRepoService) {
-        this.measureRepoService = measureRepoService;
-    }
 
     @ApiOperation(value = "获取一个项目在某个时间段特定时间单位的项目级别的所有度量信息", notes = "@return List<RepoMeasure>", httpMethod = "GET")
     @ApiImplicitParams({
@@ -84,9 +93,10 @@ public class MeasureRepoController {
 
     }
 
-    @ApiOperation(value = "根据repo_id和since、until获取某个时间段内commit次数最多的5位开发者姓名以及对应的commit次数", notes = "@return List<Map<String,Object>> key : counts, developer_name", httpMethod = "GET")
+    @ApiOperation(value = "根据repo_id和since、until获取某个时间段内commit次数最多的3位开发者姓名以及对应的commit次数", notes = "@return List<Map<String,Object>> key : counts, developer_name", httpMethod = "GET")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "repo_uuid", value = "参与库", dataType = "String",required = true,defaultValue = "3ecf804e-0ad6-11eb-bb79-5b7ba969027e" ),
+            @ApiImplicitParam(name = "repo_uuids", value = "参与库", dataType = "String",defaultValue = "defd1c4c-33a4-11eb-8dca-4dbb5f7a5f33" ),
+            @ApiImplicitParam(name = "project_name", value = "项目名" ,dataType = "String" ,defaultValue = "测试项目2"),
             @ApiImplicitParam(name = "since", value = "起始时间（yyyy-MM-dd）", dataType = "String", defaultValue = "2019-02-20"),
             @ApiImplicitParam(name = "until", value = "截止时间（yyyy-MM-dd）", dataType = "String",defaultValue = "当前时间"),
     })
@@ -94,70 +104,120 @@ public class MeasureRepoController {
     @GetMapping("/measure/developer-rank/commit-count")
     @CrossOrigin
     public ResponseBean<List<Map<String,Object>>> getDeveloperRankByCommitCount(
-            @RequestParam("repo_uuid")String repoUuid,
+            @RequestParam(value = "repo_uuids",required = false)String repoUuids,
+            @RequestParam(value = "project_name",required = false) String projectName,
             @RequestParam(value = "since",required = false)String since,
             @RequestParam(value = "until",required = false)String until){
 
         try{
             if(until==null || "".equals(until)) {
                 until = dtf.format(LocalDate.now().plusDays(1));
+            }else {
+                until = dtf.format(LocalDate.parse(until,dtf).plusDays(1));
             }
-            return new ResponseBean<>(200,"success",(List<Map<String,Object>>) measureRepoService.getDeveloperRankByCommitCount(repoUuid, since, until));
+            List<String> repoUuidList = null;
+            if(repoUuids!=null && !"".equals(repoUuids)) {
+                repoUuidList = Arrays.asList(repoUuids.split(split));
+            }
+            Query query = new Query(null,since,until,null, repoUuidList);
+            return new ResponseBean<>(200,"success", measureRepoService.getDeveloperRankByCommitCount(query,projectName));
         }catch (Exception e){
             e.printStackTrace();
             return new ResponseBean<>(401,"failed "+ e.getMessage(),null);
         }
     }
 
-    @ApiOperation(value = "根据repo_id和since、until获取某个时间段内,该项目中提交代码行数（LOC）最多的前5名开发者的姓名以及对应的LOC", notes = "@return List<Map<String,Object>> key : counts,developer_name", httpMethod = "GET")
+    @ApiOperation(value = "根据repo_id和since、until获取某个时间段内,该项目中提交代码行数（LOC）最多的前3名开发者的姓名以及对应的LOC", notes = "@return List<Map<String,Object>> key : counts,developer_name", httpMethod = "GET")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "repo_uuid", value = "参与库", dataType = "String",required = true,defaultValue = "3ecf804e-0ad6-11eb-bb79-5b7ba969027e" ),
+            @ApiImplicitParam(name = "repo_uuids", value = "参与库", dataType = "String",defaultValue = "defd1c4c-33a4-11eb-8dca-4dbb5f7a5f33" ),
+            @ApiImplicitParam(name = "project_name", value = "项目名" ,dataType = "String" ,defaultValue = "测试项目2"),
             @ApiImplicitParam(name = "since", value = "起始时间（yyyy-MM-dd）", dataType = "String", defaultValue = "2019-02-20"),
             @ApiImplicitParam(name = "until", value = "截止时间（yyyy-MM-dd）", dataType = "String",defaultValue = "当前时间"),
     })
-    @SuppressWarnings("unchecked")
+
     @GetMapping("/measure/developer-rank/loc")
     @CrossOrigin
     public ResponseBean<List<Map<String, Object>>> getDeveloperRankByLoc(
-            @RequestParam("repo_uuid")String repoUuid,
+            @RequestParam(value = "repo_uuids",required = false)String repoUuids,
+            @RequestParam(value = "project_name",required = false) String projectName,
             @RequestParam(value = "since",required = false)String since,
             @RequestParam(value = "until",required = false)String until){
 
         try{
             if(until==null || "".equals(until)) {
                 until = dtf.format(LocalDate.now().plusDays(1));
+            }else {
+                until = dtf.format(LocalDate.parse(until,dtf).plusDays(1));
             }
-            return new ResponseBean<>(200,"success",(List<Map<String, Object>>) measureRepoService.getDeveloperRankByLoc(repoUuid, since, until));
+            List<String> repoUuidList = null;
+            if(repoUuids!=null && !"".equals(repoUuids)) {
+                repoUuidList = Arrays.asList(repoUuids.split(split));
+            }
+            Query query = new Query(null,since,until,null,repoUuidList);
+            return new ResponseBean<>(200,"success", measureRepoService.getDeveloperRankByLoc(query,projectName));
         }catch (Exception e){
             e.printStackTrace();
             return new ResponseBean<>(401,"failed "+e.getMessage(),null);
         }
     }
 
-    @ApiOperation(value = "获取某段时间内，每天的所有开发者产生的LOC", notes = "@return List<Map<String,Object>> key : commit_date, LOC,commit_count", httpMethod = "GET")
+    @ApiOperation(value = "获取某段时间内，每天的所有提交次数和物理行数", notes = "@return List<Map<String,Object>> key : commit_date, LOC,commit_count", httpMethod = "GET")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "repo_uuid", value = "参与库", dataType = "String",required = true,defaultValue = "3ecf804e-0ad6-11eb-bb79-5b7ba969027e" ),
+            @ApiImplicitParam(name = "repo_uuid", value = "参与库", dataType = "String",defaultValue = "defd1c4c-33a4-11eb-8dca-4dbb5f7a5f33" ),
+            @ApiImplicitParam(name = "project_name", value = "项目名" ,dataType = "String" ,defaultValue = "测试项目2"),
             @ApiImplicitParam(name = "since", value = "起始时间（yyyy-MM-dd）", dataType = "String", defaultValue = "2019-02-20"),
             @ApiImplicitParam(name = "until", value = "截止时间（yyyy-MM-dd）", dataType = "String", defaultValue = "当前时间"),
     })
-    @SuppressWarnings("unchecked")
     @GetMapping("/measure/repository/commit-count&LOC-daily")
     @CrossOrigin
-    public ResponseBean<List<Map<String, Object>>> getCommitCountLOCDaily(
-            @RequestParam("repo_uuid")String repoUuid,
+    public ResponseBean<List<Map<String, Object>>> getDailyCommitCountAndLOC(
+            @RequestParam(value = "repo_uuids",required = false)String repoUuids,
+            @RequestParam(value = "project_name",required = false) String projectName,
             @RequestParam(value = "since",required = false)String since,
             @RequestParam(value = "until",required = false)String until){
 
         try{
             if(until==null || "".equals(until)) {
                 until = dtf.format(LocalDate.now().plusDays(1));
+            }else {
+                until = dtf.format(LocalDate.parse(until,dtf).plusDays(1));
             }
-            return new ResponseBean<>(200,"success",(List<Map<String, Object>>) measureRepoService.getCommitCountLOCDaily(repoUuid, since, until));
+            List<String> repoUuidList = null;
+            if(repoUuids!=null && !"".equals(repoUuids)) {
+                repoUuidList = Arrays.asList(repoUuids.split(split));
+            }
+            Query query = new Query(null,since,until,null,repoUuidList);
+            return new ResponseBean<>(200,"success",measureRepoService.getDailyCommitCountAndLOC(query,projectName));
         }catch (Exception e){
             e.printStackTrace();
             return new ResponseBean<>(401,"failed "+e.getMessage(),null);
         }
     }
 
+
+
+    @DeleteMapping("/DELETE/measure/{repo_uuids}")
+    @CrossOrigin
+    public ResponseBean<String> deleteRepoUselessMsg(@PathVariable("repo_uuids") String repoUuidList) {
+        Query query = new Query(null,null,null,null,Arrays.asList(repoUuidList.split(split)));
+        Callable callable1 = () -> new ResponseBean<>(200,"received request","Received");
+        Callable callable2 = () -> {
+            measureRepoService.deleteRepoMsg(query);
+            return new ResponseBean<>(200,"measure delete Success","Completed");
+        };
+        try {
+            threadPool.submit(callable1);
+            threadPool.submit(callable2);
+        }catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseBean<>(401,"measure failed",null);
+        }
+        return null;
+    }
+
+    @Autowired
+    public MeasureRepoController(MeasureRepoService measureRepoService) {
+        this.measureRepoService = measureRepoService;
+    }
 
 }

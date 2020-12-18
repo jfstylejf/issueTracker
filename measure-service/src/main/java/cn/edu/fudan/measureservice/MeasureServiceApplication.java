@@ -25,13 +25,6 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @MapperScan("cn.edu.fudan.measureservice.mapper")
 public class MeasureServiceApplication implements ApplicationRunner {
 
-    @Value("${token}")
-    private String token;
-
-//    RedisTemplate
-
-    //private MeasureDeveloperService measureDeveloperService;
-
     public static void main(String[] args) {
         SpringApplication.run(MeasureServiceApplication.class, args);
     }

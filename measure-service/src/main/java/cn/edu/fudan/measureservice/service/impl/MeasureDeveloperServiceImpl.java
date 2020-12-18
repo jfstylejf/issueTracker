@@ -1,6 +1,7 @@
 package cn.edu.fudan.measureservice.service.impl;
 
 import cn.edu.fudan.measureservice.component.RestInterfaceManager;
+import cn.edu.fudan.measureservice.dao.JiraDao;
 import cn.edu.fudan.measureservice.dao.ProjectDao;
 import cn.edu.fudan.measureservice.domain.bo.DeveloperPortrait;
 import cn.edu.fudan.measureservice.domain.bo.Repository;
@@ -25,8 +26,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 
 @Slf4j
@@ -37,38 +36,35 @@ public class MeasureDeveloperServiceImpl implements MeasureDeveloperService {
     private final RestInterfaceManager restInterfaceManager;
     private final RepoMeasureMapper repoMeasureMapper;
     private final ProjectDao projectDao;
+    private final JiraDao jiraDao;
 
     private MeasureDeveloperServiceImpl measureDeveloperService;
 
-
+    /**
+     *
+     * @param query 查询条件
+     * @param projectName 项目名
+     * @return
+     */
     @Override
-    public Object getDeveloperWorkLoad(String developer, String since, String until, String repoUuid) {
-        Map<String,Object> developerWorkLoad = new HashMap<>(0);
-        List<String> repoUuidList = new ArrayList<>();
+    public Object getDeveloperWorkLoad(Query query , String projectName) {
+        Map<String,Object> developerWorkLoad = new HashMap<>(8);
+        List<String> repoUuidList = projectDao.getProjectIntegratedRepoList(query,projectName);
         List<String> developerList = new ArrayList<>();
-        if(StringUtils.isEmptyOrNull(repoUuid)) {
-            repoUuidList = null;
+        if(query.getDeveloper()!=null && !"".equals(query.getDeveloper())) {
+            developerList.add(query.getDeveloper());
         }else {
-            String[] repoUuidArray = repoUuid.split(",");
-            //先把前端给的repo加入到repoList
-            repoUuidList.addAll(Arrays.asList(repoUuidArray));
-        }
-        if(developer!=null && !"".equals(developer)) {
-            developerList.add(developer);
-        }else {
-            developerList = repoMeasureMapper.getDeveloperList(repoUuidList,since,until);
+            developerList = projectDao.getDeveloperList(query);
         }
         for (String member : developerList) {
             if(member == null || "".equals(member)) {
                 continue;
             }
-            Map<String, Object> workLoadList = repoMeasureMapper.getWorkLoadByCondition(repoUuidList, member, since, until);
+            Map<String, Object> workLoadList = repoMeasureMapper.getWorkLoadByCondition(repoUuidList, member, query.getSince(), query.getUntil());
             developerWorkLoad.put(member,workLoadList);
         }
         return developerWorkLoad;
     }
-
-
 
 
     @Override
@@ -346,6 +342,7 @@ public class MeasureDeveloperServiceImpl implements MeasureDeveloperService {
         if(until==null) {
             until = sdf.format(nowDate);
         }
+        int totalCommitCount = 0;
         for (String repoUuid : repoList) {
             JSONObject projects = restInterfaceManager.getProjectByrepoUuid(repoUuid,token);
             String repoName = projects.getString("repoName");
@@ -353,6 +350,7 @@ public class MeasureDeveloperServiceImpl implements MeasureDeveloperService {
             log.info("Start to get portrait of " + developer + " in repo : " + repoName);
             DeveloperMetrics metrics = measureDeveloperService.getPortrait(repoUuid, developer, since, until, token, tool);
             developerMetricsList.add(metrics);
+            totalCommitCount += metrics.getTotalCommitCount();
             log.info("Successfully get portrait of " + developer + " in repo : " + repoName);
 
         }
@@ -360,7 +358,6 @@ public class MeasureDeveloperServiceImpl implements MeasureDeveloperService {
         //获取第一次提交commit的日期
         Date firstCommitDate = sdf.parse(restInterfaceManager.getFirstCommitDate(developer).getJSONObject("repos_summary").getString("first_commit_time_summary"));
         String firstDate = sdf.format(firstCommitDate);
-        int totalCommitCount = repoMeasureMapper.getCommitCountsByDuration(null, since, until, developer);
         log.info("totalCommitCount:"+ totalCommitCount);
         int totalStatement = restInterfaceManager.getStatements("",since,until,developer).getIntValue("total");
         log.info("totalStatement:"+totalStatement);
@@ -514,7 +511,10 @@ public class MeasureDeveloperServiceImpl implements MeasureDeveloperService {
 
         int developerJiraCount = 0;
         try {
-            developerJiraCount = repoMeasureMapper.getJiraCount(developer,repoUuid,since,until);
+            Query query = new Query(token,since,until,developer,Collections.singletonList(repoUuid));
+            List<Map<String,Object>> response = getCommitStandard(query,null,"1");
+            Map<String,Object> developerCommitStandard = response.get(0);
+            developerJiraCount = (int) developerCommitStandard.get("developerJiraCount");
         }catch (Exception e) {
             log.error(e.getMessage());
         }
@@ -611,7 +611,8 @@ public class MeasureDeveloperServiceImpl implements MeasureDeveloperService {
         }
         List<String> developerList = new ArrayList<>();
         if( developer == null || "".equals(developer)) {
-            developerList = repoMeasureMapper.getDeveloperList(repoList,since,until);
+            Query query = new Query(token,since,until,null,repoList);
+            developerList = projectDao.getDeveloperList(query);
         }else {
             developerList.add(developer);
         }
@@ -803,7 +804,7 @@ public class MeasureDeveloperServiceImpl implements MeasureDeveloperService {
             map.put("commit_time", commitTime);
             //以下操作是为了获取jira信息
             String commitMessage = map.get("message").toString();
-            String jiraID = getJiraIDFromCommitMsg(commitMessage);
+            String jiraID = jiraDao.getJiraIDFromCommitMsg(commitMessage);
             if("noJiraID".equals(jiraID)) {
                 map.put("jira_info", "本次commit不含jira单号");
             }else {
@@ -823,29 +824,11 @@ public class MeasureDeveloperServiceImpl implements MeasureDeveloperService {
         return commitMsgList;
     }
 
-    /**
-     * 根据commit message 返回 对应的 jira 单号
-     */
-    private String getJiraIDFromCommitMsg(String commitMsg){
-        // 使用Pattern类的compile方法，传入jira单号的正则表达式，得到一个Pattern对象
-        Pattern pattern = Pattern.compile("[A-Z][A-Z0-9]*-[0-9]+");
-        // 调用pattern对象的matcher方法，传入需要匹配的字符串， 得到一个匹配器对象
-        Matcher matcher = pattern.matcher(commitMsg);
-
-        // 从字符串开头，返回匹配到的第一个字符串
-        if (matcher.find()) {
-            // 输出第一次匹配的内容
-            log.info("jira ID is : {}",matcher.group());
-            return matcher.group();
-        }
-        return "noJiraID" ;
-    }
-
 
     /**
      * 获得开发者人员画像列表属性
      * @param query 开发者列表请求条件
-     * @return List<Developer>
+     * @return List<DeveloperPortrait>
      */
     public List<DeveloperPortrait> getDeveloperList(Query query) {
         List<DeveloperPortrait> developerList = new ArrayList<>();
@@ -892,11 +875,11 @@ public class MeasureDeveloperServiceImpl implements MeasureDeveloperService {
 
         Map<String, List<Repository>> developerProjectData = new HashMap<>(10);
         /**
-         *  根据query删选出库的信息 key : projectName ,value repoUuidList
+         *  根据query删选出库的信息 key : projectName ,value : repoUuidList
          */
         Map<String, List<String>> projectInfo = projectDao.getProjectInfo(query);
         if(projectInfo==null || projectInfo.isEmpty()) {
-            log.info("{} has no project",query.getDeveloper());
+            log.warn("{} has no involved project",query.getDeveloper());
             return null;
         }
         /**
@@ -912,7 +895,8 @@ public class MeasureDeveloperServiceImpl implements MeasureDeveloperService {
                 log.info("{}: start to get repoUuid:{} in {}",query.getDeveloper(),repoUuid,m.getKey());
                 List<String> temp = Collections.singletonList(repoUuid);
                 query.setRepoUuidList(temp);
-                Repository repository = new Repository(query,m.getKey());
+                String repoName = projectDao.getRepoName(repoUuid);
+                Repository repository = new Repository(query,repoName,m.getKey());
                 repositories.add(repository);
                 log.info("{}: injectRepository :{} in {} success", query.getDeveloper(),repoUuid,m.getKey());
             }
@@ -969,22 +953,19 @@ public class MeasureDeveloperServiceImpl implements MeasureDeveloperService {
         return repoList.size();
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public List<Map<String,Object>> getCommitStandard(String developer, String repoUuid, String since, String until, String token ,String condition) {
+    public List<Map<String,Object>> getCommitStandard(Query query ,String projectName , String condition) {
         List<Map<String,Object>> list = new ArrayList<>();
-        String split = ",";
-        List<String> repoUuidList;
+        List<String> repoUuidList = projectDao.getProjectIntegratedRepoList(query,projectName);
         List<String> developerList ;
-        if(repoUuid!=null && !"".equals(repoUuid)) {
-            repoUuidList = Arrays.asList(repoUuid.split(split));
-        }else {
-            repoUuidList = repoMeasureMapper.getRepoListByDeveloper(developer,since,until);
-        }
+        query.setRepoUuidList(repoUuidList);
         if("1".equals(condition)) {
-            developerList = repoMeasureMapper.getDeveloperList(repoUuidList,since,until);
+            developerList = projectDao.getDeveloperList(query);
             for(String member : developerList) {
+                query.setDeveloper(member);
                 Map<String,Object> map = new HashMap<>();
-                Map<String,Object> developerCommitInfo = getDeveloperCommitInfo(repoUuidList,since,until,member);
+                Map<String,Object> developerCommitInfo = getDeveloperCommitInfo(query);
                 int developerValidCommitCount = (int) developerCommitInfo.get("developerValidCommitCount");
                 List<Map<String,Object>> developerJiraInfo =  (List<Map<String,Object>>) developerCommitInfo.get("developerJiraInfo");
                 int developerJiraCount = developerJiraInfo.size();
@@ -1000,22 +981,27 @@ public class MeasureDeveloperServiceImpl implements MeasureDeveloperService {
             }
             return list;
         }else if("2".equals(condition)) {
-            Map<String,Object> developerCommitInfo = getDeveloperCommitInfo(repoUuidList,since,until,developer);
+            Map<String,Object> developerCommitInfo = getDeveloperCommitInfo(query);
             List<Map<String,Object>> developerInvalidCommitInfo = (List<Map<String,Object>>) developerCommitInfo.get("developerInvalidCommitInfo");
             return developerInvalidCommitInfo;
         }
         return null;
     }
 
-    private Map<String,Object> getDeveloperCommitInfo(List<String> repoUuidList,String since,String until,String developer) {
-        Map<String,Object> map = new HashMap<>(0);
-        List<Map<String,Object>> developerValidCommitInfo = repoMeasureMapper.getValidCommitCountsByAllRepo(repoUuidList,since,until,developer);
+    /**
+     * 处理获得开发者Jira提交信息，提交不规范明细
+     * @param query 查询条件
+     * @return key : developerJiraInfo , developerInvalidCommitInfo
+     */
+    private Map<String,Object> getDeveloperCommitInfo(Query query) {
+        Map<String,Object> map = new HashMap<>(6);
+        List<Map<String,Object>> developerValidCommitInfo = projectDao.getValidCommitMsg(query);
         map.put("developerValidCommitCount",developerValidCommitInfo.size());
         List<Map<String,Object>> developerJiraInfo = new ArrayList<>();
         List<Map<String,Object>> developerInvalidCommitInfo = new ArrayList<>();
         for(Map<String,Object> commitInfo : developerValidCommitInfo) {
             String message = (String) commitInfo.get("message");
-            if(!"noJiraID".equals(getJiraIDFromCommitMsg(message))) {
+            if(!"noJiraID".equals(jiraDao.getJiraIDFromCommitMsg(message))) {
                 developerJiraInfo.add(commitInfo);
             }else {
                 developerInvalidCommitInfo.add(commitInfo);
@@ -1034,10 +1020,11 @@ public class MeasureDeveloperServiceImpl implements MeasureDeveloperService {
 
 
     @Autowired
-    public MeasureDeveloperServiceImpl(RestInterfaceManager restInterfaceManager, RepoMeasureMapper repoMeasureMapper, ProjectDao projectDao) {
+    public MeasureDeveloperServiceImpl(RestInterfaceManager restInterfaceManager, RepoMeasureMapper repoMeasureMapper, ProjectDao projectDao, JiraDao jiraDao) {
         this.restInterfaceManager = restInterfaceManager;
         this.repoMeasureMapper = repoMeasureMapper;
         this.projectDao = projectDao;
+        this.jiraDao = jiraDao;
     }
 
 
