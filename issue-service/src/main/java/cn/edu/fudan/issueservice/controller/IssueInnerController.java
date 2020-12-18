@@ -32,8 +32,8 @@ public class IssueInnerController {
             @ApiImplicitParam(name = "repo-uuid", value = "代码库uuid", dataType = "String", required = true),
 
     })
-    @DeleteMapping(value = {"/inner/issue/{tool}/{repo-uuid}"})
-    public ResponseBean<String> deleteIssues(@PathVariable("tool")String tool,@PathVariable("repo-uuid") String repoUuid) {
+    @DeleteMapping(value = {"/issue/{tool}/{repo-uuid}"})
+    public ResponseBean<String> deleteIssues(@PathVariable("tool")String tool, @PathVariable("repo-uuid") String repoUuid) {
         try {
             issueService.deleteIssueByRepoIdAndTool(repoUuid,tool);
             return new ResponseBean<>(200, "success", "issues delete success!");

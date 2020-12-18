@@ -33,7 +33,7 @@ import java.util.stream.Stream;
 @Slf4j
 public class JGitHelper implements Closeable {
 
-    private static final boolean IS_WINDOWS = System.getProperty("os.accountName").toLowerCase().contains("win");
+    private static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().contains("win");
     private static final int MERGE_WITH_CONFLICT = -1;
     private static final int MERGE_WITHOUT_CONFLICT = 2;
     private static final int NOT_MERGE = 1;
@@ -50,6 +50,7 @@ public class JGitHelper implements Closeable {
      */
     public JGitHelper(String repoPath) {
         String gitDir =  IS_WINDOWS ? repoPath + "\\.git" : repoPath + "/.git";
+
         FileRepositoryBuilder builder = new FileRepositoryBuilder();
         try {
             repository = builder.setGitDir(new File(gitDir))

@@ -132,25 +132,6 @@ public class IssueMatcher {
             curMap.put(rawIssue.getFile_name(),rawIssueList);
         }
 
-        String fileName="./raw.txt";
-        try {
-            BufferedWriter out=new BufferedWriter(new FileWriter(fileName));
-            for(Map.Entry<String, List<RawIssue>> entry : preMap.entrySet()){
-                JSONArray pre= JSONArray.parseArray(JSON.toJSONString(entry.getValue()));
-                out.write("\n\n-----------------"+entry.getKey()+"----------------\n\n");
-                out.write(String.valueOf(pre));
-            }
-            out.write("\n\n-----------------cur----------------\n\n");
-            for(Map.Entry<String, List<RawIssue>> entry : curMap.entrySet()){
-                JSONArray cur= JSONArray.parseArray(JSON.toJSONString(entry.getValue()));
-                out.write("\n\n-----------------"+entry.getKey()+"----------------\n\n");
-                out.write(String.valueOf(cur));
-            }
-            out.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
         //匹配两个rawIssue集合（parent的rawIssue集合，当前的rawIssue集合）
         mappingTwoRawIssueList(preRawIssues, currentRawIssues);
         parentRawIssuesResult.put (preCommitId, preRawIssues);

@@ -259,13 +259,14 @@ public class RestInterfaceManager {
                         result = true;
                     }
                 }
-            }
-            // 调用其他工具
-            JSONObject requestResult = restTemplate.postForObject(servicePath, jsonObject, JSONObject.class);
-            if(requestResult != null){
-                int code = requestResult.getInteger("code");
-                if(code == HttpStatus.OK.value()){
-                    result = true;
+            } else {
+                // 调用其他工具
+                JSONObject requestResult = restTemplate.postForObject(servicePath, jsonObject, JSONObject.class);
+                if(requestResult != null){
+                    int code = requestResult.getInteger("code");
+                    if(code == HttpStatus.OK.value()){
+                        result = true;
+                    }
                 }
             }
         }catch (Exception e) {

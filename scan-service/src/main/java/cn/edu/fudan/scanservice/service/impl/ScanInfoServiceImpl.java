@@ -145,12 +145,15 @@ public class ScanInfoServiceImpl implements ScanInfoService {
         return curStatus.getPriority() > targetValue.getPriority() ? targetValue.getType() : curStatus.getType();
     }
 
+    @Override
+    public void deleteOneRepo(String repoId) {
+        scanDao.deleteScanByRepoId(repoId);
+    }
 
     @Autowired
     public void setScanDao(ScanDao scanDao) {
         this.scanDao = scanDao;
     }
-
 
     @Autowired
     public void setRestInterfaceManager(RestInterfaceManager restInterfaceManager) {

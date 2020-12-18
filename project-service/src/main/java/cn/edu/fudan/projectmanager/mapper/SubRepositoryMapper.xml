@@ -21,7 +21,7 @@
 
 
     <insert id="insertOneRepo" parameterType="cn.edu.fudan.projectmanager.domain.SubRepository">
-        insert ignore into sub_repository
+        insert into sub_repository
         (
         uuid,
         url,
@@ -33,7 +33,8 @@
         repo_uuid,
         project_name,
         recycled,
-        import_account_uuid
+        import_account_uuid,
+        repo_name
         )
         VALUES
         (
@@ -47,7 +48,8 @@
         #{repoUuid},
         #{projectName},
         #{recycled},
-        #{importAccountUuid}
+        #{importAccountUuid},
+        #{repoName}
         )
     </insert>
 
@@ -94,7 +96,7 @@
 
     <select id="getAllSubRepoByAccountId" resultMap="subRepository" parameterType="String">
         SELECT s.uuid , url, language, branch, repo_source, download_status,
-               latest_commit_time, repo_uuid, s.project_name, recycled, import_account_uuid, scan_start, r.repo_name
+               latest_commit_time, repo_uuid, s.project_name, recycled, import_account_uuid, scan_start, s.repo_name
         FROM sub_repository as s inner join account_repository as r
         <where>
             s.uuid = r.sub_repository_uuid

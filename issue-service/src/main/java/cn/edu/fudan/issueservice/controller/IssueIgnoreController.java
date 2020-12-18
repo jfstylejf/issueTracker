@@ -41,7 +41,7 @@ public class IssueIgnoreController {
         try{
             for(IgnoreRecord ignoreRecord : ignoreRecords) {
                 if(!IgnoreTypeEnum.statusInEnum(ignoreRecord.getTag())){
-                    return new ResponseBean<>(401, "issue tag error!", null);
+                    return new ResponseBean<>(400, "issue tag error!", null);
                 }
                 ignoreRecord.setUuid(UUID.randomUUID().toString());
                 ignoreRecord.setIgnoreTime(df.format(new Date()));
