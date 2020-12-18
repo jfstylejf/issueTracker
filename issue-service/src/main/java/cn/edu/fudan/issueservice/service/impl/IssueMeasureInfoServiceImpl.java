@@ -32,7 +32,6 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
 
     private RestInterfaceManager restInterfaceManager;
 
-
     @Override
     public List<Map.Entry<String, JSONObject>> getNotSolvedIssueCountByToolAndRepoUuid(List<String> repoUuids, String tool, String order, String commitUuid) {
 
@@ -81,7 +80,6 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
             put("dayAvgSolvedIssue", developerDetail.getInteger("solvedIssueCount") / days);
         }};
     }
-
 
     @Override
     public Map<String, JSONObject> getDeveloperCodeQuality(Map<String, Object> query, boolean codeQuality) {
@@ -148,7 +146,7 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
     }
 
     private JSONObject handleIssuesLifeCycle(List<Integer> issuesLifeCycle) {
-        if(issuesLifeCycle == null){
+        if(issuesLifeCycle == null || issuesLifeCycle.size() == 0){
             return new JSONObject(){{
                 put("quantity", 0);
                 put("min", 0);

@@ -2,15 +2,13 @@ package cn.edu.fudan.measureservice.service.impl;
 
 import cn.edu.fudan.measureservice.analyzer.JavaNcss;
 import cn.edu.fudan.measureservice.annotation.RepoResource;
+import cn.edu.fudan.measureservice.dao.ProjectDao;
 import cn.edu.fudan.measureservice.domain.Objects;
 import cn.edu.fudan.measureservice.domain.*;
 import cn.edu.fudan.measureservice.domain.core.FileMeasure;
 import cn.edu.fudan.measureservice.domain.core.MeasureScan;
 import cn.edu.fudan.measureservice.domain.dto.RepoResourceDTO;
-import cn.edu.fudan.measureservice.mapper.AccountMapper;
-import cn.edu.fudan.measureservice.mapper.FileMeasureMapper;
-import cn.edu.fudan.measureservice.mapper.MeasureScanMapper;
-import cn.edu.fudan.measureservice.mapper.RepoMeasureMapper;
+import cn.edu.fudan.measureservice.mapper.*;
 import cn.edu.fudan.measureservice.service.MeasureScanService;
 import cn.edu.fudan.measureservice.util.FileFilter;
 import cn.edu.fudan.measureservice.util.JGitHelper;
@@ -36,13 +34,17 @@ import java.util.*;
 @Service
 public class MeasureScanServiceImpl implements MeasureScanService {
 
+    private ProjectMapper projectMapper;
     private RepoMeasureMapper repoMeasureMapper;
     private FileMeasureMapper fileMeasureMapper;
     private MeasureScanMapper measureScanMapper;
     private ThreadLocal<JGitHelper> jGitHelperT = new ThreadLocal<>();
 
+    private static String projectName;
 
-    public MeasureScanServiceImpl(RepoMeasureMapper repoMeasureMapper, FileMeasureMapper fileMeasureMapper, MeasureScanMapper measureScanMapper) {
+
+    public MeasureScanServiceImpl(RepoMeasureMapper repoMeasureMapper, FileMeasureMapper fileMeasureMapper, MeasureScanMapper measureScanMapper, ProjectMapper projectMapper) {
+        this.projectMapper = projectMapper;
         this.repoMeasureMapper = repoMeasureMapper;
         this.fileMeasureMapper = fileMeasureMapper;
         this.measureScanMapper = measureScanMapper;
@@ -78,6 +80,7 @@ public class MeasureScanServiceImpl implements MeasureScanService {
         final String complete = "complete";
         String repoPath = repoResource.getRepoPath();
         String repoUuid = repoResource.getRepoUuid();
+        projectName = projectMapper.getProjectName(repoUuid);
         if (StringUtils.isEmpty(repoPath)){
             log.error("repoUuid:[{}] path is empty", repoUuid);
             return;
@@ -91,7 +94,7 @@ public class MeasureScanServiceImpl implements MeasureScanService {
         }
 
         jGitHelperT.remove();
-        JGitHelper jGitHelper = new JGitHelper(repoPath);
+        JGitHelper jGitHelper = new JGitHelper(repoPath,projectName);
         jGitHelperT.set(jGitHelper);
 
         // 获取从 beginCommit 开始的 commit list 列表

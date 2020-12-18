@@ -207,5 +207,5 @@ public interface IssueMapper {
      * @param repoUuids repoUuid list
      * @return issueIntroducers
      */
-    List<String> getIssueIntroducers(List<String> repoUuids);
+    List<String> getIssueIntroducers(@Param("repoUuids") List<String> repoUuids);
 }
