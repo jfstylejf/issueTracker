@@ -46,6 +46,10 @@ public class SubRepositoryDao {
         return subRepositoryMapper.getAllSubRepoByAccountId(accountUuid);
     }
 
+    public List<SubRepository> getAllSubRepo() {
+        return subRepositoryMapper.getAllSubRepo();
+    }
+
     public List<Map<String, Object>> getAllProjectRepoRelation(){
         return subRepositoryMapper.getAllProjectRepoRelation();
     }
@@ -56,6 +60,10 @@ public class SubRepositoryDao {
 
     public void updateProjectNameSR(String accountUuid,String oldProjectName, String newProjectName) {
         subRepositoryMapper.updateProjectNameSR(accountUuid, oldProjectName, newProjectName);
+    }
+
+    public void updateRepoProjectSR(String accountUuid, String oldProjectName, String newProjectName ,String RepoUuid) {
+        subRepositoryMapper.updateRepoProjectSR(accountUuid, oldProjectName, newProjectName, RepoUuid);
     }
 
     @Autowired

@@ -90,4 +90,13 @@ public interface ProjectControlService {
      * @throws Exception e
      */
     void updateRepo(String token, String oldRepoName, String newRepoName) throws Exception;
+
+    /**
+     * 更新库所属项目
+     * @param token 用户token
+     * @param oldProjectName  旧名
+     * @param newProjectName  新名
+     * @throws Exception e
+     */
+    void updateRepoProject(String token, String oldProjectName, String newProjectName,String RepoUuid) throws Exception;
 }

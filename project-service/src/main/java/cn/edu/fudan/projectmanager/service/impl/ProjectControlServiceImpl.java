@@ -191,10 +191,10 @@ public class ProjectControlServiceImpl implements ProjectControlService {
         // 用户权限为admin时 查询所有的repo
         if (userInfoDTO.getRight().equals(AccountRoleEnum.ADMIN.getRight())) {
             userUuid = null;
+            //return subRepositoryDao.getAllSubRepo();
         }
 
         // todo 用户权限为 DEVELOPER 时不允许查询项目列表
-
         return subRepositoryDao.getAllSubRepoByAccountUuid(userUuid);
     }
 
@@ -264,6 +264,24 @@ public class ProjectControlServiceImpl implements ProjectControlService {
         }
         userInfos.put(token, userInfoDTO);
         return userInfoDTO;
+    }
+
+    @Override
+    public void updateRepoProject(String token, String oldProjectName, String newProjectName,String RepoUuid) throws Exception {
+        UserInfoDTO userInfoDTO = getUserInfoByToken(token);
+        String accountUuid = userInfoDTO.getUuid();
+
+        if (StringUtils.isEmpty(oldProjectName) || StringUtils.isEmpty(newProjectName) || oldProjectName.equals(newProjectName)) {
+            return;
+        }
+        // 0 表示超级管理员 只有超级管理员能操作
+        if (userInfoDTO.getRight() != 0) {
+            throw new RunTimeException("this user has no right to change project Name");
+        }
+        //该repo的所有projectName 都会改变 只有超级管理员才会有此权限
+        log.warn("projectName changed by {}! old projectName is {}, new projectName is {}", userInfoDTO.getUuid(), oldProjectName, newProjectName);
+        accountRepositoryDao.updateRepoProjectAR(accountUuid, oldProjectName, newProjectName, RepoUuid);
+        subRepositoryDao.updateRepoProjectSR(accountUuid, oldProjectName, newProjectName, RepoUuid);
     }
 
     /**

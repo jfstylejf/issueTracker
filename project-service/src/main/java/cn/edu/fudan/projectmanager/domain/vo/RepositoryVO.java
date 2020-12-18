@@ -46,11 +46,12 @@ public class RepositoryVO implements Serializable {
         projectName = repository.getProjectName();
         scanStart = repository.getScanStart();
 
-        /// NOTE：repoName 默认就是URL后面几位 不允许修改
-//        repoName = StringUtils.isEmpty(repository.getRepoName()) ?
-//                url.substring(url.lastIndexOf("/")).replace("/", "") :
-//                repository.getRepoName();
-        repoName = url.substring(url.lastIndexOf("/")).replace("/", "") ;
+        // NOTE：repoName 默认就是URL后面几位 不允许修改
+        //        repoName = StringUtils.isEmpty(repository.getRepoName()) ?
+        //                url.substring(url.lastIndexOf("/")).replace("/", "") :
+        //                repository.getRepoName();
+        //repoName = url.substring(url.lastIndexOf("/")).replace("/", "") ;
+        repoName = repository.getRepoName();
     }
 
 

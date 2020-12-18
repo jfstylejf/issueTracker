@@ -53,6 +53,8 @@ public interface SubRepositoryMapper {
 
     List<SubRepository> getAllSubRepoByAccountId(@Param("account_uuid") String accountUuid);
 
+    List<SubRepository> getAllSubRepo();
+
 
     @Update("UPDATE `sub_repository` SET `recycled` = '1' WHERE `uuid` = #{subRepoUuid};")
     void setRecycled(@Param("subRepoUuid") String subRepoUuid);
@@ -70,13 +72,27 @@ public interface SubRepositoryMapper {
 
     /**
      * 更新项目名
-     * @param  accountUuid,oldProjectName,newProjectName
+     * @param accountUuid 当前人员uuid
+     * @param oldProjectName 旧项目名
+     * @param newProjectName 新项目名
      */
     void updateProjectNameSR(@Param("accountUuid") String accountUuid, @Param("oldProjectName")String oldProjectName, @Param("newProjectName")String newProjectName);
 
     /**
      * 更新库名
-     * @param  accountUuid,oldProjectName,newProjectName
+     * @param accountUuid 当前人员uuid
+     * @param oldRepoName 旧库名
+     * @param newRepoName 新库名
      */
     void updateRepoName(@Param("accountUuid") String accountUuid, @Param("oldRepoName")String oldRepoName, @Param("newRepoName")String newRepoName);
+
+
+    /**
+     * 更新repo所属项目
+     * @param accountUuid 当前人员uuid
+     * @param oldProjectName 旧项目名
+     * @param newProjectName 新项目名
+     * @param RepoUuid 库uuid
+     */
+    void updateRepoProjectSR(@Param("accountUuid") String accountUuid, @Param("oldProjectName")String oldProjectName, @Param("newProjectName")String newProjectName,@Param("RepoUuid")String RepoUuid);
 }

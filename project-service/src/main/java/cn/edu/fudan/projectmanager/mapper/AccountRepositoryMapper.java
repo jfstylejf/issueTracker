@@ -30,9 +30,20 @@ public interface AccountRepositoryMapper {
 
     /**
      * 更新项目名
-     * @param accountUuid,oldProjectName,newProjectName
+     * @param accountUuid 当前人员uuid
+     * @param oldProjectName 旧项目名
+     * @param newProjectName 新项目名
      */
     void updateProjectNameAR(@Param("accountUuid") String accountUuid, @Param("oldProjectName")String oldProjectName, @Param("newProjectName")String newProjectName);
+
+    /**
+     * 更新repo所属项目
+     * @param accountUuid 当前人员uuid
+     * @param oldProjectName 旧项目名
+     * @param newProjectName 新项目名
+     * @param RepoUuid 库uuid
+     */
+    void updateRepoProjectAR(@Param("accountUuid") String accountUuid, @Param("oldProjectName")String oldProjectName, @Param("newProjectName")String newProjectName,@Param("RepoUuid")String RepoUuid);
 
     @Delete("DELETE FROM `account_repository` WHERE `sub_repository_uuid` = #{subRepoUuid};")
     void deleteRelation(@Param("subRepoUuid") String subRepoUuid);
