@@ -3,17 +3,18 @@ package cn.edu.fudan.common.domain;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serializable;
 import java.util.Date;
 
 @Getter
 @Setter
-public class ScanInfo {
+public class ScanInfo implements Serializable {
     private String uuid;
     private int totalCommitCount;
     private int scannedCommitCount;
     private Date startScanTime;
     private Date endScanTime;
-    private Status status;
+    private String status;
     /**
      * 总耗时 单位s
      */
@@ -26,7 +27,7 @@ public class ScanInfo {
 
     }
 
-    public ScanInfo (String uuid, Status status, int totalCommitCount, int scannedCommitCount, Date startScanTime, String repoId, String branch) {
+    public ScanInfo (String uuid, String status, int totalCommitCount, int scannedCommitCount, Date startScanTime, String repoId, String branch) {
         this.uuid = uuid;
         this.status = status;
         this.totalCommitCount = totalCommitCount;

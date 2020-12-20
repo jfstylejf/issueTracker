@@ -25,7 +25,6 @@ public abstract class AbstractScanServiceImpl implements ScanService {
     }
 
     @Override
-    @Async("taskExecutor")
     public void scan(String repoId, String branch, String beginCommit) {
         synchronized(this.lock) {
             if (this.scanStatusMap.keySet().contains(repoId)) {
@@ -86,10 +85,10 @@ public abstract class AbstractScanServiceImpl implements ScanService {
         setJGitHelper(repoPath.get());
         List<String> commitList = this.jGitHelper.getScanCommitListByBranchAndBeginCommit(branch, beginCommit);
         log.info("commit size : {}" , commitList.size());
-        ScanInfo scanInfo = new ScanInfo(UUID.randomUUID().toString(), ScanInfo.Status.SCANNING, commitList.size(), 0, new Date(), repoId, branch);
+        ScanInfo scanInfo = new ScanInfo(UUID.randomUUID().toString(), ScanInfo.Status.SCANNING.getStatus(), commitList.size(), 0, new Date(), repoId, branch);
         insertScanInfo(scanInfo);
         boolean success = scanCommitList(repoId, branch, repoPath.get(), this.jGitHelper, commitList, isUpdate, scanInfo);
-        scanInfo.setStatus(success ? ScanInfo.Status.COMPLETE : ScanInfo.Status.FAILED);
+        scanInfo.setStatus(success ? ScanInfo.Status.COMPLETE.getStatus(): ScanInfo.Status.FAILED.getStatus());
         updateScanInfo(scanInfo);
         this.restInterfaceManager.freeRepo(repoId, repoPath.get());
     }
