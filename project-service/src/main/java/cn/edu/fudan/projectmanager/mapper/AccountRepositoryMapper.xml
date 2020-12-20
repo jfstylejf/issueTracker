@@ -42,5 +42,15 @@
         where   project_name = #{oldProjectName}
     </update>
 
+    <update id="updateRepoProjectAR" parameterType="String">
+        update account_repository
+        <set>
+            project_name = #{newProjectName},
+        </set>
+        <where>
+            project_name = #{oldProjectName} and sub_repository_uuid = #{RepoUuid}
+        </where>
+    </update>
+
 
 </mapper>

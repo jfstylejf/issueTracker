@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.edu.fudan.measureservice.mapper.MeasureMapper">
+
+    <select id="getWorkLoadByCondition"  resultType="java.util.HashMap">
+        SELECT
+        developer_name as developerName, sum(add_lines) as addLines, sum(del_lines) as delLines, count(*) as commitCount, sum(changed_files) as changedFiles
+        FROM
+        issueTracker.repo_measure
+        <where>
+            <trim prefixOverrides="and">
+                <if test="developer_name != null and developer_name != '' ">
+                    and developer_name = #{developer_name}
+                </if>
+
+                <if test="repoUuidList != null and repoUuidList.size > 0">
+                    and repo_id in
+                    <foreach collection="repoUuidList" separator="," open="(" close=")" item="repoUuid">
+                        #{repoUuid}
+                    </foreach>
+                </if>
+
+                <if test="since != null and since != '' ">
+                    and <![CDATA[ commit_time >= #{since} ]]>
+                </if>
+
+                <if test="until != null and until != '' ">
+                    and <![CDATA[ commit_time <= #{until} ]]>
+                </if>
+            </trim>
+        </where>
+        group by developerName
+    </select>
+
+    <select id="getDeveloperAddLines" resultType="int">
+        SELECT IFNULL(SUM(add_lines),0) FROM issueTracker.repo_measure
+        <where>
+            <trim prefixOverrides="and">
+                <if test="developer != null and developer != '' ">
+                    and developer_name = #{developer}
+                </if>
+
+                <if test="repoUuid != null and repoUuid != '' ">
+                    and repo_id = #{repoUuid}
+                </if>
+
+                <if test="since != null and since != '' ">
+                    and <![CDATA[ commit_time >= #{since} ]]>
+                </if>
+
+                <if test="until != null and until != '' ">
+                    and <![CDATA[ commit_time <= #{until} ]]>
+                </if>
+            </trim>
+        </where>
+    </select>
+
+    <select id="getDeveloperRankByLoc" parameterType="String" resultType="java.util.HashMap">
+        SELECT
+        developer_name ,
+        SUM( add_lines ) + SUM( del_lines ) AS counts
+        FROM
+        issueTracker.repo_measure
+        <where>
+            <trim prefixOverrides="and">
+
+                <if test="repoUuidList != null and repoUuidList.size >0 ">
+                    and repo_id in
+                    <foreach collection="repoUuidList" separator="," open="(" close=")" item="repoUuid">
+                        #{repoUuid}
+                    </foreach>
+                </if>
+
+                <if test="since != null and since != '' ">
+                    and <![CDATA[ commit_time >= #{since} ]]>
+                </if>
+
+                <if test="until != null and until != '' ">
+                    and <![CDATA[ commit_time <= #{until} ]]>
+                </if>
+
+            </trim>
+        </where>
+        GROUP BY
+        developer_name
+        ORDER BY
+        counts DESC
+        LIMIT 3;
+    </select>
+
+    <select id="getMsgNumByRepo" resultType="int">
+        SELECT count(uuid) FROM issueTracker.repo_measure
+        <where>
+            <trim prefixOverrides="and">
+
+                <if test="repoUuidList != null and repoUuidList.size >0 ">
+                    and repo_id in
+                    <foreach collection="repoUuidList" separator="," open="(" close=")" item="repoUuid">
+                        #{repoUuid}
+                    </foreach>
+                </if>
+
+            </trim>
+        </where>
+    </select>
+
+    <select id="getLocByCondition" parameterType="String" resultType="int">
+        SELECT
+        IFNULL(SUM( add_lines ) + SUM( del_lines ),0)
+        FROM
+        issueTracker.repo_measure
+        <where>
+            <trim prefixOverrides="and">
+                <if test="developer != null and developer != '' ">
+                    and developer_name = #{developer}
+                </if>
+
+                <if test="repoUuidList != null and repoUuidList.size >0 ">
+                    and repo_id in
+                    <foreach collection="repoUuidList" separator="," open="(" close=")" item="repoUuid">
+                        #{repoUuid}
+                    </foreach>
+                </if>
+
+                <if test="since != null and since != '' ">
+                    and <![CDATA[ commit_time >= #{since} ]]>
+                </if>
+
+                <if test="until != null and until != '' ">
+                    and <![CDATA[ commit_time <= #{until} ]]>
+                </if>
+            </trim>
+        </where>
+    </select>
+
+</mapper>

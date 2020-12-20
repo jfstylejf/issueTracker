@@ -35,6 +35,10 @@ public class AccountRepositoryDao {
         accountRepositoryMapper.updateProjectNameAR(accountUuid, oldProjectName, newProjectName);
     }
 
+    public void updateRepoProjectAR(String accountUuid, String oldProjectName, String newProjectName ,String RepoUuid) {
+        accountRepositoryMapper.updateRepoProjectAR(accountUuid, oldProjectName, newProjectName, RepoUuid);
+    }
+
     public void deleteRelation(String subRepoUuid) {
         accountRepositoryMapper.deleteRelation(subRepoUuid);
     }

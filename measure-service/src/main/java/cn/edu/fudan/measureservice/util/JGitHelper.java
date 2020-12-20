@@ -10,6 +10,7 @@ import org.eclipse.jgit.diff.*;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectReader;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.lib.RepositoryBuilder;
 import org.eclipse.jgit.patch.FileHeader;
 import org.eclipse.jgit.patch.HunkHeader;
 import org.eclipse.jgit.revwalk.RevCommit;
@@ -39,10 +40,11 @@ import static cn.edu.fudan.measureservice.util.DateTimeUtil.timeTotimeStamp;
 @Slf4j
 public class JGitHelper {
 
-    private static final boolean IS_WINDOWS = System.getProperty("os.accountName").toLowerCase().contains("win");
+    private static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().contains("win");
     private static final int MERGE_WITH_CONFLICT = -1;
     private static final int MERGE_WITHOUT_CONFLICT = 2;
     private static final int NOT_MERGE = 1;
+    private static Boolean Flag;
 
     private Repository repository;
     private RevWalk revWalk;
@@ -52,7 +54,12 @@ public class JGitHelper {
     /**
      * repoPath 加上了 .git 目录
      */
-    public JGitHelper(String repoPath) {
+    public JGitHelper(String repoPath,String projectName) {
+        if("区块链".equals(projectName)) {
+            Flag = true;
+        }else {
+            Flag = false;
+        }
         String gitDir =  IS_WINDOWS ? repoPath + "\\.git" : repoPath + "/.git";
         FileRepositoryBuilder builder = new FileRepositoryBuilder();
         try {
@@ -361,8 +368,10 @@ public class JGitHelper {
 
         //以下循环是针对每一个有变动的文件
         for (DiffEntry entry : diffEntryList) {
-            if (FileFilter.javaFilenameFilter(entry.getNewPath()) && FileFilter.javaFilenameFilter(entry.getOldPath())){
-                continue;
+            if(!Flag) {
+                if (FileFilter.javaFilenameFilter(entry.getNewPath()) && FileFilter.javaFilenameFilter(entry.getOldPath())){
+                    continue;
+                }
             }
             df.format(entry);
             String diffText = out.toString("UTF-8");
@@ -512,7 +521,7 @@ public class JGitHelper {
         RevCommit currCommit = revWalk.parseCommit(ObjectId.fromString(commit));
         RevCommit[] parentCommits = currCommit.getParents();
         if (parentCommits.length != 2) {
-            return null;
+            return new ArrayList<>();
         }
 
         List<DiffEntry> parent1 = getDiffEntry(parentCommits[0], currCommit);
@@ -655,7 +664,7 @@ public class JGitHelper {
     public static void main(String[] args) throws ParseException {
         String repoPath = "D:\\Project\\FDSELab\\开源项目\\IssueTracker-Master";
         String commitId = "f6b81325edc2c26fa54b62fc63188e35ecec8620";
-        JGitHelper jGitHelper = new JGitHelper(repoPath);
+        JGitHelper jGitHelper = new JGitHelper(repoPath,null);
         Map<String, Integer> map = jGitHelper.getLinesData(commitId);
         System.out.println("addLines :"+map.get("addLines"));
         System.out.println("delLines :"+map.get("delLines"));

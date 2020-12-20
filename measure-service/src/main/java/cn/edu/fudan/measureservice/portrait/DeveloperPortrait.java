@@ -84,8 +84,8 @@ public class DeveloperPortrait implements Serializable {
         for (int i = 0; i < developerMetricsList.size(); i++){
             DeveloperMetrics developerMetrics = developerMetricsList.get(i);
             totalLevel += developerMetrics.getCompetence().getLevel();
-            log.info(developerMetrics.toString());
-            log.info("" + totalLevel);
+            log.info("{} : {}", developerName,  developerMetrics.toString());
+            log.info("{} level is {}", developerName, totalLevel);
         }
         value = totalLevel*1.0/developerMetricsList.size();
         return value;

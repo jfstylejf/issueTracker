@@ -79,6 +79,20 @@ public class RestInterfaceManager {
         return result;
     }
 
+    public List<Map<String,String>> getProjectInfo(String projectName,String token) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("token",token);
+        HttpEntity request= new HttpEntity(headers);
+        StringBuilder url = new StringBuilder();
+        url.append(projectServicePath).append("/project/all");
+        ResponseEntity responseEntity = restTemplate.exchange(url.toString(),HttpMethod.GET,request,Map.class);
+        Map<String,List<Map<String,String>>> result = (Map<String,List<Map<String,String>>>) responseEntity.getBody();
+        if(result.get(projectName)!=null) {
+            return result.get(projectName);
+        }
+        return null;
+    }
+
     //---------------------------------------------code service---------------------------------------------------------
     public String getRepoPath(String repoUuid,String commit_id){
         String repoPath=null;
