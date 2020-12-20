@@ -13,6 +13,7 @@ import cn.edu.fudan.scanservice.util.DateTimeUtil;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -146,6 +147,7 @@ public class ScanInfoServiceImpl implements ScanInfoService {
     }
 
     @Override
+    @Async("taskExecutor")
     public void deleteOneRepo(String repoId) {
         scanDao.deleteScanByRepoId(repoId);
     }
