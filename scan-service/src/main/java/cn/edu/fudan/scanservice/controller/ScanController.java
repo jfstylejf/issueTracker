@@ -63,11 +63,11 @@ public class ScanController {
 
     @ApiOperation(value = "获取各个工具的扫描状态", notes = "获取各个工具的扫描状态", httpMethod = "GET")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "repo_id", value = "库Id", dataType = "String", required = true, defaultValue = "3ecf804e-0ad6-11eb-bb79-5b7ba969027e")
+            @ApiImplicitParam(name = "repo_uuid", value = "库Id", dataType = "String", required = true, defaultValue = "3ecf804e-0ad6-11eb-bb79-5b7ba969027e")
     })
     @GetMapping(value = {"/scan/status"})
     @CrossOrigin
-    public ResponseBean getScanStatus(@RequestParam(name = "repo_id") String repoId) {
+    public ResponseBean getScanStatus(@RequestParam(name = "repo_uuid") String repoId) {
 
         try {
             return new ResponseBean<>(HttpStatus.OK.value(), HttpStatus.OK.name(), scanInfoService.getAllScanStatus(repoId));
