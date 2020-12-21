@@ -13,7 +13,6 @@ import cn.edu.fudan.issueservice.util.JGitHelper;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
