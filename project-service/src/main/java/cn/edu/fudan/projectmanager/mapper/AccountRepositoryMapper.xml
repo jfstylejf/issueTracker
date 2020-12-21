@@ -43,12 +43,13 @@
     </update>
 
     <update id="updateRepoProjectAR" parameterType="String">
-        update account_repository
+        update account_repository as a
+        inner join  sub_repository AS s ON s.uuid = a.sub_repository_uuid
         <set>
-            project_name = #{newProjectName},
+            a.project_name = #{newProjectName},
         </set>
         <where>
-            project_name = #{oldProjectName} and sub_repository_uuid = #{RepoUuid}
+            a.project_name = #{oldProjectName} and s.repo_uuid = #{RepoUuid}
         </where>
     </update>
 
