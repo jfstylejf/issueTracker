@@ -25,6 +25,7 @@ public abstract class AbstractScanServiceImpl implements ScanService {
     }
 
     @Override
+    @Async("taskExecutor")
     public void scan(String repoId, String branch, String beginCommit) {
         synchronized(this.lock) {
             if (this.scanStatusMap.keySet().contains(repoId)) {
