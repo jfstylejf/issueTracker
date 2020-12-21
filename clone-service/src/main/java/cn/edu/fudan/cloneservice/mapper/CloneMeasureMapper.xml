@@ -54,8 +54,14 @@
         select count(uuid) from clone_measure where repo_id = #{repo_id} and commit_id = #{commit_id}
     </select>
 
-    <select id="getLatestCloneLines" resultMap="cloneMeasure">
-        select * from clone_measure where repo_id=#{repo_id} order by commit_time desc limit 1
+    <select id="getLatestCloneLines" parameterType="List" resultMap="cloneMeasure">
+        select uuid, repo_id, commit_id, new_clone_lines, self_clone_lines, add_lines, clone_lines, commit_time
+        from clone_measure
+        where repo_id in
+        <foreach collection='repo_ids' item='repo_id' open='(' separator=',' close=')'>
+        #{repo_id}
+        </foreach>
+        order by commit_time desc limit 1
     </select>
 
 </mapper>

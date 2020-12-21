@@ -40,30 +40,46 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
     private CloneInfoMapper cloneInfoMapper;
 
     @Override
-    public List<CloneMessage> getCloneMeasure(String repositoryId, String developer, String start, String end) {
+    public List<CloneMessage> getCloneMeasure(String repositoryIds, String developer, String start, String end) {
 
         List<CloneMessage> cloneMessages = new ArrayList<>();
-        if (StringUtils.isEmpty(developer)) {
-            if (StringUtils.isEmpty(repositoryId)) {
-                log.error("repositoryId and developer is null");
-                return cloneMessages;
+
+        List<String> repoIds = new ArrayList<>();
+        String trim = ",";
+        String [] targetRepos  = new String[0];
+        if (repositoryIds.contains(trim)) {
+            targetRepos = repositoryIds.split(trim);
+            repositoryIds = null;
+        }
+        repoIds.add(repositoryIds);
+        if (targetRepos.length != 0) {
+            repoIds = Arrays.asList(targetRepos);
+        }
+
+        for(String repositoryId: repoIds) {
+            if (StringUtils.isEmpty(developer)) {
+                if (StringUtils.isEmpty(repositoryId)) {
+                    log.error("repositoryId and developer is null");
+                    return cloneMessages;
+                }
+                // 单个repo 维度 存放的是用户的git accountName
+                List<String> developerList = repoCommitMapper.getAllDeveloper(repositoryId);
+                // 聚合 key gitName value trueName
+                Map<String, String> trueNameGitName = getName(developerList);
+
+
+                List<CloneMessage> gitNameClone = new ArrayList<>(developerList.size());
+                developerList.forEach(d -> gitNameClone.add(getOneDeveloperCloneInfo(repositoryId, d, start, end, trueNameGitName.get(d))));
+
+                Map<String, List<CloneMessage>> map = gitNameClone.parallelStream().collect(Collectors.groupingBy(CloneMessage::getDeveloper));
+                map.values().forEach(c -> cloneMessages.add(union(c)));
+            } else {
+                List<String> gitName = repoCommitMapper.getAllGitName(developer);
+                gitName.forEach(n -> cloneMessages.add(getOneDeveloperCloneInfo(repositoryId, n, start, end, developer)));
+                CloneMessage u = union(cloneMessages);
+                cloneMessages.clear();
+                cloneMessages.add(u);
             }
-            // 单个repo 维度 存放的是用户的git accountName
-            List<String> developerList = repoCommitMapper.getAllDeveloper(repositoryId);
-            // 聚合 key gitName value trueName
-            Map<String, String> trueNameGitName = getName(developerList);
-
-            List<CloneMessage> gitNameClone = new ArrayList<>(developerList.size());
-            developerList.forEach(d -> gitNameClone.add(getOneDeveloperCloneInfo(repositoryId, d, start, end, trueNameGitName.get(d))));
-
-            Map<String, List<CloneMessage>> map = gitNameClone.parallelStream().collect(Collectors.groupingBy(CloneMessage::getDeveloper));
-            map.values().forEach(c -> cloneMessages.add(union(c)));
-        } else {
-            List<String> gitName = repoCommitMapper.getAllGitName(developer);
-            gitName.forEach(n -> cloneMessages.add(getOneDeveloperCloneInfo(repositoryId, n, start, end, developer)));
-            CloneMessage u = union(cloneMessages);
-            cloneMessages.clear();
-            cloneMessages.add(u);
         }
         return cloneMessages;
     }
@@ -280,9 +296,20 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
 
 
     @Override
-    public CloneMeasure getLatestCloneMeasure(String repoId) {
+    public CloneMeasure getLatestCloneMeasure(String repositoryId) {
+        List<String> repoIds = new ArrayList<>();
+        String trim = ",";
+        String [] targetRepos  = new String[0];
+        if (repositoryId.contains(trim)) {
+            targetRepos = repositoryId.split(trim);
+            repositoryId = null;
+        }
+        repoIds.add(repositoryId);
 
-        return cloneMeasureDao.getLatestCloneLines(repoId);
+        if (targetRepos.length != 0) {
+            repoIds = Arrays.asList(targetRepos);
+        }
+        return cloneMeasureDao.getLatestCloneLines(repoIds);
     }
 
     @Autowired
