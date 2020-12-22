@@ -99,4 +99,12 @@ public interface ProjectControlService {
      * @throws Exception e
      */
     void updateRepoProject(String token, String oldProjectName, String newProjectName,String RepoUuid) throws Exception;
+
+    /**
+     * 删除库
+     * @param token 用户token
+     * @param repoUuid repo uuid
+     * @throws Exception e
+     */
+    void deleteRepo(@NotNull String token, String repoUuid) throws Exception;
 }

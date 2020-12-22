@@ -198,6 +198,23 @@ public class ProjectController {
             return new ResponseBean<>(401, "update failed :" + e.getMessage(), null);
         }
     }
+
+    @ApiOperation(value="删除库",httpMethod = "DELETE")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "projectUuid", value = "库的uuid", dataType = "String", required = true)
+    })
+    @DeleteMapping(value = {"/project/{repo_uuid}"})
+    public ResponseBean deleteRepo(@PathVariable("repo_uuid")String repoUuid,
+                               HttpServletRequest request) {
+        try {
+            projectControl.deleteRepo(repoUuid,request.getHeader(TOKEN));
+            return new ResponseBean(200, "repo delete success!", null);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseBean(401, "repo delete failed!", null);
+        }
+    }
+
     @Autowired
     public void setProjectControl(ProjectControlService projectControl) {
         this.projectControl = projectControl;

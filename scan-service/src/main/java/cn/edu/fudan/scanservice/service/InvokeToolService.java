@@ -32,9 +32,7 @@ public class InvokeToolService {
 
     public void invokeTools(String repoId, String branch, String startCommit) {
         final int enabled = 1;
-        final String blockChainSecurityDetectorName = "blsd";
         Map<Integer,String> preToolInvokeMap = new HashMap<> ();
-
 
         //第一步 先获取当前repo 之前的调用情况
         Scan preScan = scanDao.getScanByRepoId (repoId);
@@ -42,8 +40,6 @@ public class InvokeToolService {
             log.error (" repo id --> {} ,invoke tools error, cause startCommit is null and has not been scanned!", repoId);
             return ;
         }
-
-
 
         if(preScan != null){
             String preInvokeResult = preScan.getInvokeResult ();
@@ -63,10 +59,6 @@ public class InvokeToolService {
             if (tool.getEnabled() == enabled) {
                 String toolStartCommit = startCommit;
                 String preResult = preToolInvokeMap.get (tool.getId ());
-                if (tool.getToolName().equals(blockChainSecurityDetectorName) && "1".equals (preResult)){
-                    // blsd 工具 只需要调用一次 不需要重复调用检测
-                    continue;
-                }
                 if("0".equals (preResult) && startCommit == null){
                     toolStartCommit = preScan.getStartCommit ();
                 }
@@ -91,7 +83,6 @@ public class InvokeToolService {
         if(currentInvokeResult.length () > 0){
             currentInvokeResult = currentInvokeResult.substring (0,currentInvokeResult.length ()-1);
         }
-
 
         Scan currentScan = new Scan ();
         if(preScan != null ){

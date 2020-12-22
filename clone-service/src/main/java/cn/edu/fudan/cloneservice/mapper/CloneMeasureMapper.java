@@ -52,8 +52,8 @@ public interface CloneMeasureMapper {
 
     /**
      * 获取最新一次commit的clone行数
-     * @param repoId repo id
+     * @param repoIds repo ids
      * @return
      */
-    CloneMeasure getLatestCloneLines(@Param("repo_id") String repoId);
+    CloneMeasure getLatestCloneLines(@Param("repo_ids") List<String> repoIds);
 }

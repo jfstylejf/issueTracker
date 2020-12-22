@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import javax.validation.constraints.NotNull;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -282,6 +283,20 @@ public class ProjectControlServiceImpl implements ProjectControlService {
         log.warn("projectName changed by {}! old projectName is {}, new projectName is {}", userInfoDTO.getUuid(), oldProjectName, newProjectName);
         accountRepositoryDao.updateRepoProjectAR(accountUuid, oldProjectName, newProjectName, RepoUuid);
         subRepositoryDao.updateRepoProjectSR(accountUuid, oldProjectName, newProjectName, RepoUuid);
+    }
+
+    @Override
+    public void deleteRepo(@NotNull String token, String repoUuid) throws Exception {
+        UserInfoDTO userInfoDTO = getUserInfoByToken(token);
+        String accountUuid = userInfoDTO.getUuid();
+        // 0 表示超级管理员 只有超级管理员能操作
+        if (userInfoDTO.getRight() != 0) {
+            throw new RunTimeException("this user has no right to delete repo!");
+        }
+        //该repo的所有projectName 都会改变 只有超级管理员才会有此权限
+        log.warn("repo delete by {}! repo uuid is {}", accountUuid, repoUuid);
+        accountRepositoryDao.deleteRepoAR(accountUuid, repoUuid);
+        subRepositoryDao.deleteRepoSR(accountUuid, repoUuid);
     }
 
     /**

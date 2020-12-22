@@ -74,9 +74,9 @@ public interface RepoCommitMapper {
      * fixme 移动到其他地方
      * @return key accountName、account_gitname
      */
-    @Select("SELECT accountName,account_gitname FROM issueTracker.account_info;")
+    @Select("SELECT account_name,account_gitname FROM issueTracker.account_author;")
     List<Map<String, String>> getAllTrueName();
 
-    @Select("SELECT account_gitname FROM issueTracker.account_info WHERE `accountName` = #{developer};")
+    @Select("SELECT account_gitname FROM issueTracker.account_author WHERE `account_name` = #{developer};")
     List<String> getAllGitName(String developer);
 }
