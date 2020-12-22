@@ -62,22 +62,6 @@ public class JiraInfo extends BaseData {
 
     @Override
     public void dataInjection() {
-        Map<String,Object> jiraMsgMap = jiraDao.getJiraMsgOfOneDeveloper(query);
-        this.jiraCommitNum = (int) jiraMsgMap.get("jiraCommitNum");
-        this.completedJiraNum = (int) jiraMsgMap.get("completedJiraNum");
-        this.developerJiraBugCount = (int) jiraMsgMap.get("jiraBug");
-        this.developerJiraFeatureCount = (int) jiraMsgMap.get("jiraFeature");
-
-        Map<String,Object> assignedJiraDataMap = jiraDao.getAssignedJiraRate(query);
-        this.developerAssignedJiraCount = (int) assignedJiraDataMap.get("developerAssignedJiraCount");
-        this.totalAssignedJiraCount = (int) assignedJiraDataMap.get("totalAssignedJiraCount");
-
-        Map<String,Object> solvedAssignedJiraDataMap = jiraDao.getSolvedAssignedJiraRate(query);
-        this.developerSolvedJiraCount = (int) solvedAssignedJiraDataMap.get("developerSolvedJiraCount");
-        this.totalSolvedJiraCount = (int) solvedAssignedJiraDataMap.get("totalSolvedJiraCount");
-
-        Map<String,Object> defectRateMap = jiraDao.getDefectRate(query);
-        this.totalJiraBugCount = (int) defectRateMap.get("totalJiraBugCount");
 
         this.developerJiraCommitCount = jiraDao.getDeveloperJiraCommitCount(query);
     }

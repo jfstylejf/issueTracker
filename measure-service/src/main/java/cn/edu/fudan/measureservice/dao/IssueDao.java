@@ -25,8 +25,8 @@ public class IssueDao {
 
     /**
      * 获取开发者解决的issue数
-     * @param query
-     * @return solvedSonarIssue
+     * @param query 查询条件
+     * @return int solvedSonarIssue
      */
     public int getSolvedSonarIssue (Query query) {
         JSONObject sonarResponse = restInterface.getDayAvgSolvedIssue(query.getDeveloper(),query.getRepoUuidList().get(0),query.getSince(),query.getUntil(),TOOL,query.getToken());
@@ -39,8 +39,8 @@ public class IssueDao {
 
     /**
      * 获取开发者各类问题数
-     * @Param
-     * @return
+     * @Param query 查询条件
+     * @return Map<String,Object> key : developerStandardIssueCount, totalStandardIssueCount, developerIssueCount, totalIssueCount, developerSecurityIssueCount
      */
     public Map<String,Object> getIssueCountByConditions(Query query) {
         Map<String,Object> map = new HashMap<>();

@@ -345,8 +345,13 @@ public class MeasureDeveloperServiceImpl implements MeasureDeveloperService {
         int totalCommitCount = 0;
         for (String repoUuid : repoList) {
             JSONObject projects = restInterfaceManager.getProjectByrepoUuid(repoUuid,token);
+            if(projects==null) {
+                continue;
+            }
             String repoName = projects.getString("repoName");
-            repoName = repoName.replace("/","");
+            if(repoName != null) {
+                repoName = repoName.replace("/","");
+            }
             log.info("Start to get portrait of " + developer + " in repo : " + repoName);
             DeveloperMetrics metrics = measureDeveloperService.getPortrait(repoUuid, developer, since, until, token, tool);
             developerMetricsList.add(metrics);
@@ -364,15 +369,16 @@ public class MeasureDeveloperServiceImpl implements MeasureDeveloperService {
         int days = ((int) ((nowDate.getTime()-firstCommitDate.getTime()) / (1000 * 60 * 60 *24)) )* 5/7 ;
         int dayAverageStatement = totalStatement/days;
         //todo 日后需要添加程序员类型接口 目前统一认为是java后端工程师
-        String index = repoMeasureMapper.getDeveloperType(developer);
-        String developerType = null ;
-        if("L".equals(index)) {
+        //String index = repoMeasureMapper.getDeveloperType(developer);
+        String developerType = "JAVA后端工程师" ;
+        // fixme 以repo区分开发者类别
+        /*if("L".equals(index)) {
             developerType = "项目负责人";
         }else if("P".equals(index)) {
             developerType = "JAVA后端工程师";
         }else if ("M".equals(index)) {
             developerType= "开发经理";
-        }
+        }*/
         return new cn.edu.fudan.measureservice.portrait.DeveloperPortrait(firstDate,totalStatement,dayAverageStatement,totalCommitCount,developer,developerType,developerMetricsList);
     }
 
@@ -474,15 +480,14 @@ public class MeasureDeveloperServiceImpl implements MeasureDeveloperService {
         int solvedSonarIssue = 0;
         int days = 0;
 
-        JSONArray jiraResponse = restInterfaceManager.getJiraMsgOfOneDeveloper(developer, repoUuid);
+        JSONObject jiraResponse = restInterfaceManager.getJiraMsgOfOneDeveloper(developer, repoUuid,since,until);
         if (jiraResponse != null){
-            JSONObject commitPerJiraData = jiraResponse.getJSONObject(0);
-            JSONObject jiraBugData = jiraResponse.getJSONObject(4);
-            JSONObject jiraFeatureData = jiraResponse.getJSONObject(5);
-            commitNum = commitPerJiraData.getIntValue("commitNum");
-            completedJiraNum = commitPerJiraData.getIntValue("completedJiraNum");
-            jiraBug = jiraBugData.getIntValue("completedBugNum");
-            jiraFeature = jiraFeatureData.getIntValue("completedFeatureNum");
+            JSONObject commitPerJira = jiraResponse.getJSONObject("commitPerJira");
+            completedJiraNum = commitPerJira.getIntValue("finishedJiraSum");
+            commitNum = commitPerJira.getIntValue("commitSum");
+            JSONObject differentTypeSum = jiraResponse.getJSONObject("differentTypeSum");
+            jiraBug = differentTypeSum.getIntValue("completedBugSum");
+            jiraFeature = differentTypeSum.getIntValue("completedTaskSum");
         }
 
         JSONObject sonarResponse = restInterfaceManager.getDayAvgSolvedIssue(developer,repoUuid,since,until,tool,token);
@@ -520,10 +525,11 @@ public class MeasureDeveloperServiceImpl implements MeasureDeveloperService {
         }
         int developerJiraBugCount = 0;
         int totalJiraBugCount = 0;
-        JSONObject jiraBugData = restInterfaceManager.getDefectRate(developer,repoUuid,since,until);
-        if (jiraBugData!=null){
-            developerJiraBugCount = jiraBugData.getIntValue("individual_bugs");
-            totalJiraBugCount = jiraBugData.getIntValue("team_bugs");
+        JSONObject jiraResponse = restInterfaceManager.getJiraMsgOfOneDeveloper(developer,repoUuid,since,until);
+        if (jiraResponse!=null){
+            JSONObject defectRate = jiraResponse.getJSONObject("defectRate");
+            developerJiraBugCount = defectRate.getIntValue("individualBugSum");
+            totalJiraBugCount = defectRate.getIntValue("teamBugSum");
         }
         return cn.edu.fudan.measureservice.portrait2.Quality.builder()
                 .developerStandardIssueCount(developerStandardIssueCount)
@@ -556,15 +562,13 @@ public class MeasureDeveloperServiceImpl implements MeasureDeveloperService {
         int developerSolvedJiraCount = 0;//个人解决的jira任务个数（注意不是次数）
         int totalSolvedJiraCount = 0;//团队解决的jira任务个数（注意不是次数）
 
-        JSONObject assignedJiraData = restInterfaceManager.getAssignedJiraRate(developer,repoUuid,since,until);
-        if (assignedJiraData!=null){
-            developerAssignedJiraCount = assignedJiraData.getIntValue("individual_assigned_jira_num");
-            totalAssignedJiraCount = assignedJiraData.getIntValue("team_assigned_jira_num");
-        }
-        JSONObject solvedAssignedJiraData = restInterfaceManager.getSolvedAssignedJiraRate(developer,repoUuid,since,until);
-        if (solvedAssignedJiraData!=null){
-            developerSolvedJiraCount = solvedAssignedJiraData.getIntValue("individual_solved_assigned_jira_num");
-            totalSolvedJiraCount = solvedAssignedJiraData.getIntValue("team_solved_assigned_jira_num");
+        JSONObject jiraResponse = restInterfaceManager.getJiraMsgOfOneDeveloper(developer,repoUuid,since,until);
+        if(jiraResponse!=null) {
+            JSONObject assignedJiraRate = jiraResponse.getJSONObject("assignedJiraRate");
+            developerAssignedJiraCount = assignedJiraRate.getIntValue("individualJiraSum");
+            totalAssignedJiraCount = assignedJiraRate.getIntValue("teamJiraSum");
+            developerSolvedJiraCount = assignedJiraRate.getIntValue("solvedIndividualJiraSum");
+            totalSolvedJiraCount = assignedJiraRate.getIntValue("solvedTeamJiraSum");
         }
         return Contribution.builder()
                 .developerAddLine(developerAddLine)
@@ -627,9 +631,14 @@ public class MeasureDeveloperServiceImpl implements MeasureDeveloperService {
             List<cn.edu.fudan.measureservice.portrait2.DeveloperMetrics> developerMetricsList = new ArrayList<>();
             for (String repo : repoList) {
                 JSONObject projects = restInterfaceManager.getProjectByrepoUuid(repo,token);
+                if(projects == null) {
+                    continue;
+                }
                 String tool = "sonarqube";
                 String repoName = projects.getString("repoName");
-                repoName = repoName.replace("/","");
+                if(repoName!=null) {
+                    repoName = repoName.replace("/","");
+                }
                 //String until = repoMeasureMapper.getLastCommitDateOfOneRepo(repoUuid);
                 log.info("Start to get portrait of " + developer + " in repo : " + repoName);
                 cn.edu.fudan.measureservice.portrait2.DeveloperMetrics metrics = measureDeveloperService.getDeveloperMetrics(repo, member, since, until, token, tool);
@@ -924,7 +933,10 @@ public class MeasureDeveloperServiceImpl implements MeasureDeveloperService {
             Map<String,Object> map = developerList.get(i);
             String developerName = map.get("accountName").toString();
             dev.put("developer_name",developerName);
-            String developerDutyType = map.get("account_status").toString();
+            String developerDutyType = null;
+            if(map.get("account_status")!=null) {
+                developerDutyType =  map.get("account_status").toString();
+            }
             if("1".equals(developerDutyType)) {
                 dev.put("DutyType","在职");
             } else{

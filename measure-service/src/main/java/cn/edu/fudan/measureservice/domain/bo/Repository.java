@@ -2,10 +2,7 @@ package cn.edu.fudan.measureservice.domain.bo;
 
 
 
-import cn.edu.fudan.measureservice.domain.d0.BaseData;
-import cn.edu.fudan.measureservice.domain.d0.IssueInfo;
-import cn.edu.fudan.measureservice.domain.d0.JiraInfo;
-import cn.edu.fudan.measureservice.domain.d0.MeasureInfo;
+import cn.edu.fudan.measureservice.domain.d0.*;
 import cn.edu.fudan.measureservice.domain.dto.Query;
 
 import java.util.ArrayList;
@@ -31,7 +28,7 @@ public class Repository {
         MeasureInfo measure = new MeasureInfo(query);
         IssueInfo issue = new IssueInfo(query);
         //CodeTracker codeTracker = new CodeTracker(query);
-        //Clone clone = new Clone(query);
+        CloneInfo clone = new CloneInfo(query);
         JiraInfo jira = new JiraInfo(query);
         baseDataList.add(measure);
         init();

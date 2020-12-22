@@ -586,7 +586,7 @@
         SELECT
             account_role
         FROM
-            account
+            issueTracker.account_project
         WHERE
 	        account_name = #{developer}
     </select>
