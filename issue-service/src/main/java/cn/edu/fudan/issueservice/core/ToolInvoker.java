@@ -53,9 +53,6 @@ public class ToolInvoker {
     @Qualifier("TMatchStrategy")
     MatchStrategy matchStrategy;
 
-    @Value("${resultFileHome}")
-    private String findbugsResultFileHome;
-
     @Value("${ESLintResultFileHome}")
     private String esLintResultFileHome;
 
@@ -76,10 +73,6 @@ public class ToolInvoker {
             sonarQubeBaseAnalyzer.setRestInvoker (restInvoker);
             sonarQubeBaseAnalyzer.setCommitDao(commitDao);
             analyzer = sonarQubeBaseAnalyzer;
-        }else if (ToolEnum.FINDBUGS.getType ().equals (toolName)) {
-            FindbugsBaseAnalyzer findbugsBaseAnalyzer = new FindbugsBaseAnalyzer ();
-            findbugsBaseAnalyzer.setResultFileHome (findbugsResultFileHome);
-            analyzer = findbugsBaseAnalyzer;
         }else if(ToolEnum.ESLINT.getType().equals(toolName)){
             EsLintBaseAnalyzer esLintBaseAnalyzer = new EsLintBaseAnalyzer();
             esLintBaseAnalyzer.setResultFileHome(esLintResultFileHome);
@@ -114,7 +107,6 @@ public class ToolInvoker {
         }
 
     }
-
 
     private boolean executeScan(RepoResourceDTO repoResourceDTO, BaseAnalyzer analyzer,
                             ScanStrategy scanStrategy,
