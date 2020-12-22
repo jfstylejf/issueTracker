@@ -14,6 +14,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -64,7 +65,9 @@ public class ScanServiceImpl implements ScanService {
         boolean isUpdate = false;
         // 更新操作
         if (StringUtils.isEmpty(beginCommit)) {
-            beginCommit = cloneMeasureDao.getLatestCloneLines(repoUuid).getCommitId();
+            List<String> repoUuids = new ArrayList<>();
+            repoUuids.add(repoUuid);
+            beginCommit = cloneMeasureDao.getLatestCloneLines(repoUuids).getCommitId();
             if (StringUtils.isEmpty(beginCommit)) {
                 log.warn("{} : hasn't scanned before", repoUuid);
                 checkAfterScan(repoUuid,branch);

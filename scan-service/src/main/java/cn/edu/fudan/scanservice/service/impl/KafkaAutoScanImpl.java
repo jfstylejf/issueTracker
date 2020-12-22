@@ -47,8 +47,6 @@ public class KafkaAutoScanImpl implements MessageListeningService {
     @Override
     @KafkaListener(id = "autoScan", topics = {"repo_downloaded_r1p1","repo_updated_r1p1"}, groupId = "scan")
     public void listing(Object mess) {
-        final String blockChainProjectName = "区块链";
-        boolean isBlockChainProject = false;
         ConsumerRecord<String, String> message = cast(mess);
         String msg = message.value();
         log.info("received message from topic -> {} : {}", message.topic(), msg);
@@ -60,10 +58,6 @@ public class KafkaAutoScanImpl implements MessageListeningService {
         if(project == null || project.isEmpty ()){
             log.error("repo : [{}] info is null", repoId);
             return;
-        }
-        String projectName = project.getString("projectName");
-        if (projectName.contains(blockChainProjectName)) {
-            isBlockChainProject = true;
         }
 
         //判断如果不是更新，该项目是否已经扫描过
@@ -78,12 +72,7 @@ public class KafkaAutoScanImpl implements MessageListeningService {
             if(defaultScanInterval != 0){
                 month = defaultScanInterval;
             }
-            if (isBlockChainProject) {
-                // 如果是区块链项目 不走聚合点 直接拿指定时间 比如最近1年范围内的 最新commit
-                startCommit = commitFilter.filterWithoutAggregationCommit(RepoResourceDTO.builder().repoId(repoId).build(), repoId, branch, month);
-            } else {
-                startCommit = commitFilter.filter (RepoResourceDTO.builder().repoId(repoId).build(), repoId, branch, month);
-            }
+            startCommit = commitFilter.filter (RepoResourceDTO.builder().repoId(repoId).build(), repoId, branch, month);
         }
         if (! isUpdate && startCommit == null) {
             log.error("there is none available commit，repo id：{}", repoId);

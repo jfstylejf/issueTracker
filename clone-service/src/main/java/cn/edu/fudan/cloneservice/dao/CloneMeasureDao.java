@@ -34,7 +34,7 @@ public class CloneMeasureDao {
         return cloneMeasureMapper.getMeasureCountByCommitId(repoId, commitId);
     }
 
-    public CloneMeasure getLatestCloneLines(String repoId){
-        return cloneMeasureMapper.getLatestCloneLines(repoId);
+    public CloneMeasure getLatestCloneLines(List<String> repoIds){
+        return cloneMeasureMapper.getLatestCloneLines(repoIds);
     }
 }
