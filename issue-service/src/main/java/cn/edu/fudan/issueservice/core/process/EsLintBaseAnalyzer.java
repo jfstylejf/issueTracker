@@ -109,10 +109,10 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
         rawIssue.setRepo_id(repoUuid);
         JGitHelper jGitInvoker = new JGitHelper (repoPath);
         String developerUniqueName = jGitInvoker.getAuthorName(commit);
-//        Map<String, Object> commitViewInfo = commitDao.getCommitViewInfoByCommitId(repoUuid, commit);
-//        if (commitViewInfo != null) {
-//            developerUniqueName = commitViewInfo.get("developer_unique_name") == null ? developerUniqueName : (String) commitViewInfo.get("developer_unique_name");
-//        }
+        Map<String, Object> commitViewInfo = commitDao.getCommitViewInfoByCommitId(repoUuid, commit);
+        if (commitViewInfo != null) {
+            developerUniqueName = commitViewInfo.get("developer_unique_name") == null ? developerUniqueName : (String) commitViewInfo.get("developer_unique_name");
+        }
         rawIssue.setDeveloperName(developerUniqueName);
         //set rawIssue's location
         rawIssue.setLocations(getLocations(fileName, issue, rawIssue, codeSource));
