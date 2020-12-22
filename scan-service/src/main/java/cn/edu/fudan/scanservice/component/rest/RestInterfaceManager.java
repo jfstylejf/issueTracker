@@ -44,8 +44,6 @@ public class RestInterfaceManager {
 
     @Value("${issue.service.path}")
     private String issueServicePath;
-    @Value("${block.service.path}")
-    private String blockServicePath;
 
     private RestTemplate restTemplate;
 
@@ -241,7 +239,6 @@ public class RestInterfaceManager {
     }
 
     public boolean invokeTools(String toolType, String toolName, String repoId, String branch, String beginCommit) {
-        final String blockChainSecurityDetectorToolName = "blsd";
         boolean result = false;
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("repoUuid",repoId);
@@ -250,23 +247,11 @@ public class RestInterfaceManager {
         // toolName 和 toolType 都来自于 Tool表
         String servicePath = getServicePathByToolType(toolType) + "/" + toolType + "/" + toolName;
         try {
-            // 调用区块链检测工具
-            if(blockChainSecurityDetectorToolName.equals(toolName)){
-                JSONObject requestResult = restTemplate.postForObject(servicePath + "?beginCommit=&branch=&repoUuid=" + repoId, jsonObject, JSONObject.class);
-                if(requestResult != null){
-                    String code = requestResult.getString("code");
-                    if("200".equals(code)){
-                        result = true;
-                    }
-                }
-            } else {
-                // 调用其他工具
-                JSONObject requestResult = restTemplate.postForObject(servicePath, jsonObject, JSONObject.class);
-                if(requestResult != null){
-                    int code = requestResult.getInteger("code");
-                    if(code == HttpStatus.OK.value()){
-                        result = true;
-                    }
+            JSONObject requestResult = restTemplate.postForObject(servicePath, jsonObject, JSONObject.class);
+            if(requestResult != null){
+                int code = requestResult.getInteger("code");
+                if(code == HttpStatus.OK.value()){
+                    result = true;
                 }
             }
         }catch (Exception e) {
