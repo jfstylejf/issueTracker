@@ -79,6 +79,20 @@ public class RestInterfaceManager {
         return result;
     }
 
+    public List<Map<String,String>> getProjectInfo(String projectName,String token) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("token",token);
+        HttpEntity request= new HttpEntity(headers);
+        StringBuilder url = new StringBuilder();
+        url.append(projectServicePath).append("/project/all");
+        ResponseEntity responseEntity = restTemplate.exchange(url.toString(),HttpMethod.GET,request,Map.class);
+        Map<String,List<Map<String,String>>> result = (Map<String,List<Map<String,String>>>) responseEntity.getBody();
+        if(result.get(projectName)!=null) {
+            return result.get(projectName);
+        }
+        return null;
+    }
+
     //---------------------------------------------code service---------------------------------------------------------
     public String getRepoPath(String repoUuid,String commit_id){
         String repoPath=null;
@@ -304,37 +318,19 @@ public class RestInterfaceManager {
         return null;
     }
 
-    public JSONArray getJiraMsgOfOneDeveloper(String developer, String repoUuid){
+    public JSONObject getJiraMsgOfOneDeveloper(String developer, String repoUuid,String since,String until){
         try {
             StringBuilder url = new StringBuilder();
-            url.append(uniformServicePath).append("/jira/developer_msg?developer=").append(developer);
-            if (repoUuid != null && repoUuid.length()>0){
-                url.append("&repo-id=").append(repoUuid);
+            url.append(uniformServicePath).append("/jira/developer-msg?developer=").append(developer);
+            if (repoUuid != null && !"".equals(repoUuid)){
+                url.append("&repo_uuid=").append(repoUuid);
             }
-            JSONObject response = restTemplate.getForObject(url.toString(), JSONObject.class);
-            if(response.getIntValue("code") == 200){
-                return response.getJSONArray("data");
+            if(since !=null && !"".equals(since)) {
+                url.append("&since=").append(since);
             }
-        }catch (Exception e) {
-            log.error(e.getMessage());
-        }
-        return null;
-    }
-
-    public JSONObject getSolvedAssignedJiraRate(String developer, String repoUuid, String since, String until){
-        try {
-            StringBuilder url = new StringBuilder();
-            url.append(uniformServicePath).append("/jira/getSolvedAssignedJiraRate?developer=").append(developer);
-            if (repoUuid != null && repoUuid.length()>0){
-                url.append("&repo_id=").append(repoUuid);
+            if(until!=null && !"".equals(until)) {
+                url.append("&until").append(until);
             }
-            if (since != null && since.length()>0){
-                url.append("&begin_date=").append(since);
-            }
-            if (until != null && until.length()>0){
-                url.append("&end_date=").append(until);
-            }
-
             JSONObject response = restTemplate.getForObject(url.toString(), JSONObject.class);
             if(response.getIntValue("code") == 200){
                 return response.getJSONObject("data");
@@ -344,60 +340,6 @@ public class RestInterfaceManager {
         }
         return null;
     }
-
-    public JSONObject getAssignedJiraRate(String developer, String repoUuid, String since, String until){
-        try {
-            StringBuilder url = new StringBuilder();
-            url.append(uniformServicePath).append("/jira/getAssignedJiraRate?developer=").append(developer);
-            if (repoUuid != null && repoUuid.length()>0){
-                url.append("&repo_id=").append(repoUuid);
-            }
-            if (since != null && since.length()>0){
-                url.append("&begin_date=").append(since);
-            }
-            if (until != null && until.length()>0){
-                url.append("&end_date=").append(until);
-            }
-
-            JSONObject response = restTemplate.getForObject(url.toString(), JSONObject.class);
-            if(response.getIntValue("code") == 200){
-                return response.getJSONObject("data");
-            }
-        }catch (Exception e) {
-            log.error(e.getMessage());
-        }
-        return null;
-    }
-
-    public JSONObject getDefectRate(String developer, String repoUuid, String since, String until){
-        try {
-            StringBuilder url = new StringBuilder();
-            url.append(uniformServicePath).append("/jira/getDefectRate?developer=").append(developer);
-            if (repoUuid != null && repoUuid.length()>0){
-                url.append("&repo_id=").append(repoUuid);
-            }
-            if (since != null && since.length()>0){
-                url.append("&begin_date=").append(since);
-            }
-            if (until != null && until.length()>0){
-                url.append("&end_date=").append(until);
-            }
-
-            JSONObject response = restTemplate.getForObject(url.toString(), JSONObject.class);
-            if(response.getIntValue("code") == 200){
-                return response.getJSONObject("data");
-            }
-        }catch (Exception e) {
-            log.error(e.getMessage());
-        }
-        return null;
-    }
-
-
-
-
-
-
 
 }
 

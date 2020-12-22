@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.edu.fudan.measureservice.mapper.ProjectMapper">
+
+    <select id="getDeveloperList"  resultType="String">
+        SELECT DISTINCT developer_unique_name FROM issueTracker.commit_view
+        <where>
+            <trim prefixOverrides="and">
+                <if test="repoUuidList != null and repoUuidList.size > 0">
+                    and repo_id in
+                    <foreach collection="repoUuidList" separator="," open="(" close=")" item="repoUuid">
+                        #{repoUuid}
+                    </foreach>
+                </if>
+
+                <if test="since != null and since != '' ">
+                    and <![CDATA[ commit_time >= #{since} ]]>
+                </if>
+
+                <if test="until != null and until != '' ">
+                    and <![CDATA[ commit_time <= #{until} ]]>
+                </if>
+            </trim>
+        </where>
+    </select>
+
+    <select id="getDeveloperRepoList" parameterType="String" resultType="String">
+        SELECT
+        DISTINCT (repo_id)
+        FROM
+        issueTracker.commit_view
+        <where>
+            <trim prefixOverrides="and">
+                <if test="developer != null and developer != '' ">
+                    and developer_unique_name = #{developer}
+                </if>
+
+                <if test="since != null and since != '' ">
+                    and <![CDATA[ commit_time >= #{since} ]]>
+                </if>
+
+                <if test="until != null and until != '' ">
+                    and <![CDATA[ commit_time <= #{until} ]]>
+                </if>
+            </trim>
+            and repo_id in (SELECT distinct repo_uuid FROM sub_repository)
+        </where>
+
+    </select>
+
+    <select id="getProjectInfo" resultType="java.util.HashMap">
+        SELECT distinct(p.repo_uuid),project_name FROM issueTracker.sub_repository as p inner join issueTracker.commit_view as c
+        WHERE p.repo_uuid = c.repo_id
+        AND c.developer_unique_name = #{developer}
+    </select>
+
+    <select id="getRepoName" resultType="String">
+        SELECT repo_name  FROM issueTracker.sub_repository
+        WHERE repo_uuid = #{repoUuid}
+    </select>
+
+    <select id="getProjectName" resultType="String">
+        SELECT project_name FROM issueTracker.sub_repository
+        WHERE repo_uuid = #{repoUuid}
+    </select>
+
+    <select id="getValidCommitMsg" resultType="java.util.HashMap">
+        SELECT developer_unique_name,left(commit_time,10) as commit_time,commit_id,message
+        from issueTracker.commit_view
+        <where>
+            <trim prefixOverrides="and">
+                <if test="developer != null and developer != '' ">
+                    and developer_unique_name = #{developer}
+                </if>
+
+                <if test="repoUuidList != null and repoUuidList.size >0 ">
+                    and repo_id in
+                    <foreach collection="repoUuidList" separator="," open="(" close=")" item="repoUuid">
+                        #{repoUuid}
+                    </foreach>
+                </if>
+
+                <if test="since != null and since != '' ">
+                    and <![CDATA[ commit_time >= #{since} ]]>
+                </if>
+
+                <if test="until != null and until != '' ">
+                    and <![CDATA[ commit_time <= #{until} ]]>
+                </if>
+                and message NOT LIKE '%Merge%'
+            </trim>
+        </where>
+        ORDER By commit_time desc
+    </select>
+
+    <select id="getDeveloperRankByCommitCount" parameterType="String" resultType="java.util.HashMap">
+        SELECT
+            developer_unique_name AS developer_name,
+            COUNT(uuid) AS counts
+        FROM
+            issueTracker.commit_view
+        <where>
+            <trim prefixOverrides="and">
+
+                <if test="repoUuidList != null and repoUuidList.size >0 ">
+                    and repo_id in
+                    <foreach collection="repoUuidList" separator="," open="(" close=")" item="repoUuid">
+                        #{repoUuid}
+                    </foreach>
+                </if>
+
+                <if test="since != null and since != '' ">
+                    and <![CDATA[ commit_time >= #{since} ]]>
+                </if>
+
+                <if test="until != null and until != '' ">
+                    and <![CDATA[ commit_time <= #{until} ]]>
+                </if>
+
+            </trim>
+        </where>
+        GROUP BY
+            developer_unique_name
+        ORDER BY
+            counts DESC
+
+        LIMIT 3;
+    </select>
+
+    <select id="getDeveloperCommitCountsByDuration" resultType="int">
+        select
+        COUNT(uuid) as commit_counts
+        from issueTracker.commit_view
+        <where>
+            <trim prefixOverrides="and">
+                <if test="developer != null and developer != '' ">
+                    and developer_unique_name = #{developer}
+                </if>
+
+                <if test="repoUuidList != null and repoUuidList.size >0 ">
+                    and repo_id in
+                    <foreach collection="repoUuidList" separator="," open="(" close=")" item="repoUuid">
+                        #{repoUuid}
+                    </foreach>
+                </if>
+
+                <if test="since != null and since != '' ">
+                    and <![CDATA[ commit_time >= #{since} ]]>
+                </if>
+
+                <if test="until != null and until != '' ">
+                    and <![CDATA[ commit_time <= #{until} ]]>
+                </if>
+            </trim>
+        </where>
+    </select>
+
+
+    <delete id="deleteRepoMsg">
+        DELETE FROM issueTracker.repo_measure
+        <if test="repoUuidList != null and repoUuidList.size >0 ">
+            and repo_id in
+            <foreach collection="repoUuidList" separator="," open="(" close=")" item="repoUuid">
+                #{repoUuid}
+            </foreach>
+        </if>
+        LIMIT 5000;
+    </delete>
+
+</mapper>

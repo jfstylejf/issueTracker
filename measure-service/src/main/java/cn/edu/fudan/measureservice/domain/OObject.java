@@ -26,8 +26,8 @@ public class OObject {
     private int totalLines;
 
 
-//    public OObject(String accountName, int ncss, int functions, int classes, int javaDocs, int javaDocsLines, int singleCommentLines, int implementationCommentLines) {
-//        this.accountName = accountName;
+//    public OObject(String name, int ncss, int functions, int classes, int javaDocs, int javaDocsLines, int singleCommentLines, int implementationCommentLines) {
+//        this.name = name;
 //        this.ncss = ncss;
 //        this.functions = functions;
 //        this.classes = classes;

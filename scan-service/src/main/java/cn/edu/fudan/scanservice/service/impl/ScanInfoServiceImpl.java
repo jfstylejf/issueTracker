@@ -13,6 +13,7 @@ import cn.edu.fudan.scanservice.util.DateTimeUtil;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -36,7 +37,6 @@ public class ScanInfoServiceImpl implements ScanInfoService {
 
     @Override
     public Object getAllScanStatus(String repoId) {
-        final String blockChainSecurityDetectorToolName = "blsd";
         String overAllStatus = ScanStatusEnum.COMPLETE.getType () ;
         List<ScanStatus> toolScanStatuses = new ArrayList<> ();
         Scan scan = scanDao.getScanByRepoId (repoId) ;
@@ -54,9 +54,6 @@ public class ScanInfoServiceImpl implements ScanInfoService {
 
             for(Tool tool : toolList){
                 if (tool.getEnabled() != Tool.ENABLED) {
-                    continue;
-                }
-                if (blockChainSecurityDetectorToolName.equals(tool.getToolName())) {
                     continue;
                 }
                 // 2. 验证是否有工具调用失败，或者未调用
@@ -146,6 +143,7 @@ public class ScanInfoServiceImpl implements ScanInfoService {
     }
 
     @Override
+    @Async("taskExecutor")
     public void deleteOneRepo(String repoId) {
         scanDao.deleteScanByRepoId(repoId);
     }

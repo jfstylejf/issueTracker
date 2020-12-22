@@ -1,5 +1,8 @@
 package cn.edu.fudan.measureservice.service;
 
+import cn.edu.fudan.measureservice.domain.dto.Query;
+import org.springframework.stereotype.Service;
+
 import java.text.ParseException;
 import java.util.List;
 import java.util.Map;
@@ -8,13 +11,9 @@ public interface MeasureDeveloperService {
 
     /**
      * 根据条件获取开发者对应的工作量：新增物理行、删除物理行、修改文件次数、提交次数
-     * @param developer
-     * @param since
-     * @param until
-     * @param repoUuidList
      * @return
      */
-    Object getDeveloperWorkLoad(String developer, String since, String until, String repoUuidList);
+    Object getDeveloperWorkLoad(Query query ,String projectName);
 
 
     /**
@@ -69,15 +68,12 @@ public interface MeasureDeveloperService {
 
     /**
      * 获取提交规范性或不规范明细
-     * @param developer
-     * @param repoUuidList
-     * @param since
-     * @param until
-     * @param token
-     * @param condition
+     * @param query 查询条件
+     * @Param projectName 项目名称
+     * @param condition 查询分支
      * @return condition=1 返回提交规范性；condition=2，返回不规范提交明细
      */
-    List<Map<String,Object>> getCommitStandard(String developer, String repoUuidList, String since, String until, String token, String condition);
+    List<Map<String,Object>> getCommitStandard(Query query, String projectName, String condition);
 
     /**
      * 清空缓存

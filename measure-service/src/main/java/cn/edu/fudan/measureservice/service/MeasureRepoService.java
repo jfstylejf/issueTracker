@@ -1,7 +1,8 @@
 package cn.edu.fudan.measureservice.service;
 import cn.edu.fudan.measureservice.domain.*;
-
+import cn.edu.fudan.measureservice.domain.dto.Query;
 import java.util.List;
+import java.util.Map;
 
 public interface MeasureRepoService {
 
@@ -14,7 +15,7 @@ public interface MeasureRepoService {
      * @param granularity 时间段的单位day,week,month
      * @return 每个时间点上的项目级度量信息
      */
-    List<RepoMeasure> getRepoMeasureByrepoUuid(String repoUuid, String since, String until, Granularity granularity);
+    List<RepoMeasure> getRepoMeasureByRepoUuid(String repoUuid, String since, String until, Granularity granularity);
 
     /**
      * 获取一个项目在某个commit的所有度量信息
@@ -52,21 +53,37 @@ public interface MeasureRepoService {
     int getCommitCountsByDuration(String repo_id, String since, String until);
 
 
-    /**
-     *
-     * @return 某段时间内，该项目中提交次数最多的前三名开发者的姓名以及对应的commit次数
-     */
-    Object getDeveloperRankByCommitCount(String repo_id, String since, String until);
 
     /**
-     * @return 某段时间内，该项目中提交代码行数（LOC）最多的前三名开发者的姓名以及对应的LOC
+     * 某段时间内，该项目中提交次数最多的前三名开发者的姓名以及对应的commit次数
+     * @param query 查询条件
+     * @param projectName 项目名
+     * @return key : developerName , countNum
      */
-    Object getDeveloperRankByLoc(String repo_id, String since, String until);
+    List<Map<String,Object>> getDeveloperRankByCommitCount(Query query, String projectName);
+
+    /**
+     * 某段时间内，该项目中提交代码行数（LOC）最多的前三名开发者的姓名以及对应的LOC
+     * @param query 查询条件
+     * @Param projectName 项目名
+     * @return key : developerName , countNum
+     */
+    List<Map<String,Object>> getDeveloperRankByLoc(Query query , String projectName);
+
 
 
     /**
-     * @return 某段时间内，该项目每天的所有开发者产生的LOC以及commit次数
+     * 项目下，每天所有提交的物理行和提交次数
+     * @param query 查询条件
+     * @param projectName 项目名
+     * @return
      */
-    Object getCommitCountLOCDaily(String repo_id, String since, String until);
+    List<Map<String,Object>> getDailyCommitCountAndLOC(Query query , String projectName);
+
+    /**
+     * 删除所属repo下repo_measure表数据
+     * @param query 查询条件
+     */
+    void deleteRepoMsg(Query query);
 
 }

@@ -96,7 +96,11 @@ public class ProjectController {
     }
 
 
-
+    @ApiOperation(value="修改项目名称",httpMethod = "PUT")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "oldProjectName", value = "旧的项目名", dataType = "String", required = true),
+            @ApiImplicitParam(name = "newProjectName", value = "新的项目名", dataType = "String", required = true)
+    })
     @PutMapping(value = {"/project"})
     public ResponseBean updateProject(HttpServletRequest request,
                                       @RequestParam("old_project_name") String oldProjectName,
@@ -144,6 +148,10 @@ public class ProjectController {
      * @param projectName
      * @param request header
      */
+    @ApiOperation(value="添加项目",httpMethod = "POST")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "projectName", value = "项目名称", dataType = "String", required = true)
+    })
     @PostMapping(value = {"/project"})
     public ResponseBean addNewProject(HttpServletRequest request, @RequestParam ("project_name") String projectName) {
         String token = request.getHeader(TOKEN);
@@ -155,6 +163,11 @@ public class ProjectController {
         }
     }
 
+    @ApiOperation(value="修改库名称",httpMethod = "PUT")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "oldRepoName", value = "旧的库名", dataType = "String", required = true),
+            @ApiImplicitParam(name = "newRepoName", value = "新的库名", dataType = "String", required = true)
+    })
     @PutMapping(value = {"/repository"})
     public ResponseBean updateRepository(HttpServletRequest request,
                                       @RequestParam("old_repo_name") String oldRepoName,
@@ -167,7 +180,24 @@ public class ProjectController {
         }
     }
 
-
+    @ApiOperation(value="修改库的所属项目",httpMethod = "PUT")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "oldProjectName", value = "旧的项目名", dataType = "String", required = true),
+            @ApiImplicitParam(name = "newProjectName", value = "新的项目名", dataType = "String", required = true),
+            @ApiImplicitParam(name = "RepoUuid", value = "库的uuid", dataType = "String", required = true)
+    })
+    @PutMapping(value = {"/repository/project"})
+    public ResponseBean updateRepoProject(HttpServletRequest request,
+                                          @RequestParam("old_project_name") String oldProjectName,
+                                          @RequestParam("new_project_name") String newProjectName,
+                                          @RequestParam("repo_uuid") String RepoUuid){
+        try {
+            projectControl.updateRepoProject(request.getHeader(TOKEN), oldProjectName, newProjectName,RepoUuid);
+            return new ResponseBean<>(200, "update success", null);
+        } catch (Exception e) {
+            return new ResponseBean<>(401, "update failed :" + e.getMessage(), null);
+        }
+    }
     @Autowired
     public void setProjectControl(ProjectControlService projectControl) {
         this.projectControl = projectControl;

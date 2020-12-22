@@ -86,7 +86,7 @@
     </select>
 
     <select id="getSubRepoByRepoUuid" parameterType="String" resultMap="subRepository">
-        SELECT uuid , url, language, branch, repo_source, download_status,
+        SELECT uuid , url, language, branch, repo_source, download_status,repo_name,
                latest_commit_time, repo_uuid, project_name, recycled, import_account_uuid, scan_start
         FROM sub_repository
         WHERE repo_uuid = #{repo_uuid}
@@ -95,9 +95,9 @@
 
 
     <select id="getAllSubRepoByAccountId" resultMap="subRepository" parameterType="String">
-        SELECT s.uuid , url, language, branch, repo_source, download_status,
+        SELECT s.uuid, url, language, branch, repo_source, download_status,
                latest_commit_time, repo_uuid, s.project_name, recycled, import_account_uuid, scan_start, s.repo_name
-        FROM sub_repository as s inner join account_repository as r
+        FROM sub_repository as s , account_repository as r
         <where>
             s.uuid = r.sub_repository_uuid
             <if test="account_uuid != null">
@@ -106,12 +106,34 @@
         </where>
     </select>
 
+    <select id="getAllSubRepo" resultMap="subRepository" >
+        SELECT s.uuid, url, language, branch, repo_source, download_status,
+        latest_commit_time, repo_uuid, s.project_name, recycled, import_account_uuid, scan_start, s.repo_name
+        FROM sub_repository as s inner join account_repository as r
+        <where>
+            s.uuid = r.sub_repository_uuid
+        </where>
+    </select>
+
+
     <update id="updateProjectNameSR" parameterType="String">
         update sub_repository
         <set>
             project_name = #{newProjectName},
         </set>
-        where   project_name = #{oldProjectName}
+        <where>
+            project_name = #{oldProjectName}
+        </where>
+    </update>
+
+    <update id="updateRepoProjectSR" parameterType="String">
+        update sub_repository
+        <set>
+            project_name = #{newProjectName},
+        </set>
+        <where>
+            project_name = #{oldProjectName} and repo_uuid = #{RepoUuid}
+        </where>
     </update>
 
     <update id="updateRepoName" parameterType="String">
