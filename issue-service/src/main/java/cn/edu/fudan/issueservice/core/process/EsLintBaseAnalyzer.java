@@ -3,6 +3,7 @@ package cn.edu.fudan.issueservice.core.process;
 import cn.edu.fudan.issueservice.dao.CommitDao;
 import cn.edu.fudan.issueservice.domain.dbo.Location;
 import cn.edu.fudan.issueservice.domain.dbo.RawIssue;
+import cn.edu.fudan.issueservice.domain.enums.JavaScriptIssuePriorityEnum;
 import cn.edu.fudan.issueservice.domain.enums.ToolEnum;
 import cn.edu.fudan.issueservice.util.AstParserUtil;
 import cn.edu.fudan.issueservice.util.FileUtil;
@@ -102,17 +103,16 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
         rawIssue.setUuid(UUID.randomUUID().toString());
         rawIssue.setType(issue.getString("ruleId"));
         rawIssue.setFile_name(fileName);
-        //todo severity(int) to severity(String)
-        rawIssue.setDetail(issue.getString("message") + "---" + issue.getString("severity"));
+        rawIssue.setDetail(issue.getString("message") + "---" + JavaScriptIssuePriorityEnum.getPriorityByRank(issue.getInteger("severity")));
         rawIssue.setScan_id(ToolEnum.ESLINT.getType());
         rawIssue.setCommit_id(commit);
         rawIssue.setRepo_id(repoUuid);
         JGitHelper jGitInvoker = new JGitHelper (repoPath);
         String developerUniqueName = jGitInvoker.getAuthorName(commit);
-        Map<String, Object> commitViewInfo = commitDao.getCommitViewInfoByCommitId(repoUuid, commit);
-        if (commitViewInfo != null) {
-            developerUniqueName = commitViewInfo.get("developer_unique_name") == null ? developerUniqueName : (String) commitViewInfo.get("developer_unique_name");
-        }
+//        Map<String, Object> commitViewInfo = commitDao.getCommitViewInfoByCommitId(repoUuid, commit);
+//        if (commitViewInfo != null) {
+//            developerUniqueName = commitViewInfo.get("developer_unique_name") == null ? developerUniqueName : (String) commitViewInfo.get("developer_unique_name");
+//        }
         rawIssue.setDeveloperName(developerUniqueName);
         //set rawIssue's location
         rawIssue.setLocations(getLocations(fileName, issue, rawIssue, codeSource));
@@ -169,29 +169,27 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
 
     @Override
     public Integer getPriorityByRawIssue(RawIssue rawIssue) {
-        //fixme js priority
-        int result = -1;
-        String detail = rawIssue.getDetail ();
-        String[] rawIssueArgs  = detail.split ("---");
+        int result = 0;
+        String[] rawIssueArgs  = rawIssue.getDetail().split ("---");
         String severity = rawIssueArgs[rawIssueArgs.length - 1];
         switch (severity){
-            case "0":
-                result = 0;
+            case "Off":
+                result = JavaScriptIssuePriorityEnum.OFF.getRank();
                 break;
-            case "1":
-                result = 1;
+            case "Warn":
+                result = JavaScriptIssuePriorityEnum.WARN.getRank();
                 break;
-            case "2":
-                result = 2;
-                break;
-            case "3":
-                result = 3;
-                break;
-            case "4":
-                result = 4;
+            case "Error":
+                result = JavaScriptIssuePriorityEnum.ERROR.getRank();
                 break;
             default:
         }
         return result;
+    }
+
+    public static void main(String[] args) {
+        EsLintBaseAnalyzer esLintBaseAnalyzer = new EsLintBaseAnalyzer();
+        esLintBaseAnalyzer.setResultFileHome("C:\\Users\\Beethoven\\Desktop\\issue-tracker-web");
+        esLintBaseAnalyzer.analyze("C:\\Users\\Beethoven\\Desktop\\issue-tracker-web", "6f1170ac-4102-11eb-b6ff-f9c372bb0fcb", "1f54d6ba0e5a74c3562db4d4af9d93f7e186d85b");
     }
 }

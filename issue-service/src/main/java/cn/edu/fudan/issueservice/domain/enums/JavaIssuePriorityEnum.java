@@ -7,7 +7,7 @@ import lombok.Getter;
  */
 
 @Getter
-public enum IssuePriorityEnum {
+public enum JavaIssuePriorityEnum {
 
     /**
      * 缺陷优先级
@@ -20,13 +20,13 @@ public enum IssuePriorityEnum {
 
     private final String name;
     private final int rank;
-    IssuePriorityEnum(String name, int rank) {
+    JavaIssuePriorityEnum(String name, int rank) {
         this.name = name;
         this.rank = rank;
     }
 
-    public static IssuePriorityEnum getPriorityEnum(String name){
-        for(IssuePriorityEnum priority : IssuePriorityEnum.values()){
+    public static JavaIssuePriorityEnum getPriorityEnum(String name){
+        for(JavaIssuePriorityEnum priority : JavaIssuePriorityEnum.values()){
             if(priority.getName().equals(name)){
                 return priority;
             }
@@ -34,8 +34,8 @@ public enum IssuePriorityEnum {
         return null;
     }
 
-    public static IssuePriorityEnum getPriorityEnumByRank(int rank){
-        for(IssuePriorityEnum priority : IssuePriorityEnum.values()){
+    public static JavaIssuePriorityEnum getPriorityEnumByRank(int rank){
+        for(JavaIssuePriorityEnum priority : JavaIssuePriorityEnum.values()){
             if(priority.getRank () == rank){
                 return priority;
             }

@@ -188,7 +188,7 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
         //handle issues detail
         issuesDetail.forEach(r -> {
             r.put("projectName", repoName.get(r.getString("repoUuid")));
-            r.put("severity", Objects.requireNonNull(IssuePriorityEnum.getPriorityEnumByRank(r.getInteger("priority"))).getName());
+            r.put("severity", Objects.requireNonNull(JavaIssuePriorityEnum.getPriorityEnumByRank(r.getInteger("priority"))).getName());
         });
 
         return issuesDetail;
