@@ -59,9 +59,6 @@ public class ToolInvoker {
     @Value("${ESLintResultFileHome}")
     private String esLintResultFileHome;
 
-    @Value("${ESLintConfigFile}")
-    private String esLintConfigFile;
-
     /**
      * 工具调用
      */
@@ -84,9 +81,8 @@ public class ToolInvoker {
             findbugsBaseAnalyzer.setResultFileHome (findbugsResultFileHome);
             analyzer = findbugsBaseAnalyzer;
         }else if(ToolEnum.ESLINT.getType().equals(toolName)){
-            ESLintBaseAnalyzer esLintBaseAnalyzer = new ESLintBaseAnalyzer();
+            EsLintBaseAnalyzer esLintBaseAnalyzer = new EsLintBaseAnalyzer();
             esLintBaseAnalyzer.setResultFileHome(esLintResultFileHome);
-            esLintBaseAnalyzer.setEsLintConfigFile(esLintConfigFile);
             esLintBaseAnalyzer.setCommitDao(commitDao);
             analyzer = esLintBaseAnalyzer;
         }else {
@@ -256,21 +252,18 @@ public class ToolInvoker {
                       JGitHelper jGitInvoker,
                       IssueMatcher issueMatcher,
                       IssueStatisticalTool issueStatisticalTool,
-                      IssueScanTransactionManager issueScanTransactionManager) throws InterruptedException {
+                      IssueScanTransactionManager issueScanTransactionManager) {
         String repoUuid = repoResourceDTO.getRepoId ();
         String repoPath = repoResourceDTO.getRepoPath ();
         String commit = issueScan.getCommitId ();
-
-        //todo judge language
+        //judge the language
         String language = restInvoker.getRepoLanguage(repoUuid);
-
         if(!LanguageEnum.JavaScript.getName().equals(language)) {
             long startTime = System.currentTimeMillis();
             //0. 先清除编译生成的target文件
             DirExplorer.deleteRedundantTarget(repoPath);
             long deleteTargetTime = System.currentTimeMillis();
             log.info("delete target time --> {}", (deleteTargetTime - startTime) / 1000);
-
             //1. 先判断是否可编译 以及是否编译成功
             if (!CompileUtil.isCompilable(repoPath)) {
                 log.error("compile failed ! ");
@@ -280,8 +273,6 @@ public class ToolInvoker {
             long compileTime = System.currentTimeMillis();
             log.info("compile time --> {}, compile success ! ", (compileTime - deleteTargetTime) / 1000);
         }
-
-        //todo invoke eslint
         long compileTime2 = System.currentTimeMillis();
         //2. 调用工具进行扫描
         boolean invokeToolResult = analyzer.invoke(repoUuid, repoPath, commit);
@@ -295,7 +286,6 @@ public class ToolInvoker {
         long invokeToolTime = System.currentTimeMillis();
         log.info("invoke tool --> {}", (invokeToolTime - compileTime2) / 1000 );
         log.info ("invoke tool success ! " );
-
         //3. 调用工具进行解析
         boolean analyzeResult = analyzer.analyze(repoPath, repoUuid, commit);
         if(!analyzeResult){
@@ -306,7 +296,7 @@ public class ToolInvoker {
         long analyzeToolTime = System.currentTimeMillis();
         log.info("analyze tool --> {}", (analyzeToolTime-invokeToolTime)/1000 );
         log.info ("analyze success ! " );
-
+        //get current rawIssues
         List<RawIssue> analyzeRawIssues = analyzer.getResultRawIssues ();
         //4. 缺陷匹配
         boolean matchResult = issueMatcher.matchProcess (repoUuid, commit, jGitInvoker, analyzer.getToolName (), analyzeRawIssues);
@@ -316,7 +306,6 @@ public class ToolInvoker {
             return ;
         }
         log.info ("match success ! " );
-
         //5. 更新issue信息 ,做相应的缺陷统计
         List<RawIssue> currentRawIssuesResult = issueMatcher.getCurrentRawIssuesResult ();
         Map<String, List<RawIssue>> parentRawIssuesResult = issueMatcher.getParentRawIssuesResult ();
@@ -327,9 +316,7 @@ public class ToolInvoker {
             issueScan.setStatus (ScanStatusEnum.STATISTICAL_FAILED.getType ());
             return ;
         }
-
         log.info ("statistical success ! " );
-
         //6. 持久化扫描结果
         try{
             issueScanTransactionManager.persistScanData (currentRawIssuesResult, parentRawIssuesResult, issueScan , issueStatisticalTool);
@@ -339,9 +326,7 @@ public class ToolInvoker {
             issueScan.setStatus (ScanStatusEnum.STATISTICAL_FAILED.getType ());
             return ;
         }
-
         log.info ("persist data success ! " );
-
         issueScan.setStatus (ScanStatusEnum.DONE.getType ());
     }
 

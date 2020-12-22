@@ -4,8 +4,8 @@ import cn.edu.fudan.issueservice.dao.CommitDao;
 import cn.edu.fudan.issueservice.domain.dbo.Location;
 import cn.edu.fudan.issueservice.domain.dbo.RawIssue;
 import cn.edu.fudan.issueservice.domain.enums.ToolEnum;
-import cn.edu.fudan.issueservice.util.ASTUtil;
 import cn.edu.fudan.issueservice.util.AstParserUtil;
+import cn.edu.fudan.issueservice.util.FileUtil;
 import cn.edu.fudan.issueservice.util.JGitHelper;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -25,11 +25,9 @@ import java.util.List;
  */
 @Setter
 @Slf4j
-public class ESLintBaseAnalyzer extends BaseAnalyzer {
+public class EsLintBaseAnalyzer extends BaseAnalyzer {
 
     private String resultFileHome;
-
-    private String esLintConfigFile;
 
     private CommitDao commitDao;
 
@@ -38,7 +36,7 @@ public class ESLintBaseAnalyzer extends BaseAnalyzer {
         try {
             Runtime rt = Runtime.getRuntime();
             //执行sonar命令,一个commit对应一个sonarqube project(repoUuid_commit)
-            String command = binHome + "executeESLint.sh " + esLintConfigFile + " " + repoPath + " " + repoUuid + "_" + commit;
+            String command = binHome + "executeESLint.sh " + repoPath + " " + repoUuid + "_" + commit;
             log.info("command -> {}",command);
             Process process = rt.exec(command);
             //最多等待sonar脚本执行300秒,超时则认为该commit解析失败
@@ -58,7 +56,7 @@ public class ESLintBaseAnalyzer extends BaseAnalyzer {
     @Override
     public boolean analyze(String repoPath, String repoUuid, String commit) {
         //read result from json file
-        try (BufferedReader reader = new BufferedReader(new FileReader(resultFileHome))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(FileUtil.getEsLintReportAbsolutePath(resultFileHome, repoUuid, commit)))) {
             int ch;
             char[] buf = new char[1024];
             StringBuilder data = new StringBuilder();
@@ -89,19 +87,20 @@ public class ESLintBaseAnalyzer extends BaseAnalyzer {
         List<RawIssue> rawIssues = new ArrayList<>();
         //handle the ESLint result;
         JSONArray rawIssueList = esLintResult.getJSONArray("messages");
-        //fixme handle fileName
-        String fileName = esLintResult.getString("filePath");
+        //handle fileName
+        String fileName = FileUtil.handleFileNameToRelativePath(esLintResult.getString("filePath"));
+        //get the code source in file
+        String codeSource = esLintResult.getString("source");
         //get the rawIssues
-        rawIssueList.forEach(issue -> rawIssues.add(getRawIssue(repoPath, (JSONObject) issue, repoUuid, commit, fileName)));
+        rawIssueList.forEach(issue -> rawIssues.add(getRawIssue(repoPath, (JSONObject) issue, repoUuid, commit, fileName, codeSource)));
         return rawIssues;
     }
 
-    private RawIssue getRawIssue(String repoPath, JSONObject issue, String repoUuid, String commit, String fileName){
+    private RawIssue getRawIssue(String repoPath, JSONObject issue, String repoUuid, String commit, String fileName, String codeSource){
         RawIssue rawIssue = new RawIssue();
         rawIssue.setTool("ESLint");
         rawIssue.setUuid(UUID.randomUUID().toString());
         rawIssue.setType(issue.getString("ruleId"));
-        //fixme fileName
         rawIssue.setFile_name(fileName);
         //todo severity(int) to severity(String)
         rawIssue.setDetail(issue.getString("message") + "---" + issue.getString("severity"));
@@ -115,33 +114,18 @@ public class ESLintBaseAnalyzer extends BaseAnalyzer {
             developerUniqueName = commitViewInfo.get("developer_unique_name") == null ? developerUniqueName : (String) commitViewInfo.get("developer_unique_name");
         }
         rawIssue.setDeveloperName(developerUniqueName);
-        rawIssue.setLocations(getLocations(fileName, issue, rawIssue));
+        //set rawIssue's location
+        rawIssue.setLocations(getLocations(fileName, issue, rawIssue, codeSource));
         return rawIssue;
     }
 
-    private List<Location> getLocations(String fileName, JSONObject issue, RawIssue rawIssue) {
+    private List<Location> getLocations(String fileName, JSONObject issue, RawIssue rawIssue, String codeSource) {
         Location location = new Location();
-
-        String code = null;
+        //get start line,end line and bug line
         int line = issue.getIntValue("line");
         int endLine = issue.getIntValue("endLine");
-        try{
-            //fixme get js code
-            code = ASTUtil.getCode(line, endLine, fileName);
-        }catch (Exception e){
-            log.info("file path --> {} file deleted", fileName);
-            log.error("rawIssueId --> {}  get code failed.", rawIssue.getUuid());
-        }
-        location.setStart_token(issue.getIntValue("column"));
-        location.setEnd_token(issue.getIntValue("endColumn"));
-        location.setCode(code);
-        location.setUuid(UUID.randomUUID().toString());
-        //fixme fileName
-        location.setFile_path(fileName);
-        location.setRawIssue_id(rawIssue.getUuid());
         location.setStart_line(line);
         location.setEnd_line(endLine);
-
         if(line > endLine){
             log.error("startLine number greater than endLine number");
             return null;
@@ -156,6 +140,21 @@ public class ESLintBaseAnalyzer extends BaseAnalyzer {
             lines.append(endLine);
             location.setBug_lines(lines.toString());
         }
+        //get js code
+        String code = null;
+        try{
+            code = FileUtil.getCode(codeSource, line, endLine);
+        }catch (Exception e){
+            log.info("file path --> {} file deleted", fileName);
+            log.error("rawIssueId --> {}  get code failed.", rawIssue.getUuid());
+        }
+        location.setCode(code);
+        //get start token and end token
+        location.setStart_token(issue.getIntValue("column"));
+        location.setEnd_token(issue.getIntValue("endColumn"));
+        location.setUuid(UUID.randomUUID().toString());
+        location.setFile_path(fileName);
+        location.setRawIssue_id(rawIssue.getUuid());
         //fixme get js methodName
         String methodName = AstParserUtil.findMethod (fileName, line, endLine);
         location.setMethod_name (methodName);
@@ -170,11 +169,34 @@ public class ESLintBaseAnalyzer extends BaseAnalyzer {
 
     @Override
     public Integer getPriorityByRawIssue(RawIssue rawIssue) {
-        return null;
+        //fixme js priority
+        int result = -1;
+        String detail = rawIssue.getDetail ();
+        String[] rawIssueArgs  = detail.split ("---");
+        String severity = rawIssueArgs[rawIssueArgs.length - 1];
+        switch (severity){
+            case "0":
+                result = 0;
+                break;
+            case "1":
+                result = 1;
+                break;
+            case "2":
+                result = 2;
+                break;
+            case "3":
+                result = 3;
+                break;
+            case "4":
+                result = 4;
+                break;
+            default:
+        }
+        return result;
     }
 
     public static void main(String[] args) {
-        ESLintBaseAnalyzer esLintBaseAnalyzer = new ESLintBaseAnalyzer();
+        EsLintBaseAnalyzer esLintBaseAnalyzer = new EsLintBaseAnalyzer();
         esLintBaseAnalyzer.setResultFileHome("C:\\Users\\Beethoven\\Desktop\\issue-tracker-web\\eslint-report.json");
         esLintBaseAnalyzer.analyze("C:\\Users\\Beethoven\\Desktop\\issue-tracker-web", "6f1170ac-4102-11eb-b6ff-f9c372bb0fcb", "8f4a106a354126e24d2173b7ceecd7407e7e4005");
     }
