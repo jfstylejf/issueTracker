@@ -66,6 +66,10 @@ public class SubRepositoryDao {
         subRepositoryMapper.updateRepoProjectSR(accountUuid, oldProjectName, newProjectName, RepoUuid);
     }
 
+    public void deleteRepoSR(String accountUuid, String RepoUuid) {
+        subRepositoryMapper.deleteRepoSR(accountUuid, RepoUuid);
+    }
+
     @Autowired
     public void setSubRepositoryMapper(SubRepositoryMapper subRepositoryMapper) {
         this.subRepositoryMapper = subRepositoryMapper;

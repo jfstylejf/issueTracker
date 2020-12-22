@@ -39,7 +39,9 @@
         <set>
             project_name = #{newProjectName},
         </set>
-        where   project_name = #{oldProjectName}
+        <where>
+           project_name = #{oldProjectName}
+        </where>
     </update>
 
     <update id="updateRepoProjectAR" parameterType="String">
@@ -52,6 +54,14 @@
             a.project_name = #{oldProjectName} and s.repo_uuid = #{RepoUuid}
         </where>
     </update>
+
+    <delete id="deleteRepoAR" parameterType="String">
+        delete from account_repository as a
+        inner join  sub_repository AS s ON s.uuid = a.sub_repository_uuid
+        <where>
+            s.repo_uuid = #{RepoUuid} AND s.recycled = 1;
+        </where>
+    </delete>
 
 
 </mapper>

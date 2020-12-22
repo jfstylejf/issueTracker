@@ -144,4 +144,11 @@
         where   repo_name = #{oldRepoName}
     </update>
 
+    <delete id="deleteRepoSR" parameterType="String">
+        delete from sub_repository
+        <where>
+            repo_uuid = #{RepoUuid} AND recycled = 1;
+        </where>
+    </delete>
+
 </mapper>

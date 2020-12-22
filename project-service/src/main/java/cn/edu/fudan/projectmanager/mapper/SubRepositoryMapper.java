@@ -95,4 +95,11 @@ public interface SubRepositoryMapper {
      * @param RepoUuid 库uuid
      */
     void updateRepoProjectSR(@Param("accountUuid") String accountUuid, @Param("oldProjectName")String oldProjectName, @Param("newProjectName")String newProjectName,@Param("RepoUuid")String RepoUuid);
+
+    /**
+     * 删除库
+     * @param accountUuid 当前人员uuid
+     * @param RepoUuid 库uuid
+     */
+    void deleteRepoSR(@Param("accountUuid") String accountUuid, @Param("RepoUuid")String RepoUuid);
 }
