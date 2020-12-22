@@ -130,7 +130,7 @@ public class IssueServiceImpl implements IssueService {
     public List<Map<String, Object>> getRepoIssueCounts(List<String> repoUuids, String since, String until, String tool) {
         List<Map<String, Object>> result = new ArrayList<>();
 
-        LocalDate firstDate = LocalDate.parse(scanResultDao.findFirstDateByRepo(repoUuids), DateTimeUtil.Y_M_D_formatter);
+        LocalDate firstDate = LocalDate.parse(scanResultDao.findFirstDateByRepo(repoUuids).substring(0, 10), DateTimeUtil.Y_M_D_formatter);
         LocalDate indexDay = LocalDate.parse(since,DateTimeUtil.Y_M_D_formatter);
         LocalDate untilDay = LocalDate.parse(until,DateTimeUtil.Y_M_D_formatter);
 
