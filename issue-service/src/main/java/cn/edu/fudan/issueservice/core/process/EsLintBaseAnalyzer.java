@@ -35,11 +35,11 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
     public boolean invoke(String repoUuid, String repoPath, String commit) {
         try {
             Runtime rt = Runtime.getRuntime();
-            //执行sonar命令,一个commit对应一个sonarqube project(repoUuid_commit)
+            //ESLint exe command
             String command = binHome + "executeESLint.sh " + repoPath + " " + repoUuid + "_" + commit;
             log.info("command -> {}",command);
             Process process = rt.exec(command);
-            //最多等待sonar脚本执行300秒,超时则认为该commit解析失败
+            //wait command 300s,if time > 300,invoke tool failed
             boolean timeout = process.waitFor(300L, TimeUnit.SECONDS);
             if (!timeout) {
                 process.destroy();
@@ -193,11 +193,5 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
             default:
         }
         return result;
-    }
-
-    public static void main(String[] args) {
-        EsLintBaseAnalyzer esLintBaseAnalyzer = new EsLintBaseAnalyzer();
-        esLintBaseAnalyzer.setResultFileHome("C:\\Users\\Beethoven\\Desktop\\issue-tracker-web\\eslint-report.json");
-        esLintBaseAnalyzer.analyze("C:\\Users\\Beethoven\\Desktop\\issue-tracker-web", "6f1170ac-4102-11eb-b6ff-f9c372bb0fcb", "8f4a106a354126e24d2173b7ceecd7407e7e4005");
     }
 }
