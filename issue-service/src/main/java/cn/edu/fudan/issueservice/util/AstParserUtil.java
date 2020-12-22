@@ -143,6 +143,11 @@ public class AstParserUtil {
         return allFieldsInFile;
     }
 
+    public static String getJsMethod(String filePath, int beginLine, int endLine){
+
+        return null;
+    }
+
     public static void main(String[] args) {
         String filePath = "C:\\Users\\Beethoven\\Desktop\\IssueTracker-Master\\issue-service\\src\\main\\java\\cn\\edu\\fudan\\issueservice\\util\\SegmentationUtil.java";
         Set<String> allMethodAndFieldName = getAllMethodAndFieldName(filePath);

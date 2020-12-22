@@ -156,7 +156,7 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
         location.setFile_path(fileName);
         location.setRawIssue_id(rawIssue.getUuid());
         //fixme get js methodName
-        String methodName = AstParserUtil.findMethod (fileName, line, endLine);
+        String methodName = AstParserUtil.getJsMethod(fileName, line, endLine);
         location.setMethod_name (methodName);
 
         return new ArrayList<Location>(){{add(location);}};
