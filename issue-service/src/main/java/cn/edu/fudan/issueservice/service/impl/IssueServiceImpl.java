@@ -259,9 +259,11 @@ public class IssueServiceImpl implements IssueService {
             issue.put("createTime", DateTimeUtil.format((Date) issue.get("createTime")));
             if("Solved".equals(issue.get("status").toString())) {
                 Map<String, Object> lastSolvedInfo = rawIssueDao.getLastSolvedInfoOfOneIssue(issueId);
-                issue.put("solver", lastSolvedInfo.get("lastSolver"));
-                issue.put("solveTime", DateTimeUtil.format((Date) lastSolvedInfo.get("commit_time")));
-                issue.put("solveCommit", lastSolvedInfo.get("commit_id"));
+                if(lastSolvedInfo != null){
+                    issue.put("solver", lastSolvedInfo.get("lastSolver"));
+                    issue.put("solveTime", DateTimeUtil.format((Date) lastSolvedInfo.get("commit_time")));
+                    issue.put("solveCommit", lastSolvedInfo.get("commit_id"));
+                }
             }else{
                 issue.put("solver", null);
                 issue.put("solveTime", null);
