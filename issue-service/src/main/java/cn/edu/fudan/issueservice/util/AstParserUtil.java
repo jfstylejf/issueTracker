@@ -23,12 +23,12 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class AstParserUtil {
 
-    private final static String loc = "loc", start = "start", end = "end", line = "line", body = "body",
-            type = "type", id = "id", name = "name", params = "params", key = "key", value = "value";
+    private final static String LOC = "loc", START = "start", END = "end", LINE = "line", BODY = "body",
+            TYPE = "type", ID = "id", NAME = "name", PARAMS = "params", KEY = "key", VALUE = "value";
 
-    private final static String Program = "Program", FunctionDeclaration = "FunctionDeclaration", VariableDeclaration = "VariableDeclaration",
-            ImportDeclaration = "ImportDeclaration", ClassDeclaration = "ClassDeclaration", ExportDefaultDeclaration = "ExportDefaultDeclaration",
-            MethodDefinition = "MethodDefinition", ExpressionStatement = "ExpressionStatement";
+    private final static String PROGRAM = "Program", FUNCTION_DECLARATION = "FunctionDeclaration", VARIABLE_DECLARATION = "VariableDeclaration",
+            IMPORT_DECLARATION = "ImportDeclaration", CLASS_DECLARATION = "ClassDeclaration", EXPORT_DEFAULT_DECLARATION = "ExportDefaultDeclaration",
+            METHOD_DEFINITION = "MethodDefinition", EXPRESSION_STATEMENT = "ExpressionStatement";
 
     public static String findMethod(String filePath, int beginLine, int endLine) {
         try {
@@ -202,22 +202,22 @@ public class AstParserUtil {
 
     public static String getJsMethod(JSONObject nodeJsCode, int beginLine, int endLine, String code) {
         //parse json ---> loc to find Function,Import,Variable or Export.
-        for(Object nodeJsCodeBody : nodeJsCode.getJSONArray(body)){
+        for(Object nodeJsCodeBody : nodeJsCode.getJSONArray(BODY)){
             JSONObject declaration = (JSONObject)nodeJsCodeBody;
-            if(declaration.getJSONObject(loc).getJSONObject(start).getIntValue(line) <= beginLine &&
-                    declaration.getJSONObject(loc).getJSONObject(end).getIntValue(line) >= endLine){
+            if(declaration.getJSONObject(LOC).getJSONObject(START).getIntValue(LINE) <= beginLine &&
+                    declaration.getJSONObject(LOC).getJSONObject(END).getIntValue(LINE) >= endLine){
                 //handle different condition
-                switch (declaration.getString(type)){
-                    case MethodDefinition:
+                switch (declaration.getString(TYPE)){
+                    case METHOD_DEFINITION:
                         return handleMethodDefinition(declaration);
-                    case FunctionDeclaration:
+                    case FUNCTION_DECLARATION:
                         return handleFunctionDeclaration(declaration);
-                    case ClassDeclaration:
-                        return handleClassDeclaration(declaration.getJSONObject(body), beginLine, endLine, code);
-                    case ImportDeclaration:
-                    case VariableDeclaration:
-                    case ExportDefaultDeclaration:
-                    case ExpressionStatement:
+                    case CLASS_DECLARATION:
+                        return handleClassDeclaration(declaration.getJSONObject(BODY), beginLine, endLine, code);
+                    case IMPORT_DECLARATION:
+                    case VARIABLE_DECLARATION:
+                    case EXPORT_DEFAULT_DECLARATION:
+                    case EXPRESSION_STATEMENT:
                         return code;
                     default:
                         return null;
@@ -229,52 +229,52 @@ public class AstParserUtil {
 
     private static String handleMethodDefinition(JSONObject declaration) {
         StringBuilder methodName = new StringBuilder();
-        methodName.append(declaration.getJSONObject(key).getString(name)).append("(");
+        methodName.append(declaration.getJSONObject(KEY).getString(NAME)).append("(");
         //get params
-        JSONArray paramsDetail = declaration.getJSONObject(value).getJSONArray(params);
+        JSONArray paramsDetail = declaration.getJSONObject(VALUE).getJSONArray(PARAMS);
         for(int i = 0; i < paramsDetail.size(); i++){
             if(i != 0){
                 methodName.append(",");
             }
             JSONObject paramDetail = (JSONObject) paramsDetail.get(i);
-            methodName.append(paramDetail.getString(name));
+            methodName.append(paramDetail.getString(NAME));
         }
         return methodName.append(")").toString();
     }
 
     private static String handleFunctionDeclaration(JSONObject declaration) {
         StringBuilder functionName = new StringBuilder();
-        functionName.append(declaration.getJSONObject(id).getString(name)).append("(");
+        functionName.append(declaration.getJSONObject(ID).getString(NAME)).append("(");
         //get params
-        JSONArray paramsDetail = declaration.getJSONArray(params);
+        JSONArray paramsDetail = declaration.getJSONArray(PARAMS);
         for(int i = 0; i < paramsDetail.size(); i++){
             if(i != 0){
                 functionName.append(",");
             }
             JSONObject paramDetail = (JSONObject) paramsDetail.get(i);
-            functionName.append(paramDetail.getString(name));
+            functionName.append(paramDetail.getString(NAME));
         }
         return functionName.append(")").toString();
     }
 
     private static String handleClassDeclaration(JSONObject declaration, int beginLine, int endLine, String code) {
-        JSONArray declarationBody = declaration.getJSONArray(body);
+        JSONArray declarationBody = declaration.getJSONArray(BODY);
         for(Object nodeDetail : declarationBody){
             JSONObject node = (JSONObject) nodeDetail;
-            if(node.getJSONObject(loc).getJSONObject(start).getIntValue(line) <= beginLine &&
-                    node.getJSONObject(loc).getJSONObject(end).getIntValue(line) >= endLine){
+            if(node.getJSONObject(LOC).getJSONObject(START).getIntValue(LINE) <= beginLine &&
+                    node.getJSONObject(LOC).getJSONObject(END).getIntValue(LINE) >= endLine){
                 //handle different condition
-                switch (node.getString(type)){
-                    case MethodDefinition:
+                switch (node.getString(TYPE)){
+                    case METHOD_DEFINITION:
                         return handleMethodDefinition(node);
-                    case FunctionDeclaration:
+                    case FUNCTION_DECLARATION:
                         return handleFunctionDeclaration(node);
-                    case ClassDeclaration:
+                    case CLASS_DECLARATION:
                         return handleClassDeclaration(node, beginLine, endLine, code);
-                    case ImportDeclaration:
-                    case VariableDeclaration:
-                    case ExportDefaultDeclaration:
-                    case ExpressionStatement:
+                    case IMPORT_DECLARATION:
+                    case VARIABLE_DECLARATION:
+                    case EXPORT_DEFAULT_DECLARATION:
+                    case EXPRESSION_STATEMENT:
                         return code;
                     default:
                         return null;
