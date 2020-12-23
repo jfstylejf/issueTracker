@@ -76,13 +76,11 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
 
     private boolean analyzeEsLintResults(String repoPath, JSONArray esLintResults, String repoUuid, String commit) {
         try {
-            //add the rawIssues to result
-            for (Object esLintResult : esLintResults) {
+            for(Object esLintResult : esLintResults) {
+                //file ---> esLintResult
                 resultRawIssues.addAll(handleEsLintResults(repoPath, (JSONObject) esLintResult, repoUuid, commit));
             }
             return true;
-        }catch (ParseFileException e){
-            log.error("parse file failed!");
         }catch (Exception e){
             log.error("analyze rawIssues failed!");
         }
@@ -97,8 +95,13 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
         String fileName = FileUtil.handleFileNameToRelativePath(esLintResult.getString("filePath"));
         //get the code source in file
         String codeSource = esLintResult.getString("source");
-        //todo parse js code ---> return node json
-        JSONObject nodeJsCode = AstParserUtil.parseJsCode(codeSource, resultFileHome);
+        //parse js code ---> return node json,if null throws exception
+        JSONObject nodeJsCode = AstParserUtil.parseJsCode(binHome, esLintResult.getString("filePath"), resultFileHome);
+        if(nodeJsCode == null){
+            //if can't get AST result throws ParseFileException
+            log.error("parse repoUuid:{} commit:{} file ---> {} failed !", repoUuid, commit, esLintResult.getString("filePath"));
+            throw new ParseFileException();
+        }
         //get the rawIssues
         rawIssueList.forEach(issue -> rawIssues.add(getRawIssue(repoPath, (JSONObject) issue, repoUuid, commit, fileName, codeSource, nodeJsCode)));
         return rawIssues;

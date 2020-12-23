@@ -1,6 +1,5 @@
 package cn.edu.fudan.issueservice.util;
 
-import cn.edu.fudan.issueservice.exception.ParseFileException;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.github.javaparser.JavaParser;
@@ -9,14 +8,14 @@ import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.*;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author fancying
@@ -29,7 +28,7 @@ public class AstParserUtil {
 
     private final static String Program = "Program", FunctionDeclaration = "FunctionDeclaration", VariableDeclaration = "VariableDeclaration",
             ImportDeclaration = "ImportDeclaration", ClassDeclaration = "ClassDeclaration", ExportDefaultDeclaration = "ExportDefaultDeclaration",
-            MethodDefinition = "MethodDefinition";
+            MethodDefinition = "MethodDefinition", ExpressionStatement = "ExpressionStatement";
 
     public static String findMethod(String filePath, int beginLine, int endLine) {
         try {
@@ -87,7 +86,6 @@ public class AstParserUtil {
             e.printStackTrace();
             return null;
         }
-
     }
 
     public static Set<String> getAllMethodAndFieldName(String filePath) {
@@ -157,18 +155,26 @@ public class AstParserUtil {
         return allFieldsInFile;
     }
 
-    public static JSONObject parseJsCode(String codeSource, String resultFileHome) throws ParseFileException {
-        //todo step 1. pass codeSource to script and invoke script to analyze ast tree , if can't get result throws ParseFileException
-        invokeEspreeScript();
-        //step 2. read file parse ast tree to json
-        JSONObject ast = readJsParseFile(resultFileHome);
-        //todo step 3. delete file
-        deleteAstFile();
-        return ast;
-    }
-
-    private static void invokeEspreeScript() {
-        
+    public static JSONObject parseJsCode(String binHome, String codePath, String resultFileHome) {
+        //step 1. invoke script to analyze AST
+        try {
+            Runtime rt = Runtime.getRuntime();
+            //run espree script
+            String command = binHome + "espree.sh " + codePath;
+            log.info("command -> {}",command);
+            Process process = rt.exec(command);
+            boolean timeout = process.waitFor(100L, TimeUnit.SECONDS);
+            if (!timeout) {
+                process.destroy();
+                log.error("run espree script timeout ! (100s)");
+                return null;
+            }
+            //step 2. read file parse ast tree to json
+            return readJsParseFile(resultFileHome);
+        } catch (Exception e) {
+            log.error("invoke espree script failed !");
+        }
+        return null;
     }
 
     private static JSONObject readJsParseFile(String resultFileHome) {
@@ -186,10 +192,6 @@ public class AstParserUtil {
             log.error("read ast failed !");
         }
         return null;
-    }
-
-    private static void deleteAstFile() {
-
     }
 
     public static String getJsClass(JSONObject nodeJsCode, int beginLine, int endLine){
@@ -215,6 +217,7 @@ public class AstParserUtil {
                     case ImportDeclaration:
                     case VariableDeclaration:
                     case ExportDefaultDeclaration:
+                    case ExpressionStatement:
                         return code;
                     default:
                         return null;
@@ -271,6 +274,7 @@ public class AstParserUtil {
                     case ImportDeclaration:
                     case VariableDeclaration:
                     case ExportDefaultDeclaration:
+                    case ExpressionStatement:
                         return code;
                     default:
                         return null;
@@ -282,7 +286,8 @@ public class AstParserUtil {
 
     public static void main(String[] args) {
         JSONObject ast = readJsParseFile("C:\\Users\\Beethoven\\Desktop\\issue-tracker-web");
-        String jsMethod = getJsMethod(ast, 9, 9, "var forge = require('node-forge');");
+        assert ast != null;
+        String jsMethod = getJsMethod(ast, 56, 58, "import { Table, Tooltip } from 'antd';");
         System.out.println(jsMethod);
     }
 }
