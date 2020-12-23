@@ -158,17 +158,6 @@ public class RestInterfaceManager {
         return null;
     }
 
-    public String getRepoLanguage(String repoUuid) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("token", token);
-        HttpEntity<HttpHeaders> request = new HttpEntity<>(headers);
-
-        ResponseEntity<JSONObject> responseEntity = restTemplate.exchange(projectServicePath + "repo_uuid?=" + repoUuid, HttpMethod.GET, request, JSONObject.class);
-        JSONObject repoInfo = JSONObject.parseObject(responseEntity.getBody().toString());
-
-        return repoInfo.getString("language");
-    }
-
     //---------------------------------------------commit service------------------------------------------------------
 
     public String getFirstCommitDate(String developerName){

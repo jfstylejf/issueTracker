@@ -91,6 +91,9 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
         List<RawIssue> rawIssues = new ArrayList<>();
         //handle the ESLint result;
         JSONArray rawIssueList = esLintResult.getJSONArray("messages");
+        if(rawIssueList == null || rawIssueList.size() == 0){
+            return new ArrayList<>();
+        }
         //handle fileName
         String fileName = FileUtil.handleFileNameToRelativePath(esLintResult.getString("filePath"));
         //get the code source in file

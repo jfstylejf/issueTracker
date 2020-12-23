@@ -248,9 +248,7 @@ public class ToolInvoker {
         String repoUuid = repoResourceDTO.getRepoId ();
         String repoPath = repoResourceDTO.getRepoPath ();
         String commit = issueScan.getCommitId ();
-        //judge the language
-        String language = restInvoker.getRepoLanguage(repoUuid);
-        if(!LanguageEnum.JavaScript.getName().equals(language)) {
+        if(analyzer instanceof SonarQubeBaseAnalyzer) {
             long startTime = System.currentTimeMillis();
             //0. 先清除编译生成的target文件
             DirExplorer.deleteRedundantTarget(repoPath);
@@ -444,5 +442,4 @@ public class ToolInvoker {
     public void setIssueTypeDao(IssueTypeDao issueTypeDao) {
         this.issueTypeDao = issueTypeDao;
     }
-
 }

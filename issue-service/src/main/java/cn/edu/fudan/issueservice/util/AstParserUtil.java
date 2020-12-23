@@ -159,20 +159,20 @@ public class AstParserUtil {
         //step 1. invoke script to analyze AST
         try {
             Runtime rt = Runtime.getRuntime();
-            //run espree script
-            String command = binHome + "espree.sh " + codePath;
+            //run babelEsLint script
+            String command = binHome + "babelEsLint.sh " + codePath;
             log.info("command -> {}",command);
             Process process = rt.exec(command);
             boolean timeout = process.waitFor(100L, TimeUnit.SECONDS);
             if (!timeout) {
                 process.destroy();
-                log.error("run espree script timeout ! (100s)");
+                log.error("run babelEsLint script timeout ! (100s)");
                 return null;
             }
             //step 2. read file parse ast tree to json
             return readJsParseFile(resultFileHome);
         } catch (Exception e) {
-            log.error("invoke espree script failed !");
+            log.error("invoke babelEsLint script failed !");
         }
         return null;
     }
