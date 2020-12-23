@@ -35,6 +35,9 @@ public class IssueIgnoreController {
     })
     @PutMapping(value = "issue/ignore/{tool}")
     public ResponseBean<String> ignoreIssues(@PathVariable("tool")String tool, @RequestBody List<IgnoreRecord> ignoreRecords){
+        if(ignoreRecords.size() == 0){
+            return new ResponseBean<>(200, success, null);
+        }
         try{
             for(IgnoreRecord ignoreRecord : ignoreRecords) {
                 if(!IgnoreTypeEnum.statusInEnum(ignoreRecord.getTag())){
