@@ -290,7 +290,7 @@ public class IssueOuterController {
         query.put("since", since);
         query.put("until", until);
         query.put("toolName", toolName);
-        query.put("introducer", introducer);
+        query.put("developer", introducer);
         query.put("priority", priority);
 
         Map<String, Object> issueFilterList = issueService.getIssueFilterListCount(query);
