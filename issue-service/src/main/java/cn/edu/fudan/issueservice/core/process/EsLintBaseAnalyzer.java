@@ -5,6 +5,7 @@ import cn.edu.fudan.issueservice.domain.dbo.Location;
 import cn.edu.fudan.issueservice.domain.dbo.RawIssue;
 import cn.edu.fudan.issueservice.domain.enums.JavaScriptIssuePriorityEnum;
 import cn.edu.fudan.issueservice.domain.enums.ToolEnum;
+import cn.edu.fudan.issueservice.exception.ParseFileException;
 import cn.edu.fudan.issueservice.util.AstParserUtil;
 import cn.edu.fudan.issueservice.util.FileUtil;
 import cn.edu.fudan.issueservice.util.JGitHelper;
@@ -76,15 +77,19 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
     private boolean analyzeEsLintResults(String repoPath, JSONArray esLintResults, String repoUuid, String commit) {
         try {
             //add the rawIssues to result
-            esLintResults.forEach(esLintResult -> resultRawIssues.addAll(handleEsLintResults(repoPath, (JSONObject) esLintResult,repoUuid , commit)));
+            for (Object esLintResult : esLintResults) {
+                resultRawIssues.addAll(handleEsLintResults(repoPath, (JSONObject) esLintResult, repoUuid, commit));
+            }
             return true;
+        }catch (ParseFileException e){
+            log.error("parse file failed!");
         }catch (Exception e){
             log.error("analyze rawIssues failed!");
         }
         return false;
     }
 
-    List<RawIssue> handleEsLintResults(String repoPath, JSONObject esLintResult, String repoUuid, String commit){
+    List<RawIssue> handleEsLintResults(String repoPath, JSONObject esLintResult, String repoUuid, String commit) throws ParseFileException {
         List<RawIssue> rawIssues = new ArrayList<>();
         //handle the ESLint result;
         JSONArray rawIssueList = esLintResult.getJSONArray("messages");
@@ -92,12 +97,14 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
         String fileName = FileUtil.handleFileNameToRelativePath(esLintResult.getString("filePath"));
         //get the code source in file
         String codeSource = esLintResult.getString("source");
+        //todo parse js code ---> return node json
+        JSONObject nodeJsCode = AstParserUtil.parseJsCode(codeSource, resultFileHome);
         //get the rawIssues
-        rawIssueList.forEach(issue -> rawIssues.add(getRawIssue(repoPath, (JSONObject) issue, repoUuid, commit, fileName, codeSource)));
+        rawIssueList.forEach(issue -> rawIssues.add(getRawIssue(repoPath, (JSONObject) issue, repoUuid, commit, fileName, codeSource, nodeJsCode)));
         return rawIssues;
     }
 
-    private RawIssue getRawIssue(String repoPath, JSONObject issue, String repoUuid, String commit, String fileName, String codeSource){
+    private RawIssue getRawIssue(String repoPath, JSONObject issue, String repoUuid, String commit, String fileName, String codeSource, JSONObject nodeJsCode) {
         RawIssue rawIssue = new RawIssue();
         rawIssue.setTool("ESLint");
         rawIssue.setUuid(UUID.randomUUID().toString());
@@ -115,11 +122,11 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
         }
         rawIssue.setDeveloperName(developerUniqueName);
         //set rawIssue's location
-        rawIssue.setLocations(getLocations(fileName, issue, rawIssue, codeSource));
+        rawIssue.setLocations(getLocations(fileName, issue, rawIssue, codeSource, nodeJsCode));
         return rawIssue;
     }
 
-    private List<Location> getLocations(String fileName, JSONObject issue, RawIssue rawIssue, String codeSource) {
+    private List<Location> getLocations(String fileName, JSONObject issue, RawIssue rawIssue, String codeSource, JSONObject nodeJsCode) {
         Location location = new Location();
         //get start line,end line and bug line
         int line = issue.getIntValue("line");
@@ -155,9 +162,10 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
         location.setUuid(UUID.randomUUID().toString());
         location.setFile_path(fileName);
         location.setRawIssue_id(rawIssue.getUuid());
-        //fixme get js methodName
-        String methodName = AstParserUtil.getJsMethod(fileName, line, endLine);
-        location.setMethod_name (methodName);
+        //todo check class name
+        location.setClass_name(AstParserUtil.getJsClass(nodeJsCode, line, endLine));
+        //get method name
+        location.setMethod_name (AstParserUtil.getJsMethod(nodeJsCode, line, endLine, code));
 
         return new ArrayList<Location>(){{add(location);}};
     }

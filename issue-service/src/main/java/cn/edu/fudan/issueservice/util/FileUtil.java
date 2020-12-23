@@ -12,6 +12,11 @@ public class FileUtil {
                 : resultFileHome + "/.eslint-report_" + repoUuid + "_" + commit + ".json";
     }
 
+    public static String getEsLintAstReportAbsolutePath(String resultFileHome) {
+        return IS_WINDOWS ? resultFileHome + "\\ast-report.json"
+                : resultFileHome + "/ast-report.json";
+    }
+
     public static String handleFileNameToRelativePath(String filePath) {
         String[] paths = filePath.split("duplicate_fdse");
         return paths[paths.length - 1].substring(paths[paths.length - 1].indexOf('/') + 1);
