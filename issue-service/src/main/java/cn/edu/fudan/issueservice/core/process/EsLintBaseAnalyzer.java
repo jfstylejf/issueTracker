@@ -42,11 +42,11 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
             String command = binHome + "executeESLint.sh " + repoPath + " " + repoUuid + "_" + commit;
             log.info("command -> {}",command);
             Process process = rt.exec(command);
-            //wait command 300s,if time > 300,invoke tool failed
-            boolean timeout = process.waitFor(300L, TimeUnit.SECONDS);
+            //wait command 200s,if time > 200,invoke tool failed
+            boolean timeout = process.waitFor(200L, TimeUnit.SECONDS);
             if (!timeout) {
                 process.destroy();
-                log.error("invoke tool timeout ! (300s)");
+                log.error("invoke tool timeout ! (200s)");
                 return false;
             }
             return process.exitValue() == 0;
@@ -58,8 +58,10 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
 
     @Override
     public boolean analyze(String repoPath, String repoUuid, String commit) {
+        //get esLint report file path
+        String esLintReportFile = FileUtil.getEsLintReportAbsolutePath(resultFileHome, repoUuid, commit);
         //read result from json file
-        try (BufferedReader reader = new BufferedReader(new FileReader(FileUtil.getEsLintReportAbsolutePath(resultFileHome, repoUuid, commit)))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(esLintReportFile))) {
             int ch;
             char[] buf = new char[1024];
             StringBuilder data = new StringBuilder();
@@ -67,13 +69,35 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
                 String readData = String.valueOf(buf, 0, ch);
                 data.append(readData);
             }
+            log.info("read esLint report file success !");
+            //delete esLint report file
+            deleteEsLintReportFile(esLintReportFile);
             return analyzeEsLintResults(repoPath, (JSONArray) JSONArray.parse(data.toString()), repoUuid, commit);
         } catch (Exception e) {
             e.printStackTrace();
-            log.error("read file error,projectName is ---> {}", repoUuid + "_" + commit);
+            log.error("read esLint report file error,projectName is ---> {}", repoUuid + "_" + commit);
         }
         return false;
     }
+
+    private void deleteEsLintReportFile(String esLintReportFile) {
+        try {
+            Runtime rt = Runtime.getRuntime();
+            String command = binHome + "deleteESLintReport.sh " + esLintReportFile;
+            log.info("command -> {}",command);
+            Process process = rt.exec(command);
+            boolean timeout = process.waitFor(20L, TimeUnit.SECONDS);
+            if (!timeout) {
+                process.destroy();
+                log.error("delete esLint report file {} timeout ! (20s)", esLintReportFile);
+                return;
+            }
+            log.info("delete esLint report file {} success !", esLintReportFile);
+        } catch (Exception e) {
+            log.error("delete esLint report file {} failed !", esLintReportFile);
+        }
+    }
+
 
     private boolean analyzeEsLintResults(String repoPath, JSONArray esLintResults, String repoUuid, String commit) {
         try {
@@ -98,23 +122,25 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
         if(rawIssueList == null || rawIssueList.size() == 0){
             return new ArrayList<>();
         }
-        //handle fileName
-        String fileName = FileUtil.handleFileNameToRelativePath(esLintResult.getString("filePath"));
+        //get file path
+        String filePath = esLintResult.getString("filePath");
+        //handle file name
+        String fileName = FileUtil.handleFileNameToRelativePath(filePath);
         //get the code source in file
         String codeSource = esLintResult.getString("source");
         //parse js code ---> return node json,if null throws exception
-        JSONObject nodeJsCode = AstParserUtil.parseJsCode(binHome, esLintResult.getString("filePath"), resultFileHome);
+        JSONObject nodeJsCode = AstParserUtil.parseJsCode(binHome, filePath, resultFileHome, repoUuid);
         if(nodeJsCode == null){
             //if can't get AST result throws ParseFileException
             log.error("parse repoUuid:{} commit:{} file ---> {} failed !", repoUuid, commit, esLintResult.getString("filePath"));
             throw new ParseFileException();
         }
         //get the rawIssues
-        rawIssueList.forEach(issue -> rawIssues.add(getRawIssue(repoPath, (JSONObject) issue, repoUuid, commit, fileName, codeSource, nodeJsCode)));
+        rawIssueList.forEach(issue -> rawIssues.add(getRawIssue(repoPath, (JSONObject) issue, repoUuid, commit, fileName, filePath, nodeJsCode)));
         return rawIssues;
     }
 
-    private RawIssue getRawIssue(String repoPath, JSONObject issue, String repoUuid, String commit, String fileName, String codeSource, JSONObject nodeJsCode) {
+    private RawIssue getRawIssue(String repoPath, JSONObject issue, String repoUuid, String commit, String fileName, String filePath, JSONObject nodeJsCode) {
         RawIssue rawIssue = new RawIssue();
         rawIssue.setTool("ESLint");
         rawIssue.setUuid(UUID.randomUUID().toString());
@@ -132,11 +158,11 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
         }
         rawIssue.setDeveloperName(developerUniqueName);
         //set rawIssue's location
-        rawIssue.setLocations(getLocations(fileName, issue, rawIssue, codeSource, nodeJsCode));
+        rawIssue.setLocations(getLocations(fileName, issue, rawIssue, filePath, nodeJsCode));
         return rawIssue;
     }
 
-    private List<Location> getLocations(String fileName, JSONObject issue, RawIssue rawIssue, String codeSource, JSONObject nodeJsCode) {
+    private List<Location> getLocations(String fileName, JSONObject issue, RawIssue rawIssue, String filePath, JSONObject nodeJsCode) {
         Location location = new Location();
         //get start line,end line and bug line
         int line = issue.getIntValue("line");
@@ -158,13 +184,7 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
             location.setBug_lines(lines.toString());
         }
         //get js code
-        String code = null;
-        try{
-            code = FileUtil.getCode(codeSource, line, endLine);
-        }catch (Exception e){
-            log.info("file path --> {} file deleted", fileName);
-            log.error("rawIssueId --> {}  get code failed.", rawIssue.getUuid());
-        }
+        String code = FileUtil.getCode(filePath, line, endLine);
         location.setCode(code);
         //get start token and end token
         location.setStart_token(issue.getIntValue("column"));
@@ -175,7 +195,7 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
         //todo check class name
         location.setClass_name(AstParserUtil.getJsClass(nodeJsCode, line, endLine));
         //get method name
-        location.setMethod_name (AstParserUtil.getJsMethod(nodeJsCode, line, endLine, code));
+        location.setMethod_name (AstParserUtil.getJsMethod(nodeJsCode, line, endLine, filePath));
 
         return new ArrayList<Location>(){{add(location);}};
     }
