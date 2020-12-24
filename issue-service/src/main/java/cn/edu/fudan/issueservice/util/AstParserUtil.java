@@ -156,6 +156,7 @@ public class AstParserUtil {
     }
 
     public static JSONObject parseJsCode(String binHome, String codePath, String resultFileHome) {
+
         //step 1. invoke script to analyze AST
         try {
             Runtime rt = Runtime.getRuntime();
@@ -170,11 +171,29 @@ public class AstParserUtil {
                 return null;
             }
             //step 2. read file parse ast tree to json
-            return readJsParseFile(resultFileHome);
+            JSONObject nodeJsCode = readJsParseFile(resultFileHome);
+            log.info("analyze AST success !");
+            //step 3. delete file
+            deleteNodeJsCodeFile(binHome);
+            return nodeJsCode;
         } catch (Exception e) {
             log.error("invoke babelEsLint script failed !");
         }
         return null;
+    }
+
+    private static void deleteNodeJsCodeFile(String binHome) throws Exception {
+        Runtime rt = Runtime.getRuntime();
+        String command = binHome + "deleteAstFile.sh ";
+        log.info("command -> {}",command);
+        Process process = rt.exec(command);
+        boolean timeout = process.waitFor(20L, TimeUnit.SECONDS);
+        if (!timeout) {
+            process.destroy();
+            log.error("delete AST file timeout ! (20s)");
+            return;
+        }
+        log.info("delete AST file success !");
     }
 
     private static JSONObject readJsParseFile(String resultFileHome) {
@@ -186,10 +205,10 @@ public class AstParserUtil {
                 String readData = String.valueOf(buf, 0, ch);
                 data.append(readData);
             }
+            log.info("read AST success !");
             return JSONObject.parseObject(data.toString());
         } catch (Exception e) {
-            e.printStackTrace();
-            log.error("read ast failed !");
+            log.error("read AST failed !");
         }
         return null;
     }

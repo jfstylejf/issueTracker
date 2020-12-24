@@ -7,6 +7,7 @@ import cn.edu.fudan.issueservice.domain.enums.JavaScriptIssuePriorityEnum;
 import cn.edu.fudan.issueservice.domain.enums.ToolEnum;
 import cn.edu.fudan.issueservice.exception.ParseFileException;
 import cn.edu.fudan.issueservice.util.AstParserUtil;
+import cn.edu.fudan.issueservice.util.FileFilter;
 import cn.edu.fudan.issueservice.util.FileUtil;
 import cn.edu.fudan.issueservice.util.JGitHelper;
 import com.alibaba.fastjson.JSONArray;
@@ -76,9 +77,12 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
 
     private boolean analyzeEsLintResults(String repoPath, JSONArray esLintResults, String repoUuid, String commit) {
         try {
-            for(Object esLintResult : esLintResults) {
-                //file ---> esLintResult
-                resultRawIssues.addAll(handleEsLintResults(repoPath, (JSONObject) esLintResult, repoUuid, commit));
+            for(Object esLintTempResult : esLintResults) {
+                JSONObject esLintResult = (JSONObject) esLintTempResult;
+                if(!FileFilter.jsFileFilter(esLintResult.getString("filePath"))) {
+                    //file ---> esLintResult
+                    resultRawIssues.addAll(handleEsLintResults(repoPath, esLintResult, repoUuid, commit));
+                }
             }
             return true;
         }catch (Exception e){
