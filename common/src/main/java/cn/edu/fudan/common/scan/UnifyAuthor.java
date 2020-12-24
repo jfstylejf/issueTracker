@@ -17,22 +17,26 @@ public interface UnifyAuthor {
      * @return 开发者唯一名称
      */
     default String unifyAuthorName(String committer) {
+        if(committer == null || committer.length() == 0){
+            log.warn("lack info of committer");
+            return committer;
+        }
         String authorName = committer;
         try {
             authorName = this.getAccountName(committer);
             if (authorName == null || authorName.length() == 0) {
                 return committer;
             }
-        } catch (Exception var4) {
+        } catch (Exception e) {
             log.error("get account name:{} failed", committer);
-            log.error(var4.getMessage());
+            log.error(e.getMessage());
         }
 
         return authorName;
     }
 
     /**
-     * 由子类实现，查询开发者唯一名称
+     * 查询开发者唯一名称
      * @param committer 当前开发账号名称
      * @return 开发者唯一名称
      */
