@@ -126,8 +126,6 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
         String filePath = esLintResult.getString("filePath");
         //handle file name
         String fileName = FileUtil.handleFileNameToRelativePath(filePath);
-        //get the code source in file
-        String codeSource = esLintResult.getString("source");
         //parse js code ---> return node json,if null throws exception
         JSONObject nodeJsCode = AstParserUtil.parseJsCode(binHome, filePath, resultFileHome, repoUuid);
         if(nodeJsCode == null){
