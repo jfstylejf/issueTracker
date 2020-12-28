@@ -5,7 +5,7 @@
 
 
     <select id="getDevelopers" resultType="java.util.HashMap">
-        select distinct developer, developer_unique_name from commit_view
+        select distinct developer_unique_name from commit_view
         <trim prefix="where" prefixOverrides="and">
             <if test="repoUuids != null and repoUuids.size > 0">
                 AND repo_id IN
