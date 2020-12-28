@@ -211,6 +211,7 @@ public class RestInterfaceManager {
                     repoPath = response.getJSONObject("data").getString ("content");
                 } else {
                     logger.error("code service response null!");
+                    logger.error("request url is : {}",urlPath);
                 }
                 break;
             }catch (Exception e){
