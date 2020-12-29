@@ -30,7 +30,6 @@ public class IssueInnerController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "tool", value = "工具名", dataType = "String", required = true, allowableValues = "sonarqube"),
             @ApiImplicitParam(name = "repo-uuid", value = "代码库uuid", dataType = "String", required = true),
-
     })
     @DeleteMapping(value = {"/issue/{tool}/{repo-uuid}"})
     public ResponseBean<String> deleteIssues(@PathVariable("tool")String tool, @PathVariable("repo-uuid") String repoUuid) {

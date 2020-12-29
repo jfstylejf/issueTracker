@@ -16,6 +16,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.BufferedReader;
+import java.io.DataOutput;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Map;
@@ -74,7 +75,6 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
             deleteEsLintReportFile(esLintReportFile);
             return analyzeEsLintResults(repoPath, (JSONArray) JSONArray.parse(data.toString()), repoUuid, commit);
         } catch (Exception e) {
-            e.printStackTrace();
             log.error("read esLint report file error,projectName is ---> {}", repoUuid + "_" + commit);
         }
         return false;
@@ -134,11 +134,13 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
             throw new ParseFileException();
         }
         //get the rawIssues
-        rawIssueList.forEach(issue -> rawIssues.add(getRawIssue(repoPath, (JSONObject) issue, repoUuid, commit, fileName, filePath, nodeJsCode)));
+        for(Object issue : rawIssueList){
+            rawIssues.add(getRawIssue(repoPath, (JSONObject) issue, repoUuid, commit, fileName, filePath, nodeJsCode));
+        }
         return rawIssues;
     }
 
-    private RawIssue getRawIssue(String repoPath, JSONObject issue, String repoUuid, String commit, String fileName, String filePath, JSONObject nodeJsCode) {
+    private RawIssue getRawIssue(String repoPath, JSONObject issue, String repoUuid, String commit, String fileName, String filePath, JSONObject nodeJsCode) throws ParseFileException {
         RawIssue rawIssue = new RawIssue();
         rawIssue.setTool("ESLint");
         rawIssue.setUuid(UUID.randomUUID().toString());
@@ -160,7 +162,7 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
         return rawIssue;
     }
 
-    private List<Location> getLocations(String fileName, JSONObject issue, RawIssue rawIssue, String filePath, JSONObject nodeJsCode) {
+    private List<Location> getLocations(String fileName, JSONObject issue, RawIssue rawIssue, String filePath, JSONObject nodeJsCode) throws ParseFileException {
         Location location = new Location();
         //get start line,end line and bug line
         int line = issue.getIntValue("line");
@@ -169,7 +171,7 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
         location.setEnd_line(endLine);
         if(line > endLine){
             log.error("startLine number greater than endLine number");
-            return null;
+            throw new ParseFileException();
         }else if(line == endLine){
             location.setBug_lines(line + "");
         }else{
