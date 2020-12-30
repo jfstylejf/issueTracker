@@ -1,7 +1,9 @@
 package cn.edu.fudan.issueservice.service;
 
 
+import cn.edu.fudan.issueservice.util.PagedGridResult;
 import com.alibaba.fastjson.JSONObject;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 
 import java.util.List;
 import java.util.Map;
@@ -61,4 +63,12 @@ public interface IssueMeasureInfoService {
      * @return 缺陷类型的生命周期详情
      */
     List<JSONObject> getLifeCycleDetail(String status, String target, Map<String, Object> query, String token);
+
+    /**
+     *
+     * @param query 查询条件
+     * @return producer, livingIssueCount
+     */
+    PagedGridResult getSelfIntroducedLivingIssueCount(int page, int ps, String order, Boolean isAsc, Map<String, Object> query);
+
 }
