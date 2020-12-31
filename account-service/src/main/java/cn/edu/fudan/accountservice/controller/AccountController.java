@@ -249,13 +249,13 @@ public class AccountController {
             @ApiImplicitParam(name = "asc", value = "是否升序", dataType = "Boolean", required = false,defaultValue = "1")
     })
     @GetMapping(value = "/developers")
-    public Object getDeveloperList(@RequestParam("repo_uuids") String repoUuids,
-                                   @RequestParam("since") String since,
-                                   @RequestParam("until") String until,
-                                   @RequestParam("page") Integer page,
-                                   @RequestParam("ps") Integer pageSize,
-                                   @RequestParam("order") String order,
-                                   @RequestParam("asc") Boolean isAsc
+    public Object getDeveloperList(@RequestParam(value = "repo_uuids", required = false) String repoUuids,
+                                   @RequestParam(value = "since", required = false) String since,
+                                   @RequestParam(value = "until", required = false) String until,
+                                   @RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
+                                   @RequestParam(value = "ps", required = false, defaultValue = "30") Integer pageSize,
+                                   @RequestParam(value = "order", required = false, defaultValue = "developer_unique_name") String order,
+                                   @RequestParam(value = "asc", required = false, defaultValue = "1") Boolean isAsc
                                    ){
         String[] repoListArr = repoUuids.split(",");
         List<String> repoList = Arrays.asList(repoListArr);
