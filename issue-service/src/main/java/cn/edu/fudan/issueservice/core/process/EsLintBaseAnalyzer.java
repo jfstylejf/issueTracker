@@ -166,12 +166,29 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
         //get start line,end line and bug line
         int line = issue.getIntValue("line");
         int endLine = issue.getIntValue("endLine");
+        //handle some condition line > endLine ?
+        if(line > endLine){
+            int temp = line;
+            line = endLine;
+            endLine = temp;
+        }
         location.setStart_line(line);
         location.setEnd_line(endLine);
-        if(line > endLine){
-            log.error("startLine number greater than endLine number");
-            throw new ParseFileException();
-        }else if(line == endLine){
+        //get start token and end token
+        location.setStart_token(issue.getIntValue("column"));
+        location.setEnd_token(issue.getIntValue("endColumn"));
+        //get js code
+        String code = FileUtil.getCode(filePath, line, endLine, location.getStart_token(), location.getEnd_token());
+        location.setCode(code);
+        location.setUuid(UUID.randomUUID().toString());
+        location.setFile_path(fileName);
+        location.setRawIssue_id(rawIssue.getUuid());
+        //todo check class name
+        location.setClass_name(AstParserUtil.getJsClass(nodeJsCode, line, endLine));
+        //get method name
+        location.setMethod_name (AstParserUtil.getJsMethod(nodeJsCode, line, endLine, filePath));
+        //set bug lines
+        if(line == endLine){
             location.setBug_lines(line + "");
         }else{
             StringBuilder lines = new StringBuilder();
@@ -182,19 +199,6 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
             lines.append(endLine);
             location.setBug_lines(lines.toString());
         }
-        //get js code
-        String code = FileUtil.getCode(filePath, line, endLine);
-        location.setCode(code);
-        //get start token and end token
-        location.setStart_token(issue.getIntValue("column"));
-        location.setEnd_token(issue.getIntValue("endColumn"));
-        location.setUuid(UUID.randomUUID().toString());
-        location.setFile_path(fileName);
-        location.setRawIssue_id(rawIssue.getUuid());
-        //todo check class name
-        location.setClass_name(AstParserUtil.getJsClass(nodeJsCode, line, endLine));
-        //get method name
-        location.setMethod_name (AstParserUtil.getJsMethod(nodeJsCode, line, endLine, filePath));
 
         return new ArrayList<Location>(){{add(location);}};
     }

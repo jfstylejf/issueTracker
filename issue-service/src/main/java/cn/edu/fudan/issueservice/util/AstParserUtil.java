@@ -25,11 +25,11 @@ public class AstParserUtil {
 
     private final static String LOC = "loc", START = "start", END = "end", LINE = "line", BODY = "body", DECLARATIONS = "declarations",
             TYPE = "type", ID = "id", NAME = "name", PARAMS = "params", KEY = "key", VALUE = "value", KIND = "kind", SUPER_CLASS = "superClass",
-            CLASS = "class", EXTENDS = "extends", OBJECT = "object", PROPERTY = "property";
+            CLASS = "class", EXTENDS = "extends", OBJECT = "object", PROPERTY = "property", COLUMN = "column", DECLARATION = "declaration";
 
     private final static String FUNCTION_DECLARATION = "FunctionDeclaration", VARIABLE_DECLARATION = "VariableDeclaration",
             IMPORT_DECLARATION = "ImportDeclaration", CLASS_DECLARATION = "ClassDeclaration", EXPORT_DEFAULT_DECLARATION = "ExportDefaultDeclaration",
-            METHOD_DEFINITION = "MethodDefinition", EXPRESSION_STATEMENT = "ExpressionStatement";
+            METHOD_DEFINITION = "MethodDefinition", EXPRESSION_STATEMENT = "ExpressionStatement", EXPORT_NAMED_DECLARATION = "ExportNamedDeclaration";
 
     private final static  String CLASS_PROPERTY = "ClassProperty";
 
@@ -217,7 +217,6 @@ public class AstParserUtil {
 
     public static String getJsClass(JSONObject nodeJsCode, int beginLine, int endLine){
         //todo parse json ---> loc to find class
-
         return null;
     }
 
@@ -228,6 +227,8 @@ public class AstParserUtil {
             int declarationBeginLine = declaration.getJSONObject(LOC).getJSONObject(START).getIntValue(LINE);
             int declarationEndLine = declaration.getJSONObject(LOC).getJSONObject(END).getIntValue(LINE);
             if(declarationBeginLine <= beginLine && declarationEndLine >= endLine){
+                int declarationBeginColumn = declaration.getJSONObject(LOC).getJSONObject(START).getIntValue(COLUMN);
+                int declarationEndColumn = declaration.getJSONObject(LOC).getJSONObject(END).getIntValue(COLUMN);
                 //handle different condition
                 switch (declaration.getString(TYPE)){
                     case CLASS_PROPERTY:
@@ -245,13 +246,32 @@ public class AstParserUtil {
                     case IMPORT_DECLARATION:
                     case EXPORT_DEFAULT_DECLARATION:
                     case EXPRESSION_STATEMENT:
-                        return FileUtil.getCode(filePath, declarationBeginLine, declarationEndLine);
+                        return FileUtil.getCode(filePath, declarationBeginLine, declarationEndLine, declarationBeginColumn, declarationEndColumn);
+                    case EXPORT_NAMED_DECLARATION:
+                        return handleExportNamedDeclaration(declaration);
                     default:
                         return null;
                 }
             }
         }
         return null;
+    }
+
+    private static String handleExportNamedDeclaration(JSONObject declaration) {
+        StringBuilder methodName = new StringBuilder();
+        JSONObject functionDetail = declaration.getJSONObject(DECLARATION).getJSONObject(ID);
+        methodName.append(functionDetail.getString(NAME)).append("(");
+        JSONArray paramsDetail = functionDetail.getJSONArray(PARAMS);
+        if(paramsDetail != null) {
+            for (int i = 0; i < paramsDetail.size(); i++) {
+                if (i != 0) {
+                    methodName.append(",");
+                }
+                JSONObject paramDetail = paramsDetail.getJSONObject(i);
+                methodName.append(paramDetail.getString(NAME));
+            }
+        }
+        return methodName.append(")").toString();
     }
 
     private static String handleVariableDeclaration(JSONObject declaration) {
@@ -323,6 +343,8 @@ public class AstParserUtil {
             int nodeBeginLine = node.getJSONObject(LOC).getJSONObject(START).getIntValue(LINE);
             int nodeEndLine = node.getJSONObject(LOC).getJSONObject(END).getIntValue(LINE);
             if(nodeBeginLine <= beginLine && nodeEndLine >= endLine){
+                int nodeBeginColumn = node.getJSONObject(LOC).getJSONObject(START).getIntValue(COLUMN);
+                int nodeEndColumn = node.getJSONObject(LOC).getJSONObject(END).getIntValue(COLUMN);
                 //handle different condition
                 switch (node.getString(TYPE)){
                     case CLASS_PROPERTY:
@@ -338,7 +360,9 @@ public class AstParserUtil {
                     case IMPORT_DECLARATION:
                     case EXPORT_DEFAULT_DECLARATION:
                     case EXPRESSION_STATEMENT:
-                        return FileUtil.getCode(filePath, nodeBeginLine, nodeEndLine);
+                        return FileUtil.getCode(filePath, nodeBeginLine, nodeEndLine, nodeBeginColumn, nodeEndColumn);
+                    case EXPORT_NAMED_DECLARATION:
+                        return handleExportNamedDeclaration(declaration);
                     default:
                         return null;
                 }
