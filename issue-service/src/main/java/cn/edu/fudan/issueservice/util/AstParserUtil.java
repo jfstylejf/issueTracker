@@ -227,8 +227,6 @@ public class AstParserUtil {
             int declarationBeginLine = declaration.getJSONObject(LOC).getJSONObject(START).getIntValue(LINE);
             int declarationEndLine = declaration.getJSONObject(LOC).getJSONObject(END).getIntValue(LINE);
             if(declarationBeginLine <= beginLine && declarationEndLine >= endLine){
-                int declarationBeginColumn = declaration.getJSONObject(LOC).getJSONObject(START).getIntValue(COLUMN);
-                int declarationEndColumn = declaration.getJSONObject(LOC).getJSONObject(END).getIntValue(COLUMN);
                 //handle different condition
                 switch (declaration.getString(TYPE)){
                     case CLASS_PROPERTY:
@@ -246,7 +244,7 @@ public class AstParserUtil {
                     case IMPORT_DECLARATION:
                     case EXPORT_DEFAULT_DECLARATION:
                     case EXPRESSION_STATEMENT:
-                        return FileUtil.getCode(filePath, declarationBeginLine, declarationEndLine, declarationBeginColumn, declarationEndColumn);
+                        return FileUtil.getCode(filePath, declarationBeginLine, declarationEndLine);
                     case EXPORT_NAMED_DECLARATION:
                         return handleExportNamedDeclaration(declaration);
                     default:
@@ -343,8 +341,6 @@ public class AstParserUtil {
             int nodeBeginLine = node.getJSONObject(LOC).getJSONObject(START).getIntValue(LINE);
             int nodeEndLine = node.getJSONObject(LOC).getJSONObject(END).getIntValue(LINE);
             if(nodeBeginLine <= beginLine && nodeEndLine >= endLine){
-                int nodeBeginColumn = node.getJSONObject(LOC).getJSONObject(START).getIntValue(COLUMN);
-                int nodeEndColumn = node.getJSONObject(LOC).getJSONObject(END).getIntValue(COLUMN);
                 //handle different condition
                 switch (node.getString(TYPE)){
                     case CLASS_PROPERTY:
@@ -360,7 +356,7 @@ public class AstParserUtil {
                     case IMPORT_DECLARATION:
                     case EXPORT_DEFAULT_DECLARATION:
                     case EXPRESSION_STATEMENT:
-                        return FileUtil.getCode(filePath, nodeBeginLine, nodeEndLine, nodeBeginColumn, nodeEndColumn);
+                        return FileUtil.getCode(filePath, nodeBeginLine, nodeEndLine);
                     case EXPORT_NAMED_DECLARATION:
                         return handleExportNamedDeclaration(declaration);
                     default:

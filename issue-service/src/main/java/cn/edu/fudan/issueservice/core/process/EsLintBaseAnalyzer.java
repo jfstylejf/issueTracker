@@ -178,7 +178,7 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
         location.setStart_token(issue.getIntValue("column"));
         location.setEnd_token(issue.getIntValue("endColumn"));
         //get js code
-        String code = FileUtil.getCode(filePath, line, endLine, location.getStart_token(), location.getEnd_token());
+        String code = FileUtil.getCode(filePath, line, endLine);
         location.setCode(code);
         location.setUuid(UUID.randomUUID().toString());
         location.setFile_path(fileName);
