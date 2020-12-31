@@ -4,7 +4,7 @@ import cn.edu.fudan.issueservice.component.RestInterfaceManager;
 import cn.edu.fudan.issueservice.dao.*;
 import cn.edu.fudan.issueservice.domain.dbo.Location;
 import cn.edu.fudan.issueservice.domain.dbo.RawIssue;
-import cn.edu.fudan.issueservice.domain.enums.IssuePriorityEnum;
+import cn.edu.fudan.issueservice.domain.enums.JavaIssuePriorityEnum;
 import cn.edu.fudan.issueservice.domain.enums.IssueStatusEnum;
 import cn.edu.fudan.issueservice.domain.enums.IssueTypeEnum;
 import cn.edu.fudan.issueservice.service.IssueService;
@@ -112,12 +112,12 @@ public class IssueServiceImpl implements IssueService {
 
     @Override
     public void updatePriority(String issueId, String severity,String token) throws Exception {
-        IssuePriorityEnum issuePriorityEnum = IssuePriorityEnum.getPriorityEnum (severity);
-        if(issuePriorityEnum == null){
+        JavaIssuePriorityEnum javaIssuePriorityEnum = JavaIssuePriorityEnum.getPriorityEnum (severity);
+        if(javaIssuePriorityEnum == null){
             throw new Exception("priority is not illegal");
         }
 
-        int priorityInt = issuePriorityEnum.getRank ();
+        int priorityInt = javaIssuePriorityEnum.getRank ();
         issueDao.updateOneIssuePriority(issueId,priorityInt);
     }
 
@@ -209,12 +209,12 @@ public class IssueServiceImpl implements IssueService {
 
         List<String> issueSeverities = new ArrayList<> ();
 
-        List<IssuePriorityEnum> issuePriorityEnums = new ArrayList<>(Arrays.asList(IssuePriorityEnum.values()));
+        List<JavaIssuePriorityEnum> javaIssuePriorityEnums = new ArrayList<>(Arrays.asList(JavaIssuePriorityEnum.values()));
 
-        issuePriorityEnums = issuePriorityEnums.stream().sorted(Comparator.comparing(IssuePriorityEnum :: getRank)).collect(Collectors.toList ());
+        javaIssuePriorityEnums = javaIssuePriorityEnums.stream().sorted(Comparator.comparing(JavaIssuePriorityEnum:: getRank)).collect(Collectors.toList ());
 
-        for(IssuePriorityEnum issuePriorityEnum : issuePriorityEnums){
-            issueSeverities.add(issuePriorityEnum.getName());
+        for(JavaIssuePriorityEnum javaIssuePriorityEnum : javaIssuePriorityEnums){
+            issueSeverities.add(javaIssuePriorityEnum.getName());
         }
 
         return issueSeverities;
@@ -269,7 +269,7 @@ public class IssueServiceImpl implements IssueService {
                 issue.put("solveTime", null);
                 issue.put("solveCommit", null);
             }
-            String priority = Objects.requireNonNull(IssuePriorityEnum.getPriorityEnumByRank((Integer) issue.get("priority"))).getName();
+            String priority = Objects.requireNonNull(JavaIssuePriorityEnum.getPriorityEnumByRank((Integer) issue.get("priority"))).getName();
             issue.put("priority",priority);
         }
 

@@ -42,6 +42,8 @@ public class RestInterfaceManager {
     private String measureServicePath;
     @Value("${test.repo.path}")
     private String testProjectPath;
+    @Value("${defaultUserToken}")
+    private String token;
 
     private final RestTemplate restTemplate;
 
@@ -364,5 +366,4 @@ public class RestInterfaceManager {
 
         return developerWorkLoad;
     }
-
 }
