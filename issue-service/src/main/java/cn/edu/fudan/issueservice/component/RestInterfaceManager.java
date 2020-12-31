@@ -42,8 +42,6 @@ public class RestInterfaceManager {
     private String measureServicePath;
     @Value("${test.repo.path}")
     private String testProjectPath;
-    @Value("${defaultUserToken}")
-    private String token;
 
     private final RestTemplate restTemplate;
 
@@ -144,7 +142,7 @@ public class RestInterfaceManager {
         headers.add("token", userToken);
         HttpEntity<HttpHeaders> request = new HttpEntity<>(headers);
         ResponseEntity<JSONObject> responseEntity = restTemplate.exchange(projectServicePath  + "/project",HttpMethod.GET,request,JSONObject.class);
-        String body = responseEntity.getBody().toString();
+        String body = Objects.requireNonNull(responseEntity.getBody()).toString();
         JSONObject result = JSONObject.parseObject(body);
         JSONArray reposDetail = result.getJSONArray("data");
 
@@ -161,7 +159,7 @@ public class RestInterfaceManager {
     //---------------------------------------------commit service------------------------------------------------------
 
     public String getFirstCommitDate(String developerName){
-        JSONObject data = restTemplate.getForObject(commitServicePath + "/first-commit?author=" + developerName, JSONObject.class).getJSONObject("data");
+        JSONObject data = Objects.requireNonNull(restTemplate.getForObject(commitServicePath + "/first-commit?author=" + developerName, JSONObject.class)).getJSONObject("data");
         LocalDateTime fistCommitDate = LocalDateTime.parse(data.getJSONObject("repos_summary").getString("first_commit_time_summary"), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         return fistCommitDate.plusHours(8).toLocalDate().toString();
     }
@@ -351,7 +349,7 @@ public class RestInterfaceManager {
                 "&until=" + (StringUtils.isEmpty(query.get("until")) ? "" : query.get("until").toString());
 
         ResponseEntity<JSONObject> responseEntity = restTemplate.exchange(url , HttpMethod.GET,request,JSONObject.class);
-        JSONObject result = JSONObject.parseObject(responseEntity.getBody().toString(),JSONObject.class);
+        JSONObject result = JSONObject.parseObject(Objects.requireNonNull(responseEntity.getBody()).toString(),JSONObject.class);
 
         if(result.getIntValue("code") != 200){
             logger.error("request /measure/developer/workLoad failed");

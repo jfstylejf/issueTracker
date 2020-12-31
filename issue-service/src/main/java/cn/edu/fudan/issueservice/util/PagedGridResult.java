@@ -1,6 +1,7 @@
 package cn.edu.fudan.issueservice.util;
 
 import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import lombok.Data;
 import org.springframework.util.StringUtils;
 
@@ -38,5 +39,15 @@ public class PagedGridResult {
 			}
 			PageHelper.startPage(page, ps, orderBy);
 		}
+	}
+
+	public static PagedGridResult setterPagedGrid(List<?> list, Integer page) {
+		PageInfo<?> pageList = new PageInfo<>(list);
+		PagedGridResult grid = new PagedGridResult();
+		grid.setPage(page);
+		grid.setRows(list);
+		grid.setTotal(pageList.getPages());
+		grid.setRecords(pageList.getTotal());
+		return grid;
 	}
 }

@@ -25,7 +25,7 @@ public class AstParserUtil {
 
     private final static String LOC = "loc", START = "start", END = "end", LINE = "line", BODY = "body", DECLARATIONS = "declarations",
             TYPE = "type", ID = "id", NAME = "name", PARAMS = "params", KEY = "key", VALUE = "value", KIND = "kind", SUPER_CLASS = "superClass",
-            CLASS = "class", EXTENDS = "extends", OBJECT = "object", PROPERTY = "property", COLUMN = "column", DECLARATION = "declaration";
+            CLASS = "class", EXTENDS = "extends", OBJECT = "object", PROPERTY = "property", DECLARATION = "declaration";
 
     private final static String FUNCTION_DECLARATION = "FunctionDeclaration", VARIABLE_DECLARATION = "VariableDeclaration",
             IMPORT_DECLARATION = "ImportDeclaration", CLASS_DECLARATION = "ClassDeclaration", EXPORT_DEFAULT_DECLARATION = "ExportDefaultDeclaration",

@@ -1,4 +1,3 @@
-
 package cn.edu.fudan.issueservice.controller;
 
 import cn.edu.fudan.issueservice.component.RestInterfaceManager;
@@ -111,21 +110,21 @@ public class IssueMeasurementController {
         }
     }
 
-    @ApiOperation(value = "获取开发者能力页面四类（谁引入、谁解决）issue接口", notes = "@return Object\n {\n" +
-            "        \"min\": 0.0,\n" +
-            "        \"avg\": 156.52678571428572,\n" +
-            "        \"upperQuartile\": 9.0,\n" +
-            "        \"quantity\": 112.0,\n" +
-            "        \"max\": 435.0,\n" +
-            "        \"multiple\": 346.0,\n" +
-            "        \"mid\": 88.0,\n" +
-            "        \"lowerQuartile\": 346.0\n" +
-            "    }", httpMethod = "GET")
+    @ApiOperation(value = "获取开发者能力页面四类（谁引入、谁解决）issue接口", notes = "@return Object\n  [\n" +
+            "        {\n" +
+            "            \"yuping\": {\n" +
+            "                \"quantity\": 0,\n" +
+            "                \"min\": 0,\n" +
+            "                \"max\": 0,\n" +
+            "                \"mid\": 0\n" +
+            "            }\n" +
+            "        }\n]", httpMethod = "GET")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "author", value = "开发人员姓名"),
             @ApiImplicitParam(name = "repo_uuids", value = "多个库的uuid\n库uuid之间用英文逗号,作为分隔符"),
             @ApiImplicitParam(name = "since", value = "起始时间\n格式要求: yyyy-MM-dd"),
             @ApiImplicitParam(name = "until", value = "终止时间\n格式要求: yyyy-MM-dd"),
+            @ApiImplicitParam(name = "asc", value = "是否升序：1表示升序，0表示降序"),
             @ApiImplicitParam(name = "status", value = "issue状态", allowableValues = "living , other_solved , self_solved"),
             @ApiImplicitParam(name = "percent", value = "-1返回数量\n-2返回详情\n不传默认-2", allowableValues = "-1 , -2"),
             @ApiImplicitParam(name = "target", value = "缺陷时谁引入\nself 自己引入,other 他人引入", allowableValues = "self , other"),
@@ -136,6 +135,7 @@ public class IssueMeasurementController {
                                                @RequestParam(value = "since",required = false) String since,
                                                @RequestParam(value = "until",required = false) String until,
                                                @RequestParam(value = "tool",required = false, defaultValue = "sonarqube") String tool,
+                                               @RequestParam(value = "asc") Boolean isAsc,
                                                @RequestParam(value = "status") String status,
                                                @RequestParam(value = "percent",required = false,defaultValue = "-2") Double percent,
                                                @RequestParam(value = "target") String target, HttpServletRequest request) {
@@ -144,17 +144,23 @@ public class IssueMeasurementController {
         since = DateTimeUtil.timeFormatIsLegal(since, false);
         until = DateTimeUtil.timeFormatIsLegal(until, true);
         List<String> repoList = SegmentationUtil.splitStringList(repoUuids);
+        List<String> developers = SegmentationUtil.splitStringList(developer);
         //init query
         Map<String, Object> query = new HashMap<>(18);
-        query.put("producer", developer);
         query.put("repoList", repoList);
         query.put("since", since);
         query.put("until", until);
         query.put("tool", tool);
         //check need detail or just number info
         try {
-            if (percent == numberInfo) {
-                return new ResponseBean<>(200, success, issueMeasureInfoService.getIssuesLifeCycle(status, target, query));
+            if (percent == numberInfo ) {
+                assert developers != null;
+                List<Map<String, JSONObject>> developersLifecycle = new ArrayList<>();
+                developers.forEach(producer -> {
+                    query.put("producer", developer);
+                    developersLifecycle.add(new HashMap<String, JSONObject>(2){{put(producer, issueMeasureInfoService.getIssuesLifeCycle(status, target, query));}});
+                });
+                return new ResponseBean<>(200, success, developersLifecycle);
             }
             String token = request.getHeader(TOKEN);
             return new ResponseBean<>(200, success, issueMeasureInfoService.getLifeCycleDetail(status, target, query, token));
