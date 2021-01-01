@@ -160,7 +160,7 @@ public class SonarQubeBaseAnalyzer extends BaseAnalyzer {
     @Override
     public Integer getPriorityByRawIssue(RawIssue rawIssue) {
         int result = 1;
-        String detail = rawIssue.getDetail ();
+        String detail = rawIssue.getDetail();
         String[] rawIssueArgs  = detail.split ("---");
         String severity = rawIssueArgs[rawIssueArgs.length - 1];
         switch (severity){

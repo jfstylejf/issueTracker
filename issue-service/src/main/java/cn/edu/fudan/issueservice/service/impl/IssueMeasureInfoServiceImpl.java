@@ -208,6 +208,26 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
         return PagedGridResult.setterPagedGrid(result, page);
     }
 
+    @Override
+    public List<Map<String, JSONObject>> handleSortDeveloperLifecycle(List<Map<String, JSONObject>> developersLifecycle, Boolean isAsc) {
+        if(isAsc == null){
+            return developersLifecycle;
+        }
+        developersLifecycle.sort((o1, o2) -> {
+            int num1 = 0, num2 = 0;
+            for(String name : o1.keySet()){
+                JSONObject detail = (JSONObject) o1.get(name);
+                num1 += detail.getIntValue("quantity");
+            }
+            for(String name : o2.keySet()){
+                JSONObject detail = (JSONObject) o2.get(name);
+                num2 += detail.getIntValue("quantity");
+            }
+            return isAsc ? num1 - num2 : num2 - num1;
+        });
+        return developersLifecycle;
+    }
+
     @Autowired
     public void setRawIssueDao(RawIssueDao rawIssueDao) {
         this.rawIssueDao = rawIssueDao;

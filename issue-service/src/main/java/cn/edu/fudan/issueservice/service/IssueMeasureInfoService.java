@@ -74,4 +74,11 @@ public interface IssueMeasureInfoService {
      */
     PagedGridResult getSelfIntroducedLivingIssueCount(int page, int ps, String order, Boolean isAsc, Map<String, Object> query);
 
+    /**
+     * 对lifecycle排序
+     * @param developersLifecycle developersLifecycle
+     * @param isAsc isAsc
+     * @return 排序后
+     */
+    List<Map<String, JSONObject>> handleSortDeveloperLifecycle(List<Map<String, JSONObject>> developersLifecycle, Boolean isAsc);
 }

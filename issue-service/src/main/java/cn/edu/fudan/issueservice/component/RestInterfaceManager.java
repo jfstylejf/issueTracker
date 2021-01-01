@@ -63,6 +63,18 @@ public class RestInterfaceManager {
         return restTemplate.getForObject(accountServicePath + "/user/accountIds", List.class);
     }
 
+    public List<String> getDeveloperInRepo(String repoUuids) {
+        List<String> developers = new ArrayList<>();
+        JSONObject result = restTemplate.getForObject(accountServicePath + "/user/developers?repo_uuids=" + repoUuids + "is_whole=true", JSONObject.class);
+        assert result != null;
+        JSONArray rows = result.getJSONObject("data").getJSONArray("rows");
+        for(Object row : rows){
+            JSONObject developer = (JSONObject)row;
+            developers.add(developer.getString("developer_unique_name"));
+        }
+        return developers;
+    }
+
     //-----------------------------------------------project service-------------------------------------------------
     /**
      * 根据account_id查找参与的项目信息

@@ -120,7 +120,7 @@ public class IssueMeasurementController {
             "            }\n" +
             "        }\n]", httpMethod = "GET")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "author", value = "开发人员姓名"),
+            @ApiImplicitParam(name = "developer", value = "开发人员姓名"),
             @ApiImplicitParam(name = "repo_uuids", value = "多个库的uuid\n库uuid之间用英文逗号,作为分隔符"),
             @ApiImplicitParam(name = "since", value = "起始时间\n格式要求: yyyy-MM-dd"),
             @ApiImplicitParam(name = "until", value = "终止时间\n格式要求: yyyy-MM-dd"),
@@ -130,21 +130,20 @@ public class IssueMeasurementController {
             @ApiImplicitParam(name = "target", value = "缺陷时谁引入\nself 自己引入,other 他人引入", allowableValues = "self , other"),
     })
     @GetMapping(value = "/codewisdom/issue/lifecycle")
-    public ResponseBean<Object> getIssueLifecycleByConditions(@RequestParam(value = "author",required = false) String developer,
-                                               @RequestParam(value = "repo_uuids",required = false) String repoUuids,
-                                               @RequestParam(value = "since",required = false) String since,
-                                               @RequestParam(value = "until",required = false) String until,
-                                               @RequestParam(value = "tool",required = false, defaultValue = "sonarqube") String tool,
-                                               @RequestParam(value = "asc") Boolean isAsc,
+    public ResponseBean<Object> getIssueLifecycleByConditions(@RequestParam(value = "developer", required = false) String developer,
+                                               @RequestParam(value = "repo_uuids", required = false) String repoUuids,
+                                               @RequestParam(value = "since", required = false) String since,
+                                               @RequestParam(value = "until", required = false) String until,
+                                               @RequestParam(value = "tool", required = false, defaultValue = "sonarqube") String tool,
+                                               @RequestParam(value = "asc", required = false) Boolean isAsc,
                                                @RequestParam(value = "status") String status,
-                                               @RequestParam(value = "percent",required = false,defaultValue = "-2") Double percent,
+                                               @RequestParam(value = "percent", required = false, defaultValue = "-2") Double percent,
                                                @RequestParam(value = "target") String target, HttpServletRequest request) {
         double numberInfo = -2;
         //handle the requirement
         since = DateTimeUtil.timeFormatIsLegal(since, false);
         until = DateTimeUtil.timeFormatIsLegal(until, true);
         List<String> repoList = SegmentationUtil.splitStringList(repoUuids);
-        List<String> developers = SegmentationUtil.splitStringList(developer);
         //init query
         Map<String, Object> query = new HashMap<>(18);
         query.put("repoList", repoList);
@@ -153,14 +152,17 @@ public class IssueMeasurementController {
         query.put("tool", tool);
         //check need detail or just number info
         try {
-            if (percent == numberInfo ) {
-                assert developers != null;
+            if(percent == numberInfo) {
                 List<Map<String, JSONObject>> developersLifecycle = new ArrayList<>();
+                List<String> developers = isAsc != null ? restInterfaceManager.getDeveloperInRepo(repoUuids) : SegmentationUtil.splitStringList(developer);
+                assert developers != null;
                 developers.forEach(producer -> {
-                    query.put("producer", developer);
-                    developersLifecycle.add(new HashMap<String, JSONObject>(2){{put(producer, issueMeasureInfoService.getIssuesLifeCycle(status, target, query));}});
+                    query.put("producer", producer);
+                    developersLifecycle.add(new HashMap<String, JSONObject>(2) {{
+                        put(producer, issueMeasureInfoService.getIssuesLifeCycle(status, target, query));
+                    }});
                 });
-                return new ResponseBean<>(200, success, developersLifecycle);
+                return new ResponseBean<>(200, success, issueMeasureInfoService.handleSortDeveloperLifecycle(developersLifecycle, isAsc));
             }
             String token = request.getHeader(TOKEN);
             return new ResponseBean<>(200, success, issueMeasureInfoService.getLifeCycleDetail(status, target, query, token));
