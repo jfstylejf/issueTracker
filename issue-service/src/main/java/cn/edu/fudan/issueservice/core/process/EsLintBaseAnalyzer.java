@@ -186,7 +186,7 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
         //todo check class name
         location.setClass_name(AstParserUtil.getJsClass(nodeJsCode, line, endLine));
         //get method name
-        location.setMethod_name (AstParserUtil.getJsMethod(nodeJsCode, line, endLine, filePath));
+        location.setMethod_name(AstParserUtil.getJsMethod(nodeJsCode, line, endLine, filePath));
         //set bug lines
         if(line == endLine){
             location.setBug_lines(line + "");

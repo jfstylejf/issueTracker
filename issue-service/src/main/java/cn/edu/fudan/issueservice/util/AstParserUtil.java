@@ -25,13 +25,15 @@ public class AstParserUtil {
 
     private final static String LOC = "loc", START = "start", END = "end", LINE = "line", BODY = "body", DECLARATIONS = "declarations",
             TYPE = "type", ID = "id", NAME = "name", PARAMS = "params", KEY = "key", VALUE = "value", KIND = "kind", SUPER_CLASS = "superClass",
-            CLASS = "class", EXTENDS = "extends", OBJECT = "object", PROPERTY = "property", DECLARATION = "declaration";
+            CLASS = "class", EXTENDS = "extends", OBJECT = "object", PROPERTY = "property", DECLARATION = "declaration",
+            EXPRESSION = "expression", CALLEE = "callee", OPERATOR = "operator", ARGUMENT = "argument", FOR_STATEMENT = "ForStatement";
 
     private final static String FUNCTION_DECLARATION = "FunctionDeclaration", VARIABLE_DECLARATION = "VariableDeclaration",
             IMPORT_DECLARATION = "ImportDeclaration", CLASS_DECLARATION = "ClassDeclaration", EXPORT_DEFAULT_DECLARATION = "ExportDefaultDeclaration",
             METHOD_DEFINITION = "MethodDefinition", EXPRESSION_STATEMENT = "ExpressionStatement", EXPORT_NAMED_DECLARATION = "ExportNamedDeclaration";
 
-    private final static  String CLASS_PROPERTY = "ClassProperty";
+    private final static  String CLASS_PROPERTY = "ClassProperty", CALL_EXPRESSION = "CallExpression", FUNCTION = "function",
+            UNARY_EXPRESSION = "UnaryExpression", OBJECT_PATTERN = "ObjectPattern", PROPERTIES = "properties";
 
     public static String findMethod(String filePath, int beginLine, int endLine) {
         try {
@@ -242,17 +244,61 @@ public class AstParserUtil {
                                 handleClassName(declaration):
                                 handleClassDeclaration(declaration.getJSONObject(BODY), beginLine, endLine, filePath);
                     case IMPORT_DECLARATION:
-                    case EXPORT_DEFAULT_DECLARATION:
-                    case EXPRESSION_STATEMENT:
                         return FileUtil.getCode(filePath, declarationBeginLine, declarationEndLine);
+                    case EXPORT_DEFAULT_DECLARATION:
+                        return handleExportDefaultDeclaration(declaration, filePath, declarationBeginLine, declarationEndLine);
+                    case EXPRESSION_STATEMENT:
+                        return handleExpressionStatement(declaration, declarationBeginLine, declarationEndLine, filePath);
                     case EXPORT_NAMED_DECLARATION:
                         return handleExportNamedDeclaration(declaration);
+                    case FOR_STATEMENT:
+                        return FileUtil.getForStatementCode(filePath, declarationBeginLine, declarationEndLine);
                     default:
                         return null;
                 }
             }
         }
         return null;
+    }
+
+    private static String handleExportDefaultDeclaration(JSONObject declaration, String filePath, int beginLine, int endLine) {
+        JSONObject exportDeclaration = declaration.getJSONObject(DECLARATION);
+        if(exportDeclaration.getString(TYPE).equals(CLASS_DECLARATION)) {
+            StringBuilder exportDefaultName = new StringBuilder().append("export default ");
+            exportDefaultName.append(exportDeclaration.getJSONObject(ID).getString(NAME));
+            JSONObject superClass = exportDeclaration.getJSONObject(SUPER_CLASS);
+            if(superClass != null){
+                exportDefaultName.append(EXTENDS).append(" ").append(superClass.getJSONObject(OBJECT).getString(NAME));
+                if(superClass.getJSONObject((PROPERTY)) != null){
+                    exportDefaultName.append(".").append(superClass.getJSONObject(PROPERTY).getString(NAME));
+                }
+            }
+            return  exportDefaultName.toString();
+        }
+        return FileUtil.getCode(filePath, beginLine, endLine);
+    }
+
+    private static String handleExpressionStatement(JSONObject declaration, int declarationBeginLine, int declarationEndLine, String filePath) {
+        StringBuilder expression = new StringBuilder();
+        JSONObject node = declaration.getJSONObject(EXPRESSION);
+        if(node.getString(TYPE).equals(UNARY_EXPRESSION)){
+            expression.append(node.getString(OPERATOR) != null ? node.getString(OPERATOR) : "");
+            node = node.getJSONObject(ARGUMENT);
+        }
+        if(node.getString(TYPE).equals(CALL_EXPRESSION)){
+            expression.append(FUNCTION).append("(");
+            JSONArray params = node.getJSONObject(CALLEE).getJSONArray(PARAMS);
+            for (int i = 0; i < params.size(); i++) {
+                if (i != 0) {
+                    expression.append(",");
+                }
+                JSONObject paramDetail = params.getJSONObject(i);
+                expression.append(paramDetail.getString(NAME));
+            }
+            return expression.append(")").toString();
+        }else{
+            return FileUtil.getCode(filePath, declarationBeginLine, declarationEndLine);
+        }
     }
 
     private static String handleExportNamedDeclaration(JSONObject declaration) {
@@ -283,6 +329,19 @@ public class AstParserUtil {
                     variableName.append(",");
                 }
                 JSONObject param = paramsDetail.getJSONObject(i);
+                if(param.getJSONObject(ID).getString(TYPE).equals(OBJECT_PATTERN)){
+                    JSONArray properties = param.getJSONObject(ID).getJSONArray(PROPERTIES);
+                    variableName.append("{");
+                    for(int j = 0; j < properties.size(); j++){
+                        if (j != 0) {
+                            variableName.append(",");
+                        }
+                        JSONObject property = (JSONObject) properties.get(i);
+                        variableName.append(property.getJSONObject(KEY).getString(NAME));
+                    }
+                    variableName.append("}");
+                    continue;
+                }
                 variableName.append(param.getJSONObject(ID).getString(NAME));
             }
         }
@@ -355,10 +414,13 @@ public class AstParserUtil {
                         return handleClassDeclaration(node, beginLine, endLine, filePath);
                     case IMPORT_DECLARATION:
                     case EXPORT_DEFAULT_DECLARATION:
-                    case EXPRESSION_STATEMENT:
                         return FileUtil.getCode(filePath, nodeBeginLine, nodeEndLine);
+                    case EXPRESSION_STATEMENT:
+                        return handleExpressionStatement(node, beginLine, endLine, filePath);
                     case EXPORT_NAMED_DECLARATION:
                         return handleExportNamedDeclaration(declaration);
+                    case FOR_STATEMENT:
+                        return FileUtil.getForStatementCode(filePath, beginLine, endLine);
                     default:
                         return null;
                 }

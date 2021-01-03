@@ -71,9 +71,30 @@ public class FileUtil {
         }
     }
 
+    public static String getForStatementCode(String codePath, int line, int endLine) {
+        try (LineNumberReader reader = new LineNumberReader(new FileReader(codePath))){
+            StringBuilder code = new StringBuilder();
+            int index = 0;
+            while (true) {
+                index++;
+                String s = reader.readLine();
+                if(index >= line && index <= endLine){
+                    code.append(s);
+                }else if(index > endLine){
+                    break;
+                }
+            }
+            return code.substring(0, code.indexOf(")") + 1);
+        }catch (IOException e){
+            log.error("get code source failed ! file is ---> {}", codePath);
+            return null;
+        }
+    }
+
     public static void main(String[] args) {
-        System.out.println(getCode("C:\\Users\\Beethoven\\Desktop\\issue-tracker-web\\test.js", 36, 36));
+        System.out.println(getForStatementCode("C:\\Users\\Beethoven\\Desktop\\issue-tracker-web\\test.js", 51, 55));
         // 获取文件的内容的总行数
         System.out.println(getTotalLines(new File("C:\\Users\\Beethoven\\Desktop\\issue-tracker-web\\test.js")));
     }
+
 }
