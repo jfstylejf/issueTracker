@@ -91,10 +91,45 @@ public class FileUtil {
         }
     }
 
+    public static String getCode(String filePath, int line, int endLine, int beginColumn, int endColumn) {
+        File codeFile = new File(filePath);
+        //code line limit
+        if (line <= 0 || endLine > getTotalLines(codeFile)) {
+            log.error("code line error,begin line is {},endLine is {}, code total line is {} !", line, endLine, getTotalLines(codeFile));
+        }
+        //get code
+        try (LineNumberReader reader = new LineNumberReader(new FileReader(codeFile))){
+            StringBuilder code = new StringBuilder();
+            int index = 0;
+            while (true) {
+                index++;
+                String s = reader.readLine();
+                if(index >= line && index <= endLine){
+                    if(line == endLine){
+                        s = s.substring(beginColumn, endColumn);
+                    }else{
+                        if(index == line){
+                            s = s.substring(beginColumn);
+                        }
+                        if(index == endLine){
+                            s = s.substring(0, endColumn);
+                        }
+                    }
+                    code.append(s);
+                }else if(index > endLine){
+                    break;
+                }
+            }
+            return code.toString();
+        }catch (IOException e){
+            log.error("get code source failed ! file is ---> {}", filePath);
+            return null;
+        }
+    }
+
     public static void main(String[] args) {
-        System.out.println(getForStatementCode("C:\\Users\\Beethoven\\Desktop\\issue-tracker-web\\test.js", 51, 55));
+        System.out.println(getCode("C:\\Users\\Beethoven\\Desktop\\array.js", 10, 19, 1, 8));
         // 获取文件的内容的总行数
         System.out.println(getTotalLines(new File("C:\\Users\\Beethoven\\Desktop\\issue-tracker-web\\test.js")));
     }
-
 }
