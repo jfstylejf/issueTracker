@@ -243,6 +243,7 @@ public class AccountController {
             @ApiImplicitParam(name = "repo_uuids", value = "repo库", dataType = "String", required = false,defaultValue = "afc0b210-3465-11eb-8dca-4dbb5f7a5f33,153ee1d4-3457-11eb-8dca-4dbb5f7a5f33"),
             @ApiImplicitParam(name = "since", value = "起始时间", dataType = "String", required = false,defaultValue = "2020-01-01"),
             @ApiImplicitParam(name = "until", value = "结束时间", dataType = "String", required = false,defaultValue = "2020-12-31"),
+            @ApiImplicitParam(name = "is_whole", value = "是否获取所有数据（不进行分页）", dataType = "Boolean", required = false,defaultValue = "0"),
             @ApiImplicitParam(name = "page", value = "分页的第几页", dataType = "Integer", required = false,defaultValue = "1"),
             @ApiImplicitParam(name = "ps", value = "分页中每页的大小", dataType = "Integer", required = false,defaultValue = "10"),
             @ApiImplicitParam(name = "order", value = "要排序的字段", dataType = "String", required = false,defaultValue = "developer_unique_name"),
@@ -252,6 +253,7 @@ public class AccountController {
     public Object getDeveloperList(@RequestParam(value = "repo_uuids", required = false) String repoUuids,
                                    @RequestParam(value = "since", required = false) String since,
                                    @RequestParam(value = "until", required = false) String until,
+                                   @RequestParam(value = "is_whole", required = false, defaultValue = "0") Boolean isWhole,
                                    @RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
                                    @RequestParam(value = "ps", required = false, defaultValue = "30") Integer pageSize,
                                    @RequestParam(value = "order", required = false, defaultValue = "developer_unique_name") String order,
@@ -260,8 +262,13 @@ public class AccountController {
         String[] repoListArr = repoUuids.split(",");
         List<String> repoList = Arrays.asList(repoListArr);
         try{
+            // 获取所有数据，不进行分页
+            if (isWhole) {
+                return new ResponseEntity<>(200, "success!", accountService.getDevelopers(repoList, since, until));
+            }
+            // 否则，获取分页数据
             PagedGridResult result = accountService.getDevelopers(repoList, since, until, page, pageSize, order, isAsc);
-            return new ResponseEntity<>(200, "receive!", result);
+            return new ResponseEntity<>(200, "success!", result);
         }catch (Exception e){
             e.printStackTrace();
             return new ResponseEntity<>(401, "failed! " + e.getMessage(), null);

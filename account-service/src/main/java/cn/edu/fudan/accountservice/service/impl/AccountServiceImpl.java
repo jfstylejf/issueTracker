@@ -209,6 +209,11 @@ public class AccountServiceImpl implements AccountService {
         return setterPagedGrid(result, page);
     }
 
+    @Override
+    public List<Map<String, Object>> getDevelopers(List<String> repoList, String since, String until) {
+        return commitViewMapper.getDevelopers(repoList, since, until);
+    }
+
     private PagedGridResult setterPagedGrid(List<?> list, Integer page) {
         PageInfo<?> pageList = new PageInfo<>(list);
         PagedGridResult grid = new PagedGridResult();

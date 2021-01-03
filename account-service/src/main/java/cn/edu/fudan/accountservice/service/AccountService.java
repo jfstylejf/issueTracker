@@ -115,5 +115,13 @@ public interface AccountService {
      */
     PagedGridResult getDevelopers(List<String> repoList, String since, String until, Integer page, Integer pageSize, String order, Boolean isAsc);
 
+    /**
+     *
+     * @param repoList 参与的库
+     * @param since 起始时间
+     * @param until 结束时间
+     * @return 获取给定条件下 所有的开发者列表 不进行分页
+     */
+    List<Map<String, Object>> getDevelopers(List<String> repoList, String since, String until);
 
 }
