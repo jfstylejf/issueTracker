@@ -6,14 +6,13 @@ import cn.edu.fudan.issueservice.domain.dbo.Location;
 import cn.edu.fudan.issueservice.domain.dbo.RawIssue;
 import cn.edu.fudan.issueservice.domain.enums.RawIssueStatus;
 import cn.edu.fudan.issueservice.domain.enums.ToolEnum;
-import cn.edu.fudan.issueservice.util.ASTUtil;
+import cn.edu.fudan.issueservice.util.AstUtil;
 import cn.edu.fudan.issueservice.util.AstParserUtil;
 import cn.edu.fudan.issueservice.util.FileFilter;
 import cn.edu.fudan.issueservice.util.JGitHelper;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -160,8 +159,8 @@ public class SonarQubeBaseAnalyzer extends BaseAnalyzer {
 
     @Override
     public Integer getPriorityByRawIssue(RawIssue rawIssue) {
-        int result = -1;
-        String detail = rawIssue.getDetail ();
+        int result = 1;
+        String detail = rawIssue.getDetail();
         String[] rawIssueArgs  = detail.split ("---");
         String severity = rawIssueArgs[rawIssueArgs.length - 1];
         switch (severity){
@@ -251,7 +250,7 @@ public class SonarQubeBaseAnalyzer extends BaseAnalyzer {
         //获取相应的code
         String code= null;
         try{
-            code = ASTUtil.getCode(startLine,endLine,repoPath+"/"+filePath);
+            code = AstUtil.getCode(startLine,endLine,repoPath+"/"+filePath);
         }catch (Exception e){
             log.info("file path --> {} file deleted",repoPath+"/"+filePath);
             log.error("rawIssueId --> {}  get code failed.",rawIssueId);

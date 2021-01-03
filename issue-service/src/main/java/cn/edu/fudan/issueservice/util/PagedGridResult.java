@@ -1,43 +1,53 @@
 package cn.edu.fudan.issueservice.util;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import lombok.Data;
+import org.springframework.util.StringUtils;
+
 import java.util.List;
 
 /**
- * 
- * @Title: PagedGridResult.java
- * @Package com.imooc.utils
- * @Description: 用来返回分页Grid的数据格式
- * Copyright: Copyright (c) 2019
+ * @author Beethoven
  */
+@Data
 public class PagedGridResult {
-	
-	private int page;			// 当前页数
-	private int total;			// 总页数	
-	private long records;		// 总记录数
-	private List<?> rows;		// 每行显示的内容
+	/**
+	 * page:页
+	 * total:总页数
+	 * records:总记录数
+	 * rows:每行显示内容
+	 */
+	private int page;
 
-	public int getPage() {
-		return page;
+	private int total;
+
+	private long records;
+
+	private List<?> rows;
+
+	public static void handlePageHelper(int page, int ps, String order, Boolean isAsc){
+		if (StringUtils.isEmpty(order)) {
+			PageHelper.startPage(page, ps);
+		} else {
+			String orderBy = order;
+			if (isAsc != null && isAsc){
+				orderBy = order + ' ' + "asc";
+			}
+			if (isAsc != null && !isAsc){
+				orderBy = order + ' ' + "desc";
+			}
+			PageHelper.startPage(page, ps, orderBy);
+		}
 	}
-	public void setPage(int page) {
-		this.page = page;
-	}
-	public int getTotal() {
-		return total;
-	}
-	public void setTotal(int total) {
-		this.total = total;
-	}
-	public long getRecords() {
-		return records;
-	}
-	public void setRecords(long records) {
-		this.records = records;
-	}
-	public List<?> getRows() {
-		return rows;
-	}
-	public void setRows(List<?> rows) {
-		this.rows = rows;
+
+	public static PagedGridResult setterPagedGrid(List<?> list, Integer page) {
+		PageInfo<?> pageList = new PageInfo<>(list);
+		PagedGridResult grid = new PagedGridResult();
+		grid.setPage(page);
+		grid.setRows(list);
+		grid.setTotal(pageList.getPages());
+		grid.setRecords(pageList.getTotal());
+		return grid;
 	}
 }

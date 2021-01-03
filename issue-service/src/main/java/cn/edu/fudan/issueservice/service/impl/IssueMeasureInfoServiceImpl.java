@@ -10,13 +10,10 @@ import cn.edu.fudan.issueservice.util.DateTimeUtil;
 import cn.edu.fudan.issueservice.util.PagedGridResult;
 import cn.edu.fudan.issueservice.util.SegmentationUtil;
 import com.alibaba.fastjson.JSONObject;
-import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -192,7 +189,7 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
         //handle issues detail
         issuesDetail.forEach(r -> {
             r.put("projectName", repoName.get(r.getString("repoUuid")));
-            r.put("severity", Objects.requireNonNull(IssuePriorityEnum.getPriorityEnumByRank(r.getInteger("priority"))).getName());
+            r.put("severity", Objects.requireNonNull(JavaIssuePriorityEnum.getPriorityEnumByRank(r.getInteger("priority"))).getName());
         });
 
         return issuesDetail;
@@ -206,30 +203,29 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
 
     @Override
     public PagedGridResult getSelfIntroducedLivingIssueCount(int page, int ps, String order, Boolean isAsc, Map<String, Object> query) {
-        if (StringUtils.isEmpty(order)) {
-            PageHelper.startPage(page, ps);
-        } else {
-            String orderBy = order;
-            if (isAsc != null && isAsc){
-                orderBy = order + ' ' + "asc";
-            }
-            if (isAsc != null && !isAsc){
-                orderBy = order + ' ' + "desc";
-            }
-            PageHelper.startPage(page, ps, orderBy);
-        }
+        PagedGridResult.handlePageHelper(page, ps, order, isAsc);
         List<JSONObject> result = issueDao.getSelfIntroduceLivingIssueCount(query);
-        return setterPagedGrid(result, page);
+        return PagedGridResult.setterPagedGrid(result, page);
     }
 
-    private PagedGridResult setterPagedGrid(List<?> list, Integer page) {
-        PageInfo<?> pageList = new PageInfo<>(list);
-        PagedGridResult grid = new PagedGridResult();
-        grid.setPage(page);
-        grid.setRows(list);
-        grid.setTotal(pageList.getPages());
-        grid.setRecords(pageList.getTotal());
-        return grid;
+    @Override
+    public List<Map<String, JSONObject>> handleSortDeveloperLifecycle(List<Map<String, JSONObject>> developersLifecycle, Boolean isAsc) {
+        if(isAsc == null){
+            return developersLifecycle;
+        }
+        developersLifecycle.sort((o1, o2) -> {
+            int num1 = 0, num2 = 0;
+            for(String name : o1.keySet()){
+                JSONObject detail = (JSONObject) o1.get(name);
+                num1 += detail.getIntValue("quantity");
+            }
+            for(String name : o2.keySet()){
+                JSONObject detail = (JSONObject) o2.get(name);
+                num2 += detail.getIntValue("quantity");
+            }
+            return isAsc ? num1 - num2 : num2 - num1;
+        });
+        return developersLifecycle;
     }
 
     @Autowired
