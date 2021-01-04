@@ -67,7 +67,7 @@ public class RestInterfaceManager {
         List<String> developers = new ArrayList<>();
         JSONObject result = restTemplate.getForObject(accountServicePath + "/user/developers?repo_uuids=" + repoUuids + "is_whole=true", JSONObject.class);
         assert result != null;
-        JSONArray rows = result.getJSONObject("data").getJSONArray("rows");
+        JSONArray rows = result.getJSONArray("data");
         for(Object row : rows){
             JSONObject developer = (JSONObject)row;
             developers.add(developer.getString("developer_unique_name"));

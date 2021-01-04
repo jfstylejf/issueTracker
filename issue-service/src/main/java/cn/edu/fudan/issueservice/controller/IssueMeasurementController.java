@@ -154,6 +154,7 @@ public class IssueMeasurementController {
         try {
             if(percent == numberInfo) {
                 List<Map<String, JSONObject>> developersLifecycle = new ArrayList<>();
+                // todo 这里是否需要加入since 和 until的条件?-----> restInterfaceManager.getDeveloperInRepo(repoUuids, since, until)
                 List<String> developers = isAsc != null ? restInterfaceManager.getDeveloperInRepo(repoUuids) : SegmentationUtil.splitStringList(developer);
                 assert developers != null;
                 developers.forEach(producer -> {
