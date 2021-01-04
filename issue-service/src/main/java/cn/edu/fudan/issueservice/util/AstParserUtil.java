@@ -1,5 +1,6 @@
 package cn.edu.fudan.issueservice.util;
 
+import cn.edu.fudan.issueservice.exception.ParseFileException;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.github.javaparser.JavaParser;
@@ -33,8 +34,8 @@ public class AstParserUtil {
             IMPORT_DECLARATION = "ImportDeclaration", CLASS_DECLARATION = "ClassDeclaration", EXPORT_DEFAULT_DECLARATION = "ExportDefaultDeclaration",
             METHOD_DEFINITION = "MethodDefinition", EXPRESSION_STATEMENT = "ExpressionStatement", EXPORT_NAMED_DECLARATION = "ExportNamedDeclaration";
 
-    private final static  String CLASS_PROPERTY = "ClassProperty", CALL_EXPRESSION = "CallExpression", FUNCTION = "function",
-            UNARY_EXPRESSION = "UnaryExpression", OBJECT_PATTERN = "ObjectPattern", PROPERTIES = "properties", ARGUMENTS = "arguments";
+    private final static  String CLASS_PROPERTY = "ClassProperty", CALL_EXPRESSION = "CallExpression", PROPERTIES = "properties",
+            UNARY_EXPRESSION = "UnaryExpression", OBJECT_PATTERN = "ObjectPattern";
 
     public static String findMethod(String filePath, int beginLine, int endLine) {
         try {
@@ -161,25 +162,29 @@ public class AstParserUtil {
         return allFieldsInFile;
     }
 
-    public static JSONObject parseJsCode(String binHome, String codePath, String resultFileHome, String repoUuid) {
+    public static JSONObject parseJsCode(String binHome, String codePath, String resultFileHome, String repoUuid, String commit) {
         //step 1. invoke script to analyze AST
         try {
             Runtime rt = Runtime.getRuntime();
             //run babelEsLint script
-            String command = binHome + "babelEsLint.sh " + codePath + " " + repoUuid;
+            String command = binHome + "babelEsLint.sh " + codePath + " " + repoUuid + "_" + commit;
             log.info("command -> {}",command);
             Process process = rt.exec(command);
             boolean timeout = process.waitFor(100L, TimeUnit.SECONDS);
             if (!timeout) {
                 process.destroy();
-                log.error("run babelEsLint script timeout ! (100s)");
+                log.error("run babelEsLint script timeout ! (100s),file: {}", codePath);
                 return null;
             }
+            if(process.exitValue() != 0){
+                log.error("parse file: {},repoUuid: {},commit: {} failed !", codePath, repoUuid, commit);
+                throw new ParseFileException();
+            }
             //step 2. read file parse ast tree to json
-            JSONObject nodeJsCode = readJsParseFile(resultFileHome, repoUuid);
-            log.info("analyze AST success !");
+            JSONObject nodeJsCode = readJsParseFile(resultFileHome, repoUuid, commit);
+            log.info("analyze AST success !file: {}", codePath);
             //step 3. delete file
-            deleteNodeJsCodeFile(binHome, repoUuid);
+            deleteNodeJsCodeFile(binHome, repoUuid, commit);
             return nodeJsCode;
         } catch (Exception e) {
             log.error("invoke babelEsLint script failed !");
@@ -187,9 +192,9 @@ public class AstParserUtil {
         return null;
     }
 
-    private static void deleteNodeJsCodeFile(String binHome, String repoUuid) throws Exception {
+    private static void deleteNodeJsCodeFile(String binHome, String repoUuid, String commit) throws Exception {
         Runtime rt = Runtime.getRuntime();
-        String command = binHome + "deleteAstFile.sh " + repoUuid;
+        String command = binHome + "deleteAstFile.sh " + repoUuid + "_" + commit;
         log.info("command -> {}",command);
         Process process = rt.exec(command);
         boolean timeout = process.waitFor(20L, TimeUnit.SECONDS);
@@ -201,8 +206,8 @@ public class AstParserUtil {
         log.info("delete AST file success !");
     }
 
-    private static JSONObject readJsParseFile(String resultFileHome, String repoUuid) {
-        try (BufferedReader reader = new BufferedReader(new FileReader(FileUtil.getEsLintAstReportAbsolutePath(resultFileHome, repoUuid)))) {
+    private static JSONObject readJsParseFile(String resultFileHome, String repoUuid, String commit) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(FileUtil.getEsLintAstReportAbsolutePath(resultFileHome, repoUuid + "_" + commit)))) {
             int ch;
             char[] buf = new char[1024];
             StringBuilder data = new StringBuilder();
@@ -210,10 +215,9 @@ public class AstParserUtil {
                 String readData = String.valueOf(buf, 0, ch);
                 data.append(readData);
             }
-            log.info("read AST file success !");
             return JSONObject.parseObject(data.toString());
         } catch (Exception e) {
-            log.error("read AST file failed !");
+            log.error("read AST file: {} failed !", resultFileHome);
         }
         return null;
     }
@@ -435,7 +439,7 @@ public class AstParserUtil {
     }
 
     public static void main(String[] args) {
-        JSONObject ast = readJsParseFile("C:\\Users\\Beethoven\\Desktop\\issue-tracker-web", "2");
+        JSONObject ast = readJsParseFile("C:\\Users\\Beethoven\\Desktop\\issue-tracker-web", "2", "");
         assert ast != null;
         String jsMethod = getJsMethod(ast, 56, 58, "import { Table, Tooltip } from 'antd';");
         System.out.println(jsMethod);

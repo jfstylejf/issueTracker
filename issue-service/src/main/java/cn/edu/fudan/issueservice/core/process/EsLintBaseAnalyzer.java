@@ -51,7 +51,7 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
             }
             return process.exitValue() == 0;
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("ESLint can not parse this repo,repoUuid: {},commit: {}", repoUuid, commit);
         }
         return false;
     }
@@ -97,7 +97,6 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
         }
     }
 
-
     private boolean analyzeEsLintResults(String repoPath, JSONArray esLintResults, String repoUuid, String commit) {
         try {
             for(Object esLintTempResult : esLintResults) {
@@ -126,10 +125,9 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
         //handle file name
         String fileName = FileUtil.handleFileNameToRelativePath(filePath);
         //parse js code ---> return node json,if null throws exception
-        JSONObject nodeJsCode = AstParserUtil.parseJsCode(binHome, filePath, resultFileHome, repoUuid);
+        JSONObject nodeJsCode = AstParserUtil.parseJsCode(binHome, filePath, resultFileHome, repoUuid, commit);
         if(nodeJsCode == null){
             //if can't get AST result throws ParseFileException
-            log.error("parse repoUuid:{} commit:{} file ---> {} failed !", repoUuid, commit, esLintResult.getString("filePath"));
             throw new ParseFileException();
         }
         //get the rawIssues

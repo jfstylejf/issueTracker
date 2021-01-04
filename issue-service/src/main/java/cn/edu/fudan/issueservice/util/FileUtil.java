@@ -20,9 +20,9 @@ public class FileUtil {
                 : resultFileHome + "/eslint-report_" + repoUuid + "_" + commit + ".json";
     }
 
-    public static String getEsLintAstReportAbsolutePath(String resultFileHome, String repoUuid) {
-        return IS_WINDOWS ? resultFileHome + "\\ast-report" + repoUuid + ".json"
-                : resultFileHome + "/ast-report" + repoUuid + ".json";
+    public static String getEsLintAstReportAbsolutePath(String resultFileHome, String fileName) {
+        return IS_WINDOWS ? resultFileHome + "\\ast-report" + fileName + ".json"
+                : resultFileHome + "/ast-report" + fileName + ".json";
     }
 
     public static String handleFileNameToRelativePath(String filePath) {
