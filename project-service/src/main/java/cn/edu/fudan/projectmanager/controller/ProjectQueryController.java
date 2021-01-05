@@ -68,7 +68,7 @@ public class ProjectQueryController {
     }
 
     /**
-     * FIXME issue cn.edu.fudan.common.scan
+     * FIXME issue scan
      */
     @GetMapping(value = "/inner/project/repo-uuid")
     public String getRepoUuid(@RequestParam("project_uuid") String projectUuid) {

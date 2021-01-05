@@ -228,7 +228,7 @@ public class RestInterfaceManager {
 
     public String getCodeTrackerStatus(String repoId, String branch) {
         String result = "";
-        JSONObject requestResult = restTemplate.getForObject(codeTrackerServicePath + "/project/cn.edu.fudan.common.scan/status?repoId=" + repoId + "&branch=" + branch, JSONObject.class);
+        JSONObject requestResult = restTemplate.getForObject(codeTrackerServicePath + "/project/scan/status?repoId=" + repoId + "&branch=" + branch, JSONObject.class);
         if(requestResult != null){
             int code = requestResult.getInteger("code");
             if(code == 200){
@@ -267,7 +267,7 @@ public class RestInterfaceManager {
             // toolName 和 toolType 都来自于 Tool表
             String servicePath = getServicePathByToolType(toolType);
             String requestPath = servicePath + "/" + toolType + "/"
-                    + toolName + "/cn.edu.fudan.common.scan-status?repo_uuid=" + repoId;
+                    + toolName + "/scan-status?repo_uuid=" + repoId;
             log.debug("request path is {}", requestPath);
             JSONObject requestResult = restTemplate.getForObject (requestPath, JSONObject.class);
             if(requestResult != null){

@@ -53,7 +53,7 @@ public class IssueScanControllerTest {
         Mockito.when( issueScanService.getScanStatus(Mockito.anyString(),Mockito.anyString())).thenReturn(res);
 
         // 利用mockMvc实例模拟用户的url访问，获取返回的字符串结果
-        String result = mockMvc.perform(MockMvcRequestBuilders.get("/issue/sonar/cn.edu.fudan.common.scan-status").param("repo_uuid", "repoIdValue"))
+        String result = mockMvc.perform(MockMvcRequestBuilders.get("/issue/sonar/scan-status").param("repo_uuid", "repoIdValue"))
                 .andReturn().getResponse().getContentAsString();
 
         ResponseBean<IssueRepo> expected = new ResponseBean<>(200, "success!", res);

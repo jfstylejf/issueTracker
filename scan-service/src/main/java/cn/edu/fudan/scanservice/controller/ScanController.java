@@ -14,12 +14,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * description: receive cn.edu.fudan.common.scan request and
- *             query data about cn.edu.fudan.common.scan eg cn.edu.fudan.common.scan status, cn.edu.fudan.common.scan commits
+ * description: receive scan request and
+ *             query data about scan eg scan status, scan commits
  *
  * @author fancying
  */
-@Api(value = "cn.edu.fudan.common.scan", tags = {"扫描相关接口"})
+@Api(value = "scan", tags = {"扫描相关接口"})
 @RestController
 public class ScanController {
 
@@ -27,13 +27,13 @@ public class ScanController {
     private ScanInfoService scanInfoService;
 
     /**
-     * description receive cn.edu.fudan.common.scan request form front
+     * description receive scan request form front
      *
      * @param requestParam  repoId branch commitId startTime
      *                      Unfixed parameters are used to handle various situations
      */
     @ApiOperation(value = "前端调用工具进行扫描", notes = "前端调用工具进行扫描", httpMethod = "POST")
-    @PostMapping(value = {"/cn.edu.fudan.common.scan"})
+    @PostMapping(value = {"/scan"})
     public ResponseBean scan(@RequestBody ScanRequestMessage requestParam) {
         String repoId;
         String branch;
@@ -65,7 +65,7 @@ public class ScanController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "repo_uuid", value = "库Id", dataType = "String", required = true, defaultValue = "3ecf804e-0ad6-11eb-bb79-5b7ba969027e")
     })
-    @GetMapping(value = {"/cn.edu.fudan.common.scan/status"})
+    @GetMapping(value = {"/scan/status"})
     @CrossOrigin
     public ResponseBean getScanStatus(@RequestParam(name = "repo_uuid") String repoId) {
 

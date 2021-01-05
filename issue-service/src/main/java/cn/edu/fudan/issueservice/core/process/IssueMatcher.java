@@ -73,7 +73,7 @@ public class IssueMatcher {
 
             //todo 测试bug，测试过后删除
             for(String parentCommit : parentCommits){
-                log.info ( "{} --> pre cn.edu.fudan.common.scan success commit --> {} ", commitId, parentCommit);
+                log.info ( "{} --> pre scan success commit --> {} ", commitId, parentCommit);
             }
 
             if(parentCommits.isEmpty ()){

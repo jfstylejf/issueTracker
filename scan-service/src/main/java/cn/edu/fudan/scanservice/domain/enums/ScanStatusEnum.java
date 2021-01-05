@@ -14,7 +14,7 @@ public enum ScanStatusEnum {
      */
     NOT_SCANNED("not scanned", 0),
     INVOKE_FAILED("invoke tool failed", 1),
-    WAITING_FOR_SCAN("waiting for cn.edu.fudan.common.scan", 1),
+    WAITING_FOR_SCAN("waiting for scan", 1),
     SCANNING ("scanning", 3),
     ANALYZE_FAILED("analyze failed", 2),
     COMPLETE("complete", 4);

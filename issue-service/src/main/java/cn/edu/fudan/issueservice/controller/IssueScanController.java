@@ -21,7 +21,7 @@ import java.util.Map;
  * @author fancying
  * create: 2020-05-19 21:03
  **/
-@Api(value = "issue cn.edu.fudan.common.scan", tags = {"用于控制issue扫描的相关接口"})
+@Api(value = "issue scan", tags = {"用于控制issue扫描的相关接口"})
 @Slf4j
 @RestController
 public class IssueScanController {
@@ -38,7 +38,7 @@ public class IssueScanController {
         String repoId = scanRequestDTO.getRepoUuid();
         String branch = scanRequestDTO.getBranch();
         String beginCommit = scanRequestDTO.getBeginCommit();
-        // TODO 调用 tool cn.edu.fudan.common.scan 流程
+        // TODO 调用 tool scan 流程
         try {
             RepoResourceDTO repoResourceDTO = RepoResourceDTO.builder ().repoId (repoId).build ();
             String result = issueScanService.prepareForScan (repoResourceDTO, branch, beginCommit, tool);
@@ -69,7 +69,7 @@ public class IssueScanController {
             @ApiImplicitParam(name = "tool", value = "工具名", required = true, defaultValue = "sonarqube", allowableValues = "sonarqube"),
             @ApiImplicitParam(name = "repo_uuid", value = "代码库uuid", required = true)
     })
-    @GetMapping(value = {"/issue/{tool}/cn.edu.fudan.common.scan-status"})
+    @GetMapping(value = {"/issue/{tool}/scan-status"})
     public ResponseBean<IssueRepo> scanStatus(@PathVariable("tool") String tool, @RequestParam("repo_uuid") String repoUuid) {
         try {
             IssueRepo issueRepo = issueScanService.getScanStatus (repoUuid, tool);

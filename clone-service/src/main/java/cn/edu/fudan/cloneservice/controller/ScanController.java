@@ -33,7 +33,7 @@ public class ScanController {
             String beginCommit = requestParam.getString("beginCommit");
             String branch = requestParam.getString("branch");
             scanService.cloneScan(repoId, beginCommit, branch);
-            return new ResponseBean<>(200, "cn.edu.fudan.common.scan msg send success!", null);
+            return new ResponseBean<>(200, "scan msg send success!", null);
         } catch (Exception e) {
             return new ResponseBean<>(401, e.getMessage(), null);
         }
@@ -43,10 +43,10 @@ public class ScanController {
     @ApiImplicitParams({
             @ApiImplicitParam(name="repo_uuid", value = "repo_uuid", dataType = "String", required = true)
     })
-    @GetMapping(value = {"/clone/saga-cpu/cn.edu.fudan.common.scan-status"})
+    @GetMapping(value = {"/clone/saga-cpu/scan-status"})
     public ResponseBean<CloneRepo> getCloneRepo(@RequestParam("repo_uuid") String repoId) {
         try {
-            return new ResponseBean<>(200, "cn.edu.fudan.common.scan msg send success!", scanService.getLatestCloneRepo(repoId));
+            return new ResponseBean<>(200, "scan msg send success!", scanService.getLatestCloneRepo(repoId));
         } catch (Exception e) {
             return new ResponseBean<>(401, e.getMessage(), null);
         }

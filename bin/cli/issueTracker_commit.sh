@@ -16,12 +16,12 @@ option=$1
 case ${option} in
 
   (all)
-	curl -H "token:${TOKEN}" --url  "http://$IP:$PORT/cn.edu.fudan.common.scan/commits?project_id=${PROJECT_ID}&is_whole=true&category=${TOOL}"  -s | jq -r
+	curl -H "token:${TOKEN}" --url  "http://$IP:$PORT/scan/commits?project_id=${PROJECT_ID}&is_whole=true&category=${TOOL}"  -s | jq -r
 	exit 0
 	;;
   (scanned)
    # need Formatted output display
-    curl -H "token:${TOKEN}" --url "http://$IP:$PORT/cn.edu.fudan.common.scan/commits?project_id=${PROJECT_ID}&category=${TOOL}"  -s | jq -r
+    curl -H "token:${TOKEN}" --url "http://$IP:$PORT/scan/commits?project_id=${PROJECT_ID}&category=${TOOL}"  -s | jq -r
 	exit 0
     ;;
   (*)

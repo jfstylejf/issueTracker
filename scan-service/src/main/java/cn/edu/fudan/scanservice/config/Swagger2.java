@@ -50,7 +50,7 @@ import java.util.*;
 @EnableSwagger2
 public class Swagger2 {
 
-    private static final String DEFAULT_PATH = "/cn.edu.fudan.common.scan-swagger";
+    private static final String DEFAULT_PATH = "/scan-swagger";
     private static final String CONTROLLER_PACKAGE = "cn.edu.fudan.scanservice.controller";
     private static final String TITLE = "code wisdom Scan-service Api";
     private static final String DOC_DES = "code wisdom Scan-service api doc";

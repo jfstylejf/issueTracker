@@ -57,7 +57,7 @@ public class MeasureScanServiceImpl implements MeasureScanService {
     public Object getScanStatus(String repoUuid) {
         List<Map<String, Object>> result = measureScanMapper.getScanStatus(repoUuid);
         if(result.size()==0) {
-            log.error("cn.edu.fudan.common.scan result is null");
+            log.error("scan result is null");
             return null;
         }
         Map<String, Object> map = result.get(0);
@@ -117,7 +117,7 @@ public class MeasureScanServiceImpl implements MeasureScanService {
         // 遍历列表 进行扫描
         for (String commit : commitList) {
             jGitHelper.checkout(commit);
-            log.info("Start to cn.edu.fudan.common.scan repoUuid is {} commit is {}", repoUuid, commit );
+            log.info("Start to scan repoUuid is {} commit is {}", repoUuid, commit );
             String commitTime = jGitHelper.getCommitTime(commit);
             Measure measure = JavaNcss.analyse(repoPath);
             saveRepoLevelMeasureData(measure, repoUuid, commit, commitTime);
@@ -129,7 +129,7 @@ public class MeasureScanServiceImpl implements MeasureScanService {
             updateMeasureScan(measureScan, commit, i++, scanTime, status, currentTime);
         }
 
-        log.info("Measure cn.edu.fudan.common.scan complete!");
+        log.info("Measure scan complete!");
     }
 
     @Override

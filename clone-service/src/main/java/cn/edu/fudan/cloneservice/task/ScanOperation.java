@@ -32,7 +32,7 @@ public interface ScanOperation {
     /**
      * clone扫描
      * @param cloneScanInitialInfo CloneScanInitialInfo
-     * @return cn.edu.fudan.common.scan result
+     * @return scan result
      */
     CloneScanResult doScan(CloneScanInitialInfo cloneScanInitialInfo);
 

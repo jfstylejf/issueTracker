@@ -28,7 +28,7 @@ stop(){
 }
 
 start(){
-    for serviceName in account project issue cn.edu.fudan.common.scan tag event
+    for serviceName in account project issue scan tag event
     do
         # if no args specified, show usage
         if [ $# -le 0 ]; then

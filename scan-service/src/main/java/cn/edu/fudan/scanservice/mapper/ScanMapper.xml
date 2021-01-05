@@ -4,7 +4,7 @@
 <mapper namespace="cn.edu.fudan.scanservice.mapper.ScanMapper">
 
 
-    <resultMap id="cn.edu.fudan.common.scan" type="Scan">
+    <resultMap id="scan" type="Scan">
         <id property="uuid" column="uuid"/>
         <result property="startCommit" column="start_commit"/>
         <result property="repoId" column="repo_id"/>
@@ -13,7 +13,7 @@
 
     <!-- never used -->
     <insert id="insertOneScan" parameterType="Scan">
-        insert into cn.edu.fudan.common.scan
+        insert into scan
         (
         uuid,
         start_commit,
@@ -31,11 +31,11 @@
 
 
     <delete id="deleteScanByRepoId" parameterType="String">
-        delete from cn.edu.fudan.common.scan where repo_id=#{repo_id}
+        delete from scan where repo_id=#{repo_id}
     </delete>
 
     <update id="updateOneScan" parameterType="Scan">
-        UPDATE cn.edu.fudan.common.scan
+        UPDATE scan
         <trim prefix="set" suffixOverrides=",">
 
             <if test="invokeResult != null and invokeResult != '' ">
@@ -51,8 +51,8 @@
         </where>
     </update>
 
-    <select id="getScanByRepoId" parameterType="String" resultMap="cn.edu.fudan.common.scan">
-        select * from cn.edu.fudan.common.scan where repo_id = #{repo_id} ;
+    <select id="getScanByRepoId" parameterType="String" resultMap="scan">
+        select * from scan where repo_id = #{repo_id} ;
     </select>
 
 </mapper>

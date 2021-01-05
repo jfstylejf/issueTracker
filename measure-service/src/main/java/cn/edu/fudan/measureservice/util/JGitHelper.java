@@ -64,8 +64,8 @@ public class JGitHelper {
         FileRepositoryBuilder builder = new FileRepositoryBuilder();
         try {
             repository = builder.setGitDir(new File(gitDir))
-                    .readEnvironment() // cn.edu.fudan.common.scan environment GIT_* variables
-                    .findGitDir() // cn.edu.fudan.common.scan up the file system tree
+                    .readEnvironment() // scan environment GIT_* variables
+                    .findGitDir() // scan up the file system tree
                     .build();
             git = new Git(repository);
             revWalk = new RevWalk(repository);

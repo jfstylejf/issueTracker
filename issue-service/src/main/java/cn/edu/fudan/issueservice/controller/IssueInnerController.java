@@ -24,7 +24,7 @@ public class IssueInnerController {
     }
 
     /**
-     * todo 检查是否删除了和issue cn.edu.fudan.common.scan result 相关的数据
+     * todo 检查是否删除了和issue scan result 相关的数据
      */
     @ApiOperation(value = "根据repoUuid和tool删除对应issue", notes = "@return String", httpMethod = "DELETE")
     @ApiImplicitParams({

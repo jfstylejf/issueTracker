@@ -30,7 +30,7 @@ public class TaskPoolConfig {
         //设置线程活跃时间
         executor.setKeepAliveSeconds(300);
         //设置线程默认名称
-        executor.setThreadNamePrefix("cn.edu.fudan.common.scan-");
+        executor.setThreadNamePrefix("scan-");
         // fixme 设置拒绝策略，pool已满，直接丢弃之后任务，待商榷
         executor.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardPolicy());
         //待任务都运行完再关闭

@@ -27,7 +27,7 @@ public class MvcConfig implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         List<String> urlPatterns = new ArrayList<>();
         //添加拦截的URL
-        urlPatterns.add("/cn.edu.fudan.common.scan/**");
+        urlPatterns.add("/scan/**");
         registry.addInterceptor(authTokenInterceptor()).addPathPatterns(urlPatterns);
     }
 

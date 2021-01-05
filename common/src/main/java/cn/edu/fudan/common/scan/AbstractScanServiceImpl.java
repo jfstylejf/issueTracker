@@ -96,7 +96,7 @@ public abstract class AbstractScanServiceImpl implements ScanService {
 
     private void checkAfterScan(String repoId, String branch) {
         if (!this.scanStatusMap.keySet().contains(repoId)) {
-            log.error("{} : not in cn.edu.fudan.common.scan map", repoId);
+            log.error("{} : not in scan map", repoId);
         } else {
             synchronized(this.lock) {
                 boolean newUpdate = (Boolean)this.scanStatusMap.get(repoId);

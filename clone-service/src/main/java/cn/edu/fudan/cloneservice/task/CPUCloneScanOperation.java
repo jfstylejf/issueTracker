@@ -181,7 +181,7 @@ public class CPUCloneScanOperation extends ScanOperationAdapter {
             Process processMethod = Runtime.getRuntime().exec(cmd,null,new File(cloneWorkHome));
             processMethod.waitFor();
             if(processMethod.exitValue()==0){
-                log.info("{} -> method cn.edu.fudan.common.scan complete -> {}",Thread.currentThread().getName(), cmd);
+                log.info("{} -> method scan complete -> {}",Thread.currentThread().getName(), cmd);
             }
             return processMethod.exitValue()==0;
         }catch (Exception e){
@@ -197,14 +197,14 @@ public class CPUCloneScanOperation extends ScanOperationAdapter {
         String commitId = cloneScan.getCommitId();
         String type = cloneScan.getType();
         String repoPath = cloneScanInitialInfo.getRepoPath();
-        log.info("{} -> start to invoke tool to cn.edu.fudan.common.scan......", Thread.currentThread().getName());
+        log.info("{} -> start to invoke tool to scan......", Thread.currentThread().getName());
         if (!invokeCloneTool(repoPath, type)) {
             log.error("{} -> Invoke Analyze Tool Failed!", Thread.currentThread().getName());
             //return new CloneScanResult("clone","failed", "tool invoke failed");
             return new CloneScanResult(repoId, commitId, type, "failed", "tool invoke failed");
         }
         log.info("{} -> tool invoke complete!", Thread.currentThread().getName());
-        log.info("{} -> cn.edu.fudan.common.scan complete", Thread.currentThread().getName());
+        log.info("{} -> scan complete", Thread.currentThread().getName());
         log.info("{} -> start to analyze resultFile......", Thread.currentThread().getName());
         String resultFilePath = cloneResultFileHome;
         //只有片段级的入库

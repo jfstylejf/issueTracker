@@ -26,7 +26,7 @@ public class ScanTask {
             log.warn("{} -> this commit has been scanned", Thread.currentThread().getName());
             return;
         }
-        log.info("{} -> this commit ---> {} has not been scanned,start the cn.edu.fudan.common.scan initialization......", Thread.currentThread().getName(), commitId);
+        log.info("{} -> this commit ---> {} has not been scanned,start the scan initialization......", Thread.currentThread().getName(), commitId);
 
         CloneScanInitialInfo cloneScanInitialInfo = scanOperation.initialScan(repoId, commitId, type, repoPath);
         if(!cloneScanInitialInfo.isSuccess()){
@@ -41,14 +41,14 @@ public class ScanTask {
             return;
         }
 
-        log.info("{} -> cn.edu.fudan.common.scan complete ->" + cloneScanResult.getDescription(), Thread.currentThread().getName());
-        log.info("{} -> start to update cn.edu.fudan.common.scan status", Thread.currentThread().getName());
+        log.info("{} -> scan complete ->" + cloneScanResult.getDescription(), Thread.currentThread().getName());
+        log.info("{} -> start to update scan status", Thread.currentThread().getName());
         cloneScanInitialInfo.getCloneScan().setStatus("done");
         if (!scanOperation.updateScan(cloneScanInitialInfo)) {
             log.error("{} -> Scan Update Failed!", Thread.currentThread().getName());
             return;
         }
-        log.info("{} -> cn.edu.fudan.common.scan update complete", Thread.currentThread().getName());
+        log.info("{} -> scan update complete", Thread.currentThread().getName());
     }
 
     public void runSynchronously(String repoId, String commitId, String category, String repoPath) throws RuntimeException{

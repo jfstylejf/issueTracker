@@ -28,13 +28,13 @@ public interface CloneScanMapper {
     void insertOneScan(CloneScan cloneScan);
 
     /**
-     * 删除clone cn.edu.fudan.common.scan， 删除整个项目时用到
+     * 删除clone scan， 删除整个项目时用到
      * @param repoId repo id
      */
     void deleteScanByRepoId(@Param("repo_id") String repoId);
 
     /**
-     * 更新clone cn.edu.fudan.common.scan
+     * 更新clone scan
      * @param cloneScan clone扫描状态
      */
     void updateOneScan(CloneScan cloneScan);

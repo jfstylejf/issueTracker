@@ -11,7 +11,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum ScanStatusEnum {
     /**
-     * issue cn.edu.fudan.common.scan status
+     * issue scan status
      */
     DOING("doing"),
     COMPILE_FAILED("compile failed"),
