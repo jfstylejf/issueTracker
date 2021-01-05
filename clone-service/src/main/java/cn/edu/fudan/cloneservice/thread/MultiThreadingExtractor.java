@@ -114,7 +114,7 @@ public class MultiThreadingExtractor {
 
         scanCount = new AtomicInteger(0);
 
-        logger.info("start clone scan........");
+        logger.info("start clone cn.edu.fudan.common.scan........");
 
         long start = System.currentTimeMillis();
 
@@ -149,7 +149,7 @@ public class MultiThreadingExtractor {
         cloneRepo.setScanTime((int)((end - start)/1000));
         cloneRepoDao.updateScan(cloneRepo);
 
-        logger.info("repo:{} -> took {} minutes to complete the clone scan and measure scan", repoId, cost);
+        logger.info("repo:{} -> took {} minutes to complete the clone cn.edu.fudan.common.scan and measure cn.edu.fudan.common.scan", repoId, cost);
 
     }
 
@@ -199,7 +199,7 @@ public class MultiThreadingExtractor {
      */
     private void scanSynchronously(String repoId){
 
-        logger.info("start clone scan");
+        logger.info("start clone cn.edu.fudan.common.scan");
         while (true){
 
             try {
@@ -209,13 +209,13 @@ public class MultiThreadingExtractor {
                     break;
                 }
                 scanThreadPool.submit(()-> {
-                    logger.info("{}-> start scan", Thread.currentThread().getName());
+                    logger.info("{}-> start cn.edu.fudan.common.scan", Thread.currentThread().getName());
                     scanTask.runSynchronously(repoId,commitId, "snippet", null);
                     measureQueue.offer(commitId);
                 });
 
             } catch (InterruptedException e) {
-                logger.info("clone Multithreaded scan filed");
+                logger.info("clone Multithreaded cn.edu.fudan.common.scan filed");
                 e.printStackTrace();
                 break;
             }

@@ -45,7 +45,7 @@ public class KafkaAutoScanImpl implements MessageListeningService {
 
 
     @Override
-    @KafkaListener(id = "autoScan", topics = {"repo_downloaded_r1p1","repo_updated_r1p1"}, groupId = "scan")
+    @KafkaListener(id = "autoScan", topics = {"repo_downloaded_r1p1","repo_updated_r1p1"}, groupId = "cn.edu.fudan.common.scan")
     public void listing(Object mess) {
         ConsumerRecord<String, String> message = cast(mess);
         String msg = message.value();
@@ -77,7 +77,7 @@ public class KafkaAutoScanImpl implements MessageListeningService {
         if (! isUpdate && startCommit == null) {
             log.error("there is none available commit，repo id：{}", repoId);
             // TODO 更新数据库状态用于通知用户 scanDao
-            // scan dao
+            // cn.edu.fudan.common.scan dao
 
             return;
         }

@@ -161,7 +161,7 @@ public class ToolInvoker {
             //3.初始化issue repo信息 并持久化到数据库中
             IssueRepo issueRepo = getIssueRepoByDifferentScenarios(repoId, branch, toolName, beginCommit, scanCommits.size ());
 
-            log.info ("start scan !  repo id --> {}", repoId);
+            log.info ("start cn.edu.fudan.common.scan !  repo id --> {}", repoId);
             //4.遍历扫描
             //设定开关确认是否是stop操作。
             boolean isStop = false;
@@ -170,7 +170,7 @@ public class ToolInvoker {
                 long thisCommitStartMilliTime = System.currentTimeMillis ();
                 boolean threadSwitch = ScanThreadExecutorConfig.getConsumerThreadSwitch(repoId,toolName);
                 if( threadSwitch && !Thread.currentThread ().isInterrupted()){
-                    log.info ("start scan  commit id --> {}", commit);
+                    log.info ("start cn.edu.fudan.common.scan  commit id --> {}", commit);
 
                     //4.1 初始化 一个IssueScan用于记录scan过程
                     Date commitTime = jGitInvoker.getCommitDateTime(commit);
@@ -193,10 +193,10 @@ public class ToolInvoker {
                     //4.5 issueScan 入库
                     boolean scanPersistenceResult =  issueScanPersistence(issueScan);
                     if(!scanPersistenceResult){
-                        log.error (" issue scan result  persist failed! commit id --> {}" , commit);
+                        log.error (" issue cn.edu.fudan.common.scan result  persist failed! commit id --> {}" , commit);
                     }
 
-                    log.info (" issue scan result  persist success");
+                    log.info (" issue cn.edu.fudan.common.scan result  persist success");
 
                     //更新 issue repo 信息 ，包括已扫描条数+1 ,  扫描用时 , end commit, end date
                     //更新扫描用时
@@ -395,7 +395,7 @@ public class ToolInvoker {
                     resultIssueRepo = mainIssueRepo;
                     issueRepoDao.updateIssueRepo (resultIssueRepo);
                 }else{
-                    //第五种：如果原来是结束状态，则新建一个Update repo scan 记录
+                    //第五种：如果原来是结束状态，则新建一个Update repo cn.edu.fudan.common.scan 记录
                     resultIssueRepo = IssueRepo.initIssueRepo (repoId, branch, beginCommit, toolName, commitSize);
                     resultIssueRepo.setNature (RepoNatureEnum.UPDATE.getType ());
                     issueRepoDao.insertOneIssueRepo (resultIssueRepo);

@@ -12,7 +12,7 @@ import lombok.Getter;
 public enum RepoStatusEnum {
 
     /**
-     * repo scan status
+     * repo cn.edu.fudan.common.scan status
      */
     SCANNING ("scanning"),
     STOP("stop"),
