@@ -80,6 +80,12 @@ public class DateTimeUtil {
 
     public  static LocalDateTime stringToLocalDate(String dateString){
         try {
+            if (dateString.contains("T")) {
+                dateString = dateString.replace('T', ' ');
+            }
+            if (dateString.length()>19) {
+                dateString = dateString.substring(0,19);
+            }
             return LocalDateTime.parse(dateString, dateTimeFormatter);
         }catch (Exception e) {
             log.error(e.getMessage());
@@ -165,7 +171,7 @@ public class DateTimeUtil {
 
 
     public static void main(String[] args){
-        String sD = "2020-08-03 13:07:19";
+        String sD = "2021-01-05T17:28:28.510";
         LocalDateTime date = stringToLocalDate(sD);
         System.out.println(date.plusHours(8).toString().replace('T',' '));
     }
