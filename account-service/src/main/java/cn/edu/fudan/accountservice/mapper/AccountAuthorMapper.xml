@@ -8,8 +8,10 @@
         INSERT INTO account_author
             (account_uuid, account_name, account_gitname)
         VALUES
-        <foreach collection="list" item="account" separator=",">
-            #{account.accountUuid}, #{account.name}, #{account.accountGitName}
+        <foreach collection="accountAuthors" item="account" separator=",">
+            (
+            #{account.accountUuid}, #{account.accountName}, #{account.accountGitName}
+            )
         </foreach>
     </insert>
 

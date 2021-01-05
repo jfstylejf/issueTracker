@@ -57,11 +57,7 @@ public class AccountController {
     }
 
     /* 用户昵称=真实姓名=界面显示姓名 */
-    @ApiOperation(value="检查用户昵称是否存在",notes="@return boolean",httpMethod = "GET")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "nickName", value = "开发人员昵称", dataType = "String", required = true,defaultValue = "王贵成"),
-    })
-
+    //废弃接口
     @GetMapping("/nick-name/check")
     @Deprecated
     public Object checkNickName(@RequestParam("nickName") String nickName) {
@@ -74,7 +70,7 @@ public class AccountController {
     })
     @GetMapping("/status")
     public Object getStatusByName(@RequestBody List<String> name) {
-        return new ResponseEntity<>(200, " ",accountService.getStatusByName(name));
+        return new ResponseEntity<>(200, "success",accountService.getStatusByName(name));
     }
 
     @ApiOperation(value="获取用户信息",notes="@return List<Account>",httpMethod = "GET")
@@ -91,7 +87,7 @@ public class AccountController {
     public Object updateAccountStatus(@RequestBody List<Account> statusInfo){
         try{
             accountService.updateAccountStatus(statusInfo);
-            return new ResponseEntity<>(200, "Successful!", null);
+            return new ResponseEntity<>(200, "update success!", null);
         }catch (Exception e){
             return new ResponseEntity<>(401, "update failed! " + e.getMessage(), null);
         }
@@ -130,6 +126,21 @@ public class AccountController {
         return responseBean;
     }
 
+    @ApiOperation(value="密码重置",notes="@return AccountVO",httpMethod = "GET")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "username", value = "用户姓名", dataType = "String", required = true,defaultValue = "admin"),
+            @ApiImplicitParam(name = "password", value = "密码", dataType = "String", required = true,defaultValue = "YWRtaW4="),
+    })
+    @GetMapping(value = {"/password"})
+    public Object passwordReset(@RequestParam("username") String username, @RequestParam("password") String password, HttpServletResponse response) {
+        try{
+            accountService.passwordReset(username, password);
+            return new ResponseEntity<>(200, "reset success!", null);
+        }catch (Exception e){
+            return new ResponseEntity<>(401, "reset failed! " + e.getMessage(), null);
+        }
+    }
+
     @ApiOperation(value="获取当前登录用户的uuid",notes="@return Account Uuid",httpMethod = "GET")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "userToken", value = "用户token", dataType = "String", required = true,defaultValue = "ec15d79e36e14dd258cfff3d48b73d35"),
@@ -149,7 +160,7 @@ public class AccountController {
     @GetMapping(value = "/auth/{userToken}")
     public Object auth(@PathVariable("userToken") String userToken) {
         if (accountService.authByToken(userToken)) {
-            return new ResponseEntity<>(200, "auth pass", null);
+            return new ResponseEntity<>(200, "auth pass success", null);
         } else {
             return new ResponseEntity<>(401, "token time out,please login", null);
         }
@@ -175,10 +186,7 @@ public class AccountController {
         return new ResponseEntity<>(200, "success", accountService.getAllAccountId());
     }
 
-    @ApiOperation(value="通过姓名获取用户组别",notes="@return List<String>",httpMethod = "GET")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "accountName", value = "开发人员姓名", dataType = "String", required = true, defaultValue = "chenyuan"),
-    })
+   //废弃接口
     @GetMapping(value = "/accountGroups")
     public Object getGroupsByAccountName(@RequestParam("accountName") String accountName){
         return new ResponseEntity<>(200, "success",accountService.getGroupsByAccountName(accountName));
@@ -195,7 +203,7 @@ public class AccountController {
     public ResponseEntity updateToolsEnable(@RequestBody List<Tool> tools){
         try{
             accountService.updateToolsEnable(tools);
-            return new ResponseEntity<>(200, "Successful!", null);
+            return new ResponseEntity<>(200, "success!", null);
         }catch (Exception e){
             return new ResponseEntity<>(401, "update failed! " + e.getMessage(), null);
         }
@@ -228,7 +236,7 @@ public class AccountController {
     public ResponseEntity autoUpdateAccount(@RequestBody List<String> gitNames) {
         try{
             accountService.addNewAccounts(gitNames);
-            return new ResponseEntity<>(200, "receive!", null);
+            return new ResponseEntity<>(200, "receive success!", null);
         }catch (Exception e){
             e.printStackTrace();
             return new ResponseEntity<>(401, "failed! " + e.getMessage(), null);

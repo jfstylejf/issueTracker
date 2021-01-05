@@ -61,7 +61,7 @@ public class AccountDao {
         List<Map<String,Object>> rightList = accountMapper.getRightByAccountName(accountName);
         Map<String,Object> accountInfo = rightList.get(0);
 
-        Integer accountRight = (Integer)accountInfo.get("account_right");
+        Integer accountRight = (Integer) accountInfo.get("account_right");
         accountInfo.put("right", accountRight);
         accountInfo.remove("account_right");
         return accountInfo;

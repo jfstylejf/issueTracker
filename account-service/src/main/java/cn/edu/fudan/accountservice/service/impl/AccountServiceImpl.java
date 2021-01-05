@@ -54,6 +54,14 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    public void passwordReset(String username, String encodedPassword) {
+        //Base64解密
+        String password = Base64Util.decodePassword(encodedPassword);
+        //首次登录或token过期重新登录，返回新的token
+        String encodePassword = MD5Util.md5(username + password);
+    }
+
+    @Override
     public boolean isAccountNameExist(String accountName) {
         return accountDao.isAccountNameExist(accountName);
     }
@@ -167,6 +175,9 @@ public class AccountServiceImpl implements AccountService {
                 filter(gitName -> !accountDao.getAccountGitname().contains(gitName)).
                 map(Account::newInstance).
                 collect(Collectors.toList());
+        if(accounts.size() == 0 || accounts == null){
+            return;
+        }
         accountDao.addAccounts(accounts);
         accountAuthorMapper.batchInsertAccountAuthor(accounts.stream().map(AccountAuthor::newInstanceOf).collect(Collectors.toList()));
 

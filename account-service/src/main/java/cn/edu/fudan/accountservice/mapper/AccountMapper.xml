@@ -16,10 +16,12 @@
 
     <insert id="addAccounts" parameterType="List">
         INSERT INTO account
-            (uuid, account_name, password, email, account_right, account_dep, account_status, account_role)
+        (uuid, account_name, password, email, account_right, account_dep, account_status, account_role)
         VALUES
         <foreach collection="list" item="account" separator=",">
-            #{account.uuid}, #{account.accountName}, #{account.password}, #{account.email}, #{account.right}, #{account.dep}, #{account.status}, #{account.role}
+        (
+         #{account.uuid}, #{account.accountName}, #{account.password}, #{account.email}, #{account.right}, #{account.dep}, #{account.status}, #{account.role}
+        )
         </foreach>
     </insert>
 

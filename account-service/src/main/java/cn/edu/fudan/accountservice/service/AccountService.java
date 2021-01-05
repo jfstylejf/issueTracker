@@ -22,6 +22,15 @@ public interface AccountService {
     AccountVO login(String username, String password);
 
     /**
+     * passwordReset
+     *
+     * @param username get user accountName
+     * @param password get user password
+     * @return null
+     */
+    void passwordReset(String username, String password);
+
+    /**
      * is account accountName exist
      *
      * @param accountName get user account accountName
@@ -100,6 +109,4 @@ public interface AccountService {
      * @param gitname  新增用户的git 名字
      */
     void addNewAccounts(List<String> gitname);
-
-
 }

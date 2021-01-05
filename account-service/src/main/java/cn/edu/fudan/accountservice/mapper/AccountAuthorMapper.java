@@ -3,6 +3,7 @@ package cn.edu.fudan.accountservice.mapper;
 import cn.edu.fudan.accountservice.domain.AccountAuthor;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Options;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -20,6 +21,6 @@ public interface AccountAuthorMapper {
      * batch insert
      * @param accountAuthors list
      */
-    void batchInsertAccountAuthor(List<AccountAuthor> accountAuthors);
+    void batchInsertAccountAuthor(@Param("accountAuthors") List<AccountAuthor> accountAuthors);
 
 }
