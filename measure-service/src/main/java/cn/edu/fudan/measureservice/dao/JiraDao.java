@@ -2,15 +2,12 @@ package cn.edu.fudan.measureservice.dao;
 
 import cn.edu.fudan.measureservice.component.RestInterfaceManager;
 import cn.edu.fudan.measureservice.domain.dto.Query;
-import cn.edu.fudan.measureservice.mapper.JiraMapper;
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -27,11 +24,60 @@ public class JiraDao {
      */
     private RestInterfaceManager restInterface;
 
-    private JiraMapper jiraMapper;
 
+    /**
+     * 获取jira相关信息
+     * @param query 查询条件
+     * @return Map<String,Object>
+     * key : developerCompletedJiraNum, developerJiraCommitNum, developerJiraBugCount, developerCompletedJiraBugCount, developerCompletedJiraFeatureCount,
+     *       totalJiraBugCount, developerAssignedJiraCount, totalAssignedJiraCount, developerSolvedJiraCount, totalSolvedJiraCount
+     */
+    public Map<String,Object> getJiraMsgInfo(Query query) {
+        Map<String,Object> map = new HashMap<>();
+        JSONObject jiraResponse = restInterface.getJiraMsgOfOneDeveloper(query.getDeveloper(),query.getRepoUuidList().get(0),query.getSince(),query.getUntil());
+        int developerCompletedJiraNum = 0;
+        int developerJiraCommitNum = 0;
+        int developerJiraBugCount = 0;
+        int developerCompletedJiraBugCount = 0;
+        int developerJiraFeatureCount = 0;
+        int developerCompletedJiraFeatureCount = 0;
+        int totalJiraBugCount = 0;
+        int developerAssignedJiraCount = 0;
+        int totalAssignedJiraCount = 0;
+        int developerSolvedJiraCount = 0;
+        int totalSolvedJiraCount = 0;
+        if (jiraResponse != null){
+            JSONObject commitPerJira = jiraResponse.getJSONObject("commitPerJira");
+            developerCompletedJiraNum = commitPerJira.getIntValue("finishedJiraSum");
+            developerJiraCommitNum = commitPerJira.getIntValue("commitSum");
 
-    public int getDeveloperJiraCommitCount(Query query) {
-        return jiraMapper.getJiraCountByCondition(query.getRepoUuidList(),query.getSince(),query.getUntil(),query.getDeveloper());
+            JSONObject differentTypeSum = jiraResponse.getJSONObject("differentTypeSum");
+            developerCompletedJiraBugCount = differentTypeSum.getIntValue("completedBugSum");
+            developerCompletedJiraFeatureCount = differentTypeSum.getIntValue("completedTaskSum");
+            developerJiraFeatureCount = differentTypeSum.getIntValue("totalTaskSum");
+
+            JSONObject defectRate = jiraResponse.getJSONObject("defectRate");
+            developerJiraBugCount = defectRate.getIntValue("individualBugSum");
+            totalJiraBugCount = defectRate.getIntValue("teamBugSum");
+
+            JSONObject assignedJiraRate = jiraResponse.getJSONObject("assignedJiraRate");
+            developerAssignedJiraCount = assignedJiraRate.getIntValue("individualJiraSum");
+            totalAssignedJiraCount = assignedJiraRate.getIntValue("teamJiraSum");
+            developerSolvedJiraCount = assignedJiraRate.getIntValue("solvedIndividualJiraSum");
+            totalSolvedJiraCount = assignedJiraRate.getIntValue("solvedTeamJiraSum");
+        }
+        map.put("developerCompletedJiraNum",developerCompletedJiraNum);
+        map.put("developerJiraCommitNum",developerJiraCommitNum);
+        map.put("developerCompletedJiraBugCount",developerCompletedJiraBugCount);
+        map.put("developerJiraFeatureCount",developerJiraFeatureCount);
+        map.put("developerCompletedJiraFeatureCount",developerCompletedJiraFeatureCount);
+        map.put("developerJiraBugCount",developerJiraBugCount);
+        map.put("totalJiraBugCount",totalJiraBugCount);
+        map.put("developerAssignedJiraCount",developerAssignedJiraCount);
+        map.put("totalAssignedJiraCount",totalAssignedJiraCount);
+        map.put("developerSolvedJiraCount",developerSolvedJiraCount);
+        map.put("totalSolvedJiraCount",totalSolvedJiraCount);
+        return map;
     }
 
     /**
@@ -58,8 +104,5 @@ public class JiraDao {
 
     @Autowired
     public void setRestInterface(RestInterfaceManager restInterface){this.restInterface=restInterface;}
-
-    @Autowired
-    public void setJiraMapper(JiraMapper jiraMapper) {this.jiraMapper=jiraMapper;}
 
 }

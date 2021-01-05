@@ -59,7 +59,7 @@ public class ScanThreadExecutorConfig {
         //配置队列大小
         producerExecutor.setQueueCapacity(queueCapacity);
         //配置线程池中的线程的名称前缀
-        producerExecutor.setThreadNamePrefix("async-issue-scan-");
+        producerExecutor.setThreadNamePrefix("async-issue-cn.edu.fudan.common.scan-");
 
         // rejection-policy：当pool已经达到max size的时候，如何处理新任务
         // CALLER_RUNS：不在新线程中执行任务，而是有调用者所在的线程来执行
@@ -82,7 +82,7 @@ public class ScanThreadExecutorConfig {
         //配置队列大小
         consumerExecutor.setQueueCapacity(queueCapacity);
         //配置线程池中的线程的名称前缀
-        consumerExecutor.setThreadNamePrefix("async-issue-scan-");
+        consumerExecutor.setThreadNamePrefix("async-issue-cn.edu.fudan.common.scan-");
 
         // rejection-policy：当pool已经达到max size的时候，如何处理新任务
         // CALLER_RUNS：不在新线程中执行任务，而是有调用者所在的线程来执行

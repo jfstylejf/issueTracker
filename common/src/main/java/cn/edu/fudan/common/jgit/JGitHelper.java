@@ -1,5 +1,6 @@
 package cn.edu.fudan.common.jgit;
 
+import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jgit.api.CheckoutCommand;
@@ -8,11 +9,13 @@ import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.DiffFormatter;
+import org.eclipse.jgit.diff.RenameDetector;
 import org.eclipse.jgit.lib.*;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.treewalk.CanonicalTreeParser;
+import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.util.io.DisabledOutputStream;
 
 import java.io.Closeable;
@@ -29,6 +32,7 @@ import java.util.stream.Stream;
  **/
 @SuppressWarnings("Duplicates")
 @Slf4j
+@NoArgsConstructor
 public class JGitHelper implements Closeable {
 
     protected static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().contains("win");
@@ -58,8 +62,8 @@ public class JGitHelper implements Closeable {
         FileRepositoryBuilder builder = new FileRepositoryBuilder();
         try {
             repository = builder.setGitDir(new File(gitDir))
-                    .readEnvironment() // scan environment GIT_* variables
-                    .findGitDir() // scan up the file system tree
+                    .readEnvironment() // cn.edu.fudan.common.scan environment GIT_* variables
+                    .findGitDir() // cn.edu.fudan.common.scan up the file system tree
                     .build();
             git = new Git(repository);
             revWalk = new RevWalk(repository);
@@ -292,6 +296,29 @@ public class JGitHelper implements Closeable {
         }
         return null;
     }
+
+    @SneakyThrows
+    private List<DiffEntry> getDiffEntry(RevCommit parentCommit, RevCommit currCommit, int score) {
+        // 不可少 否则parentCommit的 tree为null
+        parentCommit = revWalk.parseCommit(ObjectId.fromString(parentCommit.getName()));
+        TreeWalk tw = new TreeWalk(repository);
+        tw.addTree(parentCommit.getTree());
+        tw.addTree(currCommit.getTree());
+        tw.setRecursive(true);
+        RenameDetector rd = new RenameDetector(repository);
+        rd.addAll(DiffEntry.scan(tw));
+        rd.setRenameScore(score);
+        return rd.compute();
+    }
+
+    /**
+     * 默认rename阈值为60
+     * @return
+     */
+    private List<DiffEntry> getDiffEntry(RevCommit parentCommit, RevCommit currCommit){
+        return getDiffEntry(parentCommit, currCommit, 60);
+    }
+
 
     /**
      * 判断是否为merge点

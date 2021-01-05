@@ -11,4 +11,4 @@ fi
 baseDir="$ISSUETRACKER_HOME/bin"
 source ${baseDir}/.env
 
-curl -H "Content-Type:application/json" -H "token:$TOKEN" -X POST -d '{"projectId": "'${PROJECT_ID}'", "commitId":"'${1}'" ,"category": "'${TOOL}'"}' http://${IP}:${PORT}/scan -s | grep -Po 'msg[":]+\K[^"]+'
+curl -H "Content-Type:application/json" -H "token:$TOKEN" -X POST -d '{"projectId": "'${PROJECT_ID}'", "commitId":"'${1}'" ,"category": "'${TOOL}'"}' http://${IP}:${PORT}/cn.edu.fudan.common.scan -s | grep -Po 'msg[":]+\K[^"]+'

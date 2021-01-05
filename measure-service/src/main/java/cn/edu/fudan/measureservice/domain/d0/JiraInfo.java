@@ -14,30 +14,33 @@ public class JiraInfo extends BaseData {
     private JiraDao jiraDao;
 
     /**
-     * 个人完成bug数
+     * 个人完成jiraBug数
+     */
+    private int developerCompletedJiraBugCount;
+    /**
+     * 个人总jiraBug数
      */
     private int developerJiraBugCount;
     /**
-     * 团队完成bug数
+     * 团队jiraBug数
      */
     private int totalJiraBugCount;
     /**
      * 个人完成feature数
      */
+    private int developerCompletedJiraFeatureCount;
+    /**
+     * 个人总feature数
+     */
     private int developerJiraFeatureCount;
-    /**
-     * 解决jira任务提交的commit次数
-     */
-    private int jiraCommitNum;
-    /**
-     * 完成的jira任务数量
-     */
-    private int completedJiraNum;
     /**
      * 开发者包含有jira单号的commit个数
      */
-    private int developerJiraCommitCount;
-
+    private int developerJiraCommitNum;
+    /**
+     * 完成的jira任务数量
+     */
+    private int developerCompletedJiraNum;
     /**
      * 开发者分配的jira任务数
      */
@@ -62,8 +65,22 @@ public class JiraInfo extends BaseData {
 
     @Override
     public void dataInjection() {
-
-        this.developerJiraCommitCount = jiraDao.getDeveloperJiraCommitCount(query);
+        /**
+         *  key : getJiraMsgInfo
+         *  value {@link JiraDao}
+         */
+        Map<String,Object> jiraMap = jiraDao.getJiraMsgInfo(query);
+        developerCompletedJiraNum = (int) jiraMap.get("developerCompletedJiraNum");
+        developerJiraCommitNum = (int) jiraMap.get("developerJiraCommitNum");
+        developerJiraBugCount = (int) jiraMap.get("developerJiraBugCount");
+        developerCompletedJiraBugCount = (int) jiraMap.get("developerCompletedJiraBugCount");
+        developerJiraFeatureCount = (int) jiraMap.get("developerJiraFeatureCount");
+        developerCompletedJiraFeatureCount = (int) jiraMap.get("developerCompletedJiraFeatureCount");
+        totalJiraBugCount = (int) jiraMap.get("totalJiraBugCount");
+        developerAssignedJiraCount = (int) jiraMap.get("developerAssignedJiraCount");
+        totalAssignedJiraCount = (int) jiraMap.get("totalAssignedJiraCount");
+        developerSolvedJiraCount = (int) jiraMap.get("developerSolvedJiraCount");
+        totalSolvedJiraCount = (int) jiraMap.get("totalSolvedJiraCount");
     }
 
     @Autowired

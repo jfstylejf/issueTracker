@@ -1,5 +1,8 @@
 package cn.edu.fudan.measureservice.component;
 
+import cn.edu.fudan.measureservice.annotation.MethodMeasureAnnotation;
+import cn.edu.fudan.measureservice.domain.ResponseBean;
+import cn.edu.fudan.measureservice.domain.dto.UserInfoDTO;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
@@ -19,9 +22,11 @@ import org.springframework.web.client.RestTemplate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Slf4j
 @Component
+
 public class RestInterfaceManager {
 
     @Value("${account.service.path}")
@@ -60,6 +65,7 @@ public class RestInterfaceManager {
 
     //----------------------------------commit service----------------------------------------------------
 
+    @Deprecated
     public JSONObject getFirstCommitDate(String developerName){
         return restTemplate.getForObject(commitServicePath+"/first-commit?author="+ developerName,JSONObject.class).getJSONObject("data");
     }
@@ -79,7 +85,8 @@ public class RestInterfaceManager {
         return result;
     }
 
-    public List<Map<String,String>> getProjectInfo(String projectName,String token) {
+    @SuppressWarnings("unchecked")
+    public Map<String,List<Map<String,String>>> getProjectInfo(String token) {
         HttpHeaders headers = new HttpHeaders();
         headers.add("token",token);
         HttpEntity request= new HttpEntity(headers);
@@ -87,11 +94,30 @@ public class RestInterfaceManager {
         url.append(projectServicePath).append("/project/all");
         ResponseEntity responseEntity = restTemplate.exchange(url.toString(),HttpMethod.GET,request,Map.class);
         Map<String,List<Map<String,String>>> result = (Map<String,List<Map<String,String>>>) responseEntity.getBody();
-        if(result.get(projectName)!=null) {
-            return result.get(projectName);
+        if(result!=null) {
+            return result;
         }
         return null;
     }
+
+
+    @SuppressWarnings("unchecked")
+    public UserInfoDTO getUserInfoByToken(String token) {
+        Objects.requireNonNull(token);
+        ResponseBean result = restTemplate.getForObject(accountServicePath + "/user/right/" + token, ResponseBean.class);
+        if (result == null) {
+            log.error("Response is null");
+            return null;
+        }
+
+        if (result.getCode() != 200) {
+            log.error(result.getMsg());
+            return null;
+        }
+        Map<String,Object> data =  (Map<String, Object>) result.getData();
+        return new UserInfoDTO(token, (String) data.get("uuid"), (Integer) data.get("right"));
+    }
+
 
     //---------------------------------------------code service---------------------------------------------------------
     public String getRepoPath(String repoUuid,String commit_id){
@@ -301,7 +327,20 @@ public class RestInterfaceManager {
 
     //-------------------------------------------clone service---------------------------------------
     public JSONObject getCloneMeasure(String repo_id, String developer, String start, String end){
-        return restTemplate.getForObject(uniformServicePath+"/cloneMeasure"  + "?repo_uuid=" + repo_id + "&developer=" + developer + "&start=" + start + "&end=" + end, JSONObject.class).getJSONObject("data");
+        try {
+            JSONObject result = restTemplate.getForObject(uniformServicePath+"/cloneMeasure"  + "?repo_uuid=" + repo_id + "&developer=" + developer + "&start=" + start + "&end=" + end, JSONObject.class);
+            if(result==null) {
+                log.error("Response is null");
+                return null;
+            }
+            if(result.getIntValue("code") != 200) {
+                log.error(result.getString("msg"));
+            }
+            return result.getJSONObject("data");
+        }catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        return null;
     }
 
     //-------------------------------------------jira API-------------------------------------------
