@@ -137,7 +137,7 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
         return rawIssues;
     }
 
-    private RawIssue getRawIssue(String repoPath, JSONObject issue, String repoUuid, String commit, String fileName, String filePath, JSONObject nodeJsCode) throws ParseFileException {
+    private RawIssue getRawIssue(String repoPath, JSONObject issue, String repoUuid, String commit, String fileName, String filePath, JSONObject nodeJsCode) {
         RawIssue rawIssue = new RawIssue();
         rawIssue.setTool("ESLint");
         rawIssue.setUuid(UUID.randomUUID().toString());
@@ -159,7 +159,7 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
         return rawIssue;
     }
 
-    private List<Location> getLocations(String fileName, JSONObject issue, RawIssue rawIssue, String filePath, JSONObject nodeJsCode) throws ParseFileException {
+    private List<Location> getLocations(String fileName, JSONObject issue, RawIssue rawIssue, String filePath, JSONObject nodeJsCode) {
         Location location = new Location();
         //get start line,end line and bug line
         int line = issue.getIntValue("line");
