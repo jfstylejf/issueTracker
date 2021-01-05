@@ -1,5 +1,6 @@
 package cn.edu.fudan.measureservice.mapper;
 
+import cn.edu.fudan.measureservice.annotation.MethodMeasureAnnotation;
 import cn.edu.fudan.measureservice.domain.CommitBase;
 import cn.edu.fudan.measureservice.domain.CommitInfoDeveloper;
 import cn.edu.fudan.measureservice.domain.RepoMeasure;
@@ -64,6 +65,7 @@ public interface RepoMeasureMapper {
     @Deprecated
     List<Map<String, Object>> getDeveloperListByrepoUuidList(@Param("repoUuidList")List<String> repoUuidList);
 
+    // fixme 只查account,account_name是聚合后名字
     List<Map<String, Object>> getDeveloperDutyTypeListByrepoUuid(@Param("repoUuidList")List<String> repoUuidList);
 
     String getLastScannedCommitId(@Param("repo_id")String repoUuid);

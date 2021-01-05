@@ -1,5 +1,6 @@
 package cn.edu.fudan.measureservice.schedule;
 
+import cn.edu.fudan.measureservice.domain.dto.Query;
 import cn.edu.fudan.measureservice.mapper.RepoMeasureMapper;
 import cn.edu.fudan.measureservice.service.MeasureDeveloperService;
 import lombok.extern.slf4j.Slf4j;
@@ -36,8 +37,9 @@ public class RedisScheduleTask {
      */
     @Scheduled(cron = "0 0 2 * * ?")
     private void configureTasks() throws ParseException {
+        Query query = new Query(token,null,null,null,null);
         measureDeveloperService.clearCache();
-        measureDeveloperService.getDeveloperList(null,token);
+        measureDeveloperService.getDeveloperList(query);
         List<Map<String, Object>> developerList = repoMeasureMapper.getDeveloperListByrepoUuidList(null);
         for (int i = 0; i < developerList.size(); i++){
             Map<String,Object> map = developerList.get(i);
