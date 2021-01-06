@@ -63,6 +63,18 @@ public class RestInterfaceManager {
         return restTemplate.getForObject(accountServicePath + "/user/accountIds", List.class);
     }
 
+    public List<String> getDeveloperInRepo(String repoUuids) {
+        List<String> developers = new ArrayList<>();
+        JSONObject result = restTemplate.getForObject(accountServicePath + "/user/developers?repo_uuids=" + repoUuids + "is_whole=true", JSONObject.class);
+        assert result != null;
+        JSONArray rows = result.getJSONArray("data");
+        for(Object row : rows){
+            JSONObject developer = (JSONObject)row;
+            developers.add(developer.getString("developer_unique_name"));
+        }
+        return developers;
+    }
+
     //-----------------------------------------------project service-------------------------------------------------
     /**
      * 根据account_id查找参与的项目信息
@@ -142,7 +154,7 @@ public class RestInterfaceManager {
         headers.add("token", userToken);
         HttpEntity<HttpHeaders> request = new HttpEntity<>(headers);
         ResponseEntity<JSONObject> responseEntity = restTemplate.exchange(projectServicePath  + "/project",HttpMethod.GET,request,JSONObject.class);
-        String body = responseEntity.getBody().toString();
+        String body = Objects.requireNonNull(responseEntity.getBody()).toString();
         JSONObject result = JSONObject.parseObject(body);
         JSONArray reposDetail = result.getJSONArray("data");
 
@@ -159,7 +171,7 @@ public class RestInterfaceManager {
     //---------------------------------------------commit service------------------------------------------------------
 
     public String getFirstCommitDate(String developerName){
-        JSONObject data = restTemplate.getForObject(commitServicePath + "/first-commit?author=" + developerName, JSONObject.class).getJSONObject("data");
+        JSONObject data = Objects.requireNonNull(restTemplate.getForObject(commitServicePath + "/first-commit?author=" + developerName, JSONObject.class)).getJSONObject("data");
         LocalDateTime fistCommitDate = LocalDateTime.parse(data.getJSONObject("repos_summary").getString("first_commit_time_summary"), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         return fistCommitDate.plusHours(8).toLocalDate().toString();
     }
@@ -211,6 +223,7 @@ public class RestInterfaceManager {
                     repoPath = response.getJSONObject("data").getString ("content");
                 } else {
                     logger.error("code service response null!");
+                    logger.error("request url is : {}",urlPath);
                 }
                 break;
             }catch (Exception e){
@@ -348,7 +361,7 @@ public class RestInterfaceManager {
                 "&until=" + (StringUtils.isEmpty(query.get("until")) ? "" : query.get("until").toString());
 
         ResponseEntity<JSONObject> responseEntity = restTemplate.exchange(url , HttpMethod.GET,request,JSONObject.class);
-        JSONObject result = JSONObject.parseObject(responseEntity.getBody().toString(),JSONObject.class);
+        JSONObject result = JSONObject.parseObject(Objects.requireNonNull(responseEntity.getBody()).toString(),JSONObject.class);
 
         if(result.getIntValue("code") != 200){
             logger.error("request /measure/developer/workLoad failed");
@@ -363,5 +376,4 @@ public class RestInterfaceManager {
 
         return developerWorkLoad;
     }
-
 }

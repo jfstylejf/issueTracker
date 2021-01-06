@@ -3,15 +3,22 @@ package cn.edu.fudan.accountservice.service.impl;
 import cn.edu.fudan.accountservice.dao.AccountDao;
 import cn.edu.fudan.accountservice.domain.*;
 import cn.edu.fudan.accountservice.mapper.AccountAuthorMapper;
+import cn.edu.fudan.accountservice.mapper.CommitViewMapper;
 import cn.edu.fudan.accountservice.service.AccountService;
 import cn.edu.fudan.accountservice.util.Base64Util;
 import cn.edu.fudan.accountservice.util.MD5Util;
-import cn.edu.fudan.common.http.ResponseEntity;
+import cn.edu.fudan.accountservice.util.PagedGridResult;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -21,6 +28,8 @@ public class AccountServiceImpl implements AccountService {
 
     private StringRedisTemplate stringRedisTemplate;
     private AccountAuthorMapper accountAuthorMapper;
+    @Autowired
+    private CommitViewMapper commitViewMapper;
 
     @Autowired
     public void setStringRedisTemplate(StringRedisTemplate stringRedisTemplate) {
@@ -182,6 +191,48 @@ public class AccountServiceImpl implements AccountService {
         accountAuthorMapper.batchInsertAccountAuthor(accounts.stream().map(AccountAuthor::newInstanceOf).collect(Collectors.toList()));
 
         // todo 查询新增人员在哪个项目 后续更新account_project 表
+    }
+
+    @Override
+    public PagedGridResult getDevelopers(List<String> repoList, String since, String until, Integer page, Integer pageSize, String order, Boolean isAsc) {
+        /**
+         * page: 第几页
+         * pageSize: 每页显示条数
+         * orderBy: 要排序字段+空格+asc/desc   指定排序字段和排序方式
+         */
+//        PageHelper.startPage(page, pageSize, "developer asc");//注意：要排序的字段和排序方法中间要用空格 间隔开
+
+        if (StringUtils.isEmpty(order)) {
+            PageHelper.startPage(page, pageSize);
+        } else {
+            String orderBy = order;
+            if (isAsc != null && isAsc){
+                orderBy = order + ' ' + "asc";
+            }
+            if (isAsc != null && !isAsc){
+                orderBy = order + ' ' + "desc";
+            }
+            PageHelper.startPage(page, pageSize, orderBy);
+        }
+
+        List<Map<String, Object>> result = commitViewMapper.getDevelopers(repoList, since, until);
+
+        return setterPagedGrid(result, page);
+    }
+
+    @Override
+    public List<Map<String, Object>> getDevelopers(List<String> repoList, String since, String until) {
+        return commitViewMapper.getDevelopers(repoList, since, until);
+    }
+
+    private PagedGridResult setterPagedGrid(List<?> list, Integer page) {
+        PageInfo<?> pageList = new PageInfo<>(list);
+        PagedGridResult grid = new PagedGridResult();
+        grid.setPage(page);
+        grid.setRows(list);
+        grid.setTotal(pageList.getPages());
+        grid.setRecords(pageList.getTotal());
+        return grid;
     }
 
     @Autowired

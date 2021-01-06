@@ -47,6 +47,21 @@ public class ProjectController {
         }
     }
 
+    @ApiOperation(value="在本地添加新的库",httpMethod = "POST")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "repositoryDTO", value = "库的信息", dataType = "RepositoryDTO", required = true)
+    })
+    @PostMapping(value = {"/repository/local"})
+    public ResponseBean addRepoLocal(HttpServletRequest request, @RequestBody RepositoryDTO repositoryDTO) {
+        String token = request.getHeader(TOKEN);
+        try {
+            projectControl.addOneRepoByLocal(token, repositoryDTO);
+            return new ResponseBean<>(200, "add success", null);
+        } catch (Exception e) {
+            return new ResponseBean<>(401, "add failed :" + e.getMessage(), null);
+        }
+    }
+
     /**
      * 暂时不可用
      */
@@ -203,15 +218,15 @@ public class ProjectController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "projectUuid", value = "库的uuid", dataType = "String", required = true)
     })
-    @DeleteMapping(value = {"/project/{repo_uuid}"})
-    public ResponseBean deleteRepo(@PathVariable("repo_uuid")String repoUuid,
+    @DeleteMapping(value = {"/repo/{repo_uuid}"})
+    public ResponseBean<Object> deleteRepo(@PathVariable("repo_uuid")String repoUuid,
                                HttpServletRequest request) {
         try {
-            projectControl.deleteRepo(repoUuid,request.getHeader(TOKEN));
-            return new ResponseBean(200, "repo delete success!", null);
+            projectControl.deleteRepo(request.getHeader(TOKEN), repoUuid);
+            return new ResponseBean<>(200, "repo delete success!", null);
         } catch (Exception e) {
             e.printStackTrace();
-            return new ResponseBean(401, "repo delete failed!", null);
+            return new ResponseBean<>(401, "repo delete failed!", null);
         }
     }
 

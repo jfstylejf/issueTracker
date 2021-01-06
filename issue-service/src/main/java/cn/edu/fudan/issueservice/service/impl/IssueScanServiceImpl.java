@@ -177,6 +177,7 @@ public class IssueScanServiceImpl implements IssueScanService {
 
         List<HashMap<String, Integer>> notScanCommitsInfos = issueRepoDao.getNotScanCommitsCount(repoUuid, tool);
 
+        //fixme 此处不应该是issue_repo表所有记录的差值的和，而应该是只看最新一条记录的差值
         notScanCommitsInfos.forEach(notScanCommitsInfo -> notScanCommitCount.addAndGet(notScanCommitsInfo.get("total_commit_count") - notScanCommitsInfo.get("scanned_commit_count")));
 
         return new HashMap<String, Object>(8){{put("total", notScanCommitCount);}};

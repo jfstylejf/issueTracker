@@ -106,6 +106,31 @@
         </where>
     </select>
 
+    <select id="getLeaderRepoByAccountUuid" resultMap="subRepository" parameterType="String">
+        SELECT s.uuid, url, language, branch, repo_source, download_status,
+        latest_commit_time, repo_uuid, s.project_name, recycled, import_account_uuid, scan_start, s.repo_name
+        FROM sub_repository as s , account_project as a
+        <where>
+            <if test="account_uuid != null">
+                s.project_name = a.project_name
+                AND a.account_uuid = #{account_uuid}
+            </if>
+        </where>
+    </select>
+
+    <select id="getRepoByAccountUuid" resultMap="subRepository" parameterType="String">
+        SELECT s.uuid, url, language, branch, repo_source, download_status,
+        latest_commit_time, repo_uuid, s.project_name, recycled, import_account_uuid, scan_start, s.repo_name
+        FROM sub_repository as s , commit_view as c , account as a
+        <where>
+            <if test="account_uuid != null">
+                a.uuid = #{account_uuid}
+                AND a.account_name = c.developer
+                and c.repo_id = s.repo_uuid;
+            </if>
+        </where>
+    </select>
+
     <select id="getAllSubRepo" resultMap="subRepository" >
         SELECT s.uuid, url, language, branch, repo_source, download_status,
         latest_commit_time, repo_uuid, s.project_name, recycled, import_account_uuid, scan_start, s.repo_name

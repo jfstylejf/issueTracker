@@ -53,6 +53,10 @@ public interface SubRepositoryMapper {
 
     List<SubRepository> getAllSubRepoByAccountId(@Param("account_uuid") String accountUuid);
 
+    List<SubRepository> getLeaderRepoByAccountUuid(@Param("account_uuid") String accountUuid);
+
+    List<SubRepository> getRepoByAccountUuid(@Param("account_uuid") String accountUuid);
+
     List<SubRepository> getAllSubRepo();
 
 

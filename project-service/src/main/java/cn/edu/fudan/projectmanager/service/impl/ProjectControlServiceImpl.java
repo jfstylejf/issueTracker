@@ -6,6 +6,7 @@ import cn.edu.fudan.projectmanager.dao.AccountRepositoryDao;
 import cn.edu.fudan.projectmanager.dao.ProjectDao;
 import cn.edu.fudan.projectmanager.dao.SubRepositoryDao;
 import cn.edu.fudan.projectmanager.domain.AccountRoleEnum;
+import cn.edu.fudan.projectmanager.domain.topic.LocalDownLoad;
 import cn.edu.fudan.projectmanager.domain.topic.NeedDownload;
 import cn.edu.fudan.projectmanager.domain.AccountRepository;
 import cn.edu.fudan.projectmanager.domain.SubRepository;
@@ -31,6 +32,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * description:
@@ -126,6 +128,72 @@ public class ProjectControlServiceImpl implements ProjectControlService {
     }
 
     @Override
+    public void addOneRepoByLocal(String token, RepositoryDTO repositoryDTO) throws Exception {
+        UserInfoDTO userInfoDTOLocal = getUserInfoByToken(token);
+        String url = repositoryDTO.getUrl().trim();
+        String repoSource = repositoryDTO.getRepoSource().toLowerCase();
+        if (StringUtils.isEmpty(url)) {
+            throw new RunTimeException("the repo url is EMPTY!");
+        }
+        final String urlPostfix = ".git";
+        if(url.endsWith(urlPostfix)){
+            url = url.substring(0, url.length()-4);
+        }
+        boolean isPrivate = repositoryDTO.getPrivateRepo();
+        Pattern pattern = Pattern.compile(repoUrlPattern);
+        Matcher matcher = pattern.matcher(url);
+        if (!matcher.matches()) {
+            throw new RunTimeException("invalid url!");
+        }
+
+        String accountUuid = userInfoDTOLocal.getUuid();
+        String branch = repositoryDTO.getBranch() ;
+        String username = repositoryDTO.getUsername();
+        // TODO password 应该用 base64 加密
+        String password = repositoryDTO.getPassword();
+
+        if(isPrivate && StringUtils.isEmpty(username) && StringUtils.isEmpty(password)){
+            throw new RunTimeException("this projectName is private,please provide your git username and password!");
+        }
+
+        String repoName = repositoryDTO.getRepoName();
+        if (repoName == null || "".equals(repoName)) {
+            repoName = url.substring(url.lastIndexOf("/")).replace("/", "") + "-" + branch;
+        }
+
+        // 一个 Repo目前只扫描一个分支
+        if(accountRepositoryDao.hasRepo(branch, url)) {
+            throw new RunTimeException("The repo accountName has already been used! ");
+        }
+
+        String projectName = repositoryDTO.getProjectName();
+
+        // 普通用户不具备添加项目的权限 上面检查过后不在验证项目是否有被添加过
+
+        String uuid = UUID.randomUUID().toString();
+        SubRepository subRepo = SubRepository.builder().
+                uuid(uuid).url(url).
+                branch(branch).repoSource(repoSource).repoName(repoName).
+                projectName(projectName).importAccountUuid(accountUuid).
+                downloadStatus(SubRepository.DOWNLOADING).recycled(SubRepository.RESERVATIONS).build();
+
+        //subRepository表中插入信息
+        int effectRow = subRepositoryDao.insertOneRepo(subRepo);
+
+        AccountRepository accountRepository = AccountRepository.builder().uuid(UUID.randomUUID().toString()).
+                repoName(repoName).accountUuid(accountUuid).
+                subRepositoryUuid(uuid).projectName(projectName).build();
+        accountRepositoryDao.insertAccountRepository(accountRepository);
+        if (effectRow != 0) {
+            //只有subRepository表中不存在才会下载，向RepoManager这个Topic发送消息，请求开始下载
+            //flag代表添加代码库的方式，1为本地添加，0为前端添加
+            int flag = 1;
+            sendLocal(flag, uuid, url,  username, branch, repoSource, repoName);
+        }
+        log.info("success add repo {}", url);
+    }
+
+    @Override
     @SneakyThrows
     public Map<String, Boolean> addRepos(String token, List<RepositoryDTO> repositories){
         Map<String, Boolean> result = new HashMap<>(repositories.size() >> 1);
@@ -194,6 +262,17 @@ public class ProjectControlServiceImpl implements ProjectControlService {
             userUuid = null;
             //return subRepositoryDao.getAllSubRepo();
         }
+        if (userInfoDTO.getRight().equals(AccountRoleEnum.LEADER.getRight())) {
+
+            List<SubRepository> leaderRepo = subRepositoryDao.getLeaderRepoByAccountUuid(userUuid);
+            List<SubRepository> subRepo = subRepositoryDao.getRepoByAccountUuid(userUuid);
+            if (subRepo!=null)
+            {
+                leaderRepo.addAll(subRepo);
+                leaderRepo = leaderRepo.stream().distinct().collect(Collectors.toList());
+            }
+            return leaderRepo;
+        }
 
         // todo 用户权限为 DEVELOPER 时不允许查询项目列表
         return subRepositoryDao.getAllSubRepoByAccountUuid(userUuid);
@@ -251,6 +330,13 @@ public class ProjectControlServiceImpl implements ProjectControlService {
         log.info("send message to topic ProjectManage ---> " + JSONObject.toJSONString(needDownload));
     }
 
+    //flag, uuid, url,  username, branch, repoSource, repoName
+    private void sendLocal(int flag, String projectId, String url,String username, String branch,String repoSource, String repoName){
+        LocalDownLoad localDownLoad = new LocalDownLoad(flag, projectId, url, username, branch, repoSource, repoName);
+        kafkaTemplate.send("ProjectManager", JSONObject.toJSONString(localDownLoad));
+        log.info("send message to topic ProjectManage ---> " + JSONObject.toJSONString(localDownLoad));
+    }
+
     private synchronized UserInfoDTO getUserInfoByToken(String token) throws Exception{
         if (StringUtils.isEmpty(token)) {
             throw new RunTimeException("need user token");
@@ -297,6 +383,41 @@ public class ProjectControlServiceImpl implements ProjectControlService {
         log.warn("repo delete by {}! repo uuid is {}", accountUuid, repoUuid);
         accountRepositoryDao.deleteRepoAR(accountUuid, repoUuid);
         subRepositoryDao.deleteRepoSR(accountUuid, repoUuid);
+
+        boolean deleteCloneRepoSuccess = rest.deleteCloneRepo(repoUuid);
+        if(!deleteCloneRepoSuccess){
+            log.error("clone repo delete failed!");
+        }
+
+        boolean deleteCodetrackerRepoSuccess = rest.deleteCodetrackerRepo(repoUuid);
+        if(!deleteCodetrackerRepoSuccess){
+            log.error("codetracker repo delete failed!");
+        }
+
+        boolean deleteCommitRepoSucess = rest.deleteCommitRepo(repoUuid);
+        if(!deleteCommitRepoSucess){
+            log.error("commit repo delete failed!");
+        }
+
+        boolean deleteIssueRepoSuccess = rest.deleteIssueRepo(repoUuid);
+        if(!deleteIssueRepoSuccess){
+            log.error("issue repo delete failed!");
+        }
+
+        boolean deleteMeasureRepoSucess = rest.deleteMeasureRepo(repoUuid);
+        if(!deleteMeasureRepoSucess){
+            log.error("measure repo delete failed!");
+        }
+
+        boolean deleteScanRepoSucess = rest.deleteScanRepo(repoUuid);
+        if(!deleteScanRepoSucess){
+            log.error("scan repo delete failed!");
+        }
+
+        if(!deleteCloneRepoSuccess || !deleteCodetrackerRepoSuccess || !deleteCommitRepoSucess || !deleteIssueRepoSuccess
+            || !deleteMeasureRepoSucess || !deleteScanRepoSucess){
+            throw new RunTimeException("delete failed!");
+        }
     }
 
     /**

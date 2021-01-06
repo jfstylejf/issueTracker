@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.edu.fudan.accountservice.mapper.CommitViewMapper">
+
+
+    <select id="getDevelopers" resultType="java.util.HashMap">
+        select distinct developer_unique_name from commit_view
+        <trim prefix="where" prefixOverrides="and">
+            <if test="repoUuids != null and repoUuids.size > 0">
+                AND repo_id IN
+                <foreach collection="repoUuids" separator="," open="(" close=")" item="repoUuid">
+                    #{repoUuid}
+                </foreach>
+            </if>
+            <if test="since != null and since != '' ">
+                AND <![CDATA[ commit_time >= #{since} ]]>
+            </if>
+            <if test="until != null and until != '' ">
+                AND <![CDATA[ commit_time <= #{until} ]]>
+            </if>
+        </trim>
+    </select>
+
+
+</mapper>

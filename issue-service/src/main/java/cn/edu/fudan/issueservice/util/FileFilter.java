@@ -1,5 +1,7 @@
 package cn.edu.fudan.issueservice.util;
 
+import java.util.regex.Pattern;
+
 /**
  * description:
  *
@@ -11,6 +13,8 @@ public final class FileFilter {
      * JPMS 模块
      */
     private static final String JPMS = "module-info.java";
+
+    private static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().contains("win");
     /**
      * true: 过滤
      * false： 不过滤
@@ -29,5 +33,13 @@ public final class FileFilter {
                 str.toLowerCase().startsWith("test") ||
                 str.toLowerCase().endsWith("enum.java") ||
                 path.contains(JPMS);
+    }
+
+    public static boolean jsFileFilter(String filePath) {
+        return IS_WINDOWS ? Pattern.matches(".*\\\\(build|dist)\\\\.*", filePath) : Pattern.matches(".*/(build|dist)/.*", filePath);
+    }
+
+    public static void main(String[] args) {
+        System.out.println(jsFileFilter("C:\\home\\fdse\\static\\js\\main.2c207907.js"));
     }
 }

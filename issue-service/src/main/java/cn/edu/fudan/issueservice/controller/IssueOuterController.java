@@ -2,7 +2,7 @@ package cn.edu.fudan.issueservice.controller;
 
 import cn.edu.fudan.issueservice.component.RestInterfaceManager;
 import cn.edu.fudan.issueservice.domain.ResponseBean;
-import cn.edu.fudan.issueservice.domain.enums.IssuePriorityEnum;
+import cn.edu.fudan.issueservice.domain.enums.JavaIssuePriorityEnum;
 import cn.edu.fudan.issueservice.exception.UrlException;
 import cn.edu.fudan.issueservice.service.IssueService;
 import cn.edu.fudan.issueservice.util.DateTimeUtil;
@@ -158,7 +158,7 @@ public class IssueOuterController {
         }
 
         if(!StringUtils.isEmpty(priority)){
-            query.put("priority", Objects.requireNonNull(IssuePriorityEnum.getPriorityEnum(priority)).getRank());
+            query.put("priority", Objects.requireNonNull(JavaIssuePriorityEnum.getPriorityEnum(priority)).getRank());
         }
 
         //根据url、projectName和reposUuid获得 repoUuid列表
@@ -290,7 +290,7 @@ public class IssueOuterController {
         query.put("since", since);
         query.put("until", until);
         query.put("toolName", toolName);
-        query.put("introducer", introducer);
+        query.put("developer", introducer);
         query.put("priority", priority);
 
         Map<String, Object> issueFilterList = issueService.getIssueFilterListCount(query);

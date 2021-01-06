@@ -3,14 +3,18 @@ package cn.edu.fudan.projectmanager.component;
 import cn.edu.fudan.projectmanager.domain.ResponseBean;
 import cn.edu.fudan.projectmanager.domain.dto.UserInfoDTO;
 import cn.edu.fudan.projectmanager.exception.AuthException;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 @Slf4j
 @Component
@@ -28,6 +32,14 @@ public class RestInterfaceManager {
     private String tagServicePath;
     @Value("${codeTracker.service.path}")
     private String codeTrackerServicePath;
+    @Value("${issue.service.path}")
+    private String issueServicePath;
+    @Value("${measure.service.path}")
+    private String measureServicePath;
+    @Value("${codeTracker.service.path}")
+    private String codetrackerServicePath;
+    @Value("${scan.service.path}")
+    private String scanServicePath;
 
     private RestTemplate restTemplate;
 
@@ -35,10 +47,49 @@ public class RestInterfaceManager {
         this.restTemplate = restTemplate;
     }
 
-    //----------------------------------account service----------------------------------------------------
-    public void deleteCloneMeasure(String repoId){
-        restTemplate.delete(cloneServicePath + "/cloneMeasure/" + repoId);
+    //----------------------------------delete repo----------------------------------------------------
+    public boolean deleteCloneRepo(String repoUuid){
+        ResponseEntity<JSONObject> exchange = restTemplate.exchange(cloneServicePath + "/cloneScan/" + repoUuid, HttpMethod.DELETE, null, JSONObject.class);
+        JSONObject body = exchange.getBody();
+        assert body != null;
+        return body.getIntValue("code") == 200;
     }
+
+    public boolean deleteIssueRepo(String repoUuid){
+        ResponseEntity<JSONObject> exchange = restTemplate.exchange(issueServicePath + "/issue/sonarqube/" + repoUuid, HttpMethod.DELETE, null, JSONObject.class);
+        JSONObject body = exchange.getBody();
+        assert body != null;
+        return body.getIntValue("code") == 200;
+    }
+
+    public boolean deleteMeasureRepo(String repoUuid){
+        ResponseEntity<JSONObject> exchange = restTemplate.exchange(measureServicePath + "/measure/" + repoUuid, HttpMethod.DELETE, null, JSONObject.class);
+        JSONObject body = exchange.getBody();
+        assert body != null;
+        return body.getIntValue("code") == 200 ;
+    }
+
+    public boolean deleteCodetrackerRepo(String repoUuid){
+        ResponseEntity<JSONObject> exchange = restTemplate.exchange(codetrackerServicePath + "/codetracker/" + repoUuid, HttpMethod.DELETE, null, JSONObject.class);
+        JSONObject body = exchange.getBody();
+        assert body != null;
+        return body.getIntValue("code") == 200;
+    }
+
+    public boolean deleteScanRepo(String repoUuid){
+        ResponseEntity<JSONObject> exchange = restTemplate.exchange(scanServicePath + "/scan/" + repoUuid, HttpMethod.DELETE, null, JSONObject.class);
+        JSONObject body = exchange.getBody();
+        assert body != null;
+        return body.getIntValue("code") == 200;
+    }
+
+    public boolean deleteCommitRepo(String repoUuid){
+        ResponseEntity<JSONObject> exchange = restTemplate.exchange(commitServicePath + "/base/" + repoUuid, HttpMethod.DELETE, null, JSONObject.class);
+        JSONObject body = exchange.getBody();
+        assert body != null;
+        return body.getIntValue("code") == 200;
+    }
+
 
     //----------------------------------account service----------------------------------------------------
     public String getAccountId(String userToken){
@@ -88,9 +139,5 @@ public class RestInterfaceManager {
 
     public void deleteCodeTrackerOfRepo(String branch, String repoId) {
         restTemplate.delete(codeTrackerServicePath + "/codetracker?repoUuid=" + repoId + "&branch=" + branch,JSONObject.class);
-    }
-
-    public JSONObject getLatestCommitTime(String repoId) {
-        return restTemplate.getForObject(commitServicePath + "/latest–commit–time?repo_id=" + repoId,JSONObject.class);
     }
 }

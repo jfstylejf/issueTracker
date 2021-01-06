@@ -5,6 +5,8 @@ import cn.edu.fudan.projectmanager.domain.SubRepository;
 import cn.edu.fudan.projectmanager.domain.vo.RepositoryVO;
 import cn.edu.fudan.projectmanager.service.AccountRepositoryService;
 import cn.edu.fudan.projectmanager.service.ProjectControlService;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -33,7 +35,7 @@ public class ProjectQueryController {
      * @param recycled {@link cn.edu.fudan.projectmanager.domain.SubRepository} EMPTY RESERVATIONS ALL
      * @return    k projectName v: list [k: repo_id, accountName]
      */
-    @ApiOperation(value = " 得到所有库信息", notes = "@return Map < String, List < Map < String, String > > >  k projectName v: list [k: repo_id, accountName]")
+    @ApiOperation(value = " 得到所有库名和ID", notes = "@return Map < String, List < Map < String, String > > >  k projectName v: list [k: repo_id, accountName]")
     @GetMapping(value = "/project/all")
     public Map<String, List<Map<String, String>>> getProjectAndRepoRelation(@RequestParam(name = "recycled", required = false, defaultValue = "0") int recycled) {
         return repoUser.getProjectAndRepoRelation(recycled);
@@ -44,7 +46,7 @@ public class ProjectQueryController {
      * @param
      * @return
      */
-    @ApiOperation(value = " 得到所有库信息", notes = "@return List<Map<Integer, String>>")
+    @ApiOperation(value = " 得到所有项目名和ID", notes = "@return List<Map<String, Object>>")
     @GetMapping(value = {"/project/list"})
     public ResponseBean<List<Map<String, Object>>> getProjectList(HttpServletRequest request) {
         String token = request.getHeader(TOKEN);
@@ -58,6 +60,10 @@ public class ProjectQueryController {
     /**
      * fixme measure
      */
+    @ApiOperation(value="获取指定单个库的信息",httpMethod = "GET")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "repoUuid", value = "库对应的uuid", dataType = "String", required = true)
+    })
     @GetMapping(value = {"/inner/project"})
     public RepositoryVO getProjectByRepoId(@RequestParam("repo_uuid") String repoUuid){
         SubRepository subRepository = repoUser.getProjectInfoByRepoId(repoUuid);
@@ -68,8 +74,32 @@ public class ProjectQueryController {
     }
 
     /**
+     * FIXME issue
+     *
+     * List<Project>
+     */
+    @ApiOperation(value="获取多个库的信息",httpMethod = "GET")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "accountUuid", value = "引入人uuid", dataType = "String", required = false),
+            @ApiImplicitParam(name = "recycled", value = "回收状态", dataType = "int", required = false)
+    })
+    @GetMapping(value = "/inner/projects")
+    public List<RepositoryVO> getRepositoryByAccountId(@RequestParam(name = "account_uuid", required = false) String accountUuid,
+                                                       @RequestParam(name = "recycled", required = false, defaultValue = "0") int recycled){
+        boolean isAll = recycled == SubRepository.ALL;
+        List<SubRepository> repositories = repoUser.getRepositoryByAccountUuid(accountUuid);
+        List<RepositoryVO> result = new ArrayList<>();
+        repositories.stream().filter(r -> isAll || recycled == r.getRecycled()).forEach(r -> result.add(new RepositoryVO(r)));
+        return result;
+    }
+
+    /**
      * FIXME issue scan
      */
+    @ApiOperation(value="获取一个项目下所属库的信息",httpMethod = "GET")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "repoUuid", value = "库对应的uuid", dataType = "String", required = true)
+    })
     @GetMapping(value = "/inner/project/repo-uuid")
     public String getRepoUuid(@RequestParam("project_uuid") String projectUuid) {
         return repoUser.getRepoUuid(projectUuid);
@@ -89,22 +119,6 @@ public class ProjectQueryController {
         subRepositories.stream().filter(r -> isAll || recycled == r.getRecycled()).forEach(r -> result.add(r.getRepoUuid()));
         return result;
     }
-
-    /**
-     * FIXME issue
-     *
-     * List<Project>
-     */
-    @GetMapping(value = "/inner/projects")
-    public List<RepositoryVO> getRepositoryByAccountId(@RequestParam(name = "account_uuid", required = false) String accountUuid,
-                                        @RequestParam(name = "recycled", required = false, defaultValue = "0") int recycled){
-        boolean isAll = recycled == SubRepository.ALL;
-        List<SubRepository> repositories = repoUser.getRepositoryByAccountUuid(accountUuid);
-        List<RepositoryVO> result = new ArrayList<>();
-        repositories.stream().filter(r -> isAll || recycled == r.getRecycled()).forEach(r -> result.add(new RepositoryVO(r)));
-        return result;
-    }
-
 
     /**
      * description todo 补足注释

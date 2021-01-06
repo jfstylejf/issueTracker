@@ -24,6 +24,14 @@ public interface ProjectControlService {
      */
     void addOneRepo(String token, RepositoryDTO repositoryDTO) throws Exception;
 
+    /**
+     * 本地添加一个仓库
+     * @param token 用户token
+     * @param repositoryDTO repo信息
+     * @throws Exception e
+     */
+    void addOneRepoByLocal(String token, RepositoryDTO repositoryDTO) throws Exception;
+
 
     /**
      * 添加多个仓库

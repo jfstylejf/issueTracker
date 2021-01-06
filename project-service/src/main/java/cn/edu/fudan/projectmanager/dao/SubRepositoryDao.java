@@ -46,6 +46,16 @@ public class SubRepositoryDao {
         return subRepositoryMapper.getAllSubRepoByAccountId(accountUuid);
     }
 
+    public List<SubRepository> getLeaderRepoByAccountUuid(String accountUuid) {
+
+        return subRepositoryMapper.getLeaderRepoByAccountUuid(accountUuid);
+    }
+
+    public List<SubRepository> getRepoByAccountUuid(String accountUuid) {
+
+        return subRepositoryMapper.getRepoByAccountUuid(accountUuid);
+    }
+
     public List<SubRepository> getAllSubRepo() {
         return subRepositoryMapper.getAllSubRepo();
     }

@@ -27,22 +27,22 @@ public abstract class BaseAnalyzer {
 
     /**
      * 调用工具扫描
-     * @param repoId repoUuid
+     * @param repoUuid repoUuid
      * @param repoPath repoPath
      * @param commit commit
      * @return 调用工具是否成功
      */
-    public abstract boolean invoke(String repoId, String repoPath, String commit);
+    public abstract boolean invoke(String repoUuid, String repoPath, String commit);
 
 
     /**
      * 调用工具进行解析,如sonarqube结果解析成rawIssue
      * @param repoPath repoPath
-     * @param repoId repoUuid
-     * @param commitId commitId
+     * @param repoUuid repoUuid
+     * @param commit commitId
      * @return 解析是否成功
      */
-    public abstract boolean analyze(String repoPath, String repoId, String commitId);
+    public abstract boolean analyze(String repoPath, String repoUuid, String commit);
 
     /**
      *  返回工具名
