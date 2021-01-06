@@ -178,13 +178,13 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
             case "self-other_solved":
                 return handleLifeCycleDetail(issueDao.getSelfIntroduceOtherSolvedIssueDetail(query), token);
             default:
-                return null;
+                return new ArrayList<>();
         }
     }
 
     private List<JSONObject> handleLifeCycleDetail(List<JSONObject> issuesDetail, String token) {
         if(issuesDetail == null){
-            return null;
+            return new ArrayList<>();
         }
         //init repoUuid to repoName
         Map<String, String> repoName = restInterfaceManager.getAllRepoToRepoName(token);

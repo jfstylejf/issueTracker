@@ -38,6 +38,8 @@ public class IssueMeasurementController {
 
     private final String TOKEN = "token";
 
+    private final String timeError = "time format error";
+
     @ApiOperation(value = "获取issueTypeCounts", notes = "@return List<Map.Entry<String, JSONObject>>\n[\n" +
             "        {\n" +
             "            \"String literals should not be duplicated\": {\n" +
@@ -88,7 +90,6 @@ public class IssueMeasurementController {
                                             @RequestParam(value = "until", required = false) String until,
                                             @RequestParam(value = "manual_status",required = false, defaultValue = "Default")String manualStatus,
                                             @RequestParam(value = "tool", required = false, defaultValue = "sonarqube") String tool) {
-        String timeError = "time format error";
         if(timeError.equals(DateTimeUtil.timeFormatIsLegal(since, false)) || timeError.equals(DateTimeUtil.timeFormatIsLegal(until, true))){
             return new ResponseBean<>(400, "The input time format error,should be yyyy-MM-dd.", null);
         }
@@ -168,6 +169,7 @@ public class IssueMeasurementController {
                 });
                 return new ResponseBean<>(200, success, issueMeasureInfoService.handleSortDeveloperLifecycle(developersLifecycle, isAsc, ps, page));
             }
+            query.put("producer", developer);
             String token = request.getHeader(TOKEN);
             return new ResponseBean<>(200, success, issueMeasureInfoService.getLifeCycleDetail(status, target, query, token));
         } catch (Exception e){
@@ -201,7 +203,6 @@ public class IssueMeasurementController {
 
         Map<String, Object> query = new HashMap<>(10);
 
-        String timeError = "time format error";
         if(timeError.equals(DateTimeUtil.timeFormatIsLegal(since, false)) || timeError.equals(DateTimeUtil.timeFormatIsLegal(until, true))){
             return new ResponseBean<>(400, "The input time format error,should be yyyy-MM-dd.", null);
         }
@@ -253,7 +254,6 @@ public class IssueMeasurementController {
 
         Map<String, Object> query = new HashMap<>(10);
 
-        String timeError = "time format error";
         if(timeError.equals(DateTimeUtil.timeFormatIsLegal(since, false)) || timeError.equals(DateTimeUtil.timeFormatIsLegal(until, true))){
             return new ResponseBean<>(400, "The input time format error,should be yyyy-MM-dd.", null);
         }
