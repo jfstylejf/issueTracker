@@ -35,16 +35,16 @@ public class IssueIgnoreController {
     })
     @PutMapping(value = "issue/ignore/{tool}")
     public ResponseBean<String> ignoreIssues(@PathVariable("tool")String tool, @RequestBody List<IgnoreRecord> ignoreRecords){
-
-        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
+        if(ignoreRecords.size() == 0){
+            return new ResponseBean<>(200, success, null);
+        }
         try{
             for(IgnoreRecord ignoreRecord : ignoreRecords) {
                 if(!IgnoreTypeEnum.statusInEnum(ignoreRecord.getTag())){
                     return new ResponseBean<>(400, "issue tag error!", null);
                 }
                 ignoreRecord.setUuid(UUID.randomUUID().toString());
-                ignoreRecord.setIgnoreTime(df.format(new Date()));
+                ignoreRecord.setIgnoreTime(ignoreRecord.getIgnoreTime());
             }
             return new ResponseBean<>(200, success, issueIgnoreService.insertIssueIgnoreRecords(ignoreRecords));
         }catch (Exception e){

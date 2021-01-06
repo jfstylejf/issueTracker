@@ -19,9 +19,7 @@ import org.springframework.util.StringUtils;
 
 import java.security.acl.LastOwnerException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author fancying
@@ -33,6 +31,8 @@ public class ScanInfoServiceImpl implements ScanInfoService {
     private RestInterfaceManager restInterfaceManager;
     private ScanDao scanDao;
     private ToolDao toolDao;
+    public static final int INVOKE_SUCCESS = 1;
+    public static final int INVOKE_FAILED = 0;
 
 
     @Override
@@ -62,9 +62,12 @@ public class ScanInfoServiceImpl implements ScanInfoService {
                 scanStatus.setToolName (tool.getToolName ());
                 toolScanStatuses.add (scanStatus);
 
+                // 工具在上次扫描中调用失败
                 if(((Integer)Scan.INVOKE_FAILED).equals(toolInvokeResult)){
                     scanStatus.setStatus (ScanStatusEnum.INVOKE_FAILED.getType ());
                     overAllStatus = ScanStatusEnum.INVOKE_FAILED.getType ();
+                    // 再次调用该工具进行扫描
+                    reScan(scan, tool);
                     continue;
                 }
                 //3. 调用成功 获取各个服务的扫描状态
@@ -74,6 +77,8 @@ public class ScanInfoServiceImpl implements ScanInfoService {
                     log.debug("toolStatus is null! set default status");
                     scanStatus.setStatus (ScanStatusEnum.WAITING_FOR_SCAN.getType ());
                     overAllStatus = judgeOverStatus(overAllStatus, ScanStatusEnum.WAITING_FOR_SCAN);
+                    // 再次调用该工具进行扫描
+                    reScan(scan, tool);
                     continue;
                 }
 
@@ -142,6 +147,42 @@ public class ScanInfoServiceImpl implements ScanInfoService {
         return curStatus.getPriority() > targetValue.getPriority() ? targetValue.getType() : curStatus.getType();
     }
 
+    /**
+     * 此方法用于在获取扫描状态时，发现有工具在之前调用失败的情况下，再次对该工具进行扫描请求
+     * @param scan 上次scan表里的记录
+     * @param tool 工具类型
+     */
+    private void reScan(Scan scan, Tool tool){
+        String repoId = scan.getRepoId();
+        String beginCommit = scan.getStartCommit();
+        Map<Integer,Integer> toolInvokeMap = scan.analyzeInvokeResult ();
+
+        JSONObject projectInfo = restInterfaceManager.getProjectsOfRepo(repoId);
+        String branch = projectInfo.getString("branch");
+        boolean status = restInterfaceManager.invokeTools(tool.getToolType(), tool.getToolName(), repoId, branch, beginCommit);
+        // 更新工具调用结果的状态
+        if (status) {
+            toolInvokeMap.put (tool.getId (),INVOKE_SUCCESS);
+            log.info("tool {} rescan success, repoUuid is [{}], beginCommit is [{}]", tool.getToolName(), repoId, beginCommit);
+        } else {
+            toolInvokeMap.put (tool.getId (),INVOKE_FAILED);
+            log.error("tool {} rescan failed, repoUuid is [{}], beginCommit is [{}]", tool.getToolName(), repoId, beginCommit);
+        }
+        StringBuilder invokeResult = new StringBuilder();
+        for (Map.Entry<Integer,Integer> entry : toolInvokeMap.entrySet()){
+            invokeResult.append(entry.getKey().toString()).append(":").append(entry.getValue().toString()).append(",");
+        }
+        String result = invokeResult.toString();
+        if(result.length () > 0){
+            result = result.substring (0,result.length ()-1);
+        }
+        scan.setInvokeResult(result);
+
+        // 更新scan表该记录
+        scanDao.updateOneScan(scan);
+
+    }
+
     @Override
     @Async("taskExecutor")
     public void deleteOneRepo(String repoId) {
@@ -162,4 +203,6 @@ public class ScanInfoServiceImpl implements ScanInfoService {
     public void setToolDao(ToolDao toolDao) {
         this.toolDao = toolDao;
     }
+
+
 }

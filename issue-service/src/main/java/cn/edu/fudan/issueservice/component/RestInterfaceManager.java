@@ -63,6 +63,20 @@ public class RestInterfaceManager {
         return restTemplate.getForObject(accountServicePath + "/user/accountIds", List.class);
     }
 
+    public List<String> getDeveloperInRepo(String repoUuids, String since, String until) {
+        List<String> developers = new ArrayList<>();
+        String url = since == null ? accountServicePath + "/user/developers?repo_uuids=" + repoUuids + "&is_whole=true" :
+                accountServicePath + "/user/developers?repo_uuids=" + repoUuids + "&is_whole=true&since=" + since + "&until=" + until;
+        JSONObject result = restTemplate.getForObject(url, JSONObject.class);
+        assert result != null;
+        JSONArray rows = result.getJSONArray("data");
+        for(Object row : rows){
+            JSONObject developer = (JSONObject)row;
+            developers.add(developer.getString("developer_unique_name"));
+        }
+        return developers;
+    }
+
     //-----------------------------------------------project service-------------------------------------------------
     /**
      * 根据account_id查找参与的项目信息
@@ -142,7 +156,7 @@ public class RestInterfaceManager {
         headers.add("token", userToken);
         HttpEntity<HttpHeaders> request = new HttpEntity<>(headers);
         ResponseEntity<JSONObject> responseEntity = restTemplate.exchange(projectServicePath  + "/project",HttpMethod.GET,request,JSONObject.class);
-        String body = responseEntity.getBody().toString();
+        String body = Objects.requireNonNull(responseEntity.getBody()).toString();
         JSONObject result = JSONObject.parseObject(body);
         JSONArray reposDetail = result.getJSONArray("data");
 
@@ -159,7 +173,7 @@ public class RestInterfaceManager {
     //---------------------------------------------commit service------------------------------------------------------
 
     public String getFirstCommitDate(String developerName){
-        JSONObject data = restTemplate.getForObject(commitServicePath + "/first-commit?author=" + developerName, JSONObject.class).getJSONObject("data");
+        JSONObject data = Objects.requireNonNull(restTemplate.getForObject(commitServicePath + "/first-commit?author=" + developerName, JSONObject.class)).getJSONObject("data");
         LocalDateTime fistCommitDate = LocalDateTime.parse(data.getJSONObject("repos_summary").getString("first_commit_time_summary"), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         return fistCommitDate.plusHours(8).toLocalDate().toString();
     }
@@ -211,6 +225,7 @@ public class RestInterfaceManager {
                     repoPath = response.getJSONObject("data").getString ("content");
                 } else {
                     logger.error("code service response null!");
+                    logger.error("request url is : {}",urlPath);
                 }
                 break;
             }catch (Exception e){
@@ -343,25 +358,24 @@ public class RestInterfaceManager {
 
         String url = measureServicePath + "/measure/developer/work-load?developer=" +
                 (StringUtils.isEmpty(query.get("developer")) ? "" : query.get("developer").toString()) +
-                "&repo_uuid=" + (StringUtils.isEmpty(query.get("repoList")) ? "" : query.get("repoList").toString()) +
+                "&repo_uuids=" + (StringUtils.isEmpty(query.get("repoList")) ? "" : query.get("repoList").toString()) +
                 "&since=" + (StringUtils.isEmpty(query.get("since")) ? "" : query.get("since").toString()) +
                 "&until=" + (StringUtils.isEmpty(query.get("until")) ? "" : query.get("until").toString());
 
         ResponseEntity<JSONObject> responseEntity = restTemplate.exchange(url , HttpMethod.GET,request,JSONObject.class);
-        JSONObject result = JSONObject.parseObject(responseEntity.getBody().toString(),JSONObject.class);
+        JSONObject body = responseEntity.getBody();
 
-        if(result.getIntValue("code") != 200){
+        if(body.getIntValue("code") != 200){
             logger.error("request /measure/developer/workLoad failed");
             throw  new RuntimeException("get data from /measure/developer/work-load failed!");
         }
 
         Map<String, Integer> developerWorkLoad = new HashMap<>(16);
-
-        JSONObject data = result.getJSONObject("data");
-
-        data.keySet().forEach(r -> developerWorkLoad.put(r,developerWorkLoad.getOrDefault(r + data.getJSONObject(r).getInteger("delLines") + data.getJSONObject(r).getInteger("addLines"), data.getJSONObject(r).getInteger("delLines") + data.getJSONObject(r).getInteger("addLines"))));
+        JSONArray data = body.getJSONArray("data");
+        for(int i = 0; i < data.size(); i++){
+            developerWorkLoad.put(data.getJSONObject(i).getString("developerName"), data.getJSONObject(i).getInteger("totalLoc"));
+        }
 
         return developerWorkLoad;
     }
-
 }

@@ -53,8 +53,9 @@ public class ToolInvoker {
     @Qualifier("TMatchStrategy")
     MatchStrategy matchStrategy;
 
-    @Value("${resultFileHome}")
-    private String findbugsResultFileHome;
+    @Value("${ESLintResultFileHome}")
+    private String esLintResultFileHome;
+
     /**
      * 工具调用
      */
@@ -72,10 +73,11 @@ public class ToolInvoker {
             sonarQubeBaseAnalyzer.setRestInvoker (restInvoker);
             sonarQubeBaseAnalyzer.setCommitDao(commitDao);
             analyzer = sonarQubeBaseAnalyzer;
-        }else if (ToolEnum.FINDBUGS.getType ().equals (toolName)) {
-            FindbugsBaseAnalyzer findbugsBaseAnalyzer = new FindbugsBaseAnalyzer ();
-            findbugsBaseAnalyzer.setResultFileHome (findbugsResultFileHome);
-            analyzer = findbugsBaseAnalyzer;
+        }else if(ToolEnum.ESLINT.getType().equals(toolName)){
+            EsLintBaseAnalyzer esLintBaseAnalyzer = new EsLintBaseAnalyzer();
+            esLintBaseAnalyzer.setResultFileHome(esLintResultFileHome);
+            esLintBaseAnalyzer.setCommitDao(commitDao);
+            analyzer = esLintBaseAnalyzer;
         }else {
             log.error ("toolName is error , do not have {}-->", toolName);
             return ;
@@ -105,7 +107,6 @@ public class ToolInvoker {
         }
 
     }
-
 
     private boolean executeScan(RepoResourceDTO repoResourceDTO, BaseAnalyzer analyzer,
                             ScanStrategy scanStrategy,
@@ -243,41 +244,40 @@ public class ToolInvoker {
                       JGitHelper jGitInvoker,
                       IssueMatcher issueMatcher,
                       IssueStatisticalTool issueStatisticalTool,
-                      IssueScanTransactionManager issueScanTransactionManager) throws InterruptedException {
-        String repoId = repoResourceDTO.getRepoId ();
+                      IssueScanTransactionManager issueScanTransactionManager) {
+        String repoUuid = repoResourceDTO.getRepoId ();
         String repoPath = repoResourceDTO.getRepoPath ();
         String commit = issueScan.getCommitId ();
-
-        long startTime = System.currentTimeMillis();
-        //0. 先清除编译生成的target文件
-        DirExplorer.deleteRedundantTarget(repoPath);
-        long deleteTargetTime = System.currentTimeMillis();
-        log.info("delete target time --> {}", (deleteTargetTime-startTime)/1000 );
-
-        //1. 先判断是否可编译 以及是否编译成功
-        if(!CompileUtil.isCompilable(repoPath)){
-            log.error ("compile failed ! ");
-            issueScan.setStatus (ScanStatusEnum.COMPILE_FAILED.getType ());
-            return ;
+        if(analyzer instanceof SonarQubeBaseAnalyzer) {
+            long startTime = System.currentTimeMillis();
+            //0. 先清除编译生成的target文件
+            DirExplorer.deleteRedundantTarget(repoPath);
+            long deleteTargetTime = System.currentTimeMillis();
+            log.info("delete target time --> {}", (deleteTargetTime - startTime) / 1000);
+            //1. 先判断是否可编译 以及是否编译成功
+            if (!CompileUtil.isCompilable(repoPath)) {
+                log.error("compile failed ! ");
+                issueScan.setStatus(ScanStatusEnum.COMPILE_FAILED.getType());
+                return;
+            }
+            long compileTime = System.currentTimeMillis();
+            log.info("compile time --> {}, compile success ! ", (compileTime - deleteTargetTime) / 1000);
         }
-        long compileTime = System.currentTimeMillis();
-        log.info("compile time --> {}, compile success ! ", (compileTime - deleteTargetTime)/1000 );
-
+        long compileTime2 = System.currentTimeMillis();
         //2. 调用工具进行扫描
-        boolean invokeToolResult = analyzer.invoke(repoId, repoPath, commit);
+        boolean invokeToolResult = analyzer.invoke(repoUuid, repoPath, commit);
         if(!invokeToolResult){
             long invokeToolTime = System.currentTimeMillis();
-            log.info("invoke tool --> {}", (invokeToolTime-compileTime)/1000 );
+            log.info("invoke tool --> {}", (invokeToolTime - compileTime2) / 1000 );
             log.error ("invoke tool failed ! " );
             issueScan.setStatus (ScanStatusEnum.INVOKE_TOOL_FAILED.getType ());
             return ;
         }
         long invokeToolTime = System.currentTimeMillis();
-        log.info("invoke tool --> {}", (invokeToolTime-compileTime)/1000 );
+        log.info("invoke tool --> {}", (invokeToolTime - compileTime2) / 1000 );
         log.info ("invoke tool success ! " );
-
         //3. 调用工具进行解析
-        boolean analyzeResult = analyzer.analyze(repoPath, repoId, commit);
+        boolean analyzeResult = analyzer.analyze(repoPath, repoUuid, commit);
         if(!analyzeResult){
             log.error ("analyze failed ! " );
             issueScan.setStatus (ScanStatusEnum.ANALYZE_FAILED.getType ());
@@ -286,30 +286,27 @@ public class ToolInvoker {
         long analyzeToolTime = System.currentTimeMillis();
         log.info("analyze tool --> {}", (analyzeToolTime-invokeToolTime)/1000 );
         log.info ("analyze success ! " );
-
+        //get current rawIssues
         List<RawIssue> analyzeRawIssues = analyzer.getResultRawIssues ();
         //4. 缺陷匹配
-        boolean matchResult = issueMatcher.matchProcess (repoId, commit, jGitInvoker, analyzer.getToolName (), analyzeRawIssues);
+        boolean matchResult = issueMatcher.matchProcess (repoUuid, commit, jGitInvoker, analyzer.getToolName (), analyzeRawIssues);
         if(!matchResult){
             log.error ("match failed ! " );
             issueScan.setStatus (ScanStatusEnum.MATCH_FAILED.getType ());
             return ;
         }
         log.info ("match success ! " );
-
         //5. 更新issue信息 ,做相应的缺陷统计
         List<RawIssue> currentRawIssuesResult = issueMatcher.getCurrentRawIssuesResult ();
         Map<String, List<RawIssue>> parentRawIssuesResult = issueMatcher.getParentRawIssuesResult ();
-        boolean statisticalResult = issueStatisticalTool.doingStatisticalAnalysis (repoId, commit, jGitInvoker,
+        boolean statisticalResult = issueStatisticalTool.doingStatisticalAnalysis (repoUuid, commit, jGitInvoker,
                 currentRawIssuesResult, parentRawIssuesResult, analyzer);
         if(!statisticalResult){
             log.error ("statistical failed ! " );
             issueScan.setStatus (ScanStatusEnum.STATISTICAL_FAILED.getType ());
             return ;
         }
-
         log.info ("statistical success ! " );
-
         //6. 持久化扫描结果
         try{
             issueScanTransactionManager.persistScanData (currentRawIssuesResult, parentRawIssuesResult, issueScan , issueStatisticalTool);
@@ -319,9 +316,7 @@ public class ToolInvoker {
             issueScan.setStatus (ScanStatusEnum.STATISTICAL_FAILED.getType ());
             return ;
         }
-
         log.info ("persist data success ! " );
-
         issueScan.setStatus (ScanStatusEnum.DONE.getType ());
     }
 
@@ -447,5 +442,4 @@ public class ToolInvoker {
     public void setIssueTypeDao(IssueTypeDao issueTypeDao) {
         this.issueTypeDao = issueTypeDao;
     }
-
 }

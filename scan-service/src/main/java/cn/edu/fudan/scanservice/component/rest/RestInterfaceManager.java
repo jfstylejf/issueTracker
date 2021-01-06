@@ -117,7 +117,7 @@ public class RestInterfaceManager {
         log.debug("get request path is {}", path);
 
         try {
-            // 最多等待180秒
+            // 最多等待180*5秒
             for (int i = 1; i <= 180; i++) {
                 TimeUnit.SECONDS.sleep(5);
                 JSONObject res = restTemplate.getForObject(path , JSONObject.class);

@@ -35,7 +35,7 @@ public class IssueIgnoreServiceImpl implements IssueIgnoreService {
         issueIgnoreDao.insertIssueIgnoreRecords(ignoreRecords);
 
         for (IgnoreRecord ignoreRecord : ignoreRecords){
-            boolean updateIssueManualStatusSuccess = updateIssueManualStatus(ignoreRecord.getRepoUuid(), ignoreRecord.getIssueUuid(), ignoreRecord.getTag(), ignoreRecord.getType(), ignoreRecord.getTool());
+            boolean updateIssueManualStatusSuccess = updateIssueManualStatus(ignoreRecord.getRepoUuid(), ignoreRecord.getIssueUuid(), ignoreRecord.getTag(), ignoreRecord.getType(), ignoreRecord.getTool(), ignoreRecord.getIgnoreTime());
             if(!updateIssueManualStatusSuccess){
                 throw  new RuntimeException("update issue manual_status failed!");
             }
@@ -44,13 +44,12 @@ public class IssueIgnoreServiceImpl implements IssueIgnoreService {
         return "insert success!";
     }
 
-    private boolean updateIssueManualStatus(String repoUuid, String issueUuid, String manualStatus, String issueType, String tool) {
+    private boolean updateIssueManualStatus(String repoUuid, String issueUuid, String manualStatus, String issueType, String tool, String ignoreTime) {
         if (manualStatus == null || manualStatus.isEmpty()) {
             logger.error("manualStatus shouldn't be null!");
             return false;
         }
-        DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        issueDao.updateIssueManualStatus(repoUuid, issueUuid, manualStatus, issueType, tool, df.format(new Date()));
+        issueDao.updateIssueManualStatus(repoUuid, issueUuid, manualStatus, issueType, tool, ignoreTime);
         return true;
     }
 

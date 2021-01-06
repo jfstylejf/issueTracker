@@ -5,6 +5,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author wjzho
@@ -22,7 +23,26 @@ public interface ProjectMapper {
     List<String> getDeveloperList(@Param("repoUuidList") List<String> repoUuidList, @Param("since")String since, @Param("until")String until);
 
     /**
-     *
+     * 返回开发者在参与库中的信息
+     * @param repoUuid 查询库
+     * @param since 查询起止时间
+     * @param until 查询结束时间
+     * @return
+     */
+    List<Map<String,String>> getDeveloperRepoInfoList(@Param("repoUuid") String repoUuid,@Param("since")String since, @Param("until")String until);
+
+
+
+    /**
+     * 开发者在职状态
+     * @return List<Map<String,String>> key : account_name,account_status
+     */
+    List<Map<String,String>> getDeveloperDutyTypeList();
+
+
+
+    /**
+     * fixme
      * 根据开发者的名字得到其参加过的项目信息
      * @param developer 开发者名字
      * @return Map key repo_id module
@@ -48,7 +68,7 @@ public interface ProjectMapper {
      * @param developer 开发者姓名
      * @return  List<Map<String,Object>> key : developer_unique_name , commit_time , commit_id , message
      */
-    List<Map<String,Object>> getValidCommitMsg(@Param("repoUuidList")List<String> repoUuidList,@Param("since")String since,@Param("until")String until,@Param("developer")String developer);
+    List<Map<String,String>> getValidCommitMsg(@Param("repoUuidList")List<String> repoUuidList,@Param("since")String since,@Param("until")String until,@Param("developer")String developer);
 
 
     /**
@@ -90,4 +110,18 @@ public interface ProjectMapper {
      */
     void deleteRepoMsg(@Param("repoUuidList") List<String> repoUuidList);
 
+    /**
+     * 用户鉴权，返回Leader管理库列表
+     * @param userUuid 查询用户 account_uuid
+     * @return List<String> projectList
+     */
+    List<String> getProjectByAccountId(@Param("account_uuid") String userUuid);
+
+    /**
+     * 获取开发者第一次在查询库中的提交时间
+     * @param repoUuid 查询库
+     * @param developer 查询开发者
+     * @return String firstCommitDate
+     */
+    String getDeveloperRepoFirstCommitDate(@Param("repoUuid") String repoUuid,@Param("developer") String developer);
 }

@@ -7,6 +7,7 @@ import cn.edu.fudan.issueservice.domain.dbo.RawIssue;
 import cn.edu.fudan.issueservice.domain.enums.*;
 import cn.edu.fudan.issueservice.service.IssueMeasureInfoService;
 import cn.edu.fudan.issueservice.util.DateTimeUtil;
+import cn.edu.fudan.issueservice.util.PagedGridResult;
 import cn.edu.fudan.issueservice.util.SegmentationUtil;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +32,8 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
     private IssueDao issueDao;
 
     private RestInterfaceManager restInterfaceManager;
+
+    private final String repoList = "repoList";
 
     @Override
     public List<Map.Entry<String, JSONObject>> getNotSolvedIssueCountByToolAndRepoUuid(List<String> repoUuids, String tool, String order, String commitUuid) {
@@ -93,7 +96,7 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
         AtomicInteger allSolvedIssueCount = new AtomicInteger();
 
         if(codeQuality) {
-            query.put("repoList", SegmentationUtil.splitStringList(query.get("repoList") == null ? null : query.get("repoList").toString()));
+            query.put(repoList, SegmentationUtil.splitStringList(query.get(repoList) == null ? null : query.get(repoList).toString()));
         }
 
         developerWorkload.keySet().forEach(r -> {
@@ -188,7 +191,7 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
         //handle issues detail
         issuesDetail.forEach(r -> {
             r.put("projectName", repoName.get(r.getString("repoUuid")));
-            r.put("severity", Objects.requireNonNull(IssuePriorityEnum.getPriorityEnumByRank(r.getInteger("priority"))).getName());
+            r.put("severity", Objects.requireNonNull(JavaIssuePriorityEnum.getPriorityEnumByRank(r.getInteger("priority"))).getName());
         });
 
         return issuesDetail;
@@ -198,6 +201,33 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
     @CacheEvict(cacheNames = {"issueLifeCycleCount","developerCodeQuality"}, allEntries=true, beforeInvocation = true)
     public void clearCache() {
         log.info("Successfully clear redis cache:issueLifeCycleCount,developerCodeQuality in db1.");
+    }
+
+    @Override
+    public PagedGridResult getSelfIntroducedLivingIssueCount(int page, int ps, String order, Boolean isAsc, Map<String, Object> query) {
+        PagedGridResult.handlePageHelper(page, ps, order, isAsc);
+        List<JSONObject> result = issueDao.getSelfIntroduceLivingIssueCount(query);
+        return PagedGridResult.setterPagedGrid(result, page);
+    }
+
+    @Override
+    public List<Map<String, JSONObject>> handleSortDeveloperLifecycle(List<Map<String, JSONObject>> developersLifecycle, Boolean isAsc) {
+        if(isAsc == null){
+            return developersLifecycle;
+        }
+        developersLifecycle.sort((o1, o2) -> {
+            int num1 = 0, num2 = 0;
+            for(String name : o1.keySet()){
+                JSONObject detail = (JSONObject) o1.get(name);
+                num1 += detail.getIntValue("quantity");
+            }
+            for(String name : o2.keySet()){
+                JSONObject detail = (JSONObject) o2.get(name);
+                num2 += detail.getIntValue("quantity");
+            }
+            return isAsc ? num1 - num2 : num2 - num1;
+        });
+        return developersLifecycle;
     }
 
     @Autowired

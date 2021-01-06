@@ -66,7 +66,6 @@ public class Swagger2 {
     @Bean
     public Docket createRestApi() {
 
-
         //添加header信息
         ParameterBuilder ticketPar = new ParameterBuilder();
         List<Parameter> pars = new ArrayList<>();

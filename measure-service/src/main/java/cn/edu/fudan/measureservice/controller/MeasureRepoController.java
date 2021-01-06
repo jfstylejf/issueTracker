@@ -1,5 +1,6 @@
 package cn.edu.fudan.measureservice.controller;
 
+import cn.edu.fudan.measureservice.dao.ProjectDao;
 import cn.edu.fudan.measureservice.domain.CommitBaseInfoDuration;
 import cn.edu.fudan.measureservice.domain.Granularity;
 import cn.edu.fudan.measureservice.domain.RepoMeasure;
@@ -32,6 +33,8 @@ public class MeasureRepoController {
     private ExecutorService threadPool;
 
     private MeasureRepoService measureRepoService;
+
+    private ProjectDao projectDao;
 
 
     private static final String split = ",";
@@ -104,23 +107,27 @@ public class MeasureRepoController {
     @GetMapping("/measure/developer-rank/commit-count")
     @CrossOrigin
     public ResponseBean<List<Map<String,Object>>> getDeveloperRankByCommitCount(
-            @RequestParam(value = "repo_uuids",required = false)String repoUuids,
+            @RequestParam(value = "repo_uuids",required = false)String repoUuid,
             @RequestParam(value = "project_name",required = false) String projectName,
             @RequestParam(value = "since",required = false)String since,
-            @RequestParam(value = "until",required = false)String until){
+            @RequestParam(value = "until",required = false)String until,
+            HttpServletRequest request){
 
         try{
+            String token = request.getHeader("token");
             if(until==null || "".equals(until)) {
                 until = dtf.format(LocalDate.now().plusDays(1));
             }else {
                 until = dtf.format(LocalDate.parse(until,dtf).plusDays(1));
             }
-            List<String> repoUuidList = null;
-            if(repoUuids!=null && !"".equals(repoUuids)) {
-                repoUuidList = Arrays.asList(repoUuids.split(split));
+            List<String> repoUuidList;
+            if(projectName!=null && !"".equals(projectName)) {
+                repoUuidList = projectDao.getProjectRepoList(projectName,token);
+            }else {
+                repoUuidList = projectDao.involvedRepoProcess(repoUuid,token);
             }
             Query query = new Query(null,since,until,null, repoUuidList);
-            return new ResponseBean<>(200,"success", measureRepoService.getDeveloperRankByCommitCount(query,projectName));
+            return new ResponseBean<>(200,"success", measureRepoService.getDeveloperRankByCommitCount(query));
         }catch (Exception e){
             e.printStackTrace();
             return new ResponseBean<>(401,"failed "+ e.getMessage(),null);
@@ -138,23 +145,27 @@ public class MeasureRepoController {
     @GetMapping("/measure/developer-rank/loc")
     @CrossOrigin
     public ResponseBean<List<Map<String, Object>>> getDeveloperRankByLoc(
-            @RequestParam(value = "repo_uuids",required = false)String repoUuids,
+            @RequestParam(value = "repo_uuids",required = false)String repoUuid,
             @RequestParam(value = "project_name",required = false) String projectName,
             @RequestParam(value = "since",required = false)String since,
-            @RequestParam(value = "until",required = false)String until){
+            @RequestParam(value = "until",required = false)String until,
+            HttpServletRequest request){
 
         try{
+            String token = request.getHeader("token");
             if(until==null || "".equals(until)) {
                 until = dtf.format(LocalDate.now().plusDays(1));
             }else {
                 until = dtf.format(LocalDate.parse(until,dtf).plusDays(1));
             }
-            List<String> repoUuidList = null;
-            if(repoUuids!=null && !"".equals(repoUuids)) {
-                repoUuidList = Arrays.asList(repoUuids.split(split));
+            List<String> repoUuidList;
+            if(projectName!=null && !"".equals(projectName)) {
+                repoUuidList = projectDao.getProjectRepoList(projectName,token);
+            }else {
+                repoUuidList = projectDao.involvedRepoProcess(repoUuid,token);
             }
             Query query = new Query(null,since,until,null,repoUuidList);
-            return new ResponseBean<>(200,"success", measureRepoService.getDeveloperRankByLoc(query,projectName));
+            return new ResponseBean<>(200,"success", measureRepoService.getDeveloperRankByLoc(query));
         }catch (Exception e){
             e.printStackTrace();
             return new ResponseBean<>(401,"failed "+e.getMessage(),null);
@@ -171,23 +182,27 @@ public class MeasureRepoController {
     @GetMapping("/measure/repository/commit-count&LOC-daily")
     @CrossOrigin
     public ResponseBean<List<Map<String, Object>>> getDailyCommitCountAndLOC(
-            @RequestParam(value = "repo_uuids",required = false)String repoUuids,
+            @RequestParam(value = "repo_uuids",required = false)String repoUuid,
             @RequestParam(value = "project_name",required = false) String projectName,
             @RequestParam(value = "since",required = false)String since,
-            @RequestParam(value = "until",required = false)String until){
+            @RequestParam(value = "until",required = false)String until,
+            HttpServletRequest request){
 
         try{
+            String token = request.getHeader("token");
             if(until==null || "".equals(until)) {
                 until = dtf.format(LocalDate.now().plusDays(1));
             }else {
                 until = dtf.format(LocalDate.parse(until,dtf).plusDays(1));
             }
-            List<String> repoUuidList = null;
-            if(repoUuids!=null && !"".equals(repoUuids)) {
-                repoUuidList = Arrays.asList(repoUuids.split(split));
+            List<String> repoUuidList;
+            if(projectName!=null && !"".equals(projectName)) {
+                repoUuidList = projectDao.getProjectRepoList(projectName,token);
+            }else {
+                repoUuidList = projectDao.involvedRepoProcess(repoUuid,token);
             }
             Query query = new Query(null,since,until,null,repoUuidList);
-            return new ResponseBean<>(200,"success",measureRepoService.getDailyCommitCountAndLOC(query,projectName));
+            return new ResponseBean<>(200,"success",measureRepoService.getDailyCommitCountAndLOC(query));
         }catch (Exception e){
             e.printStackTrace();
             return new ResponseBean<>(401,"failed "+e.getMessage(),null);
@@ -196,23 +211,17 @@ public class MeasureRepoController {
 
 
 
-    @DeleteMapping("/DELETE/measure/{repo_uuids}")
+    @DeleteMapping("/measure/{repo_uuids}")
     @CrossOrigin
     public ResponseBean<String> deleteRepoUselessMsg(@PathVariable("repo_uuids") String repoUuidList) {
         Query query = new Query(null,null,null,null,Arrays.asList(repoUuidList.split(split)));
-        Callable callable1 = () -> new ResponseBean<>(200,"received request","Received");
-        Callable callable2 = () -> {
+        try {
             measureRepoService.deleteRepoMsg(query);
             return new ResponseBean<>(200,"measure delete Success","Completed");
-        };
-        try {
-            threadPool.submit(callable1);
-            threadPool.submit(callable2);
         }catch (Exception e) {
             e.printStackTrace();
-            return new ResponseBean<>(401,"measure failed",null);
+            return new ResponseBean<>(401,"measure failed",e.getMessage());
         }
-        return null;
     }
 
     @Autowired
@@ -220,4 +229,8 @@ public class MeasureRepoController {
         this.measureRepoService = measureRepoService;
     }
 
+    @Autowired
+    public void setProjectDao(ProjectDao projectDao) {
+        this.projectDao = projectDao;
+    }
 }
