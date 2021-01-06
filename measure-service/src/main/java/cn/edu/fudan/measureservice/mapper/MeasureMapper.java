@@ -1,6 +1,7 @@
 package cn.edu.fudan.measureservice.mapper;
 
 
+import cn.edu.fudan.measureservice.domain.bo.DeveloperWorkLoad;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
@@ -22,7 +23,7 @@ public interface MeasureMapper {
      * @param until
      * @return
      */
-    List<Map<String, Object>> getWorkLoadByCondition(@Param("repoUuidList")List<String> repoUuidList, @Param("developer_name")String developerName, @Param("since")String since, @Param("until")String until);
+    DeveloperWorkLoad getDeveloperWorkLoad(@Param("repoUuidList")List<String> repoUuidList, @Param("developer_name")String developerName, @Param("since")String since, @Param("until")String until);
 
     /**
      * 获取所查询库列表中前3名增加代码物理行数的开发者

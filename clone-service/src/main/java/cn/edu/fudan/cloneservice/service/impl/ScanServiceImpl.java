@@ -31,6 +31,7 @@ public class ScanServiceImpl implements ScanService {
     private ScanTask scanTask;
 
     private CloneScanDao cloneScanDao;
+    @Autowired
     private CloneInfoDao cloneInfoDao;
     private CloneMeasureDao cloneMeasureDao;
     private RestInterfaceManager rest;
@@ -117,6 +118,7 @@ public class ScanServiceImpl implements ScanService {
             log.info("repo:{} -> took {} minutes to complete the clone scan and measure scan", repoUuid, cost);
         }
         rest.freeRepoPath(repoUuid, repoPath);
+        jGitHelper.close();
     }
 
     private void executeLastCommit(String uuid, String repoUuid, List<String> commitList, String repoPath) {

@@ -25,6 +25,30 @@
         </where>
     </select>
 
+    <select id="getDeveloperRepoInfoList" resultType="java.util.HashMap">
+        SELECT developer_unique_name,repo_id,SUBSTRING(min(commit_time),1,10) AS firstCommitDate FROM issueTracker.commit_view
+        <where>
+            <trim prefixOverrides="and">
+                <if test="repoUuid != null and repoUuid !='' ">
+                    and repo_id = #{repoUuid}
+                </if>
+
+                <if test="since != null and since != '' ">
+                    and <![CDATA[ commit_time >= #{since} ]]>
+                </if>
+
+                <if test="until != null and until != '' ">
+                    and <![CDATA[ commit_time <= #{until} ]]>
+                </if>
+            </trim>
+        </where>
+        Group By developer_unique_name
+    </select>
+
+    <select id="getDeveloperDutyTypeList" resultType="java.util.HashMap">
+        SELECT distinct account_name,account_status FROM issueTracker.account
+    </select>
+
     <select id="getDeveloperRepoList" parameterType="String" resultType="String">
         SELECT
         DISTINCT (repo_id)
@@ -156,16 +180,28 @@
         </where>
     </select>
 
+    <select id="getProjectByAccountId" resultType="String">
+        SELECT project_name
+        FROM issueTracker.account_project AS p
+        WHERE p.account_uuid = #{account_uuid} AND p.account_role = 'LEADER'
+    </select>
+
+    <select id="getDeveloperRepoFirstCommitDate" resultType="String">
+        SELECT commit_time AS firstCommitDate FROM issueTracker.commit_view
+        WHERE developer_unique_name = #{developer}
+        AND repo_id = #{repoUuid}
+        ORDER BY commit_time DESC
+        LIMIT 1
+    </select>
+
 
     <delete id="deleteRepoMsg">
         DELETE FROM issueTracker.repo_measure
-        <if test="repoUuidList != null and repoUuidList.size >0 ">
-            and repo_id in
-            <foreach collection="repoUuidList" separator="," open="(" close=")" item="repoUuid">
-                #{repoUuid}
-            </foreach>
-        </if>
-        LIMIT 5000;
+        WHERE repo_id in
+        <foreach collection="repoUuidList" separator="," open="(" close=")" item="repoUuid">
+            #{repoUuid}
+        </foreach>
+        LIMIT 5000
     </delete>
 
 </mapper>

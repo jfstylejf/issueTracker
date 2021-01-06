@@ -63,9 +63,11 @@ public class RestInterfaceManager {
         return restTemplate.getForObject(accountServicePath + "/user/accountIds", List.class);
     }
 
-    public List<String> getDeveloperInRepo(String repoUuids) {
+    public List<String> getDeveloperInRepo(String repoUuids, String since, String until) {
         List<String> developers = new ArrayList<>();
-        JSONObject result = restTemplate.getForObject(accountServicePath + "/user/developers?repo_uuids=" + repoUuids + "is_whole=true", JSONObject.class);
+        String url = since == null ? accountServicePath + "/user/developers?repo_uuids=" + repoUuids + "&is_whole=true" :
+                accountServicePath + "/user/developers?repo_uuids=" + repoUuids + "&is_whole=true&since=" + since + "&until=" + until;
+        JSONObject result = restTemplate.getForObject(url, JSONObject.class);
         assert result != null;
         JSONArray rows = result.getJSONArray("data");
         for(Object row : rows){
@@ -137,6 +139,22 @@ public class RestInterfaceManager {
         return repoName;
     }
 
+    public Map<String, Map<String, String>> getAllRepoToProjectName(String userToken) {
+        Map<String, Map<String, String>> projectName = new HashMap<>(64);
+        JSONObject allRepo = getAllRepo(userToken);
+        for(String repo : allRepo.keySet()){
+            Iterator<Object> iterator = allRepo.getJSONArray(repo).stream().iterator();
+            while (iterator.hasNext()){
+                JSONObject next = (JSONObject) iterator.next();
+                projectName.put(next.getString("repo_id"), new HashMap<String, String>(4){{
+                    put("repoName", next.getString("name"));
+                    put("projectName", repo);
+                }});
+            }
+        }
+
+        return projectName;
+    }
 
     /**
      * 根据url返回repoUuid
@@ -356,23 +374,23 @@ public class RestInterfaceManager {
 
         String url = measureServicePath + "/measure/developer/work-load?developer=" +
                 (StringUtils.isEmpty(query.get("developer")) ? "" : query.get("developer").toString()) +
-                "&repo_uuid=" + (StringUtils.isEmpty(query.get("repoList")) ? "" : query.get("repoList").toString()) +
+                "&repo_uuids=" + (StringUtils.isEmpty(query.get("repoList")) ? "" : query.get("repoList").toString()) +
                 "&since=" + (StringUtils.isEmpty(query.get("since")) ? "" : query.get("since").toString()) +
                 "&until=" + (StringUtils.isEmpty(query.get("until")) ? "" : query.get("until").toString());
 
         ResponseEntity<JSONObject> responseEntity = restTemplate.exchange(url , HttpMethod.GET,request,JSONObject.class);
-        JSONObject result = JSONObject.parseObject(Objects.requireNonNull(responseEntity.getBody()).toString(),JSONObject.class);
+        JSONObject body = responseEntity.getBody();
 
-        if(result.getIntValue("code") != 200){
+        if(body.getIntValue("code") != 200){
             logger.error("request /measure/developer/workLoad failed");
             throw  new RuntimeException("get data from /measure/developer/work-load failed!");
         }
 
         Map<String, Integer> developerWorkLoad = new HashMap<>(16);
-
-        JSONObject data = result.getJSONObject("data");
-
-        data.keySet().forEach(r -> developerWorkLoad.put(r,developerWorkLoad.getOrDefault(r + data.getJSONObject(r).getInteger("delLines") + data.getJSONObject(r).getInteger("addLines"), data.getJSONObject(r).getInteger("delLines") + data.getJSONObject(r).getInteger("addLines"))));
+        JSONArray data = body.getJSONArray("data");
+        for(int i = 0; i < data.size(); i++){
+            developerWorkLoad.put(data.getJSONObject(i).getString("developerName"), data.getJSONObject(i).getInteger("totalLoc"));
+        }
 
         return developerWorkLoad;
     }

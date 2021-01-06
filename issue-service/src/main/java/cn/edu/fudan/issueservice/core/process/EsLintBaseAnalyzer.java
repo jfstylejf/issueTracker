@@ -51,7 +51,7 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
             }
             return process.exitValue() == 0;
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("ESLint can not parse this repo,repoUuid: {},commit: {}", repoUuid, commit);
         }
         return false;
     }
@@ -97,7 +97,6 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
         }
     }
 
-
     private boolean analyzeEsLintResults(String repoPath, JSONArray esLintResults, String repoUuid, String commit) {
         try {
             for(Object esLintTempResult : esLintResults) {
@@ -126,10 +125,9 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
         //handle file name
         String fileName = FileUtil.handleFileNameToRelativePath(filePath);
         //parse js code ---> return node json,if null throws exception
-        JSONObject nodeJsCode = AstParserUtil.parseJsCode(binHome, filePath, resultFileHome, repoUuid);
+        JSONObject nodeJsCode = AstParserUtil.parseJsCode(binHome, filePath, resultFileHome, repoUuid, commit);
         if(nodeJsCode == null){
             //if can't get AST result throws ParseFileException
-            log.error("parse repoUuid:{} commit:{} file ---> {} failed !", repoUuid, commit, esLintResult.getString("filePath"));
             throw new ParseFileException();
         }
         //get the rawIssues
@@ -139,7 +137,7 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
         return rawIssues;
     }
 
-    private RawIssue getRawIssue(String repoPath, JSONObject issue, String repoUuid, String commit, String fileName, String filePath, JSONObject nodeJsCode) throws ParseFileException {
+    private RawIssue getRawIssue(String repoPath, JSONObject issue, String repoUuid, String commit, String fileName, String filePath, JSONObject nodeJsCode) {
         RawIssue rawIssue = new RawIssue();
         rawIssue.setTool("ESLint");
         rawIssue.setUuid(UUID.randomUUID().toString());
@@ -161,7 +159,7 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
         return rawIssue;
     }
 
-    private List<Location> getLocations(String fileName, JSONObject issue, RawIssue rawIssue, String filePath, JSONObject nodeJsCode) throws ParseFileException {
+    private List<Location> getLocations(String fileName, JSONObject issue, RawIssue rawIssue, String filePath, JSONObject nodeJsCode) {
         Location location = new Location();
         //get start line,end line and bug line
         int line = issue.getIntValue("line");
@@ -186,7 +184,7 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
         //todo check class name
         location.setClass_name(AstParserUtil.getJsClass(nodeJsCode, line, endLine));
         //get method name
-        location.setMethod_name (AstParserUtil.getJsMethod(nodeJsCode, line, endLine, filePath));
+        location.setMethod_name(AstParserUtil.getJsMethod(nodeJsCode, line, endLine, filePath));
         //set bug lines
         if(line == endLine){
             location.setBug_lines(line + "");

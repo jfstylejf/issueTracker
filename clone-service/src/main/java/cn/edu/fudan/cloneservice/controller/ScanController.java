@@ -57,8 +57,14 @@ public class ScanController {
             @ApiImplicitParam(name="repo_uuid", value = "repo_uuid", dataType = "String")
     })
     @DeleteMapping("/cloneScan/{repo_uuid}")
-    public void deleteCloneScan(@PathVariable("repo_uuid") String repoId){
+    public Object deleteCloneScan(@PathVariable("repo_uuid") String repoId){
         scanService.deleteCloneScan(repoId);
+        try {
+            scanService.deleteCloneScan(repoId);
+            return new ResponseBean<>(200, "scan msg send success!", null);
+        } catch (Exception e) {
+            return new ResponseBean<>(401, e.getMessage(), null);
+        }
     }
 
 

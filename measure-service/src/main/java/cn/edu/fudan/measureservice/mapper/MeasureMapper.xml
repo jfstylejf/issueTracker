@@ -3,9 +3,17 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.edu.fudan.measureservice.mapper.MeasureMapper">
 
-    <select id="getWorkLoadByCondition"  resultType="java.util.HashMap">
+    <resultMap id="workLoad" type="DeveloperWorkLoad">
+        <result property="developerName" column="developer_name" />
+        <result property="addLines" column="addLines" />
+        <result property="delLines" column="delLines" />
+        <result property="commitCount" column="commitCount" />
+        <result property="changedFiles" column="changedFiles" />
+    </resultMap>
+
+    <select id="getDeveloperWorkLoad"  resultMap="workLoad">
         SELECT
-        developer_name as developerName, sum(add_lines) as addLines, sum(del_lines) as delLines, count(*) as commitCount, sum(changed_files) as changedFiles
+        developer_name , sum(add_lines) , sum(del_lines) , count(uuid) , sum(changed_files)
         FROM
         issueTracker.repo_measure
         <where>
@@ -30,8 +38,8 @@
                 </if>
             </trim>
         </where>
-        group by developerName
     </select>
+
 
     <select id="getDeveloperAddLines" resultType="int">
         SELECT IFNULL(SUM(add_lines),0) FROM issueTracker.repo_measure
@@ -133,5 +141,6 @@
             </trim>
         </where>
     </select>
+
 
 </mapper>

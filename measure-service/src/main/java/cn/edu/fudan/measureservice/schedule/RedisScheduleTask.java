@@ -1,14 +1,21 @@
 package cn.edu.fudan.measureservice.schedule;
 
+import cn.edu.fudan.measureservice.controller.MeasureDeveloperController;
+import cn.edu.fudan.measureservice.domain.dto.Query;
 import cn.edu.fudan.measureservice.mapper.RepoMeasureMapper;
 import cn.edu.fudan.measureservice.service.MeasureDeveloperService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import java.text.ParseException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
@@ -22,11 +29,14 @@ import java.util.Map;
 @Configuration
 public class RedisScheduleTask {
 
+    private static final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
     @Value("${token}")
     private String token;
 
 //    RedisTemplate
 
+    private MeasureDeveloperController measureDeveloperController;
     private MeasureDeveloperService measureDeveloperService;
     private RepoMeasureMapper repoMeasureMapper;
 
@@ -36,8 +46,9 @@ public class RedisScheduleTask {
      */
     @Scheduled(cron = "0 0 2 * * ?")
     private void configureTasks() throws ParseException {
+        String until = dtf.format(LocalDate.now().plusDays(1));
         measureDeveloperService.clearCache();
-        measureDeveloperService.getDeveloperList(null,token);
+        measureDeveloperService.getDeveloperList(null,null,null,until,token);
         List<Map<String, Object>> developerList = repoMeasureMapper.getDeveloperListByrepoUuidList(null);
         for (int i = 0; i < developerList.size(); i++){
             Map<String,Object> map = developerList.get(i);
@@ -56,6 +67,11 @@ public class RedisScheduleTask {
     @Autowired
     public void setRepoMeasureMapper(RepoMeasureMapper repoMeasureMapper) {
         this.repoMeasureMapper = repoMeasureMapper;
+    }
+
+    @Autowired
+    public void setMeasureDeveloperController(MeasureDeveloperController measureDeveloperController) {
+        this.measureDeveloperController = measureDeveloperController;
     }
 
 }

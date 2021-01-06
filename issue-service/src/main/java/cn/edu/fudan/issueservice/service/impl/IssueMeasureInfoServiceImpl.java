@@ -33,6 +33,8 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
 
     private RestInterfaceManager restInterfaceManager;
 
+    private final String repoList = "repoList";
+
     @Override
     public List<Map.Entry<String, JSONObject>> getNotSolvedIssueCountByToolAndRepoUuid(List<String> repoUuids, String tool, String order, String commitUuid) {
 
@@ -94,7 +96,7 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
         AtomicInteger allSolvedIssueCount = new AtomicInteger();
 
         if(codeQuality) {
-            query.put("repoList", SegmentationUtil.splitStringList(query.get("repoList") == null ? null : query.get("repoList").toString()));
+            query.put(repoList, SegmentationUtil.splitStringList(query.get(repoList) == null ? null : query.get(repoList).toString()));
         }
 
         developerWorkload.keySet().forEach(r -> {
@@ -176,19 +178,20 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
             case "self-other_solved":
                 return handleLifeCycleDetail(issueDao.getSelfIntroduceOtherSolvedIssueDetail(query), token);
             default:
-                return null;
+                return new ArrayList<>();
         }
     }
 
     private List<JSONObject> handleLifeCycleDetail(List<JSONObject> issuesDetail, String token) {
         if(issuesDetail == null){
-            return null;
+            return new ArrayList<>();
         }
-        //init repoUuid to repoName
-        Map<String, String> repoName = restInterfaceManager.getAllRepoToRepoName(token);
+        //init repoUuid to repoName and projectName
+        Map<String, Map<String, String>> repoName = restInterfaceManager.getAllRepoToProjectName(token);
         //handle issues detail
         issuesDetail.forEach(r -> {
-            r.put("projectName", repoName.get(r.getString("repoUuid")));
+            r.put("repoName", repoName.get(r.getString("repoUuid")).get("repoName"));
+            r.put("projectName", repoName.get(r.getString("repoUuid")).get("projectName"));
             r.put("severity", Objects.requireNonNull(JavaIssuePriorityEnum.getPriorityEnumByRank(r.getInteger("priority"))).getName());
         });
 
@@ -209,7 +212,7 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
     }
 
     @Override
-    public List<Map<String, JSONObject>> handleSortDeveloperLifecycle(List<Map<String, JSONObject>> developersLifecycle, Boolean isAsc) {
+    public List<Map<String, JSONObject>> handleSortDeveloperLifecycle(List<Map<String, JSONObject>> developersLifecycle, Boolean isAsc, int ps, int page) {
         if(isAsc == null){
             return developersLifecycle;
         }
@@ -225,7 +228,7 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
             }
             return isAsc ? num1 - num2 : num2 - num1;
         });
-        return developersLifecycle;
+        return developersLifecycle.subList(ps * (page -1), Math.min(developersLifecycle.size(), ps * page));
     }
 
     @Autowired

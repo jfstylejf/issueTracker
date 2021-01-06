@@ -27,7 +27,7 @@ public class CodeTrackerDao {
      * @return Map<String,Object>Map<String,Object> key : developerTotalStatement, developerAddStatement, developerDeleteStatement, developerChangeStatement, developerValidStatement
      */
     public Map<String,Object> getDeveloperStatementInfo(Query query) {
-        Map<String,Object> map = new HashMap<>();
+        Map<String,Object> map = new HashMap<>(8);
         int developerAddStatement = 0;
         int developerDeleteStatement = 0;
         int developerChangeStatement = 0;

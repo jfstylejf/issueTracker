@@ -27,10 +27,14 @@ public class Repository {
         baseDataList = new ArrayList<>();
         MeasureInfo measure = new MeasureInfo(query);
         IssueInfo issue = new IssueInfo(query);
-        //CodeTracker codeTracker = new CodeTracker(query);
+        CodeTracker codeTracker = new CodeTracker(query);
         CloneInfo clone = new CloneInfo(query);
         JiraInfo jira = new JiraInfo(query);
         baseDataList.add(measure);
+        baseDataList.add(issue);
+        baseDataList.add(codeTracker);
+        baseDataList.add(clone);
+       // baseDataList.add(jira);
         init();
     }
 

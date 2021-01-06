@@ -625,7 +625,7 @@
     </select>
 
     <select id="getSelfIntroduceSelfSolvedIssueDetail" parameterType="Map" resultType="com.alibaba.fastjson.JSONObject">
-        SELECT display_id AS displayId, uuid, repo_id AS repoUuid, type, status, start_commit_date AS startCommitDate,
+        SELECT display_id AS displayId, uuid, repo_id AS repoUuid, type, status, start_commit_date AS startCommitDate, producer,
         DATEDIFF(end_commit_date,start_commit_date) AS lifeCycle, target_files AS targetFiles, priority, issue_category AS issueCategory
         FROM issue
         <where>
@@ -647,7 +647,7 @@
     </select>
 
     <select id="getOtherIntroduceSelfSolvedIssueDetail" parameterType="Map" resultType="com.alibaba.fastjson.JSONObject">
-        SELECT display_id AS displayId, uuid, repo_id AS repoUuid, type, status, start_commit_date AS startCommitDate,
+        SELECT display_id AS displayId, uuid, repo_id AS repoUuid, type, status, start_commit_date AS startCommitDate, producer,
         DATEDIFF(end_commit_date,start_commit_date) AS lifeCycle, target_files AS targetFiles, priority, issue_category AS issueCategory
         FROM issue
         <where>
@@ -669,7 +669,7 @@
     </select>
 
     <select id="getSelfIntroduceLivingIssueDetail" parameterType="Map" resultType="com.alibaba.fastjson.JSONObject">
-        SELECT display_id AS displayId, uuid, repo_id AS repoUuid, type, status, start_commit_date AS startCommitDate,
+        SELECT display_id AS displayId, uuid, repo_id AS repoUuid, type, status, start_commit_date AS startCommitDate, producer,
         DATEDIFF(end_commit_date,start_commit_date) AS lifeCycle, target_files AS targetFiles, priority, issue_category AS issueCategory
         FROM issue
         <where>
@@ -691,7 +691,7 @@
     </select>
 
     <select id="getSelfIntroduceOtherSolvedIssueDetail" parameterType="Map" resultType="com.alibaba.fastjson.JSONObject">
-        SELECT display_id AS displayId, uuid, repo_id AS repoUuid, type, status, start_commit_date AS startCommitDate,
+        SELECT display_id AS displayId, uuid, repo_id AS repoUuid, type, status, start_commit_date AS startCommitDate, producer,
         DATEDIFF(end_commit_date,start_commit_date) AS lifeCycle, target_files AS targetFiles, priority, issue_category AS issueCategory
         FROM issue
         <where>

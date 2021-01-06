@@ -208,26 +208,20 @@ public class MeasureRepoServiceImpl implements MeasureRepoService {
     /**
      * 某段时间内，该项目中提交次数最多的前三名开发者的姓名以及对应的commit次数
      * @param query 查询条件
-     * @param projectName 项目名
      * @return key : developerName , countNum
      */
     @Override
-    public List<Map<String,Object>> getDeveloperRankByCommitCount(Query query,String projectName){
-        List<String> repoUuidList = projectDao.getProjectIntegratedRepoList(query,projectName);
-        query.setRepoUuidList(repoUuidList);
+    public List<Map<String,Object>> getDeveloperRankByCommitCount(Query query){
         return projectDao.getDeveloperRankByCommitCount(query);
     }
 
     /**
      * 获取所查询库列表中前3名增加代码物理行数的开发者
      * @param query 查询条件
-     * @param projectName 项目名
      * @return key : developerName , developerLoc
      */
     @Override
-    public List<Map<String, Object>> getDeveloperRankByLoc(Query query ,String projectName){
-        List<String> repoUuidList = projectDao.getProjectIntegratedRepoList(query,projectName);
-        query.setRepoUuidList(repoUuidList);
+    public List<Map<String, Object>> getDeveloperRankByLoc(Query query){
         return measureDao.getDeveloperRankByLoc(query);
     }
 
@@ -235,14 +229,11 @@ public class MeasureRepoServiceImpl implements MeasureRepoService {
     /**
      * 获取某段时间内，每天的所有提交次数和物理行数
      * @param query 查询条件
-     * @param projectName 项目名
      * @return List<Map<String, Object>> key : commit_date, LOC,commit_count
      */
     @Override
-    public List<Map<String, Object>> getDailyCommitCountAndLOC(Query query ,String projectName){
+    public List<Map<String, Object>> getDailyCommitCountAndLOC(Query query){
         List<Map<String, Object>> result = new ArrayList<>();
-        List<String> repoUuidList = projectDao.getProjectIntegratedRepoList(query,projectName);
-        query.setRepoUuidList(repoUuidList);
         LocalDate until = LocalDate.parse(query.getUntil(),dtf);
         LocalDate since;
         int timeDiff = 0;

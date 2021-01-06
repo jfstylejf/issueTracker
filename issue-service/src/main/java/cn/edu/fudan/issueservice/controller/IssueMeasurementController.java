@@ -38,6 +38,8 @@ public class IssueMeasurementController {
 
     private final String TOKEN = "token";
 
+    private final String timeError = "time format error";
+
     @ApiOperation(value = "获取issueTypeCounts", notes = "@return List<Map.Entry<String, JSONObject>>\n[\n" +
             "        {\n" +
             "            \"String literals should not be duplicated\": {\n" +
@@ -88,7 +90,6 @@ public class IssueMeasurementController {
                                             @RequestParam(value = "until", required = false) String until,
                                             @RequestParam(value = "manual_status",required = false, defaultValue = "Default")String manualStatus,
                                             @RequestParam(value = "tool", required = false, defaultValue = "sonarqube") String tool) {
-        String timeError = "time format error";
         if(timeError.equals(DateTimeUtil.timeFormatIsLegal(since, false)) || timeError.equals(DateTimeUtil.timeFormatIsLegal(until, true))){
             return new ResponseBean<>(400, "The input time format error,should be yyyy-MM-dd.", null);
         }
@@ -125,12 +126,14 @@ public class IssueMeasurementController {
             @ApiImplicitParam(name = "since", value = "起始时间\n格式要求: yyyy-MM-dd"),
             @ApiImplicitParam(name = "until", value = "终止时间\n格式要求: yyyy-MM-dd"),
             @ApiImplicitParam(name = "asc", value = "是否升序：1表示升序，0表示降序"),
+            @ApiImplicitParam(name = "page", value = "页号", defaultValue = "1"),
+            @ApiImplicitParam(name = "ps", value = "页大小\n范围0-100\n为0时只返回issue数量", defaultValue = "10"),
             @ApiImplicitParam(name = "status", value = "issue状态", allowableValues = "living , other_solved , self_solved"),
             @ApiImplicitParam(name = "percent", value = "-1返回数量\n-2返回详情\n不传默认-2", allowableValues = "-1 , -2"),
             @ApiImplicitParam(name = "target", value = "缺陷时谁引入\nself 自己引入,other 他人引入", allowableValues = "self , other"),
     })
     @GetMapping(value = "/codewisdom/issue/lifecycle")
-    public ResponseBean<Object> getIssueLifecycleByConditions(@RequestParam(value = "developer", required = false) String developer,
+    public ResponseBean<Object> getIssueLifecycleByConditions(HttpServletRequest request,@RequestParam(value = "developer", required = false) String developer,
                                                @RequestParam(value = "repo_uuids", required = false) String repoUuids,
                                                @RequestParam(value = "since", required = false) String since,
                                                @RequestParam(value = "until", required = false) String until,
@@ -138,7 +141,9 @@ public class IssueMeasurementController {
                                                @RequestParam(value = "asc", required = false) Boolean isAsc,
                                                @RequestParam(value = "status") String status,
                                                @RequestParam(value = "percent", required = false, defaultValue = "-2") Double percent,
-                                               @RequestParam(value = "target") String target, HttpServletRequest request) {
+                                               @RequestParam(value = "target") String target,
+                                               @RequestParam(value = "ps", required = false, defaultValue = "10") int ps,
+                                               @RequestParam(value = "page", required = false, defaultValue = "1") int page) {
         double numberInfo = -2;
         //handle the requirement
         since = DateTimeUtil.timeFormatIsLegal(since, false);
@@ -154,8 +159,7 @@ public class IssueMeasurementController {
         try {
             if(percent == numberInfo) {
                 List<Map<String, JSONObject>> developersLifecycle = new ArrayList<>();
-                // todo 这里是否需要加入since 和 until的条件?-----> restInterfaceManager.getDeveloperInRepo(repoUuids, since, until)
-                List<String> developers = isAsc != null ? restInterfaceManager.getDeveloperInRepo(repoUuids) : SegmentationUtil.splitStringList(developer);
+                 List<String> developers = isAsc != null ? restInterfaceManager.getDeveloperInRepo(repoUuids, since, until) : SegmentationUtil.splitStringList(developer);
                 assert developers != null;
                 developers.forEach(producer -> {
                     query.put("producer", producer);
@@ -163,8 +167,9 @@ public class IssueMeasurementController {
                         put(producer, issueMeasureInfoService.getIssuesLifeCycle(status, target, query));
                     }});
                 });
-                return new ResponseBean<>(200, success, issueMeasureInfoService.handleSortDeveloperLifecycle(developersLifecycle, isAsc));
+                return new ResponseBean<>(200, success, issueMeasureInfoService.handleSortDeveloperLifecycle(developersLifecycle, isAsc, ps, page));
             }
+            query.put("producer", developer);
             String token = request.getHeader(TOKEN);
             return new ResponseBean<>(200, success, issueMeasureInfoService.getLifeCycleDetail(status, target, query, token));
         } catch (Exception e){
@@ -198,7 +203,6 @@ public class IssueMeasurementController {
 
         Map<String, Object> query = new HashMap<>(10);
 
-        String timeError = "time format error";
         if(timeError.equals(DateTimeUtil.timeFormatIsLegal(since, false)) || timeError.equals(DateTimeUtil.timeFormatIsLegal(until, true))){
             return new ResponseBean<>(400, "The input time format error,should be yyyy-MM-dd.", null);
         }
@@ -250,7 +254,6 @@ public class IssueMeasurementController {
 
         Map<String, Object> query = new HashMap<>(10);
 
-        String timeError = "time format error";
         if(timeError.equals(DateTimeUtil.timeFormatIsLegal(since, false)) || timeError.equals(DateTimeUtil.timeFormatIsLegal(until, true))){
             return new ResponseBean<>(400, "The input time format error,should be yyyy-MM-dd.", null);
         }

@@ -453,7 +453,7 @@
         SELECT
             DISTINCT (repo_id)
         FROM
-            commit_view
+            issueTracker.commit_view
         <where>
             <trim prefixOverrides="and">
                 <if test="developer_name != null and developer_name != '' ">
@@ -539,9 +539,9 @@
 
     <select id="getWorkLoadByCondition"  resultType="java.util.HashMap">
         SELECT
-        IFNULL(sum(add_lines),0) as addLines, IFNULL(sum(del_lines),0) as delLines, count(*) as commitCount, IFNULL(sum(changed_files),0) as changedFiles
+        IFNULL(sum(add_lines),0) as addLines, IFNULL(sum(del_lines),0) as delLines, count(uuid) as commitCount, IFNULL(sum(changed_files),0) as changedFiles
         FROM
-        repo_measure
+        issueTracker.repo_measure
         <where>
             <trim prefixOverrides="and">
                 <if test="developer_name != null and developer_name != '' ">

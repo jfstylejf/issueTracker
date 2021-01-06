@@ -57,28 +57,25 @@ public interface MeasureRepoService {
     /**
      * 某段时间内，该项目中提交次数最多的前三名开发者的姓名以及对应的commit次数
      * @param query 查询条件
-     * @param projectName 项目名
      * @return key : developerName , countNum
      */
-    List<Map<String,Object>> getDeveloperRankByCommitCount(Query query, String projectName);
+    List<Map<String,Object>> getDeveloperRankByCommitCount(Query query);
 
     /**
      * 某段时间内，该项目中提交代码行数（LOC）最多的前三名开发者的姓名以及对应的LOC
      * @param query 查询条件
-     * @Param projectName 项目名
      * @return key : developerName , countNum
      */
-    List<Map<String,Object>> getDeveloperRankByLoc(Query query , String projectName);
+    List<Map<String,Object>> getDeveloperRankByLoc(Query query);
 
 
 
     /**
      * 项目下，每天所有提交的物理行和提交次数
      * @param query 查询条件
-     * @param projectName 项目名
      * @return
      */
-    List<Map<String,Object>> getDailyCommitCountAndLOC(Query query , String projectName);
+    List<Map<String,Object>> getDailyCommitCountAndLOC(Query query);
 
     /**
      * 删除所属repo下repo_measure表数据

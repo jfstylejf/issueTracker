@@ -51,11 +51,14 @@ public class CloneMeasureController {
     })
     @GetMapping(value = {"/cloneMeasure"})
     public ResponseBean<Object> getMeasureCloneData(@RequestParam(value = "repo_uuid", required = false, defaultValue = "") String repoId,
-                                            @RequestParam(value = "developer", required = false) String developer,
-                                            @RequestParam("start") String start,
-                                            @RequestParam("end") String end){
+                                                    @RequestParam(value = "developer", required = false) String developer,
+                                                    @RequestParam(value = "start", required = false) String start,
+                                                    @RequestParam(value = "end", required = false) String end,
+                                                    @RequestParam(value = "page", required = false, defaultValue = "1") String page,
+                                                    @RequestParam(value = "size", required = false, defaultValue = "5") String size,
+                                                    @RequestParam(value = "desc", required = false) Boolean isDesc){
         try{
-            List<CloneMessage> result = cloneMeasureService.getCloneMeasure(repoId,developer,start,end);
+            List<CloneMessage> result = cloneMeasureService.getCloneMeasure(repoId, developer, start, end, page, size, isDesc);
             Object data = result;
             if (! StringUtils.isEmpty(developer) && result.size() > 0) {
                 data = result.get(0);

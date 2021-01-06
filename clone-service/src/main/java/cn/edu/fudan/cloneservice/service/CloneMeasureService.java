@@ -29,7 +29,7 @@ public interface CloneMeasureService {
      * @param end end time
      * @return list
      */
-    List<CloneMessage> getCloneMeasure(String repoId, String developer, String start, String end);
+    List<CloneMessage> getCloneMeasure(String repoId, String developer, String start, String end, String page, String size, Boolean isDesc);
 
     /**
      * 获取最新版本的clone行数

@@ -20,9 +20,9 @@ public class FileUtil {
                 : resultFileHome + "/eslint-report_" + repoUuid + "_" + commit + ".json";
     }
 
-    public static String getEsLintAstReportAbsolutePath(String resultFileHome, String repoUuid) {
-        return IS_WINDOWS ? resultFileHome + "\\ast-report" + repoUuid + ".json"
-                : resultFileHome + "/ast-report" + repoUuid + ".json";
+    public static String getEsLintAstReportAbsolutePath(String resultFileHome, String fileName) {
+        return IS_WINDOWS ? resultFileHome + "\\ast-report" + fileName + ".json"
+                : resultFileHome + "/ast-report" + fileName + ".json";
     }
 
     public static String handleFileNameToRelativePath(String filePath) {
@@ -49,7 +49,7 @@ public class FileUtil {
                     break;
                 }
             }
-            return code.toString();
+            return code.toString().replaceAll("\\/\\/[^\\n]*|\\/\\*([^\\*^\\/]*|[\\*^\\/*]*|[^\\**\\/]*)*\\*\\/", "");
         }catch (IOException e){
             log.error("get code source failed ! file is ---> {}", filePath);
             return null;
@@ -71,8 +71,64 @@ public class FileUtil {
         }
     }
 
+    public static String getForStatementCode(String codePath, int line, int endLine) {
+        try (LineNumberReader reader = new LineNumberReader(new FileReader(codePath))){
+            StringBuilder code = new StringBuilder();
+            int index = 0;
+            while (true) {
+                index++;
+                String s = reader.readLine();
+                if(index >= line && index <= endLine){
+                    code.append(s);
+                }else if(index > endLine){
+                    break;
+                }
+            }
+            return code.substring(0, code.indexOf(")") + 1);
+        }catch (IOException e){
+            log.error("get code source failed ! file is ---> {}", codePath);
+            return null;
+        }
+    }
+
+    public static String getCode(String filePath, int line, int endLine, int beginColumn, int endColumn) {
+        File codeFile = new File(filePath);
+        //code line limit
+        if (line <= 0 || endLine > getTotalLines(codeFile)) {
+            log.error("code line error,begin line is {},endLine is {}, code total line is {} !", line, endLine, getTotalLines(codeFile));
+        }
+        //get code
+        try (LineNumberReader reader = new LineNumberReader(new FileReader(codeFile))){
+            StringBuilder code = new StringBuilder();
+            int index = 0;
+            while (true) {
+                index++;
+                String s = reader.readLine();
+                if(index >= line && index <= endLine){
+                    if(line == endLine){
+                        s = s.substring(beginColumn, endColumn);
+                    }else{
+                        if(index == line){
+                            s = s.substring(beginColumn);
+                        }
+                        if(index == endLine){
+                            s = s.substring(0, endColumn);
+                        }
+                    }
+                    code.append(s);
+                }else if(index > endLine){
+                    break;
+                }
+            }
+            return code.toString().replaceAll("\\/\\/[^\\n]*|\\/\\*([^\\*^\\/]*|[\\*^\\/*]*|[^\\**\\/]*)*\\*\\/", "");
+        }catch (IOException e){
+            log.error("get code source failed ! file is ---> {}", filePath);
+            return null;
+        }
+    }
+
     public static void main(String[] args) {
-        System.out.println(getCode("C:\\Users\\Beethoven\\Desktop\\issue-tracker-web\\test.js", 36, 36));
+        System.out.println(getCode("C:\\Users\\Beethoven\\Desktop\\issue-tracker-web\\code.js", 10, 19, 1, 8));
         // 获取文件的内容的总行数
         System.out.println(getTotalLines(new File("C:\\Users\\Beethoven\\Desktop\\issue-tracker-web\\test.js")));
     }
