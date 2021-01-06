@@ -49,7 +49,7 @@ public class FileUtil {
                     break;
                 }
             }
-            return code.toString();
+            return code.toString().replaceAll("\\/\\/[^\\n]*|\\/\\*([^\\*^\\/]*|[\\*^\\/*]*|[^\\**\\/]*)*\\*\\/", "");
         }catch (IOException e){
             log.error("get code source failed ! file is ---> {}", filePath);
             return null;
@@ -120,7 +120,7 @@ public class FileUtil {
                     break;
                 }
             }
-            return code.toString();
+            return code.toString().replaceAll("\\/\\/[^\\n]*|\\/\\*([^\\*^\\/]*|[\\*^\\/*]*|[^\\**\\/]*)*\\*\\/", "");
         }catch (IOException e){
             log.error("get code source failed ! file is ---> {}", filePath);
             return null;
@@ -128,7 +128,7 @@ public class FileUtil {
     }
 
     public static void main(String[] args) {
-        System.out.println(getCode("C:\\Users\\Beethoven\\Desktop\\array.js", 10, 19, 1, 8));
+        System.out.println(getCode("C:\\Users\\Beethoven\\Desktop\\issue-tracker-web\\code.js", 10, 19, 1, 8));
         // 获取文件的内容的总行数
         System.out.println(getTotalLines(new File("C:\\Users\\Beethoven\\Desktop\\issue-tracker-web\\test.js")));
     }
