@@ -1,5 +1,6 @@
 package cn.edu.fudan.issueservice.util;
 
+import cn.edu.fudan.issueservice.exception.ParseFileException;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.github.javaparser.JavaParser;
@@ -25,13 +26,16 @@ public class AstParserUtil {
 
     private final static String LOC = "loc", START = "start", END = "end", LINE = "line", BODY = "body", DECLARATIONS = "declarations",
             TYPE = "type", ID = "id", NAME = "name", PARAMS = "params", KEY = "key", VALUE = "value", KIND = "kind", SUPER_CLASS = "superClass",
-            CLASS = "class", EXTENDS = "extends", OBJECT = "object", PROPERTY = "property", DECLARATION = "declaration";
+            CLASS = "class", EXTENDS = "extends", OBJECT = "object", PROPERTY = "property", DECLARATION = "declaration",
+            EXPRESSION = "expression", CALLEE = "callee", OPERATOR = "operator", ARGUMENT = "argument", FOR_STATEMENT = "ForStatement",
+            COLUMN = "column";
 
     private final static String FUNCTION_DECLARATION = "FunctionDeclaration", VARIABLE_DECLARATION = "VariableDeclaration",
             IMPORT_DECLARATION = "ImportDeclaration", CLASS_DECLARATION = "ClassDeclaration", EXPORT_DEFAULT_DECLARATION = "ExportDefaultDeclaration",
             METHOD_DEFINITION = "MethodDefinition", EXPRESSION_STATEMENT = "ExpressionStatement", EXPORT_NAMED_DECLARATION = "ExportNamedDeclaration";
 
-    private final static  String CLASS_PROPERTY = "ClassProperty";
+    private final static  String CLASS_PROPERTY = "ClassProperty", CALL_EXPRESSION = "CallExpression", PROPERTIES = "properties",
+            UNARY_EXPRESSION = "UnaryExpression", OBJECT_PATTERN = "ObjectPattern";
 
     public static String findMethod(String filePath, int beginLine, int endLine) {
         try {
@@ -158,25 +162,29 @@ public class AstParserUtil {
         return allFieldsInFile;
     }
 
-    public static JSONObject parseJsCode(String binHome, String codePath, String resultFileHome, String repoUuid) {
+    public static JSONObject parseJsCode(String binHome, String codePath, String resultFileHome, String repoUuid, String commit) {
         //step 1. invoke script to analyze AST
         try {
             Runtime rt = Runtime.getRuntime();
             //run babelEsLint script
-            String command = binHome + "babelEsLint.sh " + codePath + " " + repoUuid;
+            String command = binHome + "babelEsLint.sh " + codePath + " " + repoUuid + "_" + commit;
             log.info("command -> {}",command);
             Process process = rt.exec(command);
             boolean timeout = process.waitFor(100L, TimeUnit.SECONDS);
             if (!timeout) {
                 process.destroy();
-                log.error("run babelEsLint script timeout ! (100s)");
+                log.error("run babelEsLint script timeout ! (100s),file: {}", codePath);
                 return null;
             }
+            if(process.exitValue() != 0){
+                log.error("parse file: {},repoUuid: {},commit: {} failed !", codePath, repoUuid, commit);
+                throw new ParseFileException();
+            }
             //step 2. read file parse ast tree to json
-            JSONObject nodeJsCode = readJsParseFile(resultFileHome, repoUuid);
-            log.info("analyze AST success !");
+            JSONObject nodeJsCode = readJsParseFile(resultFileHome, repoUuid, commit);
+            log.info("analyze AST success !file: {}", codePath);
             //step 3. delete file
-            deleteNodeJsCodeFile(binHome, repoUuid);
+            deleteNodeJsCodeFile(binHome, repoUuid, commit);
             return nodeJsCode;
         } catch (Exception e) {
             log.error("invoke babelEsLint script failed !");
@@ -184,9 +192,9 @@ public class AstParserUtil {
         return null;
     }
 
-    private static void deleteNodeJsCodeFile(String binHome, String repoUuid) throws Exception {
+    private static void deleteNodeJsCodeFile(String binHome, String repoUuid, String commit) throws Exception {
         Runtime rt = Runtime.getRuntime();
-        String command = binHome + "deleteAstFile.sh " + repoUuid;
+        String command = binHome + "deleteAstFile.sh " + repoUuid + "_" + commit;
         log.info("command -> {}",command);
         Process process = rt.exec(command);
         boolean timeout = process.waitFor(20L, TimeUnit.SECONDS);
@@ -198,8 +206,8 @@ public class AstParserUtil {
         log.info("delete AST file success !");
     }
 
-    private static JSONObject readJsParseFile(String resultFileHome, String repoUuid) {
-        try (BufferedReader reader = new BufferedReader(new FileReader(FileUtil.getEsLintAstReportAbsolutePath(resultFileHome, repoUuid)))) {
+    private static JSONObject readJsParseFile(String resultFileHome, String repoUuid, String commit) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(FileUtil.getEsLintAstReportAbsolutePath(resultFileHome, repoUuid + "_" + commit)))) {
             int ch;
             char[] buf = new char[1024];
             StringBuilder data = new StringBuilder();
@@ -207,10 +215,9 @@ public class AstParserUtil {
                 String readData = String.valueOf(buf, 0, ch);
                 data.append(readData);
             }
-            log.info("read AST file success !");
             return JSONObject.parseObject(data.toString());
         } catch (Exception e) {
-            log.error("read AST file failed !");
+            log.error("read AST file: {} failed !", resultFileHome);
         }
         return null;
     }
@@ -242,17 +249,49 @@ public class AstParserUtil {
                                 handleClassName(declaration):
                                 handleClassDeclaration(declaration.getJSONObject(BODY), beginLine, endLine, filePath);
                     case IMPORT_DECLARATION:
-                    case EXPORT_DEFAULT_DECLARATION:
-                    case EXPRESSION_STATEMENT:
                         return FileUtil.getCode(filePath, declarationBeginLine, declarationEndLine);
+                    case EXPORT_DEFAULT_DECLARATION:
+                        return handleExportDefaultDeclaration(declaration, filePath, declarationBeginLine, declarationEndLine);
+                    case EXPRESSION_STATEMENT:
+                        return handleExpressionStatement(declaration, declarationBeginLine, declarationEndLine, filePath);
                     case EXPORT_NAMED_DECLARATION:
                         return handleExportNamedDeclaration(declaration);
+                    case FOR_STATEMENT:
+                        return FileUtil.getForStatementCode(filePath, declarationBeginLine, declarationEndLine);
                     default:
                         return null;
                 }
             }
         }
         return null;
+    }
+
+    private static String handleExportDefaultDeclaration(JSONObject declaration, String filePath, int beginLine, int endLine) {
+        JSONObject exportDeclaration = declaration.getJSONObject(DECLARATION);
+        if(exportDeclaration.getString(TYPE).equals(CLASS_DECLARATION)) {
+            return "export default " + handleClassName(exportDeclaration);
+        }else if(exportDeclaration.getString(TYPE).equals(FUNCTION_DECLARATION)){
+            return "export default " + handleFunctionDeclaration(exportDeclaration);
+        }
+        return FileUtil.getCode(filePath, beginLine, endLine);
+    }
+
+    private static String handleExpressionStatement(JSONObject declaration, int declarationBeginLine, int declarationEndLine, String filePath) {
+        StringBuilder expression = new StringBuilder();
+        JSONObject node = declaration.getJSONObject(EXPRESSION);
+        if(node.getString(TYPE).equals(UNARY_EXPRESSION)){
+            expression.append(node.getString(OPERATOR) != null ? node.getString(OPERATOR) : "");
+            node = node.getJSONObject(ARGUMENT);
+        }
+        if(node.getString(TYPE).equals(CALL_EXPRESSION)){
+            int beginLine = node.getJSONObject(CALLEE).getJSONObject(LOC).getJSONObject(START).getIntValue(LINE);
+            int endLine = node.getJSONObject(CALLEE).getJSONObject(LOC).getJSONObject(END).getIntValue(LINE);
+            int beginColumn = node.getJSONObject(CALLEE).getJSONObject(LOC).getJSONObject(START).getIntValue(COLUMN);
+            int endColumn = node.getJSONObject(CALLEE).getJSONObject(LOC).getJSONObject(END).getIntValue(COLUMN);
+            return expression.append(FileUtil.getCode(filePath, beginLine, endLine, beginColumn, endColumn)).toString();
+        }else{
+            return FileUtil.getCode(filePath, declarationBeginLine, declarationEndLine);
+        }
     }
 
     private static String handleExportNamedDeclaration(JSONObject declaration) {
@@ -283,6 +322,19 @@ public class AstParserUtil {
                     variableName.append(",");
                 }
                 JSONObject param = paramsDetail.getJSONObject(i);
+                if(param.getJSONObject(ID).getString(TYPE).equals(OBJECT_PATTERN)){
+                    JSONArray properties = param.getJSONObject(ID).getJSONArray(PROPERTIES);
+                    variableName.append("{");
+                    for(int j = 0; j < properties.size(); j++){
+                        if (j != 0) {
+                            variableName.append(",");
+                        }
+                        JSONObject property = (JSONObject) properties.get(i);
+                        variableName.append(property.getJSONObject(KEY).getString(NAME));
+                    }
+                    variableName.append("}");
+                    continue;
+                }
                 variableName.append(param.getJSONObject(ID).getString(NAME));
             }
         }
@@ -308,7 +360,7 @@ public class AstParserUtil {
 
     private static String handleFunctionDeclaration(JSONObject declaration) {
         StringBuilder functionName = new StringBuilder();
-        functionName.append(declaration.getJSONObject(ID).getString(NAME)).append("(");
+        functionName.append(declaration.getJSONObject(ID) == null ? "function " :  declaration.getJSONObject(ID).getString(NAME)).append("(");
         //get params
         JSONArray paramsDetail = declaration.getJSONArray(PARAMS);
         if(paramsDetail != null) {
@@ -355,10 +407,13 @@ public class AstParserUtil {
                         return handleClassDeclaration(node, beginLine, endLine, filePath);
                     case IMPORT_DECLARATION:
                     case EXPORT_DEFAULT_DECLARATION:
-                    case EXPRESSION_STATEMENT:
                         return FileUtil.getCode(filePath, nodeBeginLine, nodeEndLine);
+                    case EXPRESSION_STATEMENT:
+                        return handleExpressionStatement(node, beginLine, endLine, filePath);
                     case EXPORT_NAMED_DECLARATION:
                         return handleExportNamedDeclaration(declaration);
+                    case FOR_STATEMENT:
+                        return FileUtil.getForStatementCode(filePath, beginLine, endLine);
                     default:
                         return null;
                 }
@@ -384,7 +439,7 @@ public class AstParserUtil {
     }
 
     public static void main(String[] args) {
-        JSONObject ast = readJsParseFile("C:\\Users\\Beethoven\\Desktop\\issue-tracker-web", "2");
+        JSONObject ast = readJsParseFile("C:\\Users\\Beethoven\\Desktop\\issue-tracker-web", "2", "");
         assert ast != null;
         String jsMethod = getJsMethod(ast, 56, 58, "import { Table, Tooltip } from 'antd';");
         System.out.println(jsMethod);
