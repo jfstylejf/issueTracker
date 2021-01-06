@@ -6,7 +6,10 @@ import cn.edu.fudan.cloneservice.mapper.CloneMeasureMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author zyh
@@ -15,11 +18,18 @@ import java.util.List;
 @Repository
 public class CloneMeasureDao {
 
+    private static Map<String, List<CloneMeasure>> cloneMeasureMap = new ConcurrentHashMap<>(26);
+
     @Autowired
     CloneMeasureMapper cloneMeasureMapper;
 
     public List<CloneMeasure> getCloneMeasures(String repoId){
-        return cloneMeasureMapper.getCloneMeasures(repoId);
+        if (cloneMeasureMap.keySet().contains(repoId)) {
+            return cloneMeasureMap.get(repoId);
+        }
+        List<CloneMeasure> cloneMeasures = cloneMeasureMapper.getCloneMeasures(repoId);
+        cloneMeasureMap.put(repoId, cloneMeasures);
+        return cloneMeasureMap.get(repoId);
     }
 
     public void insertCloneMeasure(CloneMeasure cloneMeasure){

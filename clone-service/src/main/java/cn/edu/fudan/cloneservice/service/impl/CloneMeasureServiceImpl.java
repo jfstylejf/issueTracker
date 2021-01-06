@@ -40,7 +40,7 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
     private CloneInfoMapper cloneInfoMapper;
 
     @Override
-    public List<CloneMessage> getCloneMeasure(String repositoryId, String developer, String start, String end) {
+    public List<CloneMessage> getCloneMeasure(String repositoryId, String developer, String start, String end, String page, String size, Boolean isDesc) {
 
         List<CloneMessage> cloneMessages = new ArrayList<>();
 
@@ -52,7 +52,9 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
             List<String> repoIds = split(repositoryId);
             // 单个repo 维度 存放的是用户的git accountName
             List<String> developerList = new ArrayList<>();
+            log.info("begin:"+String.valueOf(System.currentTimeMillis()/1000));
             repoIds.forEach(repoId -> developerList.addAll(repoCommitMapper.getAllDeveloper(repoId)));
+            log.info("after get all developer:"+String.valueOf(System.currentTimeMillis()/1000));
             // 聚合 key gitName value trueName
             Map<String, String> trueNameGitName = getName(developerList);
             if(trueNameGitName.isEmpty()) return cloneMessages;
@@ -66,6 +68,7 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
             }
 
             List<CloneMessage> gitNameClone = new ArrayList<>(developerListSimply.size());
+            log.info("loop:"+developerListSimply.size());
             developerListSimply.forEach(d -> gitNameClone.add(getOneDeveloperCloneInfo(repositoryId, d, start, end, trueNameGitName.get(d))));
 
             Map<String, List<CloneMessage>> map = gitNameClone.parallelStream().collect(Collectors.groupingBy(CloneMessage::getDeveloper));
@@ -76,6 +79,23 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
             CloneMessage u = union(cloneMessages);
             cloneMessages.clear();
             cloneMessages.add(u);
+        }
+
+        if(page != null && size != null){
+            int pageDigit = Integer.parseInt(page);
+            int sizeDigit = Integer.parseInt(size);
+            List<CloneMessage> result = new ArrayList<>();
+
+            Collections.sort(cloneMessages);
+            if(isDesc != null && isDesc){
+                Collections.reverse(cloneMessages);
+            }
+            int index = (pageDigit - 1) * sizeDigit;
+            while((index < cloneMessages.size()) && (index < pageDigit * sizeDigit)){
+                result.add(cloneMessages.get(index));
+                index += 1;
+            }
+            return result;
         }
 
         return cloneMessages;
@@ -139,9 +159,14 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
         int allDeleteCloneLines = 0;
         int addLines = 0;
         for (String repoId : repoIds) {
+            log.info("loop begin:"+String.valueOf(System.currentTimeMillis()/1000));
             List<String> developerCommitList = repoCommitMapper.getAuthorCommitList(repoId, developer, start, end);
+            log.info("after get author commit list:"+String.valueOf(System.currentTimeMillis()/1000));
             List<String> repoCommitList = repoCommitMapper.getCommitList(repoId, start, end);
+            log.info("after get commit list:"+String.valueOf(System.currentTimeMillis()/1000));
             List<CloneMeasure> cloneMeasures = cloneMeasureDao.getCloneMeasures(repoId);
+            log.info("after get clone measure:"+String.valueOf(System.currentTimeMillis()/1000));
+
 
             int preCloneLines = 0;
             for (String commitId : repoCommitList) {
@@ -165,7 +190,9 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
                     }
                 }
             }
+            log.info("after compute:"+String.valueOf(System.currentTimeMillis()/1000));
             addLines += restInterfaceManager.getAddLines(repoId, start, end, trueName);
+            log.info("after rest get add lines:"+String.valueOf(System.currentTimeMillis()/1000));
         }
 
         CloneMessage cloneMessage = new CloneMessage();
