@@ -78,4 +78,8 @@ public class AccountDao {
     public void addAccount(Account account) {
         addAccounts(Collections.singletonList(account));
     }
+
+    public String getAccountName(String email) {
+        return accountMapper.getAccountName(email);
+    }
 }

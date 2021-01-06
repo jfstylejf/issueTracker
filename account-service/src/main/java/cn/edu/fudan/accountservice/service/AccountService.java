@@ -19,7 +19,7 @@ public interface AccountService {
      * @param password get user password
      * @return ResponseEntity
      */
-    AccountVO login(String username, String password);
+    AccountVO login(String username, String password, String email);
 
     /**
      * passwordReset

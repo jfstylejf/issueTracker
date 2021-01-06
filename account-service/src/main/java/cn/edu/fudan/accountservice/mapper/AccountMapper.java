@@ -87,4 +87,7 @@ public interface AccountMapper {
      */
     @Select("SELECT account_gitname FROM account_author;")
     List<String> getOldAccountGitName();
+
+    @Select("select account_name from account where email = #{email}")
+    String getAccountName(String email);
 }

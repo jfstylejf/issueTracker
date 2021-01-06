@@ -114,10 +114,11 @@ public class AccountController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "username", value = "用户姓名", dataType = "String", required = true,defaultValue = "admin"),
             @ApiImplicitParam(name = "password", value = "密码", dataType = "String", required = true,defaultValue = "YWRtaW4="),
+            @ApiImplicitParam(name = "email", value = "用户邮箱", dataType = "String", required = true,defaultValue = "123@fudan.edu.cn")
     })
     @GetMapping(value = {"/login"})
-    public Object login(@RequestParam("username") String username, @RequestParam("password") String password, HttpServletResponse response) {
-        AccountVO accountVO = accountService.login(username, password);
+    public Object login(@RequestParam("username") String username, @RequestParam("password") String password,@RequestParam("email") String email, HttpServletResponse response) {
+        AccountVO accountVO = accountService.login(username, password, email);
         ResponseEntity<AccountVO> responseBean = new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), HttpStatus.INTERNAL_SERVER_ERROR.name(), null);
         if (accountVO != null) {
             CookieUtil.addCookie(response, "userToken", accountVO.getToken(), 24 * 60 * 60);
