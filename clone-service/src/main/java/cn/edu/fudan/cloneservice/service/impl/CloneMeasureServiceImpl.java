@@ -37,6 +37,7 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
     private CloneInfoDao cloneInfoDao;
     private CloneLocationDao cloneLocationDao;
     private ForkJoinRecursiveTask forkJoinRecursiveTask;
+    @Autowired
     private CloneInfoMapper cloneInfoMapper;
 
     @Override
@@ -206,7 +207,7 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
         cloneMessage.setAddLines(addLines);
         cloneMessage.setEliminateCloneLines(deleteCloneLines);
         cloneMessage.setAllEliminateCloneLines(allDeleteCloneLines);
-
+        cloneMessage.setOthersIncreasedCloneLines(newCloneLines-selfCloneLines);
         return cloneMessage;
     }
 

@@ -17,6 +17,7 @@ public class CloneMessage implements Comparable<CloneMessage>{
     private String developer;
     private Integer increasedCloneLines;
     private Integer selfIncreasedCloneLines;
+    private Integer othersIncreasedCloneLines;
     private String increasedCloneLinesRate;
     private Integer eliminateCloneLines;
     private Integer allEliminateCloneLines;
