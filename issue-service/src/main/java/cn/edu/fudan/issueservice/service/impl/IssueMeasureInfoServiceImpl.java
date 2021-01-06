@@ -33,6 +33,8 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
 
     private RestInterfaceManager restInterfaceManager;
 
+    private final String repoList = "repoList";
+
     @Override
     public List<Map.Entry<String, JSONObject>> getNotSolvedIssueCountByToolAndRepoUuid(List<String> repoUuids, String tool, String order, String commitUuid) {
 
@@ -94,7 +96,7 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
         AtomicInteger allSolvedIssueCount = new AtomicInteger();
 
         if(codeQuality) {
-            query.put("repoList", SegmentationUtil.splitStringList(query.get("repoList") == null ? null : query.get("repoList").toString()));
+            query.put(repoList, SegmentationUtil.splitStringList(query.get(repoList) == null ? null : query.get(repoList).toString()));
         }
 
         developerWorkload.keySet().forEach(r -> {

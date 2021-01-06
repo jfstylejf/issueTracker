@@ -361,18 +361,18 @@ public class RestInterfaceManager {
                 "&until=" + (StringUtils.isEmpty(query.get("until")) ? "" : query.get("until").toString());
 
         ResponseEntity<JSONObject> responseEntity = restTemplate.exchange(url , HttpMethod.GET,request,JSONObject.class);
-        JSONObject result = JSONObject.parseObject(Objects.requireNonNull(responseEntity.getBody()).toString(),JSONObject.class);
+        JSONObject body = responseEntity.getBody();
 
-        if(result.getIntValue("code") != 200){
+        if(body.getIntValue("code") != 200){
             logger.error("request /measure/developer/workLoad failed");
             throw  new RuntimeException("get data from /measure/developer/work-load failed!");
         }
 
         Map<String, Integer> developerWorkLoad = new HashMap<>(16);
-
-        JSONObject data = result.getJSONObject("data");
-
-        data.keySet().forEach(r -> developerWorkLoad.put(r,developerWorkLoad.getOrDefault(r + data.getJSONObject(r).getInteger("delLines") + data.getJSONObject(r).getInteger("addLines"), data.getJSONObject(r).getInteger("delLines") + data.getJSONObject(r).getInteger("addLines"))));
+        JSONArray data = body.getJSONArray("data");
+        for(int i = 0; i < data.size(); i++){
+            developerWorkLoad.put(data.getJSONObject(i).getString("developerName"), data.getJSONObject(i).getInteger("totalLoc"));
+        }
 
         return developerWorkLoad;
     }
