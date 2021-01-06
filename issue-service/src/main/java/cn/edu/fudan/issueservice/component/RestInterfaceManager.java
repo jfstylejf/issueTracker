@@ -63,9 +63,11 @@ public class RestInterfaceManager {
         return restTemplate.getForObject(accountServicePath + "/user/accountIds", List.class);
     }
 
-    public List<String> getDeveloperInRepo(String repoUuids) {
+    public List<String> getDeveloperInRepo(String repoUuids, String since, String until) {
         List<String> developers = new ArrayList<>();
-        JSONObject result = restTemplate.getForObject(accountServicePath + "/user/developers?repo_uuids=" + repoUuids + "is_whole=true", JSONObject.class);
+        String url = since == null ? accountServicePath + "/user/developers?repo_uuids=" + repoUuids + "&is_whole=true" :
+                accountServicePath + "/user/developers?repo_uuids=" + repoUuids + "&is_whole=true&since=" + since + "&until=" + until;
+        JSONObject result = restTemplate.getForObject(url, JSONObject.class);
         assert result != null;
         JSONArray rows = result.getJSONArray("data");
         for(Object row : rows){
