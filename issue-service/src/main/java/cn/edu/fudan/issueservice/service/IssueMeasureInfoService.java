@@ -80,5 +80,5 @@ public interface IssueMeasureInfoService {
      * @param isAsc isAsc
      * @return 排序后
      */
-    List<Map<String, JSONObject>> handleSortDeveloperLifecycle(List<Map<String, JSONObject>> developersLifecycle, Boolean isAsc);
+    List<Map<String, JSONObject>> handleSortDeveloperLifecycle(List<Map<String, JSONObject>> developersLifecycle, Boolean isAsc, int ps, int page);
 }

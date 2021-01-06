@@ -211,7 +211,7 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
     }
 
     @Override
-    public List<Map<String, JSONObject>> handleSortDeveloperLifecycle(List<Map<String, JSONObject>> developersLifecycle, Boolean isAsc) {
+    public List<Map<String, JSONObject>> handleSortDeveloperLifecycle(List<Map<String, JSONObject>> developersLifecycle, Boolean isAsc, int ps, int page) {
         if(isAsc == null){
             return developersLifecycle;
         }
@@ -227,7 +227,7 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
             }
             return isAsc ? num1 - num2 : num2 - num1;
         });
-        return developersLifecycle;
+        return developersLifecycle.subList(ps * (page -1), Math.min(developersLifecycle.size(), ps * page));
     }
 
     @Autowired
