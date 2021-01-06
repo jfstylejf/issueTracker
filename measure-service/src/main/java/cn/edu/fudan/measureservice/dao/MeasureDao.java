@@ -1,5 +1,6 @@
 package cn.edu.fudan.measureservice.dao;
 
+import cn.edu.fudan.measureservice.domain.bo.DeveloperWorkLoad;
 import cn.edu.fudan.measureservice.domain.dto.Query;
 import cn.edu.fudan.measureservice.mapper.MeasureMapper;
 import cn.edu.fudan.measureservice.mapper.ProjectMapper;
@@ -18,6 +19,13 @@ public class MeasureDao {
 
     private MeasureMapper measureMapper;
     private ProjectMapper projectMapper;
+
+
+    public DeveloperWorkLoad getDeveloperWorkLoadData(Query query) {
+
+        DeveloperWorkLoad developerWorkLoad = measureMapper.getDeveloperWorkLoad(query.getRepoUuidList(),query.getDeveloper(),query.getSince(),query.getUntil());
+        return null;
+    }
 
     /**
      * 获取开发者个人新增物理行

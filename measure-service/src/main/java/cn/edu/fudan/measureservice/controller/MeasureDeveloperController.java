@@ -12,7 +12,10 @@ import cn.edu.fudan.measureservice.service.MeasureDeveloperService;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -24,6 +27,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+@Slf4j
 @RestController
 public class MeasureDeveloperController {
 
@@ -87,9 +91,16 @@ public class MeasureDeveloperController {
                 repoUuidList = projectDao.involvedRepoProcess(repoUuid,token);
             }
             Query query = new Query(token,since,until,developer,repoUuidList);
-            List<DeveloperWorkLoad> developerWorkLoadList = measureDeveloperService.getDeveloperWorkLoad(query,asc,developers);
+            List<DeveloperWorkLoad> developerWorkLoadList = measureDeveloperService.getDeveloperWorkLoad(query,developers);
             if(developers==null || developers.size()==0) {
-                return new ResponseBean<>(200,"success",developerWorkLoadList.subList(page*ps,(page+1) * ps > developerWorkLoadList.size() ? developerWorkLoadList.size() : (page+1)*ps));
+                Collections.sort(developerWorkLoadList, (o1, o2) -> {
+                    if(asc) {
+                        return o1.getTotalLoc()-o2.getTotalLoc();
+                    }else {
+                        return o2.getTotalLoc()-o1.getTotalLoc();
+                    }
+                });
+                return new ResponseBean<>(200,"success",developerWorkLoadList.subList((page-1)*ps,page * ps > developerWorkLoadList.size() ? developerWorkLoadList.size() : page*ps));
             }else {
                 return new ResponseBean<>(200,"success",developerWorkLoadList);
             }
@@ -237,11 +248,18 @@ public class MeasureDeveloperController {
                 repoUuidList = projectDao.involvedRepoProcess(repoUuid,token);
             }
             Query query = new Query(token,since,until,developer,repoUuidList);
+            List<DeveloperCommitStandard> developerCommitStandardList = measureDeveloperService.getCommitStandard(query,developers);
             if(developers!=null && developers.size()>0) {
-                return new ResponseBean<>(200,"success",measureDeveloperService.getCommitStandard(query,asc,developers));
+                return new ResponseBean<>(200,"success",developerCommitStandardList);
             }else {
-                List<DeveloperCommitStandard> developerCommitStandardList = measureDeveloperService.getCommitStandard(query,asc,developers);
-                return new ResponseBean<>(200,"success",developerCommitStandardList.subList(ps*page,ps*(page+1) > developerCommitStandardList.size() ? developerCommitStandardList.size() : ps*(page+1)));
+                Collections.sort(developerCommitStandardList, (o1, o2) -> {
+                    if(asc) {
+                        return (int) ((o1.getCommitStandard() - o2.getCommitStandard()) * 100);
+                    }else {
+                        return (int) ((o2.getCommitStandard() - o1.getCommitStandard()) * 100);
+                    }
+                });
+                return new ResponseBean<>(200,"success",developerCommitStandardList.subList(ps*(page-1),ps*page > developerCommitStandardList.size() ? developerCommitStandardList.size() : ps*page));
             }
         }catch (Exception e){
             e.printStackTrace();
@@ -325,14 +343,7 @@ public class MeasureDeveloperController {
         try{
             until = timeProcess(until);
             String token = request.getHeader("token");
-            List<String> repoUuidList;
-            if(projectName!=null && !"".equals(projectName)) {
-                repoUuidList = projectDao.getProjectRepoList(projectName,token);
-            }else {
-                repoUuidList = projectDao.involvedRepoProcess(repoUuid,token);
-            }
-            Query query = new Query(token,since,until,null,repoUuidList);
-            return new ResponseBean<>(200,"success",(List<Map<String, Object>>) measureDeveloperService.getDeveloperList(query));
+            return new ResponseBean<>(200,"success",(List<Map<String, Object>>) measureDeveloperService.getDeveloperList(repoUuid,projectName,since,until,token));
         }catch (Exception e){
             e.printStackTrace();
             return new ResponseBean<>(401,"failed "+ e.getMessage(),null);
@@ -360,6 +371,5 @@ public class MeasureDeveloperController {
 
     @Autowired
     public void setProjectDao(ProjectDao projectDao) {this.projectDao = projectDao;}
-
 
 }

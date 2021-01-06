@@ -26,6 +26,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -56,7 +57,7 @@ public class MeasureDeveloperService {
      * @return
      */
     @SuppressWarnings("unchecked")
-    public List<DeveloperWorkLoad> getDeveloperWorkLoad(Query query, Boolean asc, List<String> developers) {
+    public List<DeveloperWorkLoad> getDeveloperWorkLoad(Query query , List<String> developers) {
         List<DeveloperWorkLoad> developerWorkLoad = new ArrayList<>();
         List<String> developerList = new ArrayList<>();
         if(query.getDeveloper()!=null && !"".equals(query.getDeveloper())) {
@@ -71,25 +72,27 @@ public class MeasureDeveloperService {
                 continue;
             }
             // fixme 通过measureDao来获取数据
+            //DeveloperWorkLoad developerWorkLoad1 = measureDao.getDeveloperWorkLoadData(query);
             Map<String, Object> workLoadList = repoMeasureMapper.getWorkLoadByCondition(query.getRepoUuidList(), member, query.getSince(), query.getUntil());
-            int addLines = (int)workLoadList.get("addLines");
-            int delLines = (int)workLoadList.get("delLines");
+            int addLines = getFixedTypeByMapper(workLoadList.get("addLines"));
+            int delLines = getFixedTypeByMapper(workLoadList.get("delLines"));
+            int commitCount = getFixedTypeByMapper(workLoadList.get("commitCount"));
+            int changedFiles = getFixedTypeByMapper(workLoadList.get("changedFiles"));
             int totalLoc = addLines + delLines;
-            developerWorkLoad.add(new DeveloperWorkLoad(member,addLines,delLines,totalLoc,(int)workLoadList.get("commitCount"),(int)workLoadList.get("changedFiles")));
+            developerWorkLoad.add(new DeveloperWorkLoad(member,addLines,delLines,totalLoc,commitCount,changedFiles));
         }
-        if(developers!=null && developers.size()>0) {
-            return developerWorkLoad;
-        }
-        Collections.sort(developerWorkLoad, (o1, o2) -> {
-            if(asc) {
-                return o1.getTotalLoc()-o2.getTotalLoc();
-            }else {
-                return o2.getTotalLoc()-o1.getTotalLoc();
-            }
-        });
         return developerWorkLoad;
     }
 
+    private int getFixedTypeByMapper(Object object) {
+        if (object instanceof BigDecimal) {
+            return ((BigDecimal) object).intValue();
+        }else if(object instanceof Long){
+            return ((Long) object).intValue();
+        }else {
+            return (int) object;
+        }
+    }
 
     public Object getStatementByCondition(String repoUuidList, String developer, String since, String until) throws ParseException {
         List<String> repoList = new ArrayList<>();
@@ -412,7 +415,7 @@ public class MeasureDeveloperService {
         int developerJiraCount = 0;
         try {
             Query query = new Query(token,since,until,developer,Collections.singletonList(repoUuid));
-            DeveloperCommitStandard developerCommitStandard = getCommitStandard(query,true,null).get(0);
+            DeveloperCommitStandard developerCommitStandard = getCommitStandard(query,null).get(0);
             developerJiraCount = developerCommitStandard.getDeveloperJiraCommitCount();
         }catch (Exception e) {
             log.error(e.getMessage());
@@ -750,6 +753,7 @@ public class MeasureDeveloperService {
      * @return Developer
      */
     // fixme 新版本 获得一个开发者的画像 (Contribution,Quality,Effiency)
+    @Cacheable(cacheNames = {"developerPortrait"})
     public DeveloperPortrait getDeveloperPortrait(Query query,Map<String,List<DeveloperRepoInfo>> developerRepoInfos) {
         if(!developerRepoInfos.containsKey(query.getDeveloper())) {
             log.warn("查询库中无该开发者 {}：",query.getDeveloper());
@@ -780,7 +784,6 @@ public class MeasureDeveloperService {
      * @param query 查询条件
      * @return DeveloperRepositoryMetric 开发者库画像
      */
-    @Cacheable(cacheNames = {"developerRepositoryMetric"})
     public DeveloperRepositoryMetric getDeveloperRepositoryMetric(DeveloperRepoInfo developerRepoInfo,Query query) {
         RepoInfo repoInfo = developerRepoInfo.getRepoInfo();
         String projectName = repoInfo.getProjectName();
@@ -819,12 +822,19 @@ public class MeasureDeveloperService {
 
     /**
      *
-     * @param query 查询条件
+     * @param
      * @return 开发者画像相关数据 key : DutyType,involvedRepoCount,totalLevel,value,quality,efficiency
      * @throws ParseException
      */
     @Cacheable(cacheNames = {"developerList"})
-    public synchronized Object getDeveloperList(Query query) throws ParseException {
+    public synchronized Object getDeveloperList(String repoUuid,String projectName,String since,String until,String token) throws ParseException {
+        List<String> repoUuidList;
+        if(projectName!=null && !"".equals(projectName)) {
+            repoUuidList = projectDao.getProjectRepoList(projectName,token);
+        }else {
+            repoUuidList = projectDao.involvedRepoProcess(repoUuid,token);
+        }
+        Query query = new Query(token,since,until,null,repoUuidList);
         if(query.getRepoUuidList().size()==0) {
             log.warn("do not have any authorized repo to see");
             return null;
@@ -837,6 +847,7 @@ public class MeasureDeveloperService {
             Map<String,Object> dev = new HashMap<>();
             log.info("start to get portrait of {}",developer);
             query.setDeveloper(developer);
+            dev.put("developer",developer);
             String dutyType = developerDutyType.get(developer);
             if("1".equals(dutyType)) {
                 dev.put("DutyType","在职");
@@ -862,7 +873,8 @@ public class MeasureDeveloperService {
 
 
     @SuppressWarnings("unchecked")
-    public List<DeveloperCommitStandard> getCommitStandard(Query query, Boolean asc, List<String> developers) {
+    @Cacheable(cacheNames = {"commitStandard"})
+    public List<DeveloperCommitStandard> getCommitStandard(Query query , List<String> developers) {
         List<DeveloperCommitStandard> developerCommitStandardList = new ArrayList<>();
         List<String> developerList = new ArrayList<>();
         if(query.getDeveloper()!=null && !"".equals(query.getDeveloper())) {
@@ -897,18 +909,9 @@ public class MeasureDeveloperService {
             developerCommitStandard.setCommitStandard(commitStandard);
             developerCommitStandardList.add(developerCommitStandard);
         }
-        if(developers!=null && developers.size()>0) {
-            return developerCommitStandardList;
-        }
-        Collections.sort(developerCommitStandardList, (o1, o2) -> {
-            if(asc) {
-                return (int) (o1.getCommitStandard() - o2.getCommitStandard());
-            }else {
-                return (int) (o2.getCommitStandard() - o1.getCommitStandard());
-            }
-        });
         return developerCommitStandardList;
     }
+
 
     @Autowired
     public void setMeasureDeveloperServiceImpl(MeasureDeveloperService measureDeveloperServiceImpl) {
@@ -930,7 +933,7 @@ public class MeasureDeveloperService {
         this.methodMeasureAspect = methodMeasureAspect;
     }
 
-    @CacheEvict(cacheNames = {"portraitLevel","developerMetrics","developerMetricsNew","portraitCompetence","developerRecentNews","developerList","jiraInfoByJiraID"}, allEntries=true, beforeInvocation = true)
+    @CacheEvict(cacheNames = {"developerPortrait","developerMetricsNew","portraitCompetence","developerRecentNews","developerList","commitStandard"}, allEntries=true, beforeInvocation = true)
     public void clearCache() {
         log.info("Successfully clear redis cache in db6.");
     }
