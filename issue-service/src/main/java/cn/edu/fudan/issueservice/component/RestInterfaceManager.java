@@ -139,6 +139,22 @@ public class RestInterfaceManager {
         return repoName;
     }
 
+    public Map<String, Map<String, String>> getAllRepoToProjectName(String userToken) {
+        Map<String, Map<String, String>> projectName = new HashMap<>(64);
+        JSONObject allRepo = getAllRepo(userToken);
+        for(String repo : allRepo.keySet()){
+            Iterator<Object> iterator = allRepo.getJSONArray(repo).stream().iterator();
+            while (iterator.hasNext()){
+                JSONObject next = (JSONObject) iterator.next();
+                projectName.put(next.getString("repo_id"), new HashMap<String, String>(4){{
+                    put("repoName", next.getString("name"));
+                    put("projectName", repo);
+                }});
+            }
+        }
+
+        return projectName;
+    }
 
     /**
      * 根据url返回repoUuid

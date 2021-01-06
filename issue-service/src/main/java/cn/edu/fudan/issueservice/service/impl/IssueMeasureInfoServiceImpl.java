@@ -186,11 +186,12 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
         if(issuesDetail == null){
             return new ArrayList<>();
         }
-        //init repoUuid to repoName
-        Map<String, String> repoName = restInterfaceManager.getAllRepoToRepoName(token);
+        //init repoUuid to repoName and projectName
+        Map<String, Map<String, String>> repoName = restInterfaceManager.getAllRepoToProjectName(token);
         //handle issues detail
         issuesDetail.forEach(r -> {
-            r.put("projectName", repoName.get(r.getString("repoUuid")));
+            r.put("repoName", repoName.get(r.getString("repoUuid")).get("repoName"));
+            r.put("projectName", repoName.get(r.getString("repoUuid")).get("projectName"));
             r.put("severity", Objects.requireNonNull(JavaIssuePriorityEnum.getPriorityEnumByRank(r.getInteger("priority"))).getName());
         });
 

@@ -133,7 +133,7 @@ public class IssueMeasurementController {
             @ApiImplicitParam(name = "target", value = "缺陷时谁引入\nself 自己引入,other 他人引入", allowableValues = "self , other"),
     })
     @GetMapping(value = "/codewisdom/issue/lifecycle")
-    public ResponseBean<Object> getIssueLifecycleByConditions(@RequestParam(value = "developer", required = false) String developer,
+    public ResponseBean<Object> getIssueLifecycleByConditions(HttpServletRequest request,@RequestParam(value = "developer", required = false) String developer,
                                                @RequestParam(value = "repo_uuids", required = false) String repoUuids,
                                                @RequestParam(value = "since", required = false) String since,
                                                @RequestParam(value = "until", required = false) String until,
@@ -141,7 +141,7 @@ public class IssueMeasurementController {
                                                @RequestParam(value = "asc", required = false) Boolean isAsc,
                                                @RequestParam(value = "status") String status,
                                                @RequestParam(value = "percent", required = false, defaultValue = "-2") Double percent,
-                                               @RequestParam(value = "target") String target, HttpServletRequest request,
+                                               @RequestParam(value = "target") String target,
                                                @RequestParam(value = "ps", required = false, defaultValue = "10") int ps,
                                                @RequestParam(value = "page", required = false, defaultValue = "1") int page) {
         double numberInfo = -2;
