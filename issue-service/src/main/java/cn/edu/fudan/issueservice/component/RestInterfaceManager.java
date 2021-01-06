@@ -356,7 +356,7 @@ public class RestInterfaceManager {
 
         String url = measureServicePath + "/measure/developer/work-load?developer=" +
                 (StringUtils.isEmpty(query.get("developer")) ? "" : query.get("developer").toString()) +
-                "&repo_uuid=" + (StringUtils.isEmpty(query.get("repoList")) ? "" : query.get("repoList").toString()) +
+                "&repo_uuids=" + (StringUtils.isEmpty(query.get("repoList")) ? "" : query.get("repoList").toString()) +
                 "&since=" + (StringUtils.isEmpty(query.get("since")) ? "" : query.get("since").toString()) +
                 "&until=" + (StringUtils.isEmpty(query.get("until")) ? "" : query.get("until").toString());
 
