@@ -360,7 +360,7 @@ public class AstParserUtil {
 
     private static String handleFunctionDeclaration(JSONObject declaration) {
         StringBuilder functionName = new StringBuilder();
-        functionName.append(declaration.getJSONObject(ID).getString(NAME)).append("(");
+        functionName.append(declaration.getJSONObject(ID) == null ? "function " :  declaration.getJSONObject(ID).getString(NAME)).append("(");
         //get params
         JSONArray paramsDetail = declaration.getJSONArray(PARAMS);
         if(paramsDetail != null) {
