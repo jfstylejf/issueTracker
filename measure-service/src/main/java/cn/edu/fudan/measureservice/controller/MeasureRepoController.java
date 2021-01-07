@@ -10,18 +10,14 @@ import cn.edu.fudan.measureservice.service.MeasureRepoService;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
-import lombok.Synchronized;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import sun.nio.ch.ThreadPool;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
@@ -190,18 +186,14 @@ public class MeasureRepoController {
 
         try{
             String token = request.getHeader("token");
-            if(until==null || "".equals(until)) {
-                until = dtf.format(LocalDate.now().plusDays(1));
-            }else {
-                until = dtf.format(LocalDate.parse(until,dtf).plusDays(1));
-            }
+            until = timeProcess(until);
             List<String> repoUuidList;
             if(projectName!=null && !"".equals(projectName)) {
                 repoUuidList = projectDao.getProjectRepoList(projectName,token);
             }else {
                 repoUuidList = projectDao.involvedRepoProcess(repoUuid,token);
             }
-            Query query = new Query(null,since,until,null,repoUuidList);
+            Query query = new Query(token,since,until,null,repoUuidList);
             return new ResponseBean<>(200,"success",measureRepoService.getDailyCommitCountAndLOC(query));
         }catch (Exception e){
             e.printStackTrace();
@@ -211,7 +203,7 @@ public class MeasureRepoController {
 
 
 
-    @DeleteMapping("/measure/{repo_uuids}")
+    @DeleteMapping("/measure/repo/{repo_uuids}")
     @CrossOrigin
     public ResponseBean<String> deleteRepoUselessMsg(@PathVariable("repo_uuids") String repoUuidList) {
         Query query = new Query(null,null,null,null,Arrays.asList(repoUuidList.split(split)));
@@ -222,6 +214,25 @@ public class MeasureRepoController {
             e.printStackTrace();
             return new ResponseBean<>(401,"measure failed",e.getMessage());
         }
+    }
+
+    /**
+     * 查询时间统一处理加一天
+     * @param until 查询截止时间
+     * @return String until
+     */
+    private String timeProcess(String until) {
+        try {
+            if(until!=null && !"".equals(until)) {
+                until = dtf.format(LocalDate.parse(until,dtf).plusDays(1));
+            }else {
+                until = dtf.format(LocalDate.now().plusDays(1));
+            }
+            return until;
+        }catch (Exception e) {
+            e.getMessage();
+        }
+        return null;
     }
 
     @Autowired

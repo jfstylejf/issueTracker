@@ -44,18 +44,15 @@ public class MeasureInfo extends BaseData {
     @Override
     public void dataInjection() {
         log.debug("{} : in repo : {} start to get MeasureInfo",query.getDeveloper(),query.getRepoUuidList());
+        // fixme 补完计划
         /**
          *  key : getDeveloperAddLine
          *  value {@link MeasureDao}
          */
-        developerAddLine = measureDao.getDeveloperAddLine(query);
         /**
          *  key : getLocByCondition
          *  value {@link MeasureDao}
          */
-        Map<String,Object> locMap = measureDao.getDeveloperLocByCondition(query);
-        developerLoc = (int) locMap.get("developerLoc");
-        totalLoc = (int) locMap.get("totalLoc");
         /**
          *  key : getCommitCountsByDuration
          *  value {@link MeasureDao}

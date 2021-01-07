@@ -13,7 +13,7 @@
 
     <select id="getDeveloperWorkLoad"  resultMap="workLoad">
         SELECT
-        developer_name , sum(add_lines) , sum(del_lines) , count(uuid) , sum(changed_files)
+        sum(add_lines) AS addLines, sum(del_lines) AS delLines, count(uuid) AS commitCount, sum(changed_files) AS changedFiles
         FROM
         issueTracker.repo_measure
         <where>
@@ -40,29 +40,6 @@
         </where>
     </select>
 
-
-    <select id="getDeveloperAddLines" resultType="int">
-        SELECT IFNULL(SUM(add_lines),0) FROM issueTracker.repo_measure
-        <where>
-            <trim prefixOverrides="and">
-                <if test="developer != null and developer != '' ">
-                    and developer_name = #{developer}
-                </if>
-
-                <if test="repoUuid != null and repoUuid != '' ">
-                    and repo_id = #{repoUuid}
-                </if>
-
-                <if test="since != null and since != '' ">
-                    and <![CDATA[ commit_time >= #{since} ]]>
-                </if>
-
-                <if test="until != null and until != '' ">
-                    and <![CDATA[ commit_time <= #{until} ]]>
-                </if>
-            </trim>
-        </where>
-    </select>
 
     <select id="getDeveloperRankByLoc" parameterType="String" resultType="java.util.HashMap">
         SELECT
@@ -98,7 +75,7 @@
     </select>
 
     <select id="getMsgNumByRepo" resultType="int">
-        SELECT count(uuid) FROM issueTracker.repo_measure
+        SELECT IFNULL(count(uuid),0) FROM issueTracker.repo_measure
         <where>
             <trim prefixOverrides="and">
 
@@ -113,34 +90,7 @@
         </where>
     </select>
 
-    <select id="getLocByCondition" parameterType="String" resultType="int">
-        SELECT
-        IFNULL(SUM( add_lines ) + SUM( del_lines ),0)
-        FROM
-        issueTracker.repo_measure
-        <where>
-            <trim prefixOverrides="and">
-                <if test="developer != null and developer != '' ">
-                    and developer_name = #{developer}
-                </if>
 
-                <if test="repoUuidList != null and repoUuidList.size >0 ">
-                    and repo_id in
-                    <foreach collection="repoUuidList" separator="," open="(" close=")" item="repoUuid">
-                        #{repoUuid}
-                    </foreach>
-                </if>
-
-                <if test="since != null and since != '' ">
-                    and <![CDATA[ commit_time >= #{since} ]]>
-                </if>
-
-                <if test="until != null and until != '' ">
-                    and <![CDATA[ commit_time <= #{until} ]]>
-                </if>
-            </trim>
-        </where>
-    </select>
 
 
 </mapper>

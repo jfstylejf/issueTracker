@@ -537,35 +537,6 @@
         ORDER BY commit_time DESC
     </select>
 
-    <select id="getWorkLoadByCondition"  resultType="java.util.HashMap">
-        SELECT
-        IFNULL(sum(add_lines),0) as addLines, IFNULL(sum(del_lines),0) as delLines, count(uuid) as commitCount, IFNULL(sum(changed_files),0) as changedFiles
-        FROM
-        issueTracker.repo_measure
-        <where>
-            <trim prefixOverrides="and">
-                <if test="developer_name != null and developer_name != '' ">
-                    and developer_name = #{developer_name}
-                </if>
-
-                <if test="repoUuidList != null and repoUuidList.size > 0">
-                    and repo_id in
-                    <foreach collection="repoUuidList" separator="," open="(" close=")" item="repo_id">
-                        #{repo_id}
-                    </foreach>
-                </if>
-
-                <if test="since != null and since != '' ">
-                    and <![CDATA[ commit_time >= #{since} ]]>
-                </if>
-
-                <if test="until != null and until != '' ">
-                    and <![CDATA[ commit_time <= #{until} ]]>
-                </if>
-            </trim>
-        </where>
-    </select>
-
 
     <select id="getRepoAge"  resultType="int">
         select IFNULL( MAX( DATEDIFF(now(),commit_time) ), 0 ) as repoAge

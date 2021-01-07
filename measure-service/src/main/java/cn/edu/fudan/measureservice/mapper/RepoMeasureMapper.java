@@ -87,7 +87,6 @@ public interface RepoMeasureMapper {
 
     List<Map<String, Object>> getCommitMsgByCondition(@Param("repo_id")String repoUuid,@Param("developer_name")String developerName,@Param("since")String since,@Param("until")String until);
 
-    Map<String, Object> getWorkLoadByCondition(@Param("repoUuidList")List<String> repoUuidList,@Param("developer_name")String developerName,@Param("since")String since,@Param("until")String until);
 
     int getRepoAge(@Param("repo_id")String repoUuid);
 
