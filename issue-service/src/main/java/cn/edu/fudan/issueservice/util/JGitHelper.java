@@ -215,7 +215,7 @@ public class JGitHelper {
         }catch (Exception e) {
             log.error(e.getMessage());
         }
-        return null;
+        return new String[0];
     }
 
     public Map<String, List<DiffEntry>> getMappedFileList(String commit) {
@@ -225,16 +225,17 @@ public class JGitHelper {
             RevCommit[] parentCommits = currCommit.getParents();
             for (RevCommit p : parentCommits) {
                 RevCommit parentCommit = revWalk.parseCommit(ObjectId.fromString(p.getName()));
-                ObjectReader reader = git.getRepository().newObjectReader();
-                CanonicalTreeParser currTreeIter = new CanonicalTreeParser();
-                currTreeIter.reset(reader, currCommit.getTree().getId());
+                try(ObjectReader reader = git.getRepository().newObjectReader()) {
+                    CanonicalTreeParser currTreeIter = new CanonicalTreeParser();
+                    currTreeIter.reset(reader, currCommit.getTree().getId());
 
-                CanonicalTreeParser parentTreeIter = new CanonicalTreeParser();
-                parentTreeIter.reset(reader, parentCommit.getTree().getId());
-                DiffFormatter diffFormatter = new DiffFormatter(DisabledOutputStream.INSTANCE);
-                diffFormatter.setRepository(git.getRepository());
-                List<DiffEntry> entries = diffFormatter.scan(currTreeIter, parentTreeIter);
-                result.put(parentCommit.getName(), entries);
+                    CanonicalTreeParser parentTreeIter = new CanonicalTreeParser();
+                    parentTreeIter.reset(reader, parentCommit.getTree().getId());
+                    DiffFormatter diffFormatter = new DiffFormatter(DisabledOutputStream.INSTANCE);
+                    diffFormatter.setRepository(git.getRepository());
+                    List<DiffEntry> entries = diffFormatter.scan(currTreeIter, parentTreeIter);
+                    result.put(parentCommit.getName(), entries);
+                }
             }
             return result;
         } catch (IOException e) {

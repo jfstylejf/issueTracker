@@ -78,6 +78,7 @@ public interface IssueService {
     /**
      *获取引入过缺陷的所有开发者姓名列表
      * @param repoUuids repoUuid list
+     * @return issueIntroducers
      */
     List<String> getIssueIntroducers(List<String> repoUuids);
 
@@ -91,6 +92,7 @@ public interface IssueService {
     /**
      * 根据query获取issuesList
      * @param query 条件
+     * @param issueFilterList issueFilterList
      * @return issuesList
      */
     Map<String, Object> getIssueFilterList(Map<String, Object> query, Map<String, Object> issueFilterList);
@@ -98,6 +100,7 @@ public interface IssueService {
      * 返回缺陷详情 由于只有open的issue才有location，所以去除solved issues
      * @param query 条件
      * @param issueFilterList 结果
+     * @return IssueFilterListWithDetail
      */
     Map<String, Object> getIssueFilterListWithDetail(Map<String, Object> query, Map<String, Object> issueFilterList);
 

@@ -42,6 +42,7 @@ public class IssueScanServiceImpl implements IssueScanService {
     private RestInterfaceManager restInvoker;
     private CommitDao commitDao;
 
+    private final String totalStr = "total";
 
     @GetResource
     @Override
@@ -180,7 +181,7 @@ public class IssueScanServiceImpl implements IssueScanService {
         //fixme 此处不应该是issue_repo表所有记录的差值的和，而应该是只看最新一条记录的差值
         notScanCommitsInfos.forEach(notScanCommitsInfo -> notScanCommitCount.addAndGet(notScanCommitsInfo.get("total_commit_count") - notScanCommitsInfo.get("scanned_commit_count")));
 
-        return new HashMap<String, Object>(8){{put("total", notScanCommitCount);}};
+        return new HashMap<String, Object>(8){{put(totalStr, notScanCommitCount);}};
     }
 
     @Override
@@ -193,7 +194,7 @@ public class IssueScanServiceImpl implements IssueScanService {
         if(isWhole){
             wholeCommits.forEach(commit -> commit.setScanned(scannedCommitList.contains(commit.getCommitId())));
             return new HashMap<String, Object>(8){{
-                put("total", wholeCommits.size());
+                put(totalStr, wholeCommits.size());
                 put("commitList", wholeCommits.subList((page - 1) * size, Math.min(page * size, wholeCommits.size())));
                 put("pageCount", wholeCommits.size() % size != 0 ? wholeCommits.size() / size + 1 : wholeCommits.size()/size);
             }};
@@ -206,7 +207,7 @@ public class IssueScanServiceImpl implements IssueScanService {
         commits.removeIf(commit -> scannedCommitList.contains(commit.getCommitId()));
 
         return new HashMap<String, Object>(8){{
-            put("total", commits.size());
+            put(totalStr, commits.size());
             put("commitList", commits.subList((page - 1) * size, Math.min(page * size, commits.size())));
             put("pageCount", commits.size() % size != 0 ? commits.size() / size + 1 : commits.size()/size);
         }};

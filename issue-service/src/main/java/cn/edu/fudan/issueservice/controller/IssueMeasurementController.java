@@ -32,13 +32,11 @@ public class IssueMeasurementController {
 
     private RestInterfaceManager restInterfaceManager;
 
-    private final String success = "success";
+    private final String success = "success", failed = "failed ";
 
-    private final String failed = "failed ";
+    private final String TOKEN = "token", repos = "repoList", sinceStr = "since", untilStr = "until";
 
-    private final String TOKEN = "token";
-
-    private final String timeError = "time format error";
+    private final String timeError = "time format error", timeErrorMessage = "The input time format error,should be yyyy-MM-dd.";
 
     @ApiOperation(value = "获取issueTypeCounts", notes = "@return List<Map.Entry<String, JSONObject>>\n[\n" +
             "        {\n" +
@@ -91,19 +89,19 @@ public class IssueMeasurementController {
                                             @RequestParam(value = "manual_status",required = false, defaultValue = "Default")String manualStatus,
                                             @RequestParam(value = "tool", required = false, defaultValue = "sonarqube") String tool) {
         if(timeError.equals(DateTimeUtil.timeFormatIsLegal(since, false)) || timeError.equals(DateTimeUtil.timeFormatIsLegal(until, true))){
-            return new ResponseBean<>(400, "The input time format error,should be yyyy-MM-dd.", null);
+            return new ResponseBean<>(400, timeErrorMessage, null);
         }
 
         Map<String, Object> query = new HashMap<>(10);
 
-        query.put("repoList", repoUuid == null ? null : new ArrayList<String>(){{add(repoUuid);}});
+        query.put(repos, repoUuid == null ? null : new ArrayList<String>(){{add(repoUuid);}});
         query.put("developer", developer);
         query.put("tool", tool);
         query.put("manual_status", manualStatus);
 
         try {
-            query.put("since", since != null ? since : restInterfaceManager.getFirstCommitDate(developer));
-            query.put("until", until != null ? until : LocalDate.now().toString());
+            query.put(sinceStr, since != null ? since : restInterfaceManager.getFirstCommitDate(developer));
+            query.put(untilStr, until != null ? until : LocalDate.now().toString());
             return new ResponseBean<>(200, success, issueMeasureInfoService.getDayAvgSolvedIssue(query));
         } catch (Exception e) {
             e.printStackTrace();
@@ -151,9 +149,9 @@ public class IssueMeasurementController {
         List<String> repoList = SegmentationUtil.splitStringList(repoUuids);
         //init query
         Map<String, Object> query = new HashMap<>(18);
-        query.put("repoList", repoList);
-        query.put("since", since);
-        query.put("until", until);
+        query.put(repos, repoList);
+        query.put(sinceStr, since);
+        query.put(untilStr, until);
         query.put("tool", tool);
         //check need detail or just number info
         try {
@@ -204,14 +202,14 @@ public class IssueMeasurementController {
         Map<String, Object> query = new HashMap<>(10);
 
         if(timeError.equals(DateTimeUtil.timeFormatIsLegal(since, false)) || timeError.equals(DateTimeUtil.timeFormatIsLegal(until, true))){
-            return new ResponseBean<>(400, "The input time format error,should be yyyy-MM-dd.", null);
+            return new ResponseBean<>(400, timeErrorMessage, null);
         }
 
-        query.put("since", since);
-        query.put("until", until);
+        query.put(sinceStr, since);
+        query.put(untilStr, until);
         query.put("developer", developer);
         query.put("tool", tool);
-        query.put("repoList", repoList);
+        query.put(repos, repoList);
         query.put("manual_status", manualStatus);
 
         try {
@@ -255,7 +253,7 @@ public class IssueMeasurementController {
         Map<String, Object> query = new HashMap<>(10);
 
         if(timeError.equals(DateTimeUtil.timeFormatIsLegal(since, false)) || timeError.equals(DateTimeUtil.timeFormatIsLegal(until, true))){
-            return new ResponseBean<>(400, "The input time format error,should be yyyy-MM-dd.", null);
+            return new ResponseBean<>(400, timeErrorMessage, null);
         }
         if (StringUtils.isEmpty(until)) {
             until = DateTimeUtil.timeFormatIsLegal(until, true);
@@ -263,11 +261,11 @@ public class IssueMeasurementController {
         List<String> repoList = SegmentationUtil.splitStringList(repoUuids);
         List<String> producerList = SegmentationUtil.splitStringList(developers);
 
-        query.put("since", since);
-        query.put("until", until);
+        query.put(sinceStr, since);
+        query.put(untilStr, until);
         query.put("producerList", producerList);
         query.put("tool", tool);
-        query.put("repoList", repoList);
+        query.put(repos, repoList);
 
         try {
             return new ResponseBean<>(200, success, issueMeasureInfoService.getSelfIntroducedLivingIssueCount(page, ps, order, isAsc, query));

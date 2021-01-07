@@ -15,14 +15,16 @@ public class FileUtil {
 
     private static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().contains("win");
 
+    private static final String JSON_STR = ".json", CODE_SOURCE_ERROR_MESSAGE = "get code source failed ! file is ---> {}";
+
     public static String getEsLintReportAbsolutePath(String resultFileHome, String repoUuid, String commit){
-        return IS_WINDOWS ? resultFileHome + "\\eslint-report_" + repoUuid + "_" + commit + ".json"
-                : resultFileHome + "/eslint-report_" + repoUuid + "_" + commit + ".json";
+        return IS_WINDOWS ? resultFileHome + "\\eslint-report_" + repoUuid + "_" + commit + JSON_STR
+                : resultFileHome + "/eslint-report_" + repoUuid + "_" + commit + JSON_STR;
     }
 
     public static String getEsLintAstReportAbsolutePath(String resultFileHome, String fileName) {
-        return IS_WINDOWS ? resultFileHome + "\\ast-report" + fileName + ".json"
-                : resultFileHome + "/ast-report" + fileName + ".json";
+        return IS_WINDOWS ? resultFileHome + "\\ast-report" + fileName + JSON_STR
+                : resultFileHome + "/ast-report" + fileName + JSON_STR;
     }
 
     public static String handleFileNameToRelativePath(String filePath) {
@@ -51,7 +53,7 @@ public class FileUtil {
             }
             return code.toString().replaceAll("\\/\\/[^\\n]*|\\/\\*([^\\*^\\/]*|[\\*^\\/*]*|[^\\**\\/]*)*\\*\\/", "");
         }catch (IOException e){
-            log.error("get code source failed ! file is ---> {}", filePath);
+            log.error(CODE_SOURCE_ERROR_MESSAGE, filePath);
             return null;
         }
     }
@@ -86,7 +88,7 @@ public class FileUtil {
             }
             return code.substring(0, code.indexOf(")") + 1);
         }catch (IOException e){
-            log.error("get code source failed ! file is ---> {}", codePath);
+            log.error(CODE_SOURCE_ERROR_MESSAGE, codePath);
             return null;
         }
     }
@@ -122,7 +124,7 @@ public class FileUtil {
             }
             return code.toString().replaceAll("\\/\\/[^\\n]*|\\/\\*([^\\*^\\/]*|[\\*^\\/*]*|[^\\**\\/]*)*\\*\\/", "");
         }catch (IOException e){
-            log.error("get code source failed ! file is ---> {}", filePath);
+            log.error(CODE_SOURCE_ERROR_MESSAGE, filePath);
             return null;
         }
     }
