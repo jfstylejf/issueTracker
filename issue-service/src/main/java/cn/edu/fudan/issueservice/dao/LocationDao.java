@@ -40,4 +40,8 @@ public class LocationDao {
     public List<Map<String, Object>> getLocationsByRawIssueUuid(String uuid) {
         return locationMapper.getLocationsByRawIssueUuid(uuid);
     }
+
+    public List<String> getRawIssueUuidsByMethodName(String methodName, String filePath) {
+        return locationMapper.getRawIssueUuidsByMethodName(methodName, filePath);
+    }
 }

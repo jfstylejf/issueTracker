@@ -35,9 +35,7 @@ public class IssueOuterController {
 
     private RestInterfaceManager restInterfaceManager;
 
-    private final String success = "success";
-
-    private final String failed = "failed ";
+    private final String success = "success", failed = "failed ";
 
     private final String TOKEN = "token";
 

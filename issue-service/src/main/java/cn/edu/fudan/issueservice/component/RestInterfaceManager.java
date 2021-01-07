@@ -40,6 +40,8 @@ public class RestInterfaceManager {
     private String sonarServicePath;
     @Value("${measure.service.path}")
     private String measureServicePath;
+    @Value("${code.tracker.path}")
+    private String codeTrackerServicePath;
     @Value("${test.repo.path}")
     private String testProjectPath;
 
@@ -59,11 +61,6 @@ public class RestInterfaceManager {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    public List<String> getAccountIds() {
-        return restTemplate.getForObject(accountServicePath + "/user/accountIds", List.class);
-    }
-
     public List<String> getDeveloperInRepo(String repoUuids, String since, String until) {
         List<String> developers = new ArrayList<>();
         String url = since == null ? accountServicePath + "/user/developers?repo_uuids=" + repoUuids + "&is_whole=true" :
@@ -79,14 +76,6 @@ public class RestInterfaceManager {
     }
 
     //-----------------------------------------------project service-------------------------------------------------
-    /**
-     * 根据account_id查找参与的项目信息
-     * @param accountId 用户登录帐号Id
-     * @return  参与的项目信息
-     */
-    public JSONArray getProjectList(String accountId) {
-         return restTemplate.getForObject(projectServicePath + "/inner/projects?account_uuid=" + accountId,JSONArray.class);
-    }
 
     /**
      * 根据repo_uuid查找对应的project
@@ -395,5 +384,11 @@ public class RestInterfaceManager {
         }
 
         return developerWorkLoad;
+    }
+
+    // --------------------------------------------------------codeTracker api ---------------------------------------------------------
+
+    public JSONObject getMethodTraceHistory(String meteUuid){
+        return restTemplate.getForObject(codeTrackerServicePath + "/history/issue/method/meta?meta_uuid=" + meteUuid, JSONObject.class);
     }
 }

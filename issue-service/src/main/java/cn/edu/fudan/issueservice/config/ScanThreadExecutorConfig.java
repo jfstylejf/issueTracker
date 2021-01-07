@@ -8,10 +8,12 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
 
+/**
+ * @author Beethoven
+ */
 @Slf4j
 @Configuration
 @EnableAsync
@@ -154,15 +156,6 @@ public class ScanThreadExecutorConfig {
         }
     }
 
-    public static boolean judgeIsHaveCommitList(String repoId, String toolName) {
-        boolean result = false;
-        String key = repoId + "-" + toolName;
-        if (needToScanCommitLists.get (key) != null) {
-            result = true;
-        }
-        return result;
-    }
-
     public static void delRepoUpdateStatus(String repoId, String toolName) {
         //目前因为主线程是唯一的所以这一步只做简单的重复判断。
         String key = repoId + "-" + toolName;
@@ -180,17 +173,6 @@ public class ScanThreadExecutorConfig {
         return false;
     }
 
-
-
-    public static String getLastCommitIdFromCommitList(String repoId, String toolName) {
-        String result = null;
-        String key = repoId + "-" + toolName;
-        ConcurrentLinkedDeque<String> commitList = needToScanCommitLists.get (key);
-        if (commitList != null) {
-            result = commitList.getLast ();
-        }
-        return result;
-    }
 }
 
 

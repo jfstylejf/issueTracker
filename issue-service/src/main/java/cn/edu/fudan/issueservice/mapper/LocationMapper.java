@@ -37,4 +37,12 @@ public interface LocationMapper {
      * @return locations
      */
     List<Map<String, Object>> getLocationsByRawIssueUuid(String uuid);
+
+    /**
+     * 获取某个方法的rawIssueUuids
+     * @param methodName methodName
+     * @param filePath filePath
+     * @return 某个方法的rawIssueUuids
+     */
+    List<String> getRawIssueUuidsByMethodName(String methodName, String filePath);
 }

@@ -221,4 +221,8 @@
         </where>
         ORDER BY b.commit_time DESC LIMIT 1
     </select>
+
+    <select id="getCommitByRawIssueUuid" parameterType="String" resultType="String">
+        SELECT commit_id from rawIssue where uuid = #{rawIssueUuid}
+    </select>
 </mapper>
