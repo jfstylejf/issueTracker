@@ -409,7 +409,7 @@ public class ProjectControlServiceImpl implements ProjectControlService {
             log.error("measure repo delete failed!");
         }
 
-        boolean deleteScanRepoSucess = rest.deleteScanRepo(repoUuid);
+        boolean deleteScanRepoSucess = rest.deleteScanRepo(token, repoUuid);
         if(!deleteScanRepoSucess){
             log.error("scan repo delete failed!");
         }
