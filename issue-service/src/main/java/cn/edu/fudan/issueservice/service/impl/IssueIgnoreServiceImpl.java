@@ -1,6 +1,5 @@
 package cn.edu.fudan.issueservice.service.impl;
 
-
 import cn.edu.fudan.issueservice.dao.IssueDao;
 import cn.edu.fudan.issueservice.dao.IssueIgnoreDao;
 import cn.edu.fudan.issueservice.domain.dbo.IgnoreRecord;
@@ -11,9 +10,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 
 /**

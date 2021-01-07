@@ -44,6 +44,7 @@ public class RestInterfaceManager {
     private String testProjectPath;
 
     private final RestTemplate restTemplate;
+    private final String projectNameStr = "projectName", repoNameStr = "repoName", repoUuidStr = "repoUuid", tokenStr = "token";
 
     public RestInterfaceManager(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
@@ -99,10 +100,10 @@ public class RestInterfaceManager {
         Map<String,String> result = new HashMap<>(8);
 
         if(projectInfo != null) {
-            result.put("projectName", projectInfo.getString("projectName"));
-            result.put("repoName", projectInfo.getString("repoName"));
+            result.put(projectNameStr, projectInfo.getString(projectNameStr));
+            result.put(repoNameStr, projectInfo.getString(repoNameStr));
             result.put("branch", projectInfo.getString("branch"));
-            result.put("repoUuid", projectInfo.getString("repoUuid"));
+            result.put(repoUuidStr, projectInfo.getString(repoUuidStr));
         }
 
         return result;
@@ -116,7 +117,7 @@ public class RestInterfaceManager {
     public JSONObject getAllRepo(String userToken){
 
         HttpHeaders headers = new HttpHeaders();
-        headers.add("token", userToken);
+        headers.add(tokenStr, userToken);
         HttpEntity<HttpHeaders> request = new HttpEntity<>(headers);
         ResponseEntity<JSONObject> responseEntity = restTemplate.exchange(projectServicePath  + "/project/all",HttpMethod.GET,request,JSONObject.class);
         String body = Objects.requireNonNull(responseEntity.getBody()).toString();
@@ -147,8 +148,8 @@ public class RestInterfaceManager {
             while (iterator.hasNext()){
                 JSONObject next = (JSONObject) iterator.next();
                 projectName.put(next.getString("repo_id"), new HashMap<String, String>(4){{
-                    put("repoName", next.getString("name"));
-                    put("projectName", repo);
+                    put(repoNameStr, next.getString("name"));
+                    put(projectNameStr, repo);
                 }});
             }
         }
@@ -169,7 +170,7 @@ public class RestInterfaceManager {
         }
 
         HttpHeaders headers = new HttpHeaders();
-        headers.add("token", userToken);
+        headers.add(tokenStr, userToken);
         HttpEntity<HttpHeaders> request = new HttpEntity<>(headers);
         ResponseEntity<JSONObject> responseEntity = restTemplate.exchange(projectServicePath  + "/project",HttpMethod.GET,request,JSONObject.class);
         String body = Objects.requireNonNull(responseEntity.getBody()).toString();
@@ -179,7 +180,7 @@ public class RestInterfaceManager {
         for(int i = 0;i < reposDetail.size();i++){
             JSONObject repoDetail = reposDetail.getJSONObject(i);
             if(url.equals(repoDetail.get("url").toString())){
-                return repoDetail.get("repoUuid").toString();
+                return repoDetail.get(repoUuidStr).toString();
             }
         }
 
@@ -313,7 +314,7 @@ public class RestInterfaceManager {
 
         try {
             ResponseEntity<JSONObject> entity = restTemplate.getForEntity(url, JSONObject.class,map);
-            return JSONObject.parseObject(entity.getBody().toString());
+            return JSONObject.parseObject(Objects.requireNonNull(entity.getBody()).toString());
         }catch (RuntimeException e) {
             logger.error("repo name : {}  ----> request sonar api failed", repoName);
             throw e;
@@ -369,7 +370,7 @@ public class RestInterfaceManager {
     public Map<String, Integer> getDeveloperWorkload(Map<String, Object> query){
 
         HttpEntity<HttpHeaders> request = new HttpEntity<>(new HttpHeaders(){{
-            add("token",null);
+            add(tokenStr,null);
         }});
 
         String url = measureServicePath + "/measure/developer/work-load?developer=" +
@@ -381,6 +382,7 @@ public class RestInterfaceManager {
         ResponseEntity<JSONObject> responseEntity = restTemplate.exchange(url , HttpMethod.GET,request,JSONObject.class);
         JSONObject body = responseEntity.getBody();
 
+        assert body != null;
         if(body.getIntValue("code") != 200){
             logger.error("request /measure/developer/workLoad failed");
             throw  new RuntimeException("get data from /measure/developer/work-load failed!");

@@ -10,8 +10,8 @@ import java.util.List;
 public interface IssueIgnoreService {
     /**
      * 插入IssueIgnore记录
-     * @param list
-     * @return
+     * @param list ignore record list
+     * @return String
      */
     String insertIssueIgnoreRecords(List<IgnoreRecord> list);
 

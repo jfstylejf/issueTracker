@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author wjzho
@@ -22,42 +23,9 @@ public class MeasureDao {
 
 
     public DeveloperWorkLoad getDeveloperWorkLoadData(Query query) {
-
-        DeveloperWorkLoad developerWorkLoad = measureMapper.getDeveloperWorkLoad(query.getRepoUuidList(),query.getDeveloper(),query.getSince(),query.getUntil());
-        return null;
+        return measureMapper.getDeveloperWorkLoad(query.getRepoUuidList(),query.getDeveloper(),query.getSince(),query.getUntil());
     }
 
-    /**
-     * 获取开发者个人新增物理行
-     * @Param query 查询条件
-     * @return int developerAddLine
-     */
-    public int getDeveloperAddLine (Query query) {
-        return measureMapper.getDeveloperAddLines(query.getRepoUuidList().get(0),query.getSince(),query.getUntil(),query.getDeveloper());
-    }
-
-    /**
-     * 获取相应的物理行数据
-     * @param query 查询条件
-     * @return int Loc
-     */
-    public int getLocByCondition(Query query) {
-        return measureMapper.getLocByCondition(query.getRepoUuidList(),query.getDeveloper(),query.getSince(),query.getUntil());
-    }
-
-    /**
-     * 获取MeasureInfo中开发者物理行数
-     * @param query 查询条件
-     * @return Map<String,Object> key : developerLoc, totalLoc
-     */
-    public Map<String,Object> getDeveloperLocByCondition(Query query) {
-        Map<String,Object> map = new HashMap<>(4);
-        int developerLoc = measureMapper.getLocByCondition(query.getRepoUuidList(),query.getDeveloper(),query.getSince(),query.getUntil());
-        int totalLoc = measureMapper.getLocByCondition(query.getRepoUuidList(),null,query.getSince(),query.getUntil());
-        map.put("developerLoc",developerLoc);
-        map.put("totalLoc",totalLoc);
-        return map;
-    }
 
     /**
      * 获取相应的commit提交次数数据

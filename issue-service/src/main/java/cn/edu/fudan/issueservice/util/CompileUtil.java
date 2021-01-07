@@ -28,30 +28,30 @@ public class CompileUtil {
     private static int compileMaxWaitTime;
 
     @Value("${mvnHome}")
-    public void setMvnHome(String mvnHome) {
+    public static void setMvnHome(String mvnHome) {
         CompileUtil.mvnHome = mvnHome;
     }
 
     @Value("${gradleBin}")
-    public void setGradleBin(String gradleBin) {
+    public static void setGradleBin(String gradleBin) {
         CompileUtil.gradleBin = gradleBin;
     }
 
     @Value("${compile.maxWaitTime}")
-    public void setCompileMaxWaitTime(int compileMaxWaitTime) {
+    public static void setCompileMaxWaitTime(int compileMaxWaitTime) {
         CompileUtil.compileMaxWaitTime = compileMaxWaitTime;
     }
 
     private static final String[] VAR = {"compile", "-Dmaven.test.skip=true", "-ff",
             "-B", "-q", "-l /dev/null", "-Dmaven.compile.fork=true","-T 2C"};
 
-    private static List<String> var = java.util.Arrays.asList(VAR);
+    private static final List<String> var = java.util.Arrays.asList(VAR);
 
     private static class CompileThread extends Thread implements Runnable {
 
-        private Invoker invoker;
+        private final Invoker invoker;
 
-        private InvocationRequest invocationRequest;
+        private final InvocationRequest invocationRequest;
         //2表示等待执行结果,0成功编译,1编译失败
         public int compileSuccess = 2;
 
@@ -156,7 +156,7 @@ public class CompileUtil {
         new DirExplorer((level, path, file) -> (file.isFile() && isContainsCompileFile(path)),
                 (level, path, file) -> pathList.add(file.getAbsolutePath())).explore(repoFile);
         if (pathList.size() == 0) {
-            return null;
+            return new ArrayList<>();
         }
         return pathList;
     }

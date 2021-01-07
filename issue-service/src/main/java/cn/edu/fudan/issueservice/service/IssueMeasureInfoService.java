@@ -1,6 +1,5 @@
 package cn.edu.fudan.issueservice.service;
 
-
 import cn.edu.fudan.issueservice.util.PagedGridResult;
 import com.alibaba.fastjson.JSONObject;
 
@@ -75,10 +74,12 @@ public interface IssueMeasureInfoService {
     PagedGridResult getSelfIntroducedLivingIssueCount(int page, int ps, String order, Boolean isAsc, Map<String, Object> query);
 
     /**
-     * 对lifecycle排序
+     * handleSortDeveloperLifecycle
      * @param developersLifecycle developersLifecycle
      * @param isAsc isAsc
-     * @return 排序后
+     * @param ps ps
+     * @param page page
+     * @return 排序后developersLifecycle
      */
     List<Map<String, JSONObject>> handleSortDeveloperLifecycle(List<Map<String, JSONObject>> developersLifecycle, Boolean isAsc, int ps, int page);
 }

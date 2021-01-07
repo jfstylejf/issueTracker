@@ -7,13 +7,10 @@ import cn.edu.fudan.issueservice.domain.dto.RawIssueMatchResult;
 import cn.edu.fudan.issueservice.util.CosineUtil;
 import cn.edu.fudan.issueservice.util.JGitHelper;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static cn.edu.fudan.issueservice.util.CosineUtil.lexer;
 
 /**
  * @author fancying
@@ -33,8 +30,8 @@ public class RawIssueMatcher {
         List<Location> locations1 = rawIssue1.getLocations();
         List<Location> locations2 = rawIssue2.getLocations();
 
-        int max = locations1.size() > locations2.size() ? locations1.size() : locations2.size();
-        int min = locations1.size() > locations2.size() ? locations2.size() : locations1.size();
+        int max = Math.max(locations1.size(), locations2.size());
+        int min = Math.min(locations1.size(), locations2.size());
         // locations 的个数不一样 快速判断是不是同一个 raw issue  先设置一半
         // location 的个数必不为0
         if (max >= min + min) {
@@ -96,7 +93,7 @@ public class RawIssueMatcher {
         }
 
         // 必须 75% 的location相同才认为是同一个raw issue
-        min = mappedNum < mappedLocations.size() ? mappedNum : mappedLocations.size();
+        min = Math.min(mappedNum, mappedLocations.size());
         double overlap = (double) min / max;
         if (overlap >= SIMILARITY_LOCATION_LIMIT) {
             matchDegree = matchDegree / mappedNum;
@@ -113,8 +110,8 @@ public class RawIssueMatcher {
         String methodName2 = location2.getMethod_name();
         boolean method1Empty = StringUtils.isEmpty(methodName1);
 
-        int minOffset = location1.getOffset() < location2.getOffset() ? location1.getOffset() : location2.getOffset();
-        int maxOffset = location1.getOffset() > location2.getOffset() ? location1.getOffset() : location2.getOffset();
+        int minOffset = Math.min(location1.getOffset(), location2.getOffset());
+        int maxOffset = Math.max(location1.getOffset(), location2.getOffset());
 
         double result = 0.7 * tokenSimilarity + 0.1 * minOffset / maxOffset;
         if (!method1Empty && methodName1.equals(methodName2)) {

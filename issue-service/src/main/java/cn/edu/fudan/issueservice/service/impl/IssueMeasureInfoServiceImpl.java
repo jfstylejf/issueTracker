@@ -33,7 +33,7 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
 
     private RestInterfaceManager restInterfaceManager;
 
-    private final String repoList = "repoList";
+    private final String repoList = "repoList", developerStr = "developer", solvedIssueCountStr = "solvedIssueCount", quantityStr = "quantity";
 
     @Override
     public List<Map.Entry<String, JSONObject>> getNotSolvedIssueCountByToolAndRepoUuid(List<String> repoUuids, String tool, String order, String commitUuid) {
@@ -71,16 +71,16 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
     @Override
     public Map<String,Object> getDayAvgSolvedIssue(Map<String, Object> query) {
 
-        String developer = query.get("developer").toString();
+        String developer = query.get(developerStr).toString();
 
         JSONObject developerDetail = getDeveloperCodeQuality(query, false).get(developer);
 
         double days = (DateTimeUtil.stringToLocalDate(query.get("until").toString()).toEpochDay() - DateTimeUtil.stringToLocalDate(query.get("since").toString()).toEpochDay()) * 5.0 / 7;
 
         return new HashMap<String, Object>(6){{
-            put("solvedIssuesCount", developerDetail.getInteger("solvedIssueCount"));
+            put("solvedIssuesCount", developerDetail.getInteger(solvedIssueCountStr));
             put("days", days);
-            put("dayAvgSolvedIssue", developerDetail.getInteger("solvedIssueCount") / days);
+            put("dayAvgSolvedIssue", developerDetail.getInteger(solvedIssueCountStr) / days);
         }};
     }
 
@@ -101,10 +101,10 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
 
         developerWorkload.keySet().forEach(r -> {
             query.put("solver", null);
-            query.put("developer", r);
+            query.put(developerStr, r);
             int developerAddIssueCount = issueDao.getIssueFilterListCount(query);
 
-            query.put("developer", null);
+            query.put(developerStr, null);
             query.put("solver", r);
             int developerSolvedIssueCount = issueDao.getSolvedIssueFilterListCount(query);
 
@@ -114,7 +114,7 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
 
             developersDetail.put(r, new JSONObject(){{
             put("addedIssueCount", developerAddIssueCount);
-            put("solvedIssueCount", developerSolvedIssueCount);
+            put(solvedIssueCountStr, developerSolvedIssueCount);
             put("loc", developerWorkload.get(r));
             put("addQuality", developerWorkload.get(r) == 0 ? 0 : developerAddIssueCount * 100.0 / developerWorkload.get(r));
             put("solveQuality", developerWorkload.get(r) == 0 ? 0 : developerSolvedIssueCount * 100.0 / developerWorkload.get(r));
@@ -151,7 +151,7 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
     private JSONObject handleIssuesLifeCycle(List<Integer> issuesLifeCycle) {
         if(issuesLifeCycle == null || issuesLifeCycle.size() == 0){
             return new JSONObject(){{
-                put("quantity", 0);
+                put(quantityStr, 0);
                 put("min", 0);
                 put("max", 0);
                 put("mid", 0);
@@ -159,7 +159,7 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
         }
         issuesLifeCycle.sort(Comparator.comparingInt(o -> o));
         return new JSONObject(){{
-            put("quantity", issuesLifeCycle.size());
+            put(quantityStr, issuesLifeCycle.size());
             put("min", issuesLifeCycle.get(0));
             put("max", issuesLifeCycle.get(issuesLifeCycle.size() - 1));
             put("mid", issuesLifeCycle.get(issuesLifeCycle.size() / 2));
@@ -220,11 +220,11 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
             int num1 = 0, num2 = 0;
             for(String name : o1.keySet()){
                 JSONObject detail = (JSONObject) o1.get(name);
-                num1 += detail.getIntValue("quantity");
+                num1 += detail.getIntValue(quantityStr);
             }
             for(String name : o2.keySet()){
                 JSONObject detail = (JSONObject) o2.get(name);
-                num2 += detail.getIntValue("quantity");
+                num2 += detail.getIntValue(quantityStr);
             }
             return isAsc ? num1 - num2 : num2 - num1;
         });

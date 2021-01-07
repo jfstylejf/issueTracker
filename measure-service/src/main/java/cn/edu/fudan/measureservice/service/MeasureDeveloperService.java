@@ -58,7 +58,7 @@ public class MeasureDeveloperService {
      */
     @SuppressWarnings("unchecked")
     public List<DeveloperWorkLoad> getDeveloperWorkLoad(Query query , List<String> developers) {
-        List<DeveloperWorkLoad> developerWorkLoad = new ArrayList<>();
+        List<DeveloperWorkLoad> developerWorkLoadList = new ArrayList<>();
         List<String> developerList = new ArrayList<>();
         if(query.getDeveloper()!=null && !"".equals(query.getDeveloper())) {
             developerList.add(query.getDeveloper());
@@ -72,16 +72,13 @@ public class MeasureDeveloperService {
                 continue;
             }
             // fixme 通过measureDao来获取数据
-            //DeveloperWorkLoad developerWorkLoad1 = measureDao.getDeveloperWorkLoadData(query);
-            Map<String, Object> workLoadList = repoMeasureMapper.getWorkLoadByCondition(query.getRepoUuidList(), member, query.getSince(), query.getUntil());
-            int addLines = getFixedTypeByMapper(workLoadList.get("addLines"));
-            int delLines = getFixedTypeByMapper(workLoadList.get("delLines"));
-            int commitCount = getFixedTypeByMapper(workLoadList.get("commitCount"));
-            int changedFiles = getFixedTypeByMapper(workLoadList.get("changedFiles"));
-            int totalLoc = addLines + delLines;
-            developerWorkLoad.add(new DeveloperWorkLoad(member,addLines,delLines,totalLoc,commitCount,changedFiles));
+            query.setDeveloper(member);
+            DeveloperWorkLoad developerWorkLoad = measureDao.getDeveloperWorkLoadData(query);
+            developerWorkLoad.setDeveloperName(member);
+            developerWorkLoad.setTotalLoc(developerWorkLoad.getAddLines() + developerWorkLoad.getDelLines());
+            developerWorkLoadList.add(developerWorkLoad);
         }
-        return developerWorkLoad;
+        return developerWorkLoadList;
     }
 
     private int getFixedTypeByMapper(Object object) {
@@ -138,10 +135,12 @@ public class MeasureDeveloperService {
         //提交频率指标
         int totalCommitCount = repoMeasureMapper.getCommitCountsByDuration(repoUuid, query.getSince(), query.getUntil(), null);
         int developerCommitCount = repoMeasureMapper.getCommitCountsByDuration(repoUuid, query.getSince(), query.getUntil(), query.getDeveloper());
-        //代码量指标
+        // fixme 代码量指标 全部从repository中拿
         Query query1 = new Query(query.getToken(),query.getSince(),query.getUntil(),null,query.getRepoUuidList());
-        int developerLOC = measureDao.getLocByCondition(query);
-        int totalLOC = measureDao.getLocByCondition(query1);
+        DeveloperWorkLoad developerWorkLoad = measureDao.getDeveloperWorkLoadData(query);
+        DeveloperWorkLoad developerWorkLoad1 = measureDao.getDeveloperWorkLoadData(query1);
+        int developerLOC = developerWorkLoad.getAddLines() + developerWorkLoad.getDelLines();
+        int totalLOC = developerWorkLoad1.getAddLines() + developerWorkLoad1.getDelLines();
         //获取代码新增、删除逻辑行数数据
         JSONObject allDeveloperStatements = restInterfaceManager.getStatements(repoUuid,query.getSince(),query.getUntil(),"");
         int developerAddStatement = 0;

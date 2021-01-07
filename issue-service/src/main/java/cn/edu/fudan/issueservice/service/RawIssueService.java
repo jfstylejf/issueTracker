@@ -1,8 +1,5 @@
 package cn.edu.fudan.issueservice.service;
 
-import cn.edu.fudan.issueservice.domain.dbo.Location;
-import cn.edu.fudan.issueservice.domain.dbo.RawIssue;
-
 import java.util.List;
 import java.util.Map;
 

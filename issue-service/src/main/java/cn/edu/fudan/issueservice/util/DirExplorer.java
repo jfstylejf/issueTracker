@@ -14,6 +14,8 @@ import java.util.Objects;
  **/
 public class DirExplorer {
 
+    private final static String TARGET_STR = "target";
+
     public interface Filter {
         boolean filter(int level, String path, File file);
     }
@@ -22,8 +24,8 @@ public class DirExplorer {
         void handle(int level, String path, File file);
     }
 
-    private Filter filter;
-    private FileHandler fileHandler;
+    private final Filter filter;
+    private final FileHandler fileHandler;
 
     public DirExplorer(Filter filter, FileHandler fileHandler) {
         this.filter = filter;
@@ -35,8 +37,8 @@ public class DirExplorer {
     }
 
     private void explore(int level, String path, File file) {
-        if (file.isDirectory() && file.listFiles() != null && file.listFiles().length > 0) {
-            for (File child : file.listFiles()) {
+        if (file.isDirectory() && file.listFiles() != null && Objects.requireNonNull(file.listFiles()).length > 0) {
+            for (File child : Objects.requireNonNull(file.listFiles())) {
                 explore(level + 1, path + "/" + child.getName(), child);
             }
         } else {
@@ -44,20 +46,6 @@ public class DirExplorer {
                 fileHandler.handle(level, path, file);
             }
         }
-    }
-
-    /**
-     * 给一个文件名，输出某个目录下所有同名文件的全路径
-     * @param fileName 文件名 需要带上文件的后缀 如 a.java b.xml
-     * @param dir 文件路径
-     * @return 与fileName同名的所有文件路径
-     */
-    public static List<String> findSameNameFile(String fileName, String dir) {
-        File fileDir = new File(dir);
-        List<String> pathList = new ArrayList<>();
-        new DirExplorer((level, path, file) -> path.endsWith(fileName),
-                (level, path, file) -> pathList.add(file.getAbsolutePath())).explore(fileDir);
-        return pathList;
     }
 
     public void exploreDir(File root) {
@@ -74,18 +62,16 @@ public class DirExplorer {
                     exploreDir(level + 1, path + "/" + child.getName(), child);
                 }
             }
-
         }
-
     }
 
     public static void deleteRedundantTarget(String repoPath) {
         new DirExplorer ((level, path, file) ->
         {
-            if(file.getAbsolutePath().endsWith("target")){
+            if(file.getAbsolutePath().endsWith(TARGET_STR)){
                 String filePath = file.getAbsolutePath();
-                String pomPath = filePath.substring (0, filePath.indexOf ("target"))  + "pom.xml";
-                String srcPath = filePath.substring (0, filePath.indexOf ("target"))  + "src";
+                String pomPath = filePath.substring (0, filePath.indexOf (TARGET_STR))  + "pom.xml";
+                String srcPath = filePath.substring (0, filePath.indexOf (TARGET_STR))  + "src";
                 File pomFile = new File (pomPath);
                 File srcFile = new File (srcPath);
                 return !pomFile.exists () || !srcFile.exists ();
@@ -114,10 +100,4 @@ public class DirExplorer {
             }
         }
     }
-
-
-    public static void main(String[] args) {
-        deleteRedundantTarget("E:\\school\\laboratory\\IssueTracker-main\\IssueTracker-Master");
-    }
-
 }
