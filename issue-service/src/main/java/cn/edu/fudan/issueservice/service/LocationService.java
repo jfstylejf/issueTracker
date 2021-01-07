@@ -10,7 +10,8 @@ public interface LocationService {
     /**
      * 方法追溯页面追溯链
      * @param metaUuid metaUuid
+     * @param token token
      * @return 方法追溯页面追溯链
      */
-    JSONObject getMethodTraceHistory(String metaUuid);
+    JSONObject getMethodTraceHistory(String metaUuid, String token);
 }

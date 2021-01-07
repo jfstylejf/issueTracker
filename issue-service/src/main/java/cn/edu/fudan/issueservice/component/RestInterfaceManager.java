@@ -388,7 +388,10 @@ public class RestInterfaceManager {
 
     // --------------------------------------------------------codeTracker api ---------------------------------------------------------
 
-    public JSONObject getMethodTraceHistory(String meteUuid){
-        return restTemplate.getForObject(codeTrackerServicePath + "/history/issue/method/meta?meta_uuid=" + meteUuid, JSONObject.class);
+    public JSONObject getMethodTraceHistory(String meteUuid, String token){
+        HttpEntity<HttpHeaders> request = new HttpEntity<>(new HttpHeaders(){{
+            add(tokenStr,token);
+        }});
+        return Objects.requireNonNull(restTemplate.exchange(codeTrackerServicePath + "/history/issue/method/meta?meta_uuid=" + meteUuid + "&level=METHOD", HttpMethod.GET, request, JSONObject.class).getBody()).getJSONObject("data");
     }
 }

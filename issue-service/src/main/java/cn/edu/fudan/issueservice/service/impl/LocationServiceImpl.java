@@ -24,16 +24,16 @@ public class LocationServiceImpl implements LocationService {
     private RestInterfaceManager restInterfaceManager;
 
     @Override
-    public JSONObject getMethodTraceHistory(String metaUuid) {
+    public JSONObject getMethodTraceHistory(String metaUuid, String token) {
 
-        JSONObject methodTraceHistory = restInterfaceManager.getMethodTraceHistory(metaUuid);
+        JSONObject methodTraceHistory = restInterfaceManager.getMethodTraceHistory(metaUuid, token);
         JSONArray commitInfoList = methodTraceHistory.getJSONArray("commitInfoList");
 
         Iterator<Object> iterator = commitInfoList.stream().iterator();
         while(iterator.hasNext()){
             JSONObject commitInfo = (JSONObject) iterator.next();
             List<String> rawIssueUuids = locationDao.getRawIssueUuidsByMethodName(commitInfo.getString("signature"), commitInfo.getString("filePath"));
-            rawIssueUuids.removeIf(rawIssueUuid -> commitInfo.getString("commitId").equals(rawIssueDao.getCommitByRawIssueUuid(rawIssueUuid)));
+            rawIssueUuids.removeIf(rawIssueUuid -> !commitInfo.getString("commitId").equals(rawIssueDao.getCommitByRawIssueUuid(rawIssueUuid)));
             if(rawIssueUuids.size() == 0) {
                 iterator.remove();
             }else{
