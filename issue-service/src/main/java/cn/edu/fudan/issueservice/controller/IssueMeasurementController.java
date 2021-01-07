@@ -159,7 +159,7 @@ public class IssueMeasurementController {
         try {
             if(percent == numberInfo) {
                 List<Map<String, JSONObject>> developersLifecycle = new ArrayList<>();
-                 List<String> developers = isAsc != null ? restInterfaceManager.getDeveloperInRepo(repoUuids, since, until) : SegmentationUtil.splitStringList(developer);
+                List<String> developers = isAsc != null ? restInterfaceManager.getDeveloperInRepo(repoUuids, since, until) : SegmentationUtil.splitStringList(developer);
                 assert developers != null;
                 developers.forEach(producer -> {
                     query.put("producer", producer);
