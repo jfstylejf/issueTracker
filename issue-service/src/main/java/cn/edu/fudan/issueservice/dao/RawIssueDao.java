@@ -68,4 +68,8 @@ public class RawIssueDao {
     public String getRawIssueUuidByIssueUuidAndCommit(String issueUuid, String commit){
         return rawIssueMapper.getRawIssueUuidByIssueUuidAndCommit(issueUuid, commit);
     }
+
+    public String getCommitByRawIssueUuid(String rawIssueUuid) {
+        return rawIssueMapper.getCommitByRawIssueUuid(rawIssueUuid);
+    }
 }
