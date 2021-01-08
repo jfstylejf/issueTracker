@@ -46,6 +46,7 @@ public class ToolInvoker {
     private RestInterfaceManager restInvoker;
     private ApplicationContext applicationContext;
     private IssueRepoDao issueRepoDao;
+
     @Value("${binHome}")
     protected String binHome;
 

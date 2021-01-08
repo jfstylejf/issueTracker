@@ -20,11 +20,4 @@ public class CompileUtilTest {
         MockitoAnnotations.initMocks(this);
     }
 
-    @Test
-    public void isCompilableTest(){
-        compileUtil.setMvnHome("C:\\Users\\Beethoven\\apache-maven-3.6.3");
-        compileUtil.setCompileMaxWaitTime(120);
-        boolean compilable = CompileUtil.isCompilable("C:\\Users\\Beethoven\\Desktop\\1\\IssueTracker-Master");
-        Assert.assertTrue(compilable);
-    }
 }
