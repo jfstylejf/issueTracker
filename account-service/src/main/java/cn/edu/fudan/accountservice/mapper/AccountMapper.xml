@@ -81,7 +81,7 @@
                     account_status = #{item.status},
                 </if>
             </set>
-            where name = #{item.name}
+            where account_name = #{item.accountName}
         </foreach>
 
     </update>
