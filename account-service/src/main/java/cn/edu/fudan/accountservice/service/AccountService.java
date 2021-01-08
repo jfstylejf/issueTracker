@@ -75,6 +75,14 @@ public interface AccountService {
     /**
      * get account by token
      *
+     * @param accountName 用户名
+     * @return Account
+     */
+    Account getAccountByName(String accountName);
+
+    /**
+     * get account by token
+     *
      * @param userToken get user token
      * @return Account
      */

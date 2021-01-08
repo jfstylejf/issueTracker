@@ -58,6 +58,14 @@ public interface AccountMapper {
     Account getAccountByAccountName(String accountName);
 
     /**
+     * get account by account accountName except admin
+     *
+     * @param accountName username
+     * @return Account
+     */
+    Account getAccountByAccountNameExceptAdmin(String accountName);
+
+    /**
      * get all account id
      *
      * @return List<String>

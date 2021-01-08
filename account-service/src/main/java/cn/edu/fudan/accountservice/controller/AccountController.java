@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Arrays;
 import java.util.List;
@@ -32,7 +33,7 @@ import java.util.List;
 @CrossOrigin
 @RequestMapping("/user")
 public class AccountController {
-
+    @Autowired
     private AccountService accountService;
 
     @Autowired
@@ -229,6 +230,20 @@ public class AccountController {
     @GetMapping(value = "/accountName")
     public Object getAccountNameById(@RequestParam("accountId") String accountId){
         return new ResponseEntity<>(200, "success",accountService.getAccountNameById(accountId));
+    }
+
+    @ApiOperation(value="获取用户姓名",httpMethod = "GET")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "account_name", value = "用户名", dataType = "String", required = true),
+    })
+    @GetMapping(value = "/account/name")
+    public ResponseEntity<Object> getAccount(@RequestParam("account_name") String accountName){
+        try {
+            return new ResponseEntity<>(200, "get account success!", accountService.getAccountByName(accountName));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(401, "get account failed!", null);
+        }
     }
 
     @ApiOperation(value="自动更新人员列表",httpMethod = "POST")
