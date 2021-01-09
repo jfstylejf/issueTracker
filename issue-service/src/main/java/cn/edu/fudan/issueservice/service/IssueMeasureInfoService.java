@@ -34,9 +34,10 @@ public interface IssueMeasureInfoService {
      * 返回developer code quality
      * @param query 条件
      * @param codeQuality is codeQuality
+     * @param needAll needAll
      * @return developer code quality
      */
-    Map<String, JSONObject> getDeveloperCodeQuality(Map<String, Object> query, boolean codeQuality);
+    Map<String, JSONObject> getDeveloperCodeQuality(Map<String, Object> query, int codeQuality, Boolean needAll);
 
     /**
      * 清空缓存
@@ -63,17 +64,6 @@ public interface IssueMeasureInfoService {
     List<JSONObject> getLifeCycleDetail(String status, String target, Map<String, Object> query, String token);
 
     /**
-     * 返回自己引入未解决issue
-     * @param page page
-     * @param ps ps
-     * @param order order
-     * @param isAsc isAsc
-     * @param query query
-     * @return 项目总览人员列表中自己引入未解决issue
-     */
-    PagedGridResult getSelfIntroducedLivingIssueCount(int page, int ps, String order, Boolean isAsc, Map<String, Object> query);
-
-    /**
      * handleSortDeveloperLifecycle
      * @param developersLifecycle developersLifecycle
      * @param isAsc isAsc
@@ -82,4 +72,12 @@ public interface IssueMeasureInfoService {
      * @return 排序后developersLifecycle
      */
     List<Map<String, JSONObject>> handleSortDeveloperLifecycle(List<Map<String, JSONObject>> developersLifecycle, Boolean isAsc, int ps, int page);
+
+    /**
+     * 对code quality排序
+     * @param result result
+     * @param asc asc
+     * @return 排序后的code quality
+     */
+    Map<String, JSONObject> handleSortCodeQuality(Map<String, JSONObject> result, Boolean asc);
 }

@@ -208,12 +208,4 @@ public interface IssueMapper {
      * @return issueIntroducers
      */
     List<String> getIssueIntroducers(@Param("repoUuids") List<String> repoUuids);
-
-    /**
-     * 获取自己引入未解决的issue 数量
-     * @param query condition
-     * @return 按照人员group by的 producer, livingCount
-     */
-    List<JSONObject> getSelfIntroduceLivingIssueCount(Map<String, Object> query);
-
 }

@@ -7,7 +7,6 @@ import cn.edu.fudan.issueservice.domain.dbo.RawIssue;
 import cn.edu.fudan.issueservice.domain.enums.*;
 import cn.edu.fudan.issueservice.service.IssueMeasureInfoService;
 import cn.edu.fudan.issueservice.util.DateTimeUtil;
-import cn.edu.fudan.issueservice.util.PagedGridResult;
 import cn.edu.fudan.issueservice.util.SegmentationUtil;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 /**
  * description:
@@ -33,7 +33,8 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
 
     private RestInterfaceManager restInterfaceManager;
 
-    private final String repoList = "repoList", developerStr = "developer", solvedIssueCountStr = "solvedIssueCount", quantityStr = "quantity";
+    private final String repoList = "repoList", developerStr = "developer", solvedIssueCountStr = "solvedIssueCount",
+            quantityStr = "quantity", addedIssueCountStr = "addedIssueCount", allStr = "all";
 
     @Override
     public List<Map.Entry<String, JSONObject>> getNotSolvedIssueCountByToolAndRepoUuid(List<String> repoUuids, String tool, String order, String commitUuid) {
@@ -73,7 +74,7 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
 
         String developer = query.get(developerStr).toString();
 
-        JSONObject developerDetail = getDeveloperCodeQuality(query, false).get(developer);
+        JSONObject developerDetail = getDeveloperCodeQuality(query, 0, false).get(developer);
 
         double days = (DateTimeUtil.stringToLocalDate(query.get("until").toString()).toEpochDay() - DateTimeUtil.stringToLocalDate(query.get("since").toString()).toEpochDay()) * 5.0 / 7;
 
@@ -85,7 +86,7 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
     }
 
     @Override
-    public Map<String, JSONObject> getDeveloperCodeQuality(Map<String, Object> query, boolean codeQuality) {
+    public Map<String, JSONObject> getDeveloperCodeQuality(Map<String, Object> query, int codeQuality, Boolean needAll) {
 
         Map<String, Integer> developerWorkload = restInterfaceManager.getDeveloperWorkload(query);
 
@@ -95,7 +96,7 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
         AtomicInteger allAddedIssueCount = new AtomicInteger();
         AtomicInteger allSolvedIssueCount = new AtomicInteger();
 
-        if(codeQuality) {
+        if(codeQuality != 0) {
             query.put(repoList, SegmentationUtil.splitStringList(query.get(repoList) == null ? null : query.get(repoList).toString()));
         }
 
@@ -113,7 +114,7 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
             allSolvedIssueCount.addAndGet(developerSolvedIssueCount);
 
             developersDetail.put(r, new JSONObject(){{
-            put("addedIssueCount", developerAddIssueCount);
+            put(addedIssueCountStr, developerAddIssueCount);
             put(solvedIssueCountStr, developerSolvedIssueCount);
             put("loc", developerWorkload.get(r));
             put("addQuality", developerWorkload.get(r) == 0 ? 0 : developerAddIssueCount * 100.0 / developerWorkload.get(r));
@@ -121,14 +122,15 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
             }});
         });
 
-        developersDetail.put("all",  new JSONObject(){{
-            put("loc", loc);
-            put("allAddedIssueCount", allAddedIssueCount);
-            put("allSolvedIssueCount", allSolvedIssueCount);
-            put("E/L", loc.intValue() == 0 ? 0 : allSolvedIssueCount.intValue() * 100.0 / loc.intValue());
-            put("N/L", loc.intValue() == 0 ? 0 : allAddedIssueCount.intValue() * 100.0 / loc.intValue());
-        }});
-
+        if(needAll) {
+            developersDetail.put(allStr, new JSONObject() {{
+                put("loc", loc);
+                put("allAddedIssueCount", allAddedIssueCount);
+                put("allSolvedIssueCount", allSolvedIssueCount);
+                put("E/L", loc.intValue() == 0 ? 0 : allSolvedIssueCount.intValue() * 100.0 / loc.intValue());
+                put("N/L", loc.intValue() == 0 ? 0 : allAddedIssueCount.intValue() * 100.0 / loc.intValue());
+            }});
+        }
         return developersDetail;
     }
 
@@ -205,13 +207,6 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
     }
 
     @Override
-    public PagedGridResult getSelfIntroducedLivingIssueCount(int page, int ps, String order, Boolean isAsc, Map<String, Object> query) {
-        PagedGridResult.handlePageHelper(page, ps, order, isAsc);
-        List<JSONObject> result = issueDao.getSelfIntroduceLivingIssueCount(query);
-        return PagedGridResult.setterPagedGrid(result, page);
-    }
-
-    @Override
     public List<Map<String, JSONObject>> handleSortDeveloperLifecycle(List<Map<String, JSONObject>> developersLifecycle, Boolean isAsc, int ps, int page) {
         if(isAsc == null){
             return developersLifecycle;
@@ -229,6 +224,22 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
             return isAsc ? num1 - num2 : num2 - num1;
         });
         return developersLifecycle.subList(ps * (page -1), Math.min(developersLifecycle.size(), ps * page));
+    }
+
+    @Override
+    public Map<String, JSONObject> handleSortCodeQuality(Map<String, JSONObject> result, Boolean isAsc) {
+        if(isAsc == null){
+            return result;
+        }
+
+        Map<String, JSONObject> finalOut = new LinkedHashMap<>(result.size());
+        result.entrySet()
+                .stream()
+                .sorted(((o1, o2) -> isAsc ? o1.getValue().getIntValue(addedIssueCountStr) - o2.getValue().getIntValue(addedIssueCountStr)
+                            : o2.getValue().getIntValue(addedIssueCountStr) - o1.getValue().getIntValue(addedIssueCountStr)))
+                .collect(Collectors.toList()).forEach(r -> finalOut.put(r.getKey(), r.getValue()));
+
+        return finalOut;
     }
 
     @Autowired
