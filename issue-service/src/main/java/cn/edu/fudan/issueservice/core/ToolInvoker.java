@@ -1,6 +1,5 @@
 package cn.edu.fudan.issueservice.core;
 
-
 import cn.edu.fudan.issueservice.component.ApplicationContextGetBeanHelper;
 import cn.edu.fudan.issueservice.component.RestInterfaceManager;
 import cn.edu.fudan.issueservice.config.ScanThreadExecutorConfig;
@@ -360,7 +359,6 @@ public class ToolInvoker {
 
             if(mappedUpdate){
                 //如果之前存在更新的记录，则判断原先的状态是否是stop
-
                 String repoStatus = preUpdateIssueRepo.getStatus ();
                 if(RepoStatusEnum.STOP.getType ().equals (repoStatus)){
                     //第二种：如果原来是stop状态，则更新数据后，重新开始扫描
@@ -369,7 +367,6 @@ public class ToolInvoker {
                     preUpdateIssueRepo.setTotalCommitCount (newAllCount);
                     resultIssueRepo = preUpdateIssueRepo;
                     issueRepoDao.updateIssueRepo (resultIssueRepo);
-
                 }else{
                     //第三种：如果原来是结束状态，则合并后，重新开始开始扫描
                     mainIssueRepo.setEndCommit (preUpdateIssueRepo.getEndCommit ());
@@ -383,9 +380,7 @@ public class ToolInvoker {
                     resultIssueRepo = IssueRepo.initIssueRepo (repoId, branch, beginCommit, toolName, commitSize);
                     resultIssueRepo.setNature (RepoNatureEnum.UPDATE.getType ());
                     issueRepoDao.insertOneIssueRepo (resultIssueRepo);
-
                 }
-
             }else{
                 String repoStatus = mainIssueRepo.getStatus ();
                 if(RepoStatusEnum.STOP.getType ().equals (repoStatus)){

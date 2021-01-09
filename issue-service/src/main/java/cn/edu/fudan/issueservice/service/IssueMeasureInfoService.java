@@ -1,16 +1,13 @@
 package cn.edu.fudan.issueservice.service;
 
-import cn.edu.fudan.issueservice.util.PagedGridResult;
 import com.alibaba.fastjson.JSONObject;
 
 import java.util.List;
 import java.util.Map;
 
 /**
- * @description: 代码度量信息
- * @author: fancying
- * @create: 2019-04-01 22:11
- **/
+ * @author beethoven
+ */
 public interface IssueMeasureInfoService {
 
     /**
