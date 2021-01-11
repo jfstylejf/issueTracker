@@ -182,7 +182,7 @@ public class IssueMeasurementController {
             "        \"solveQuality\": 0.2491464427424564\n" +
             "    }", httpMethod = "GET")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "developer", value = "开发人员姓名"),
+            @ApiImplicitParam(name = "developers", value = "开发人员姓名"),
             @ApiImplicitParam(name = "repo_uuids", value = "代码库uuid\n支持多选\n以英文逗号,分隔"),
             @ApiImplicitParam(name = "manual_status", value = "缺陷忽略类型", defaultValue = "Default", allowableValues = "Default, Total, Ignore, Misinformation, To_Review"),
             @ApiImplicitParam(name = "since", value = "起始时间\n格式要求: yyyy-MM-dd"),
@@ -193,7 +193,7 @@ public class IssueMeasurementController {
     })
     @GetMapping(value = {"/codewisdom/issue/developer/code-quality"})
     public ResponseBean<Map<String, JSONObject>> getDeveloperCodeQuality(@RequestParam(value = "repo_uuids",required = false)String repoList,
-                                                @RequestParam(value = "developer",required = false)String developer,
+                                                @RequestParam(value = "developers",required = false)String developer,
                                                 @RequestParam(value = "tool",required = false, defaultValue = "sonarqube")String tool,
                                                 @RequestParam(value = "manual_status",required = false, defaultValue = "Default")String manualStatus,
                                                 @RequestParam(value = "since",required = false)String since,
@@ -224,7 +224,7 @@ public class IssueMeasurementController {
             }
 
             List<String> developers = SegmentationUtil.splitStringList(developer);
-            if(developers.size() == 0){
+            if(developers.isEmpty()){
                 query.put(developerStr, developer);
                 return new ResponseBean<>(200, success, issueMeasureInfoService.getDeveloperCodeQuality(query, 1, needAll));
             }
