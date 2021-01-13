@@ -29,13 +29,14 @@
 
     <select id="getCommitViewInfoByCommitId" parameterType="String" resultType="java.util.HashMap">
         select uuid, commit_id, message, developer, commit_time, repo_id, developer_email, self_index, parent_commit, developer_unique_name from commit_view
-        where 1 = 1
-        <if test="repo_id != null and repo_id != '' ">
-            and repo_id = #{repo_id}
-        </if>
-        <if test="commit_id != null and commit_id != '' ">
-            and commit_id = #{commit_id}
-        </if>
+        <trim prefix="where" prefixOverrides="and">
+            <if test="repo_id != null and repo_id != '' ">
+                and repo_id = #{repo_id}
+            </if>
+            <if test="commit_id != null and commit_id != '' ">
+                and commit_id = #{commit_id}
+            </if>
+        </trim>
         limit 1
     </select>
 
