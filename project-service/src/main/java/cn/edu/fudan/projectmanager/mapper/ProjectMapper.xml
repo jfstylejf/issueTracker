@@ -27,7 +27,8 @@
     </update>
 
     <select id="getProjectP"  resultType="Map">
-        SELECT id,project_name
-        FROM project
+        select p.id,p.project_name,a.account_name from project as p
+        left join  account_project AS a
+        on p.id = a.project_id
     </select>
 </mapper>
