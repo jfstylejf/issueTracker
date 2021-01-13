@@ -166,6 +166,8 @@ public class IssueMeasurementController {
                 return new ResponseBean<>(200, success, issueMeasureInfoService.handleSortDeveloperLifecycle(developersLifecycle, isAsc, ps, page));
             }
             query.put("producer", developer);
+            query.put("ps", ps);
+            query.put("start", (page - 1) * ps);
             String token = request.getHeader(TOKEN);
             return new ResponseBean<>(200, success, issueMeasureInfoService.getLifeCycleDetail(status, target, query, token));
         } catch (Exception e){

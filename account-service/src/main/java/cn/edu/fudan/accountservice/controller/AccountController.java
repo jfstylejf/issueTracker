@@ -264,13 +264,13 @@ public class AccountController {
 
     @ApiOperation(value="获取给定条件下的开发人员（聚合后）列表",httpMethod = "GET")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "repo_uuids", value = "repo库", dataType = "String", required = false,defaultValue = "afc0b210-3465-11eb-8dca-4dbb5f7a5f33,153ee1d4-3457-11eb-8dca-4dbb5f7a5f33"),
+            @ApiImplicitParam(name = "repo_uuids", value = "repo库", dataType = "String", required = false,defaultValue = "a140dc46-50db-11eb-b7c3-394c0d058805"),
             @ApiImplicitParam(name = "since", value = "起始时间", dataType = "String", required = false,defaultValue = "2020-01-01"),
             @ApiImplicitParam(name = "until", value = "结束时间", dataType = "String", required = false,defaultValue = "2020-12-31"),
             @ApiImplicitParam(name = "is_whole", value = "是否获取所有数据（不进行分页）", dataType = "Boolean", required = false,defaultValue = "0"),
             @ApiImplicitParam(name = "page", value = "分页的第几页", dataType = "Integer", required = false,defaultValue = "1"),
             @ApiImplicitParam(name = "ps", value = "分页中每页的大小", dataType = "Integer", required = false,defaultValue = "10"),
-            @ApiImplicitParam(name = "order", value = "要排序的字段", dataType = "String", required = false,defaultValue = "developer_unique_name"),
+            @ApiImplicitParam(name = "order", value = "要排序的字段", dataType = "String", required = false,defaultValue = "developerName"),
             @ApiImplicitParam(name = "asc", value = "是否升序", dataType = "Boolean", required = false,defaultValue = "1")
     })
     @GetMapping(value = "/developers")
@@ -280,7 +280,7 @@ public class AccountController {
                                    @RequestParam(value = "is_whole", required = false, defaultValue = "0") Boolean isWhole,
                                    @RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
                                    @RequestParam(value = "ps", required = false, defaultValue = "30") Integer pageSize,
-                                   @RequestParam(value = "order", required = false, defaultValue = "developer_unique_name") String order,
+                                   @RequestParam(value = "order", required = false, defaultValue = "developerName") String order,
                                    @RequestParam(value = "asc", required = false, defaultValue = "1") Boolean isAsc
                                    ){
         String[] repoListArr = repoUuids.split(",");
