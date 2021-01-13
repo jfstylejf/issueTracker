@@ -230,6 +230,25 @@ public class ProjectController {
         }
     }
 
+    @ApiOperation(value="新增库项目负责人",httpMethod = "POST")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "newLeaderId", value = "新的负责人ID", dataType = "String", required = true),
+            @ApiImplicitParam(name = "projectId", value = "项目id", dataType = "String", required = true)
+
+    })
+    @PostMapping(value = {"/project/leader"})
+    public ResponseBean updateLeader(HttpServletRequest request,
+                                         @RequestParam("newLeaderId") String newLeaderId,
+                                         @RequestParam("projectId") String projectId){
+        try {
+            projectControl.addProjectLeader(request.getHeader(TOKEN), newLeaderId, projectId);
+            return new ResponseBean<>(200, "update success", null);
+        } catch (Exception e) {
+            return new ResponseBean<>(401, "update failed :" + e.getMessage(), null);
+        }
+    }
+
+
     @Autowired
     public void setProjectControl(ProjectControlService projectControl) {
         this.projectControl = projectControl;

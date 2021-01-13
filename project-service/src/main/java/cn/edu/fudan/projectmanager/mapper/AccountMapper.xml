@@ -39,4 +39,28 @@
         where   project_name = #{oldProjectName}
     </update>
 
+    <insert id="addProjectLeaderAP" parameterType="String">
+        INSERT  IGNORE INTO account_project
+        (
+        account_uuid,
+        account_name,
+        project_id,
+        project_name,
+        account_role
+        )
+        select
+        #{newLeaderId},
+        account_name,
+        #{projectId},
+        project_name,
+        "LEADER"
+        from account as a, project as p
+
+        <where>
+            p.id = #{projectId}
+            and a.uuid = #{newLeaderId} ;
+        </where>
+
+    </insert>
+
 </mapper>
