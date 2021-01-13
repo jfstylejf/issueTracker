@@ -644,6 +644,9 @@
                 AND <![CDATA[ start_commit_date <= #{until} ]]>
             </if>
         </where>
+        <if test="start != null  and ps != null ">
+            limit #{start},#{ps}
+        </if>
     </select>
 
     <select id="getOtherIntroduceSelfSolvedIssueDetail" parameterType="Map" resultType="com.alibaba.fastjson.JSONObject">
@@ -666,6 +669,9 @@
                 AND <![CDATA[ start_commit_date <= #{until} ]]>
             </if>
         </where>
+        <if test="start != null  and ps != null ">
+            limit #{start},#{ps}
+        </if>
     </select>
 
     <select id="getSelfIntroduceLivingIssueDetail" parameterType="Map" resultType="com.alibaba.fastjson.JSONObject">
@@ -688,6 +694,9 @@
                 AND <![CDATA[ start_commit_date <= #{until} ]]>
             </if>
         </where>
+        <if test="start != null  and ps != null ">
+            limit #{start},#{ps}
+        </if>
     </select>
 
     <select id="getSelfIntroduceOtherSolvedIssueDetail" parameterType="Map" resultType="com.alibaba.fastjson.JSONObject">
@@ -710,6 +719,9 @@
                 AND <![CDATA[ start_commit_date <= #{until} ]]>
             </if>
         </where>
+        <if test="start != null  and ps != null ">
+            limit #{start},#{ps}
+        </if>
     </select>
 
     <select id="getIssueIntroducers" resultType="String">
