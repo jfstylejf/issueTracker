@@ -1,94 +1,69 @@
 package cn.edu.fudan.projectmanager.service;
 
-import cn.edu.fudan.projectmanager.dao.SubRepositoryDao;
-import cn.edu.fudan.projectmanager.domain.AccountRoleEnum;
 import cn.edu.fudan.projectmanager.domain.SubRepository;
-import cn.edu.fudan.projectmanager.mapper.AccountMapper;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
- * description: 代码库与项目和人之间的关系
+ * description: 项目和库、负责人关系接口
  *
- * @author fancying
- * create: 2020-10-04 14:29
+ * @author Richy
+ * create: 2021-01-14 15:14
  **/
-@Slf4j
-@Service
-public class AccountRepositoryService {
-
-    private SubRepositoryDao subRepository;
-    private AccountMapper accountMapper;
+public interface AccountRepositoryService {
 
     /**
-     * @return  k projectName v: list [k: repo_id, name]
+     * 获取库ID
+     * @throws Exception e
      */
-    public Map<String, List<Map<String, String>>> getProjectAndRepoRelation(int recycled) {
-        // key project_name,repo_name,sub_repository_uuid,recycled
-        List<Map<String, Object>> projects =  subRepository.getAllProjectRepoRelation();
+    String getRepoUuidByUuid(String projectUuid) throws Exception;
 
-        boolean isAll = recycled == SubRepository.ALL;
+    /**
+     * 获取库信息——通过人员ID
+     * @throws Exception e
+     */
+    List<SubRepository> getRepoByAccountUuid(String accountUuid) throws Exception;
 
-        Map<String, List< Map<String, String>>> result = new HashMap<>(8);
-        for (Map<String, Object> project : projects) {
+    /**
+     * 获取库信息——通过库ID
+     * @throws Exception e
+     */
+    SubRepository getRepoInfoByRepoId(String repoUuid) throws Exception;
 
-            int recycledStatus = (int)project.get("recycled");
-            if (!isAll && recycled != recycledStatus){
-                continue;
-            }
+    /**
+     * 获取项目信息——通过人员名
+     * @throws Exception e
+     */
+    List<Map<String, Object>> getProjectInfoByAccountName(String accountName) throws Exception;
 
-            String projectName = (String) project.get("project_name");
-            if (StringUtils.isEmpty(projectName)) {
-                projectName = "unnamed";
-            }
-            if (! result.keySet().contains(projectName)) {
-                result.put(projectName, new ArrayList<>(4));
-            }
-            List< Map<String, String>> v = result.get(projectName);
-            Map<String, String> p = new HashMap<>(4);
-            p.put("repo_id", (String)project.get("repo_uuid"));
-            p.put("name", (String)project.get("repo_name"));
-            v.add(p);
-        }
-        return result;
-    }
+    /**
+     * 获取项目和库的对应关系
+     * @throws Exception e
+     */
+    Map<String, List<Map<String, String>>> getProjectAndRepoRelation(int recycled) throws Exception;
 
+    /**
+     * 获取项目和负责人的对应关系
+     * @throws Exception e
+     */
+    List<Map<String, Object>> getProjectAll(String token) throws Exception;
 
-    public SubRepository getProjectInfoByRepoId(String repoUuid) {
-        return subRepository.getSubRepoByRepoUuid(repoUuid);
-    }
+    /**
+     * 更新库所属项目
+     * @param token 用户token
+     * @param oldProjectName  旧名
+     * @param newProjectName  新名
+     * @throws Exception e
+     */
+    void updateRepoProject(String token, String oldProjectName, String newProjectName,String RepoUuid) throws Exception;
 
-    public String getRepoUuid(String projectUuid) {
-        return subRepository.getSubRepoByUuid(projectUuid).getRepoUuid();
-    }
-
-    @Autowired
-    public void setSubRepository(SubRepositoryDao subRepository) {
-        this.subRepository = subRepository;
-    }
-
-    public List<SubRepository> getRepositoryByAccountUuid(String accountUuid) {
-        return subRepository.getAllSubRepoByAccountUuid(accountUuid);
-    }
-
-    public List<Map<String, Object>> getProjectInfoByAccountName(String accountName) {
-        // 根据accountName 查询权限
-        int accountRight = accountMapper.queryRightByAccountName(accountName);
-        if (accountRight == AccountRoleEnum.ADMIN.getRight()) {
-            accountName = null;
-        }
-        return accountMapper.getProjectInfoByAccountName(accountName);
-    }
-
-    @Autowired
-    public void setAccountMapper(AccountMapper accountMapper) {
-        this.accountMapper = accountMapper;
-    }
+    /**
+     * 新增项目负责人
+     * @param token 用户token
+     * @param newLeaderId  新负责人ID
+     * @param projectId  项目ID
+     * @throws Exception e
+     */
+    void addProjectLeader(String token, String newLeaderId, String projectId) throws Exception;
 }

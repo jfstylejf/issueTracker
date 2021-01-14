@@ -26,7 +26,7 @@ import java.util.Map;
 public class ProjectQueryController {
 
 
-    private AccountRepositoryService repoUser;
+    private AccountRepositoryService accountRepository;
     private ProjectControlService projectControl;
     private final String TOKEN = "token";
 
@@ -35,11 +35,32 @@ public class ProjectQueryController {
      * @param recycled {@link cn.edu.fudan.projectmanager.domain.SubRepository} EMPTY RESERVATIONS ALL
      * @return    k projectName v: list [k: repo_id, accountName]
      */
-    @ApiOperation(value = " 得到所有库名和ID", notes = "@return Map < String, List < Map < String, String > > >  k projectName v: list [k: repo_id, accountName]")
+    @ApiOperation(value = " 得到所有项目和库的关系", notes = "@return Map < String, List < Map < String, String > > >  k projectName v: list [k: repo_id, accountName]")
     @GetMapping(value = "/project/all")
-    public Map<String, List<Map<String, String>>> getProjectAndRepoRelation(@RequestParam(name = "recycled", required = false, defaultValue = "0") int recycled) {
-        return repoUser.getProjectAndRepoRelation(recycled);
+    public ResponseBean<Map<String, List<Map<String, String>>>> getProjectAndRepoRelation(@RequestParam(name = "recycled", required = false, defaultValue = "0") int recycled) throws Exception{
+        try {
+            return new ResponseBean<>(200, "get info success", accountRepository.getProjectAndRepoRelation(recycled));
+        } catch (Exception e) {
+            return new ResponseBean<>(401, "get info failed :" + e.getMessage(), null);
+        }
     }
+
+    @ApiOperation(value="获取所有库信息",httpMethod = "GET")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "recycled", value = "是否被回收", dataType = "int", required = false,defaultValue = "0"),
+    })
+    @GetMapping(value = {"/project"})
+    public ResponseBean<List<RepositoryVO>> query(HttpServletRequest request,
+                                                  @RequestParam(name = "recycled",required = false, defaultValue = "0") int recycled) {
+        String userToken = request.getHeader(TOKEN);
+        List<SubRepository> subRepositories = projectControl.query(userToken);
+        List<RepositoryVO> repositoryVos = new ArrayList<>(subRepositories.size());
+        subRepositories.stream().filter(s -> s.getRecycled() == recycled).
+                forEach(s -> repositoryVos.add(new RepositoryVO(s)));
+
+        return new ResponseBean<>(200, "success", repositoryVos);
+    }
+
 
     /**
      * todo issue 所有项目信息
@@ -51,7 +72,7 @@ public class ProjectQueryController {
     public ResponseBean<List<Map<String, Object>>> getProjectList(HttpServletRequest request) {
         String token = request.getHeader(TOKEN);
         try {
-            return new ResponseBean<>(200, "add success", projectControl. getProjectAll(token));
+            return new ResponseBean<>(200, "add success", accountRepository.getProjectAll(token));
         } catch (Exception e) {
             return new ResponseBean<>(401, "add failed :" + e.getMessage(), null);
         }
@@ -60,17 +81,21 @@ public class ProjectQueryController {
     /**
      * fixme measure
      */
-    @ApiOperation(value="获取指定单个库的信息",httpMethod = "GET")
+    @ApiOperation(value="通过库uuid获取指定库的信息",httpMethod = "GET")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "repoUuid", value = "库对应的uuid", dataType = "String", required = true)
     })
     @GetMapping(value = {"/inner/project"})
-    public RepositoryVO getProjectByRepoId(@RequestParam("repo_uuid") String repoUuid){
-        SubRepository subRepository = repoUser.getProjectInfoByRepoId(repoUuid);
+    public ResponseBean<RepositoryVO> getProjectByRepoId(@RequestParam("repo_uuid") String repoUuid) throws Exception {
+        SubRepository subRepository = accountRepository.getRepoInfoByRepoId(repoUuid);
         if (subRepository == null) {
             return null;
         }
-        return new RepositoryVO(subRepository);
+        try {
+            return new ResponseBean<>(200, "get repo success", new RepositoryVO(subRepository));
+        } catch (Exception e) {
+            return new ResponseBean<>(401, "get repo failed :" + e.getMessage(), null);
+        }
     }
 
     /**
@@ -78,46 +103,63 @@ public class ProjectQueryController {
      *
      * List<Project>
      */
-    @ApiOperation(value="获取多个库的信息",httpMethod = "GET")
+    @ApiOperation(value="通过人员ID获取多个库的信息",httpMethod = "GET")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "accountUuid", value = "引入人uuid", dataType = "String", required = false),
             @ApiImplicitParam(name = "recycled", value = "回收状态", dataType = "int", required = false)
     })
     @GetMapping(value = "/inner/projects")
-    public List<RepositoryVO> getRepositoryByAccountId(@RequestParam(name = "account_uuid", required = false) String accountUuid,
-                                                       @RequestParam(name = "recycled", required = false, defaultValue = "0") int recycled){
+    public ResponseBean<List<RepositoryVO>> getRepositoryByAccountId(@RequestParam(name = "account_uuid", required = false) String accountUuid,
+                                                       @RequestParam(name = "recycled", required = false, defaultValue = "0") int recycled) throws Exception {
         boolean isAll = recycled == SubRepository.ALL;
-        List<SubRepository> repositories = repoUser.getRepositoryByAccountUuid(accountUuid);
+        List<SubRepository> repositories = accountRepository.getRepoByAccountUuid(accountUuid);
         List<RepositoryVO> result = new ArrayList<>();
         repositories.stream().filter(r -> isAll || recycled == r.getRecycled()).forEach(r -> result.add(new RepositoryVO(r)));
-        return result;
+        try {
+            return new ResponseBean<>(200, "get repo success", result);
+        } catch (Exception e) {
+            return new ResponseBean<>(401, "get repo failed :" + e.getMessage(), null);
+        }
     }
 
     /**
      * FIXME issue scan
      */
-    @ApiOperation(value="获取一个项目下所属库的信息",httpMethod = "GET")
+    @ApiOperation(value="通过sub_repository表uuid获取库uuid",httpMethod = "GET")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "repoUuid", value = "库对应的uuid", dataType = "String", required = true)
     })
-    @GetMapping(value = "/inner/project/repo-uuid")
-    public String getRepoUuid(@RequestParam("project_uuid") String projectUuid) {
-        return repoUser.getRepoUuid(projectUuid);
+    @GetMapping(value = "/inner/repo/repo-uuid")
+    public ResponseBean<String> getRepoByRepoUuid(@RequestParam("repo-uuid") String uuid) throws Exception {
+        try {
+            return new ResponseBean<>(200, "get repo success", accountRepository.getRepoUuidByUuid(uuid));
+        } catch (Exception e) {
+            return new ResponseBean<>(401, "get repo failed :" + e.getMessage(), null);
+        }
     }
 
     /**
      * FIXME issue
      * @return
      */
+    @ApiOperation(value="获取某人import的库",httpMethod = "GET")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "accountUuid", value = "人员uuid", dataType = "String", required = false),
+            @ApiImplicitParam(name = "recycled", value = "回收状态", dataType = "int", required = false)
+    })
     @GetMapping(value = "/inner/project/repo-ids")
-    public List<String> getProjectIds(@RequestParam(name = "account_uuid", required = false) String accountUuid,
-                                @RequestParam(name = "recycled", required = false, defaultValue = "0") int recycled) {
+    public ResponseBean<List<String>> getProjectIds(@RequestParam(name = "account_uuid", required = false) String accountUuid,
+                                      @RequestParam(name = "recycled", required = false, defaultValue = "0") int recycled) throws Exception {
 
         boolean isAll = recycled == SubRepository.ALL;
-        List<SubRepository> subRepositories = repoUser.getRepositoryByAccountUuid(accountUuid);
+        List<SubRepository> subRepositories = accountRepository.getRepoByAccountUuid(accountUuid);
         List<String> result = new ArrayList<>();
         subRepositories.stream().filter(r -> isAll || recycled == r.getRecycled()).forEach(r -> result.add(r.getRepoUuid()));
-        return result;
+        try {
+            return new ResponseBean<>(200, "get repo success", result);
+        } catch (Exception e) {
+            return new ResponseBean<>(401, "get repo failed :" + e.getMessage(), null);
+        }
     }
 
     /**
@@ -125,17 +167,25 @@ public class ProjectQueryController {
      * @param accountName
      * @return List<Map<String, Object>> key  account_name account_right account_role project_name
      */
-    @ApiOperation(value = "根据用户姓名得到对应的信息", notes = "@return List < Map < String, Object > >  key  account_name account_right account_role project_name ")
+    @ApiOperation(value = "根据用户姓名获得其参与项目", notes = "@return List < Map < String, Object > >",httpMethod = "GET")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "accountName", value = "人员姓名", dataType = "String", required = true)
+    })
     @GetMapping(value = "/project/info")
-    public List<Map<String, Object>> getProjectInfoByAccountName(@RequestParam String accountName) {
-        return repoUser.getProjectInfoByAccountName(accountName);
+    public ResponseBean<List<Map<String, Object>>> getProjectInfoByAccountName(@RequestParam String accountName) throws Exception {
+        try {
+            return new ResponseBean<>(200, "get info success", accountRepository.getProjectInfoByAccountName(accountName));
+        } catch (Exception e) {
+            return new ResponseBean<>(401, "get info failed :" + e.getMessage(), null);
+        }
     }
 
 
     @Autowired
-    public void setRepoUser(AccountRepositoryService repoUser) {
-        this.repoUser = repoUser;
+    public void setAccountRepository(AccountRepositoryService accountRepository) {
+        this.accountRepository = accountRepository;
     }
+
     @Autowired
     public void setProjectControl(ProjectControlService projectControl) {
         this.projectControl = projectControl;
