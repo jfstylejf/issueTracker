@@ -33,7 +33,7 @@ public class IssueIgnoreController {
     })
     @PutMapping(value = "issue/ignore/{tool}")
     public ResponseBean<String> ignoreIssues(@PathVariable("tool")String tool, @RequestBody List<IgnoreRecord> ignoreRecords){
-        if(ignoreRecords.size() == 0){
+        if(ignoreRecords.isEmpty()){
             return new ResponseBean<>(200, success, null);
         }
         try{

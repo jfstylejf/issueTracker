@@ -127,21 +127,21 @@ public class ToolInvoker {
 
             //1.配置jGit资源
             JGitHelper jGitInvoker = new JGitHelper (repoPath);
+            String startCommit = issueScanDao.getStartCommitByRepoUuid(repoId);
+            List<String> scannedCommits = new ArrayList<>(issueScanDao.getScannedCommitList(repoId, toolName));
             //判断beginCommit 是否为空，如果为空则获取
             if(beginCommit == null){
-                IssueScan latestIssueScan = issueScanDao.getLatestIssueScanByRepoIdAndTool (repoId, toolName);
-                if(latestIssueScan == null ){
+                if(scannedCommits.isEmpty()){
                     log.error (" need begin commit!");
                     return false;
                 }
-                String latestScannedCommitId = latestIssueScan.getCommitId ();
-                List<String> commitIds =  jGitInvoker.getScanCommitListByBranchAndBeginCommit(branch, latestScannedCommitId);
+                List<String> commitIds =  jGitInvoker.getScanCommitListByBranchAndBeginCommit(branch, startCommit, scannedCommits);
                 //因为必定不为null，所以不做此判断
-                if(commitIds.size () <= 1){
+                if(commitIds.isEmpty()){
                     log.info (" already update! repoId --> {}", repoId);
                     return false;
                 }
-                beginCommit = commitIds.get (1);
+                beginCommit = commitIds.get(0);
             }
 
             IssueMatcher issueMatcher = new IssueMatcher (issueDao, rawIssueDao, issueScanDao, matchStrategy);
@@ -149,7 +149,7 @@ public class ToolInvoker {
             IssueScanTransactionManager issueScanTransactionManager = (IssueScanTransactionManager)applicationContext.getBean("DataPersistManager");
 
             //2.根据策略获取扫描的commit列表
-            ConcurrentLinkedDeque<String>  scanCommits = scanStrategy.getScanCommitLinkedQueue(repoId, jGitInvoker, branch, beginCommit);
+            ConcurrentLinkedDeque<String>  scanCommits = scanStrategy.getScanCommitLinkedQueue(repoId, jGitInvoker, branch, startCommit, scannedCommits);
 
             if(scanCommits == null || scanCommits.isEmpty ()){
                 log.error ("get commit List failed or all commits were scanned! repo id --> {}", repoId);
