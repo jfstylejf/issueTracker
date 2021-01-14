@@ -74,7 +74,7 @@ public class MeasureDeveloperService {
             // fixme 通过measureDao来获取数据
             query.setDeveloper(member);
             DeveloperWorkLoad developerWorkLoad = measureDao.getDeveloperWorkLoadData(query);
-            developerWorkLoad.setDeveloperName(member);
+            developerWorkLoad.setDeveloper(member);
             developerWorkLoad.setTotalLoc(developerWorkLoad.getAddLines() + developerWorkLoad.getDelLines());
             developerWorkLoadList.add(developerWorkLoad);
         }
@@ -889,7 +889,7 @@ public class MeasureDeveloperService {
             List<Map<String,String>> developerValidCommitInfo = projectDao.getValidCommitMsg(query);
 
             DeveloperCommitStandard developerCommitStandard = new DeveloperCommitStandard();
-            developerCommitStandard.setDeveloperName(developer);
+            developerCommitStandard.setDeveloper(developer);
             developerCommitStandard.setDeveloperValidCommitCount(developerValidCommitInfo.size());
             List<Map<String,String>> developerJiraCommitInfo = new ArrayList<>();
             List<Map<String,String>> developerInvalidCommitInfo = new ArrayList<>();

@@ -97,18 +97,19 @@ public class IssueScanServiceImpl implements IssueScanService {
                 IssueScan issueScan = issueScanDao.getLatestIssueScanByRepoIdAndTool (repoId, toolName);
                 if(issueScan == null ){
                     // todo 需返回提示，该项目未扫描，请提供 begin Commit ，此时应该报错，给scan服务调用失败的提示，这样scan就可以根据此情况，重新发送begin commit
-                    return "please provide  begin commit !";
+                    return "please provide begin commit !";
                 }
-                String latestScannedCommitId = issueScan.getCommitId ();
-                List<String> commitIds =  jGitInvoker.getScanCommitListByBranchAndBeginCommit(branch, latestScannedCommitId);
+                String startCommit = issueScanDao.getStartCommitByRepoUuid(repoId);
+                List<String> scannedCommits = new ArrayList<>(issueScanDao.getScannedCommitList(repoId, toolName));
+                List<String> commitIds =  jGitInvoker.getScanCommitListByBranchAndBeginCommit(branch, startCommit, scannedCommits);
                 //因为必定不为null，所以不做此判断
-                if(commitIds.size () <= 1){
+                if(commitIds.isEmpty()){
                     return "scanned";
                 }
-                beginCommit = commitIds.get (1);
+                beginCommit = commitIds.get(0);
                 scanCommitInfoDTO.setIsUpdate (true);
             }
-            scanCommitInfoDTO.setCommitId (beginCommit);
+            scanCommitInfoDTO.setCommitId(beginCommit);
 
             //第四步，加入扫描池队列中
             scanManagementAsync.addProjectToScanQueue(scanCommitInfoDTO);
