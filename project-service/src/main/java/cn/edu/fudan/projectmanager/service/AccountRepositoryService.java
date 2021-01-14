@@ -66,4 +66,13 @@ public interface AccountRepositoryService {
      * @throws Exception e
      */
     void addProjectLeader(String token, String newLeaderId, String projectId) throws Exception;
+
+    /**
+     * 删除项目负责人
+     * @param token 用户token
+     * @param LeaderId  负责人ID
+     * @param projectId  项目ID
+     * @throws Exception e
+     */
+    void deleteProjectLeader(String token, String LeaderId, String projectId) throws Exception;
 }

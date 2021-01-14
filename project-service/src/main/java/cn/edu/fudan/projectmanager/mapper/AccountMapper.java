@@ -31,4 +31,12 @@ public interface AccountMapper {
      * @param  projectId 项目ID
      */
     void addProjectLeaderAP(@Param("accountUuid") String accountUuid, @Param("newLeaderId") String newLeaderId, @Param("projectId") String projectId);
+
+    /**
+     * 删除项目负责人
+     * @param  accountUuid 当前登录人
+     * @param  LeaderId 负责人ID
+     * @param  projectId 项目ID
+     */
+    void deleteProjectLeaderAP(@Param("accountUuid") String accountUuid, @Param("LeaderId") String LeaderId, @Param("projectId") String projectId);
 }

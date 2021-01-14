@@ -214,18 +214,36 @@ public class ProjectController {
         }
     }
 
-    @ApiOperation(value="新增库项目负责人",httpMethod = "POST")
+    @ApiOperation(value="新增项目负责人",httpMethod = "POST")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "newLeaderId", value = "新的负责人ID", dataType = "String", required = true),
             @ApiImplicitParam(name = "projectId", value = "项目id", dataType = "String", required = true)
 
     })
     @PostMapping(value = {"/project/leader"})
-    public ResponseBean updateLeader(HttpServletRequest request,
+    public ResponseBean addLeader(HttpServletRequest request,
                                          @RequestParam("newLeaderId") String newLeaderId,
                                          @RequestParam("projectId") String projectId){
         try {
             accountRepository.addProjectLeader(request.getHeader(TOKEN), newLeaderId, projectId);
+            return new ResponseBean<>(200, "update success", null);
+        } catch (Exception e) {
+            return new ResponseBean<>(401, "update failed :" + e.getMessage(), null);
+        }
+    }
+
+    @ApiOperation(value="删除项目负责人",httpMethod = "DELETE")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "LeaderId", value = "负责人ID", dataType = "String", required = true),
+            @ApiImplicitParam(name = "projectId", value = "项目id", dataType = "String", required = true)
+
+    })
+    @DeleteMapping(value = {"/project/leader"})
+    public ResponseBean deleteLeader(HttpServletRequest request,
+                                     @RequestParam("LeaderId") String LeaderId,
+                                     @RequestParam("projectId") String projectId){
+        try {
+            accountRepository.deleteProjectLeader(request.getHeader(TOKEN), LeaderId, projectId);
             return new ResponseBean<>(200, "update success", null);
         } catch (Exception e) {
             return new ResponseBean<>(401, "update failed :" + e.getMessage(), null);
