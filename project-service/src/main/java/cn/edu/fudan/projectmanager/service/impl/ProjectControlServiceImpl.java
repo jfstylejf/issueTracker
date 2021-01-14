@@ -244,8 +244,6 @@ public class ProjectControlServiceImpl implements ProjectControlService {
         }
         // TODO 基于 rest 调用所有扫描服务把与该 repo相关的所有数据删除
 
-
-
         accountRepositoryDao.deleteRelation(subRepoUuid);
         subRepositoryDao.deleteRepo(subRepoUuid);
     }
@@ -418,6 +416,23 @@ public class ProjectControlServiceImpl implements ProjectControlService {
             || !deleteMeasureRepoSucess || !deleteScanRepoSucess){
             throw new RunTimeException("delete failed!");
         }
+    }
+
+    @Override
+    public void addProjectLeader(String token, String newLeaderId, String projectId) throws Exception {
+        UserInfoDTO userInfoDTO = getUserInfoByToken(token);
+        String accountUuid = userInfoDTO.getUuid();
+
+        if (StringUtils.isEmpty(newLeaderId)) {
+            return;
+        }
+        // 0 表示超级管理员 只有超级管理员能操作
+        if (userInfoDTO.getRight() != 0) {
+            throw new RunTimeException("this user has no right to change project Leader");
+        }
+        //只有超级管理员才会有此权限
+        log.warn("project leader changed by {}! new leader is {}", userInfoDTO.getUuid(), newLeaderId);
+        accountProjectDao.addProjectLeaderAP(accountUuid, newLeaderId, projectId);
     }
 
     /**

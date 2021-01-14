@@ -23,4 +23,12 @@ public interface AccountMapper {
     Integer queryRightByAccountName(@Param("accountName") String accountName);
 
     void updateProjectNameAP(@Param("accountUuid") String accountUuid, @Param("oldProjectName")String oldProjectName, @Param("newProjectName")String newProjectName);
+
+    /**
+     * 更新项目负责人
+     * @param  accountUuid 当前登录人
+     * @param  newLeaderId 新负责人ID
+     * @param  projectId 项目ID
+     */
+    void addProjectLeaderAP(@Param("accountUuid") String accountUuid, @Param("newLeaderId") String newLeaderId, @Param("projectId") String projectId);
 }

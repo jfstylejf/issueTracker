@@ -19,13 +19,16 @@ public interface ProjectMapper {
 
     /**
      * 插入repo信息
-     * @param  accountUuid,projectName
+     * @param  accountUuid 当前登录人
+     * @param  projectName 项目名
      */
     void insertOneProject (@Param("accountUuid")String accountUuid,@Param("projectName") String projectName);
 
     /**
      * 更新项目名
-     * @param  accountUuid,oldProjectName,newProjectName
+     * @param  accountUuid 当前登录人
+     * @param  oldProjectName 旧项目名
+     * @param  newProjectName 新项目名
      */
     void updateProjectNameP(@Param("accountUuid") String accountUuid, @Param("oldProjectName")String oldProjectName, @Param("newProjectName")String newProjectName);
 
