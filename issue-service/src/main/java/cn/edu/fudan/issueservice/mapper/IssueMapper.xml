@@ -445,7 +445,7 @@
                 </foreach>
             </if>
         </trim>
-        order by a.priority , a.end_commit_date desc , a.start_commit_date desc , a.display_id
+        order by a.status, a.start_commit_date, a.priority, a.display_id
         <if test="start != null  and ps != null ">
             limit #{start},#{ps}
         </if>
@@ -512,7 +512,7 @@
                 </foreach>
             </if>
         </trim>
-        order by a.priority , a.end_commit_date desc , a.start_commit_date desc , a.display_id
+        order by a.status, a.start_commit_date, a.priority, a.display_id
         <if test="start != null  and ps != null ">
             limit #{start},#{ps}
         </if>
@@ -644,6 +644,9 @@
                 AND <![CDATA[ start_commit_date <= #{until} ]]>
             </if>
         </where>
+        <if test="start != null  and ps != null ">
+            limit #{start},#{ps}
+        </if>
     </select>
 
     <select id="getOtherIntroduceSelfSolvedIssueDetail" parameterType="Map" resultType="com.alibaba.fastjson.JSONObject">
@@ -666,6 +669,9 @@
                 AND <![CDATA[ start_commit_date <= #{until} ]]>
             </if>
         </where>
+        <if test="start != null  and ps != null ">
+            limit #{start},#{ps}
+        </if>
     </select>
 
     <select id="getSelfIntroduceLivingIssueDetail" parameterType="Map" resultType="com.alibaba.fastjson.JSONObject">
@@ -688,6 +694,9 @@
                 AND <![CDATA[ start_commit_date <= #{until} ]]>
             </if>
         </where>
+        <if test="start != null  and ps != null ">
+            limit #{start},#{ps}
+        </if>
     </select>
 
     <select id="getSelfIntroduceOtherSolvedIssueDetail" parameterType="Map" resultType="com.alibaba.fastjson.JSONObject">
@@ -710,6 +719,9 @@
                 AND <![CDATA[ start_commit_date <= #{until} ]]>
             </if>
         </where>
+        <if test="start != null  and ps != null ">
+            limit #{start},#{ps}
+        </if>
     </select>
 
     <select id="getIssueIntroducers" resultType="String">
@@ -726,38 +738,5 @@
         </where>
         ORDER BY producer
     </select>
-
-    <select id="getSelfIntroduceLivingIssueCount" parameterType="Map" resultType="com.alibaba.fastjson.JSONObject">
-        SELECT producer, count(*) as livingIssueCount
-        FROM issue
-        <where>
-            solver IS NULL
-            AND status = 'Open'
-            AND manual_status = 'Default'
-            <if test="repoList != null and repoList.size > 0">
-                AND repo_id IN
-                <foreach collection="repoList" separator="," open="(" close=")" item="repo_id">
-                    #{repo_id}
-                </foreach>
-            </if>
-            <if test="producerList != null and producerList.size > 0">
-                AND producer IN
-                <foreach collection="producerList" separator="," open="(" close=")" item="producer">
-                    #{producer}
-                </foreach>
-            </if>
-            <if test="since != null and since != '' ">
-                AND <![CDATA[ start_commit_date >= #{since} ]]>
-            </if>
-            <if test="until != null and until != '' ">
-                AND <![CDATA[ start_commit_date <= #{until} ]]>
-            </if>
-            <if test="tool != null and tool != '' ">
-                AND tool = #{tool}
-            </if>
-        </where>
-        group by producer
-    </select>
-
 
 </mapper>

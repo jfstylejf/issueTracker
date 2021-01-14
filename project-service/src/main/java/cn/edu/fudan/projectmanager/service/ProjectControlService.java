@@ -115,4 +115,13 @@ public interface ProjectControlService {
      * @throws Exception e
      */
     void deleteRepo(@NotNull String token, String repoUuid) throws Exception;
+
+    /**
+     * 修改项目负责人
+     * @param token 用户token
+     * @param newLeaderId  新负责人ID
+     * @param projectId  项目ID
+     * @throws Exception e
+     */
+    void addProjectLeader(String token, String newLeaderId, String projectId) throws Exception;
 }

@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Arrays;
 import java.util.List;
@@ -32,7 +33,7 @@ import java.util.List;
 @CrossOrigin
 @RequestMapping("/user")
 public class AccountController {
-
+    @Autowired
     private AccountService accountService;
 
     @Autowired
@@ -112,12 +113,12 @@ public class AccountController {
 
     @ApiOperation(value="用户登录",notes="@return AccountVO",httpMethod = "GET")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "username", value = "用户姓名", dataType = "String", required = true,defaultValue = "admin"),
+            @ApiImplicitParam(name = "username", value = "用户姓名", dataType = "String", required = false,defaultValue = "admin"),
             @ApiImplicitParam(name = "password", value = "密码", dataType = "String", required = true,defaultValue = "YWRtaW4="),
-            @ApiImplicitParam(name = "email", value = "用户邮箱", dataType = "String", required = true,defaultValue = "123@fudan.edu.cn")
+            @ApiImplicitParam(name = "email", value = "用户邮箱", dataType = "String", required = false,defaultValue = "123@fudan.edu.cn")
     })
     @GetMapping(value = {"/login"})
-    public Object login(@RequestParam("username") String username, @RequestParam("password") String password,@RequestParam("email") String email, HttpServletResponse response) {
+    public Object login(@RequestParam(value = "username", required = false) String username, @RequestParam("password") String password,@RequestParam(value = "email", required = false) String email , HttpServletResponse response) {
         AccountVO accountVO = accountService.login(username, password, email);
         ResponseEntity<AccountVO> responseBean = new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), HttpStatus.INTERNAL_SERVER_ERROR.name(), null);
         if (accountVO != null) {
@@ -231,6 +232,20 @@ public class AccountController {
         return new ResponseEntity<>(200, "success",accountService.getAccountNameById(accountId));
     }
 
+    @ApiOperation(value="获取用户姓名",httpMethod = "GET")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "account_name", value = "用户名", dataType = "String", required = true),
+    })
+    @GetMapping(value = "/account/name")
+    public ResponseEntity<Object> getAccount(@RequestParam("account_name") String accountName){
+        try {
+            return new ResponseEntity<>(200, "get account success!", accountService.getAccountByName(accountName));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(401, "get account failed!", null);
+        }
+    }
+
     @ApiOperation(value="自动更新人员列表",httpMethod = "POST")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "gitname", value = "更新后的gitname列表", dataType = "List<String>", required = true)
@@ -249,13 +264,13 @@ public class AccountController {
 
     @ApiOperation(value="获取给定条件下的开发人员（聚合后）列表",httpMethod = "GET")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "repo_uuids", value = "repo库", dataType = "String", required = false,defaultValue = "afc0b210-3465-11eb-8dca-4dbb5f7a5f33,153ee1d4-3457-11eb-8dca-4dbb5f7a5f33"),
+            @ApiImplicitParam(name = "repo_uuids", value = "repo库", dataType = "String", required = false,defaultValue = "a140dc46-50db-11eb-b7c3-394c0d058805"),
             @ApiImplicitParam(name = "since", value = "起始时间", dataType = "String", required = false,defaultValue = "2020-01-01"),
             @ApiImplicitParam(name = "until", value = "结束时间", dataType = "String", required = false,defaultValue = "2020-12-31"),
             @ApiImplicitParam(name = "is_whole", value = "是否获取所有数据（不进行分页）", dataType = "Boolean", required = false,defaultValue = "0"),
             @ApiImplicitParam(name = "page", value = "分页的第几页", dataType = "Integer", required = false,defaultValue = "1"),
             @ApiImplicitParam(name = "ps", value = "分页中每页的大小", dataType = "Integer", required = false,defaultValue = "10"),
-            @ApiImplicitParam(name = "order", value = "要排序的字段", dataType = "String", required = false,defaultValue = "developer_unique_name"),
+            @ApiImplicitParam(name = "order", value = "要排序的字段", dataType = "String", required = false,defaultValue = "developerName"),
             @ApiImplicitParam(name = "asc", value = "是否升序", dataType = "Boolean", required = false,defaultValue = "1")
     })
     @GetMapping(value = "/developers")
@@ -265,7 +280,7 @@ public class AccountController {
                                    @RequestParam(value = "is_whole", required = false, defaultValue = "0") Boolean isWhole,
                                    @RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
                                    @RequestParam(value = "ps", required = false, defaultValue = "30") Integer pageSize,
-                                   @RequestParam(value = "order", required = false, defaultValue = "developer_unique_name") String order,
+                                   @RequestParam(value = "order", required = false, defaultValue = "developerName") String order,
                                    @RequestParam(value = "asc", required = false, defaultValue = "1") Boolean isAsc
                                    ){
         String[] repoListArr = repoUuids.split(",");

@@ -27,6 +27,10 @@ public class AccountDao {
         return accountMapper.getAccountByAccountName(accountName);
     }
 
+    public Account getAccountByAccountNameExceptAdmin(String accountName) {
+        return accountMapper.getAccountByAccountNameExceptAdmin(accountName);
+    }
+
     public boolean isAccountNameExist(String accountName) {
         return getAccountByAccountName(accountName) != null;
     }

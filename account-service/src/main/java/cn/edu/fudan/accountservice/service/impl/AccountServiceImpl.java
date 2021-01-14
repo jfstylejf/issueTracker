@@ -111,6 +111,14 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    public Account getAccountByName(String accountName) {
+        if(accountName != null){
+            return accountDao.getAccountByAccountNameExceptAdmin(accountName);
+        }
+        return null;
+    }
+
+    @Override
     public Account getAccountByToken(String userToken) {
         if(userToken != null){
             String username = stringRedisTemplate.opsForValue().get("login:" + userToken);

@@ -28,17 +28,17 @@ public class CompileUtil {
     private static int compileMaxWaitTime;
 
     @Value("${mvnHome}")
-    public static void setMvnHome(String mvnHome) {
+    public void setMvnHome(String mvnHome) {
         CompileUtil.mvnHome = mvnHome;
     }
 
     @Value("${gradleBin}")
-    public static void setGradleBin(String gradleBin) {
+    public void setGradleBin(String gradleBin) {
         CompileUtil.gradleBin = gradleBin;
     }
 
     @Value("${compile.maxWaitTime}")
-    public static void setCompileMaxWaitTime(int compileMaxWaitTime) {
+    public void setCompileMaxWaitTime(int compileMaxWaitTime) {
         CompileUtil.compileMaxWaitTime = compileMaxWaitTime;
     }
 

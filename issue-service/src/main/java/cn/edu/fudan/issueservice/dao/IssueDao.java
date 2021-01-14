@@ -124,8 +124,4 @@ public class IssueDao {
     public List<String> getIssueIntroducers(List<String> repoUuids) {
         return issueMapper.getIssueIntroducers(repoUuids);
     }
-
-    public List<JSONObject> getSelfIntroduceLivingIssueCount(Map<String, Object> query) {
-        return issueMapper.getSelfIntroduceLivingIssueCount(query);
-    }
 }

@@ -20,6 +20,10 @@ public class AccountProjectDao {
         accountMapper.updateProjectNameAP(accountUuid, oldProjectName, newProjectName);
     }
 
+    public void addProjectLeaderAP(String accountUuid, String newLeaderId, String projectId) {
+        accountMapper.addProjectLeaderAP(accountUuid, newLeaderId, projectId);
+    }
+
     @Autowired
     public void setAccountMapper(AccountMapper accountMapper) {
         this.accountMapper = accountMapper;

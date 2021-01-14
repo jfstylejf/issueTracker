@@ -2,6 +2,7 @@ package cn.edu.fudan.issueservice.mapper;
 
 import cn.edu.fudan.issueservice.domain.dbo.IssueScan;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -63,4 +64,12 @@ public interface IssueScanMapper {
      * @return 扫描过的issueScan记录
      */
     List<String> getScannedCommitList(String repoUuid, String tool);
+
+    /**
+     * 获取扫描起始commit
+     * @param repoUuid  repoUuid
+     * @return 扫描起始commit
+     */
+    @Select("select start_commit from scan where repo_id = #{repoUuid}")
+    String getStartCommitByRepoUuid(String repoUuid);
 }
