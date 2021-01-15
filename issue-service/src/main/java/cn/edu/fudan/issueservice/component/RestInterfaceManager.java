@@ -70,7 +70,7 @@ public class RestInterfaceManager {
         JSONArray rows = result.getJSONArray("data");
         for(Object row : rows){
             JSONObject developer = (JSONObject)row;
-            developers.add(developer.getString("developer_unique_name"));
+            developers.add(developer.getString("developerName"));
         }
         return developers;
     }
@@ -374,7 +374,7 @@ public class RestInterfaceManager {
         assert body != null;
         if(body.getIntValue("code") != 200){
             logger.error("request /measure/developer/workLoad failed");
-            throw  new RuntimeException("get data from /measure/developer/work-load failed!");
+            throw new RuntimeException("get data from /measure/developer/work-load failed!");
         }
 
         Map<String, Integer> developerWorkLoad = new HashMap<>(16);

@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 /**
  * description:
@@ -33,8 +32,8 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
 
     private RestInterfaceManager restInterfaceManager;
 
-    private final String repoList = "repoList", developerStr = "developer", solvedIssueCountStr = "solvedIssueCount",
-            quantityStr = "quantity", addedIssueCountStr = "addedIssueCount", allStr = "all";
+    private final static String REPO_LIST = "repoList", DEVELOPER = "developer", QUANTITY = "quantity",  DEVELOPER_NAME = "developerName",
+            ADD = "add", SOLVE = "solve", ISSUE_COUNT = "issueCount", LOC ="loc";
 
     @Override
     public List<Map.Entry<String, JSONObject>> getNotSolvedIssueCountByToolAndRepoUuid(List<String> repoUuids, String tool, String order, String commitUuid) {
@@ -71,41 +70,39 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
 
     @Override
     public Map<String,Object> getDayAvgSolvedIssue(Map<String, Object> query) {
-
-        String developer = query.get(developerStr).toString();
-
-        JSONObject developerDetail = getDeveloperCodeQuality(query, 0, false).get(developer);
+        Map<String, Object> developerCodeQuality = getDeveloperCodeQuality(query, 0, false);
+        JSONObject solvedDetail = (JSONObject) developerCodeQuality.get(SOLVE);
 
         double days = (DateTimeUtil.stringToLocalDate(query.get("until").toString()).toEpochDay() - DateTimeUtil.stringToLocalDate(query.get("since").toString()).toEpochDay()) * 5.0 / 7;
 
         return new HashMap<String, Object>(6){{
-            put("solvedIssuesCount", developerDetail.getInteger(solvedIssueCountStr));
+            put("solvedIssuesCount", solvedDetail.getInteger(ISSUE_COUNT));
             put("days", days);
-            put("dayAvgSolvedIssue", developerDetail.getInteger(solvedIssueCountStr) / days);
+            put("dayAvgSolvedIssue", solvedDetail.getInteger(ISSUE_COUNT) / days);
         }};
     }
 
     @Override
-    public Map<String, JSONObject> getDeveloperCodeQuality(Map<String, Object> query, int codeQuality, Boolean needAll) {
+    public Map<String, Object> getDeveloperCodeQuality(Map<String, Object> query, int codeQuality, Boolean needAll) {
 
         Map<String, Integer> developerWorkload = restInterfaceManager.getDeveloperWorkload(query);
 
-        Map<String, JSONObject> developersDetail = new HashMap<>(32);
+        Map<String, Object> developersDetail = new HashMap<>(32);
 
         AtomicInteger loc = new AtomicInteger();
         AtomicInteger allAddedIssueCount = new AtomicInteger();
         AtomicInteger allSolvedIssueCount = new AtomicInteger();
 
         if(codeQuality != 0) {
-            query.put(repoList, SegmentationUtil.splitStringList(query.get(repoList) == null ? null : query.get(repoList).toString()));
+            query.put(REPO_LIST, SegmentationUtil.splitStringList(query.get(REPO_LIST) == null ? null : query.get(REPO_LIST).toString()));
         }
 
         developerWorkload.keySet().forEach(r -> {
             query.put("solver", null);
-            query.put(developerStr, r);
+            query.put(DEVELOPER, r);
             int developerAddIssueCount = issueDao.getIssueFilterListCount(query);
 
-            query.put(developerStr, null);
+            query.put(DEVELOPER, null);
             query.put("solver", r);
             int developerSolvedIssueCount = issueDao.getSolvedIssueFilterListCount(query);
 
@@ -113,23 +110,26 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
             allAddedIssueCount.addAndGet(developerAddIssueCount);
             allSolvedIssueCount.addAndGet(developerSolvedIssueCount);
 
-            developersDetail.put(r, new JSONObject(){{
-            put(addedIssueCountStr, developerAddIssueCount);
-            put(solvedIssueCountStr, developerSolvedIssueCount);
-            put("loc", developerWorkload.get(r));
-            put("addQuality", developerWorkload.get(r) == 0 ? 0 : developerAddIssueCount * 100.0 / developerWorkload.get(r));
-            put("solveQuality", developerWorkload.get(r) == 0 ? 0 : developerSolvedIssueCount * 100.0 / developerWorkload.get(r));
+            developersDetail.put(DEVELOPER_NAME, r);
+            developersDetail.put(LOC, developerWorkload.get(r));
+            developersDetail.put(ADD, new JSONObject(){{
+                put(QUANTITY, developerWorkload.get(r) == 0 ? 0 : developerAddIssueCount * 100.0 / developerWorkload.get(r));
+                put(ISSUE_COUNT, developerAddIssueCount);
+            }});
+            developersDetail.put(SOLVE, new JSONObject(){{
+                put(QUANTITY, developerWorkload.get(r) == 0 ? 0 : developerSolvedIssueCount * 100.0 / developerWorkload.get(r));
+                put(ISSUE_COUNT, developerSolvedIssueCount);
             }});
         });
 
-        if(needAll) {
-            developersDetail.put(allStr, new JSONObject() {{
-                put("loc", loc);
-                put("allAddedIssueCount", allAddedIssueCount);
-                put("allSolvedIssueCount", allSolvedIssueCount);
-                put("E/L", loc.intValue() == 0 ? 0 : allSolvedIssueCount.intValue() * 100.0 / loc.intValue());
-                put("N/L", loc.intValue() == 0 ? 0 : allAddedIssueCount.intValue() * 100.0 / loc.intValue());
-            }});
+        if(Boolean.TRUE.equals(needAll)) {
+            return new HashMap<String, Object>(8){{
+                put("eliminatedIssuePerHundredLine", loc.intValue() == 0 ? 0 : allSolvedIssueCount.doubleValue() / loc.intValue());
+                put("notedIssuePreHundredLine", loc.intValue() == 0 ? 0 : allAddedIssueCount.doubleValue() / loc.intValue());
+                put("addedIssueCount", allAddedIssueCount);
+                put("solvedIssueCount", allSolvedIssueCount);
+                put("loc", loc.intValue());
+            }};
         }
         return developersDetail;
     }
@@ -151,9 +151,9 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
     }
 
     private JSONObject handleIssuesLifeCycle(List<Integer> issuesLifeCycle) {
-        if(issuesLifeCycle == null || issuesLifeCycle.size() == 0){
+        if(issuesLifeCycle == null || issuesLifeCycle.isEmpty()){
             return new JSONObject(){{
-                put(quantityStr, 0);
+                put(QUANTITY, 0);
                 put("min", 0);
                 put("max", 0);
                 put("mid", 0);
@@ -161,7 +161,7 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
         }
         issuesLifeCycle.sort(Comparator.comparingInt(o -> o));
         return new JSONObject(){{
-            put(quantityStr, issuesLifeCycle.size());
+            put(QUANTITY, issuesLifeCycle.size());
             put("min", issuesLifeCycle.get(0));
             put("max", issuesLifeCycle.get(issuesLifeCycle.size() - 1));
             put("mid", issuesLifeCycle.get(issuesLifeCycle.size() / 2));
@@ -211,35 +211,27 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
         if(isAsc == null){
             return developersLifecycle;
         }
-        developersLifecycle.sort((o1, o2) -> {
-            int num1 = 0, num2 = 0;
-            for(String name : o1.keySet()){
-                JSONObject detail = (JSONObject) o1.get(name);
-                num1 += detail.getIntValue(quantityStr);
-            }
-            for(String name : o2.keySet()){
-                JSONObject detail = (JSONObject) o2.get(name);
-                num2 += detail.getIntValue(quantityStr);
-            }
-            return isAsc ? num1 - num2 : num2 - num1;
-        });
+        developersLifecycle.sort((o1, o2) -> isAsc ? o1.values().stream().mapToInt(detail -> detail.getIntValue(QUANTITY)).sum() - o2.values().stream().mapToInt(detail -> detail.getIntValue(QUANTITY)).sum()
+                    : o1.values().stream().mapToInt(detail -> detail.getIntValue(QUANTITY)).sum() - o2.values().stream().mapToInt(detail -> detail.getIntValue(QUANTITY)).sum());
         return developersLifecycle.subList(ps * (page -1), Math.min(developersLifecycle.size(), ps * page));
     }
 
     @Override
-    public Map<String, JSONObject> handleSortCodeQuality(Map<String, JSONObject> result, Boolean isAsc) {
-        if(isAsc == null){
-            return result;
-        }
+    public Map<String, Object> handleSortCodeQuality(List<Map<String, Object>> result, Boolean isAsc, int ps, int page) {
+        result.sort((o1, o2) -> {
+            JSONObject temp1 = (JSONObject) o1.get(ADD);
+            JSONObject temp2 = (JSONObject) o2.get(ADD);
+            return isAsc ? temp1.getIntValue(ISSUE_COUNT) - temp2.getIntValue(ISSUE_COUNT)
+                    : temp2.getIntValue(ISSUE_COUNT) - temp1.getIntValue(ISSUE_COUNT);
+        });
 
-        Map<String, JSONObject> finalOut = new LinkedHashMap<>(result.size());
-        result.entrySet()
-                .stream()
-                .sorted(((o1, o2) -> isAsc ? o1.getValue().getIntValue(addedIssueCountStr) - o2.getValue().getIntValue(addedIssueCountStr)
-                            : o2.getValue().getIntValue(addedIssueCountStr) - o1.getValue().getIntValue(addedIssueCountStr)))
-                .collect(Collectors.toList()).forEach(r -> finalOut.put(r.getKey(), r.getValue()));
-
-        return finalOut;
+        return new HashMap<String, Object>(8){{
+            put("page", page);
+            put("total", result.size() / ps + 1);
+            put("record", (page - 1) * ps > result.size() ? 0 : Math.min(result.size(), ps));
+            put("rows", (page - 1) * ps > result.size() ? new ArrayList<>() :
+                    result.subList((page - 1) * ps, Math.min(result.size(), page * ps)));
+        }};
     }
 
     @Autowired

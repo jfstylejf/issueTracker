@@ -34,7 +34,7 @@ public interface IssueMeasureInfoService {
      * @param needAll needAll
      * @return developer code quality
      */
-    Map<String, JSONObject> getDeveloperCodeQuality(Map<String, Object> query, int codeQuality, Boolean needAll);
+    Map<String, Object> getDeveloperCodeQuality(Map<String, Object> query, int codeQuality, Boolean needAll);
 
     /**
      * 清空缓存
@@ -74,7 +74,9 @@ public interface IssueMeasureInfoService {
      * 对code quality排序
      * @param result result
      * @param asc asc
+     * @param ps  ps
+     * @param page  page
      * @return 排序后的code quality
      */
-    Map<String, JSONObject> handleSortCodeQuality(Map<String, JSONObject> result, Boolean asc);
+    Map<String, Object> handleSortCodeQuality(List<Map<String, Object>> result, Boolean asc, int ps, int page);
 }
