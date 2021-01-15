@@ -78,7 +78,7 @@ public class RestInterfaceManager {
         headers.add("token",token);
         HttpEntity request = new HttpEntity(headers);
         StringBuilder url = new StringBuilder();
-        url.append(projectServicePath).append("/inner/project?repo_uuid=").append(repoUuid);
+        url.append(projectServicePath).append("/inner/repo?repo_uuid=").append(repoUuid);
         ResponseEntity responseEntity =restTemplate.exchange(url.toString(),HttpMethod.GET,request,JSONObject.class);
         String body = responseEntity.getBody().toString();
         JSONObject result = JSONObject.parseObject(body);
@@ -92,10 +92,10 @@ public class RestInterfaceManager {
         HttpEntity request= new HttpEntity(headers);
         StringBuilder url = new StringBuilder();
         url.append(projectServicePath).append("/project/all");
-        ResponseEntity responseEntity = restTemplate.exchange(url.toString(),HttpMethod.GET,request,Map.class);
-        Map<String,List<Map<String,String>>> result = (Map<String,List<Map<String,String>>>) responseEntity.getBody();
+        ResponseEntity<ResponseBean> responseEntity = restTemplate.exchange(url.toString(),HttpMethod.GET,request,ResponseBean.class);
+        ResponseBean result = responseEntity.getBody();
         if(result!=null) {
-            return result;
+            return ( Map<String,List<Map<String,String>>>) result.getData();
         }
         return null;
     }

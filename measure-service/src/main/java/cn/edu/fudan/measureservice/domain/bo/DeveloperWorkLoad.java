@@ -15,9 +15,9 @@ import java.io.Serializable;
 @AllArgsConstructor
 @Builder
 public class DeveloperWorkLoad implements Serializable {
-    private String developer;
+    private String developerName;
     private int addLines;
-    private int delLines;
+    private int deleteLines;
     private int totalLoc;
     private int commitCount;
     private int changedFiles;

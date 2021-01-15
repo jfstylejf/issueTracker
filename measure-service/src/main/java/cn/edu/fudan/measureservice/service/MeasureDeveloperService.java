@@ -71,24 +71,13 @@ public class MeasureDeveloperService {
             if(member == null || "".equals(member)) {
                 continue;
             }
-            // fixme 通过measureDao来获取数据
             query.setDeveloper(member);
             DeveloperWorkLoad developerWorkLoad = measureDao.getDeveloperWorkLoadData(query);
-            developerWorkLoad.setDeveloper(member);
-            developerWorkLoad.setTotalLoc(developerWorkLoad.getAddLines() + developerWorkLoad.getDelLines());
+            developerWorkLoad.setDeveloperName(member);
+            developerWorkLoad.setTotalLoc(developerWorkLoad.getAddLines() + developerWorkLoad.getDeleteLines());
             developerWorkLoadList.add(developerWorkLoad);
         }
         return developerWorkLoadList;
-    }
-
-    private int getFixedTypeByMapper(Object object) {
-        if (object instanceof BigDecimal) {
-            return ((BigDecimal) object).intValue();
-        }else if(object instanceof Long){
-            return ((Long) object).intValue();
-        }else {
-            return (int) object;
-        }
     }
 
     public Object getStatementByCondition(String repoUuidList, String developer, String since, String until) throws ParseException {
@@ -139,8 +128,8 @@ public class MeasureDeveloperService {
         Query query1 = new Query(query.getToken(),query.getSince(),query.getUntil(),null,query.getRepoUuidList());
         DeveloperWorkLoad developerWorkLoad = measureDao.getDeveloperWorkLoadData(query);
         DeveloperWorkLoad developerWorkLoad1 = measureDao.getDeveloperWorkLoadData(query1);
-        int developerLOC = developerWorkLoad.getAddLines() + developerWorkLoad.getDelLines();
-        int totalLOC = developerWorkLoad1.getAddLines() + developerWorkLoad1.getDelLines();
+        int developerLOC = developerWorkLoad.getAddLines() + developerWorkLoad.getDeleteLines();
+        int totalLOC = developerWorkLoad1.getAddLines() + developerWorkLoad1.getDeleteLines();
         //获取代码新增、删除逻辑行数数据
         JSONObject allDeveloperStatements = restInterfaceManager.getStatements(repoUuid,query.getSince(),query.getUntil(),"");
         int developerAddStatement = 0;
@@ -903,6 +892,7 @@ public class MeasureDeveloperService {
             }
             developerCommitStandard.setDeveloperJiraCommitInfo(developerJiraCommitInfo);
             developerCommitStandard.setDeveloperJiraCommitCount(developerJiraCommitInfo.size());
+            developerCommitStandard.setDeveloperInvalidCommitCount(developerInvalidCommitInfo.size());
             developerCommitStandard.setDeveloperInvalidCommitInfo(developerInvalidCommitInfo);
             double commitStandard = developerCommitStandard.getDeveloperJiraCommitCount() * 1.0 / developerCommitStandard.getDeveloperValidCommitCount();
             developerCommitStandard.setCommitStandard(commitStandard);
