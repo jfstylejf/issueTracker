@@ -24,6 +24,10 @@ public class AccountProjectDao {
         accountMapper.addProjectLeaderAP(accountUuid, newLeaderId, projectId);
     }
 
+    public void deleteProjectLeaderAP(String accountUuid, String LeaderId, String projectId) {
+        accountMapper.deleteProjectLeaderAP(accountUuid, LeaderId, projectId);
+    }
+
     @Autowired
     public void setAccountMapper(AccountMapper accountMapper) {
         this.accountMapper = accountMapper;

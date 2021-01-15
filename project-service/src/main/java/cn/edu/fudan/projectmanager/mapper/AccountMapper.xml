@@ -63,4 +63,11 @@
 
     </insert>
 
+    <delete id="deleteProjectLeaderAP" parameterType="String">
+        delete from account_project
+        <where>
+            account_uuid = #{LeaderId} and project_id = #{projectId};
+        </where>
+    </delete>
+
 </mapper>

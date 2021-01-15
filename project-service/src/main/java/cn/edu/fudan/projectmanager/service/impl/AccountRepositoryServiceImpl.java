@@ -113,7 +113,7 @@ public class AccountRepositoryServiceImpl implements AccountRepositoryService {
         UserInfoDTO userInfoDTO = getUserInfoByToken(token);
         String accountUuid = userInfoDTO.getUuid();
 
-        if (StringUtils.isEmpty(newLeaderId)) {
+        if (StringUtils.isEmpty(newLeaderId) || StringUtils.isEmpty(projectId)) {
             return;
         }
         // 0 表示超级管理员 只有超级管理员能操作
@@ -123,6 +123,23 @@ public class AccountRepositoryServiceImpl implements AccountRepositoryService {
         //只有超级管理员才会有此权限
         log.warn("project leader changed by {}! new leader is {}", userInfoDTO.getUuid(), newLeaderId);
         accountProjectDao.addProjectLeaderAP(accountUuid, newLeaderId, projectId);
+    }
+
+    @Override
+    public void deleteProjectLeader(String token, String LeaderId, String projectId) throws Exception {
+        UserInfoDTO userInfoDTO = getUserInfoByToken(token);
+        String accountUuid = userInfoDTO.getUuid();
+
+        if (StringUtils.isEmpty(LeaderId) || StringUtils.isEmpty(projectId)) {
+            return;
+        }
+        // 0 表示超级管理员 只有超级管理员能操作
+        if (userInfoDTO.getRight() != 0) {
+            throw new RunTimeException("this user has no right to delete project Leader");
+        }
+        //只有超级管理员才会有此权限
+        log.warn("project leader deleted by {}!", userInfoDTO.getUuid());
+        accountProjectDao.deleteProjectLeaderAP(accountUuid, LeaderId, projectId);
     }
 
     @Override
