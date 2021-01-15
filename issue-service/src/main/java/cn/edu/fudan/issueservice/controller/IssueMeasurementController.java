@@ -194,17 +194,19 @@ public class IssueMeasurementController {
             @ApiImplicitParam(name = "all", value = "是否需要all字段", defaultValue = "true")
     })
     @GetMapping(value = {"/codewisdom/issue/developer/code-quality"})
-    public ResponseBean<Map<String, JSONObject>> getDeveloperCodeQuality(@RequestParam(value = "repo_uuids",required = false)String repoList,
+    public ResponseBean<Object> getDeveloperCodeQuality(@RequestParam(value = "repo_uuids",required = false)String repoList,
                                                 @RequestParam(value = "developers",required = false)String developer,
                                                 @RequestParam(value = "tool",required = false, defaultValue = "sonarqube")String tool,
                                                 @RequestParam(value = "manual_status",required = false, defaultValue = "Default")String manualStatus,
                                                 @RequestParam(value = "since",required = false)String since,
                                                 @RequestParam(value = "until",required = false)String until,
+                                                @RequestParam(value = "ps",required = false)Integer ps,
+                                                @RequestParam(value = "page",required = false)Integer page,
                                                 @RequestParam(value = "asc",required = false)Boolean asc,
-                                                @RequestParam(value = "all",required = false, defaultValue = "true")Boolean needAll){
+                                                @RequestParam(value = "all",required = false ,defaultValue = "false")Boolean needAll){
 
         Map<String, Object> query = new HashMap<>(10);
-        Map<String, JSONObject> result = new LinkedHashMap<>(32);
+        List<Map<String, Object>> result = new ArrayList<>();
         if(timeError.equals(DateTimeUtil.timeFormatIsLegal(since, false)) || timeError.equals(DateTimeUtil.timeFormatIsLegal(until, true))){
             return new ResponseBean<>(400, timeErrorMessage, null);
         }
@@ -220,9 +222,9 @@ public class IssueMeasurementController {
                 List<String> developers = restInterfaceManager.getDeveloperInRepo(repoList, since, until);
                 developers.forEach(r -> {
                     query.put(developerStr, r);
-                    result.putAll(issueMeasureInfoService.getDeveloperCodeQuality(query, 1, needAll));
+                    result.add(issueMeasureInfoService.getDeveloperCodeQuality(query, 1, needAll));
                 });
-                return new ResponseBean<>(200, success, issueMeasureInfoService.handleSortCodeQuality(result, asc));
+                return new ResponseBean<>(200, success, issueMeasureInfoService.handleSortCodeQuality(result, asc, ps, page));
             }
 
             List<String> developers = SegmentationUtil.splitStringList(developer);
@@ -233,7 +235,7 @@ public class IssueMeasurementController {
 
             developers.forEach(r -> {
                 query.put(developerStr, r);
-                result.putAll(issueMeasureInfoService.getDeveloperCodeQuality(query, 1, needAll));
+                result.add(issueMeasureInfoService.getDeveloperCodeQuality(query, 1, needAll));
             });
             return new ResponseBean<>(200, success, result);
         } catch (Exception e) {
