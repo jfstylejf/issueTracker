@@ -161,9 +161,7 @@ public class RestInterfaceManager {
         headers.add(tokenStr, userToken);
         HttpEntity<HttpHeaders> request = new HttpEntity<>(headers);
         ResponseEntity<JSONObject> responseEntity = restTemplate.exchange(projectServicePath  + "/project",HttpMethod.GET,request,JSONObject.class);
-        String body = Objects.requireNonNull(responseEntity.getBody()).toString();
-        JSONObject result = JSONObject.parseObject(body);
-        JSONArray reposDetail = result.getJSONArray("data");
+        JSONArray reposDetail = Objects.requireNonNull(responseEntity.getBody()).getJSONArray("data");
 
         for(int i = 0;i < reposDetail.size();i++){
             JSONObject repoDetail = reposDetail.getJSONObject(i);
