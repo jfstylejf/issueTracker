@@ -44,7 +44,7 @@ public interface AccountRepositoryService {
     Map<String, List<Map<String, String>>> getProjectAndRepoRelation(int recycled) throws Exception;
 
     /**
-     * 获取项目和负责人的对应关系
+     * 获取项目列表
      * @throws Exception e
      */
     List<Map<String, Object>> getProjectAll(String token) throws Exception;

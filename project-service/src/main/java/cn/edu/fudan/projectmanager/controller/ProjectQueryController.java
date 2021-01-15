@@ -61,7 +61,6 @@ public class ProjectQueryController {
         return new ResponseBean<>(200, "success", repositoryVos);
     }
 
-
     /**
      * todo issue 所有项目信息
      * @param

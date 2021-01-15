@@ -6,6 +6,7 @@ import cn.edu.fudan.projectmanager.dao.AccountRepositoryDao;
 import cn.edu.fudan.projectmanager.dao.ProjectDao;
 import cn.edu.fudan.projectmanager.dao.SubRepositoryDao;
 import cn.edu.fudan.projectmanager.domain.AccountRoleEnum;
+import cn.edu.fudan.projectmanager.domain.Project;
 import cn.edu.fudan.projectmanager.domain.SubRepository;
 import cn.edu.fudan.projectmanager.domain.dto.UserInfoDTO;
 import cn.edu.fudan.projectmanager.exception.RunTimeException;
@@ -75,6 +76,20 @@ public class AccountRepositoryServiceImpl implements AccountRepositoryService {
     }
 
     @Override
+    public List<Map<String, Object>> getProjectAll(String token)throws Exception {
+        List<Project> projectList = projectDao.getProjectList();
+        List<Map<String, Object>> results = new ArrayList<>();
+        projectList.forEach(project -> {
+            Map<String, Object> entity = new HashMap<>();
+            entity.put("projectId", project.getId());
+            entity.put("projectName", project.getProjectName());
+            entity.put("leaders", accountProjectDao.getLeaderListByProjectId(project.getId()));
+            results.add(entity);
+        });
+        return results;
+    }
+
+    @Override
     public SubRepository getRepoInfoByRepoId(String repoUuid) {
         return subRepositoryDao.getSubRepoByRepoUuid(repoUuid);
     }
@@ -82,12 +97,6 @@ public class AccountRepositoryServiceImpl implements AccountRepositoryService {
     @Override
     public String getRepoUuidByUuid(String uuid) throws Exception{
         return subRepositoryDao.getSubRepoByUuid(uuid).getRepoUuid();
-    }
-
-    @Override
-    public List<Map<String, Object>> getProjectAll(String token)throws Exception {
-        List<Map<String, Object>> result = projectDao.getProjectAll();
-        return result;
     }
 
     @Override

@@ -70,4 +70,12 @@
         </where>
     </delete>
 
+    <select id="getLeaderListByProjectId" parameterType="String" resultType="java.util.HashMap">
+        SELECT account_uuid,account_name
+        from  account_project
+        <where>
+            project_id = #{projectId};
+        </where>
+    </select>
+
 </mapper>

@@ -285,7 +285,8 @@ public class ProjectControlServiceImpl implements ProjectControlService {
             throw new RunTimeException("this user has no right to add project");
         }
 
-        if(projectName.equals(projectDao.getProjectAll().toString()))
+
+        if(projectDao.getProjectByName(projectName) != null)
         {
             throw new RunTimeException("project name has been used");
         }

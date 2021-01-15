@@ -1,5 +1,6 @@
 package cn.edu.fudan.projectmanager.mapper;
 
+import cn.edu.fudan.projectmanager.domain.Account;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
@@ -18,6 +19,7 @@ import java.util.Map;
 public interface AccountMapper {
 
     List<Map<String, Object>> getProjectInfoByAccountName(@Param("accountName") String accountName);
+
 
     @Select("SELECT account_right FROM account WHERE account_name = #{accountName}  LIMIT 1")
     Integer queryRightByAccountName(@Param("accountName") String accountName);
@@ -39,4 +41,10 @@ public interface AccountMapper {
      * @param  projectId 项目ID
      */
     void deleteProjectLeaderAP(@Param("accountUuid") String accountUuid, @Param("LeaderId") String LeaderId, @Param("projectId") String projectId);
+
+    /**
+     * 通过项目ID获取负责人列表
+     * @param  projectId 项目ID
+     */
+    List<Map<String, String>> getLeaderListByProjectId(@Param("projectId") Integer projectId);
 }
