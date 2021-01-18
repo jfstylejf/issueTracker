@@ -72,7 +72,7 @@ public class MeasureDeveloperController {
     @CrossOrigin
     public ResponseBean<Object> getDeveloperWorkLoad(
             @RequestParam(value="developer",required = false)String developer,
-            @RequestParam(value = "developers",required = false) List<String> developers,
+            @RequestParam(value = "developers",required = false) String developers,
             @RequestParam(value="since",required = false)String since,
             @RequestParam(value="until",required = false)String until,
             @RequestParam(value = "project_name",required = false) String projectName,
