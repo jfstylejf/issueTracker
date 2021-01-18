@@ -75,11 +75,12 @@ public class CodeTrackerDao {
         Map<String,Object> map = new HashMap<>(10);
         int developerChangedFile = 0 ;
         int totalChangedFile = 0;
-        JSONObject changedFileCount = restInterface.getFocusFilesCount(repoUuid,since,until,developer);
+        // fixme
+       /* JSONObject changedFileCount = restInterface.getFocusFilesCount(repoUuid,since,until,developer);
         if(changedFileCount != null) {
             developerChangedFile = changedFileCount.getJSONObject("developer").getIntValue(developer);
             totalChangedFile = changedFileCount.getIntValue("total");
-        }
+        }*/
         map.put("developerChangedFile",developerChangedFile);
         map.put("totalChangedFile",totalChangedFile);
         return map;
