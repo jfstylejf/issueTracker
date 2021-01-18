@@ -250,6 +250,23 @@ public class ProjectController {
         }
     }
 
+    @ApiOperation(value="修改回收站状态",httpMethod = "PUT")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "recycled", value = "库的回收状态", dataType = "int", required = true),
+            @ApiImplicitParam(name = "repo_uuid", value = "库uuid", dataType = "String", required = true)
+    })
+    @PutMapping(value = {"/repository/recycle"})
+    public ResponseBean updateRecycleStatus(HttpServletRequest request,
+                                          @RequestParam("recycled") int recycled,
+                                          @RequestParam("repo_uuid") String repoUuid){
+        try {
+            projectControl.updateRecycleStatus(request.getHeader(TOKEN), recycled, repoUuid);
+            return new ResponseBean<>(200, "update success", null);
+        } catch (Exception e) {
+            return new ResponseBean<>(401, "update failed :" + e.getMessage(), null);
+        }
+    }
+
     @Autowired
     public void setAccountRepository(AccountRepositoryService accountRepository) {
         this.accountRepository = accountRepository;

@@ -85,7 +85,7 @@ public interface ProjectControlService {
     void deleteProject(String token, String projectName) throws Exception;
 
     /**
-     * 更新库信息
+     * 更新库名
      * @param token 用户token
      * @param oldRepoName 旧名
      * @param newRepoName  新名
@@ -101,5 +101,14 @@ public interface ProjectControlService {
      * @throws Exception e
      */
     void deleteRepo(@NotNull String token, String repoUuid) throws Exception;
+
+    /**
+     * 更新库回收状态
+     * @param token 用户token
+     * @param recycled 回收状态
+     * @param repoUuid  库的UUID
+     * @throws Exception e
+     */
+    void updateRecycleStatus(String token, Integer recycled, String repoUuid) throws Exception;
 
 }

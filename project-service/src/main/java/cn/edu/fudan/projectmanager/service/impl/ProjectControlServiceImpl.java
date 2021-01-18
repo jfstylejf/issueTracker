@@ -396,6 +396,27 @@ public class ProjectControlServiceImpl implements ProjectControlService {
         }
     }
 
+    @Override
+    public void updateRecycleStatus(String token, Integer recycled, String repoUuid) throws Exception {
+        UserInfoDTO userInfoDTO = getUserInfoByToken(token);
+        String accountUuid = userInfoDTO.getUuid();
+
+        // 0 表示超级管理员 只有超级管理员能操作
+        if (userInfoDTO.getRight() != 0) {
+            throw new RunTimeException("this user has no right to change repo recycled");
+        }
+
+        if (recycled == 0) {
+            //将库放入回收站中
+            subRepositoryDao.putIntoRecycled(accountUuid, recycled, repoUuid);
+        }
+
+        if (recycled == 1) {
+            //将库从回收站中拿出
+            subRepositoryDao.getFromRecycled(accountUuid, recycled, repoUuid);
+        }
+    }
+
 
     /**
      * setter
