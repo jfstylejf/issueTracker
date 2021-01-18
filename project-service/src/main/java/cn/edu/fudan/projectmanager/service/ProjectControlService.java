@@ -77,12 +77,6 @@ public interface ProjectControlService {
     void addOneProject(String token, String projectName) throws Exception;
 
     /**
-     * 获取全部项目
-     * @throws Exception e
-     */
-    List<Map<String, Object>> getProjectAll(String token);
-
-    /**
      * 删除项目
      * @param token 用户token
      * @param projectName projectName
@@ -91,7 +85,7 @@ public interface ProjectControlService {
     void deleteProject(String token, String projectName) throws Exception;
 
     /**
-     * 更新库信息
+     * 更新库名
      * @param token 用户token
      * @param oldRepoName 旧名
      * @param newRepoName  新名
@@ -99,14 +93,6 @@ public interface ProjectControlService {
      */
     void updateRepo(String token, String oldRepoName, String newRepoName) throws Exception;
 
-    /**
-     * 更新库所属项目
-     * @param token 用户token
-     * @param oldProjectName  旧名
-     * @param newProjectName  新名
-     * @throws Exception e
-     */
-    void updateRepoProject(String token, String oldProjectName, String newProjectName,String RepoUuid) throws Exception;
 
     /**
      * 删除库
@@ -117,11 +103,12 @@ public interface ProjectControlService {
     void deleteRepo(@NotNull String token, String repoUuid) throws Exception;
 
     /**
-     * 修改项目负责人
+     * 更新库回收状态
      * @param token 用户token
-     * @param newLeaderId  新负责人ID
-     * @param projectId  项目ID
+     * @param recycled 回收状态
+     * @param repoUuid  库的UUID
      * @throws Exception e
      */
-    void addProjectLeader(String token, String newLeaderId, String projectId) throws Exception;
+    void updateRecycleStatus(String token, Integer recycled, String repoUuid) throws Exception;
+
 }

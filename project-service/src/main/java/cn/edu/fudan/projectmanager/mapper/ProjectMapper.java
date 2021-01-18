@@ -1,9 +1,7 @@
 package cn.edu.fudan.projectmanager.mapper;
 
-import cn.edu.fudan.projectmanager.domain.SubRepository;
-import org.apache.ibatis.annotations.Insert;
+import cn.edu.fudan.projectmanager.domain.Project;
 import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Update;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -33,7 +31,12 @@ public interface ProjectMapper {
     void updateProjectNameP(@Param("accountUuid") String accountUuid, @Param("oldProjectName")String oldProjectName, @Param("newProjectName")String newProjectName);
 
     /**
-     * 获取所有项目
+     * 获取项目列表
      */
-    List<Map<String, Object>> getProjectP();
+    List<Project> getProjectListP();
+
+    /**
+     * 根据项目名获取项目信息
+     */
+    Project getProjectByNameP(String projectName);
 }

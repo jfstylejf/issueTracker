@@ -80,6 +80,14 @@ public class SubRepositoryDao {
         subRepositoryMapper.deleteRepoSR(accountUuid, RepoUuid);
     }
 
+    public void putIntoRecycled(String accountUuid, Integer recycled, String repoUuid){
+        subRepositoryMapper.putIntoRecycled(accountUuid, recycled, repoUuid);
+    }
+
+    public void getFromRecycled(String accountUuid, Integer recycled, String repoUuid){
+        subRepositoryMapper.getFromRecycled(accountUuid, recycled, repoUuid);
+    }
+
     @Autowired
     public void setSubRepositoryMapper(SubRepositoryMapper subRepositoryMapper) {
         this.subRepositoryMapper = subRepositoryMapper;

@@ -63,4 +63,19 @@
 
     </insert>
 
+    <delete id="deleteProjectLeaderAP" parameterType="String">
+        delete from account_project
+        <where>
+            account_uuid = #{LeaderId} and project_id = #{projectId};
+        </where>
+    </delete>
+
+    <select id="getLeaderListByProjectId" parameterType="String" resultType="java.util.HashMap">
+        SELECT account_uuid,account_name
+        from  account_project
+        <where>
+            project_id = #{projectId};
+        </where>
+    </select>
+
 </mapper>

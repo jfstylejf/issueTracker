@@ -285,18 +285,13 @@ public class ProjectControlServiceImpl implements ProjectControlService {
             throw new RunTimeException("this user has no right to add project");
         }
 
-        if(projectName.equals(projectDao.getProjectAll().toString()))
+
+        if(projectDao.getProjectByName(projectName) != null)
         {
             throw new RunTimeException("project name has been used");
         }
         //project表中插入信息
         projectDao.insertOneProject(accountUuid,projectName);
-    }
-
-    @Override
-    public List<Map<String, Object>> getProjectAll(String token){
-        List<Map<String, Object>> result = projectDao.getProjectAll();
-        return result;
     }
 
     @Override
@@ -351,23 +346,6 @@ public class ProjectControlServiceImpl implements ProjectControlService {
         return userInfoDTO;
     }
 
-    @Override
-    public void updateRepoProject(String token, String oldProjectName, String newProjectName,String RepoUuid) throws Exception {
-        UserInfoDTO userInfoDTO = getUserInfoByToken(token);
-        String accountUuid = userInfoDTO.getUuid();
-
-        if (StringUtils.isEmpty(oldProjectName) || StringUtils.isEmpty(newProjectName) || oldProjectName.equals(newProjectName)) {
-            return;
-        }
-        // 0 表示超级管理员 只有超级管理员能操作
-        if (userInfoDTO.getRight() != 0) {
-            throw new RunTimeException("this user has no right to change project Name");
-        }
-        //该repo的所有projectName 都会改变 只有超级管理员才会有此权限
-        log.warn("projectName changed by {}! old projectName is {}, new projectName is {}", userInfoDTO.getUuid(), oldProjectName, newProjectName);
-        accountRepositoryDao.updateRepoProjectAR(accountUuid, oldProjectName, newProjectName, RepoUuid);
-        subRepositoryDao.updateRepoProjectSR(accountUuid, oldProjectName, newProjectName, RepoUuid);
-    }
 
     @Override
     public void deleteRepo(@NotNull String token, String repoUuid) throws Exception {
@@ -419,21 +397,26 @@ public class ProjectControlServiceImpl implements ProjectControlService {
     }
 
     @Override
-    public void addProjectLeader(String token, String newLeaderId, String projectId) throws Exception {
+    public void updateRecycleStatus(String token, Integer recycled, String repoUuid) throws Exception {
         UserInfoDTO userInfoDTO = getUserInfoByToken(token);
         String accountUuid = userInfoDTO.getUuid();
 
-        if (StringUtils.isEmpty(newLeaderId)) {
-            return;
-        }
         // 0 表示超级管理员 只有超级管理员能操作
         if (userInfoDTO.getRight() != 0) {
-            throw new RunTimeException("this user has no right to change project Leader");
+            throw new RunTimeException("this user has no right to change repo recycled");
         }
-        //只有超级管理员才会有此权限
-        log.warn("project leader changed by {}! new leader is {}", userInfoDTO.getUuid(), newLeaderId);
-        accountProjectDao.addProjectLeaderAP(accountUuid, newLeaderId, projectId);
+
+        if (recycled == 0) {
+            //将库放入回收站中
+            subRepositoryDao.putIntoRecycled(accountUuid, recycled, repoUuid);
+        }
+
+        if (recycled == 1) {
+            //将库从回收站中拿出
+            subRepositoryDao.getFromRecycled(accountUuid, recycled, repoUuid);
+        }
     }
+
 
     /**
      * setter

@@ -70,7 +70,7 @@ public class RestInterfaceManager {
         JSONArray rows = result.getJSONArray("data");
         for(Object row : rows){
             JSONObject developer = (JSONObject)row;
-            developers.add(developer.getString("developer_unique_name"));
+            developers.add(developer.getString("developerName"));
         }
         return developers;
     }
@@ -109,9 +109,8 @@ public class RestInterfaceManager {
         headers.add(tokenStr, userToken);
         HttpEntity<HttpHeaders> request = new HttpEntity<>(headers);
         ResponseEntity<JSONObject> responseEntity = restTemplate.exchange(projectServicePath  + "/project/all",HttpMethod.GET,request,JSONObject.class);
-        String body = Objects.requireNonNull(responseEntity.getBody()).toString();
 
-        return JSONObject.parseObject(body);
+        return Objects.requireNonNull(responseEntity.getBody()).getJSONObject("data");
     }
 
     public Map<String, String> getAllRepoToRepoName(String userToken){
@@ -162,9 +161,7 @@ public class RestInterfaceManager {
         headers.add(tokenStr, userToken);
         HttpEntity<HttpHeaders> request = new HttpEntity<>(headers);
         ResponseEntity<JSONObject> responseEntity = restTemplate.exchange(projectServicePath  + "/project",HttpMethod.GET,request,JSONObject.class);
-        String body = Objects.requireNonNull(responseEntity.getBody()).toString();
-        JSONObject result = JSONObject.parseObject(body);
-        JSONArray reposDetail = result.getJSONArray("data");
+        JSONArray reposDetail = Objects.requireNonNull(responseEntity.getBody()).getJSONArray("data");
 
         for(int i = 0;i < reposDetail.size();i++){
             JSONObject repoDetail = reposDetail.getJSONObject(i);
@@ -374,7 +371,7 @@ public class RestInterfaceManager {
         assert body != null;
         if(body.getIntValue("code") != 200){
             logger.error("request /measure/developer/workLoad failed");
-            throw  new RuntimeException("get data from /measure/developer/work-load failed!");
+            throw new RuntimeException("get data from /measure/developer/work-load failed!");
         }
 
         Map<String, Integer> developerWorkLoad = new HashMap<>(16);
