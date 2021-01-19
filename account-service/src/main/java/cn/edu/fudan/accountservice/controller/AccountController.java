@@ -239,7 +239,11 @@ public class AccountController {
     @GetMapping(value = "/account/name")
     public ResponseEntity<Object> getAccount(@RequestParam("account_name") String accountName){
         try {
-            return new ResponseEntity<>(200, "get account success!", accountService.getAccountByName(accountName));
+            Account result = accountService.getAccountByName(accountName);
+            if(result == null){
+                return new ResponseEntity<>(412, "account not exist!", null);
+            }
+            return new ResponseEntity<>(200, "get account success!", result);
         } catch (Exception e) {
             e.printStackTrace();
             return new ResponseEntity<>(401, "get account failed!", null);
