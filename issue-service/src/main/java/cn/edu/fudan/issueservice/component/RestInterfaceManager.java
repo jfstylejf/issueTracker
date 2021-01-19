@@ -84,7 +84,7 @@ public class RestInterfaceManager {
      */
     public Map<String, String> getProjectByRepoId(String repoUuid) {
 
-        JSONObject projectInfo = restTemplate.getForObject(projectServicePath + "/inner/project?repo_uuid=" + repoUuid, JSONObject.class);
+        JSONObject projectInfo = Objects.requireNonNull(restTemplate.getForObject(projectServicePath + "/inner/project?repo_uuid=" + repoUuid, JSONObject.class)).getJSONObject("data");
 
         Map<String,String> result = new HashMap<>(8);
 
