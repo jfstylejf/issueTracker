@@ -870,7 +870,7 @@ public class MeasureDeveloperService {
             List<Map<String,String>> developerValidCommitInfo = projectDao.getValidCommitMsg(query);
 
             DeveloperCommitStandard developerCommitStandard = new DeveloperCommitStandard();
-            developerCommitStandard.setDeveloper(developer);
+            developerCommitStandard.setDeveloperName(developer);
             developerCommitStandard.setDeveloperValidCommitCount(developerValidCommitInfo.size());
             List<Map<String,String>> developerJiraCommitInfo = new ArrayList<>();
             List<Map<String,String>> developerInvalidCommitInfo = new ArrayList<>();
