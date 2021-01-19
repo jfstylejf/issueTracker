@@ -334,7 +334,7 @@ public class RestInterfaceManager {
     //-------------------------------------------clone service---------------------------------------
     public List<Map<String,Object>> getCloneMeasure(String repoUuid, String developer, String since, String until){
         StringBuilder url = new StringBuilder();
-        url.append(uniformServicePath).append("/cloneMeasure"  + "?repo_uuids=").append(repoUuid).append("&developer=").append(developer);
+        url.append(uniformServicePath).append("/cloneMeasure"  + "?repo_uuids=").append(repoUuid).append("&developers=").append(developer);
         if (since!=null && !"".equals(since)) {
             url.append("&since=").append(since);
         }
