@@ -126,10 +126,10 @@ public class IssueMeasurementController {
             @ApiImplicitParam(name = "ps", value = "页大小\n范围0-100\n为0时只返回issue数量", defaultValue = "10"),
             @ApiImplicitParam(name = "status", value = "issue状态", allowableValues = "living , other_solved , self_solved"),
             @ApiImplicitParam(name = "percent", value = "-1返回数量\n-2返回详情\n不传默认-2", allowableValues = "-1 , -2"),
-            @ApiImplicitParam(name = "target", value = "缺陷时谁引入\nself 自己引入,other 他人引入", allowableValues = "self , other"),
+            @ApiImplicitParam(name = "target", value = "缺陷是谁引入\nself 自己引入,other 他人引入", allowableValues = "self , other"),
     })
     @GetMapping(value = "/codewisdom/issue/lifecycle")
-    public ResponseBean<Object> getIssueLifecycleByConditions(HttpServletRequest request,@RequestParam(value = "developer", required = false) String developer,
+    public ResponseBean<Object> getIssueLifecycleByConditions(HttpServletRequest request,@RequestParam(value = "developers", required = false) String developer,
                                                @RequestParam(value = "repo_uuids", required = false) String repoUuids,
                                                @RequestParam(value = "since", required = false) String since,
                                                @RequestParam(value = "until", required = false) String until,
