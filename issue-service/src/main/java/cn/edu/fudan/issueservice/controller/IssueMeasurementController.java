@@ -4,7 +4,9 @@ import cn.edu.fudan.issueservice.component.RestInterfaceManager;
 import cn.edu.fudan.issueservice.domain.ResponseBean;
 import cn.edu.fudan.issueservice.service.IssueMeasureInfoService;
 import cn.edu.fudan.issueservice.util.DateTimeUtil;
+import cn.edu.fudan.issueservice.util.PagedGridResult;
 import cn.edu.fudan.issueservice.util.SegmentationUtil;
+import com.alibaba.druid.util.StringUtils;
 import com.alibaba.fastjson.JSONObject;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -243,6 +245,62 @@ public class IssueMeasurementController {
             return new ResponseBean<>(500, failed + e.getMessage(), null);
         }
     }
+
+    @ApiOperation(value = "开发者能力页面自己引入未解决缺陷数接口", notes = "@return Map<String, Object>\n{\n" +
+            "        \"addQuality\": 0.5444311156224048,\n" +
+            "        \"loc\": 10837,\n" +
+            "        \"solvedIssueCount\": 27,\n" +
+            "        \"addedIssueCount\": 59,\n" +
+            "        \"solveQuality\": 0.2491464427424564\n" +
+            "    }", httpMethod = "GET")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "developers", value = "开发人员姓名,支持多人查询"),
+            @ApiImplicitParam(name = "repo_uuids", value = "代码库uuid\n支持多选\n以英文逗号,分隔"),
+            @ApiImplicitParam(name = "since", value = "起始时间\n格式要求: yyyy-MM-dd"),
+            @ApiImplicitParam(name = "until", value = "终止时间\n格式要求: yyyy-MM-dd"),
+            @ApiImplicitParam(name = "page", value = "分页查询的第几页"),
+            @ApiImplicitParam(name = "ps", value = "分页查询每页的大小"),
+            @ApiImplicitParam(name = "order", value = "需要排序的字段"),
+            @ApiImplicitParam(name = "asc", value = "是否升序：1表示升序，0表示降序"),
+            @ApiImplicitParam(name = "tool", value = "工具名", allowableValues = "sonarqube", defaultValue = "sonarqube"),
+    })
+    @GetMapping(value = {"/codewisdom/issue/developer-data/living-issue-count"})
+    public ResponseBean<PagedGridResult> getDeveloperLivingIssueCount(@RequestParam(value = "repo_uuids",required = false)String repoUuids,
+                                                                      @RequestParam(value = "developers",required = false)String developers,
+                                                                      @RequestParam(value = "tool",required = false, defaultValue = "sonarqube")String tool,
+                                                                      @RequestParam(value = "page",required = false, defaultValue = "1")int page,
+                                                                      @RequestParam(value = "ps",required = false, defaultValue = "10")int ps,
+                                                                      @RequestParam(value = "since",required = false)String since,
+                                                                      @RequestParam(value = "until",required = false)String until,
+                                                                      @RequestParam(value = "order", required = false) String order,
+                                                                      @RequestParam(value = "asc",required = false, defaultValue = "1") Boolean isAsc){
+
+        Map<String, Object> query = new HashMap<>(10);
+
+        String timeError = "time format error";
+        if(timeError.equals(DateTimeUtil.timeFormatIsLegal(since, false)) || timeError.equals(DateTimeUtil.timeFormatIsLegal(until, true))){
+            return new ResponseBean<>(400, "The input time format error,should be yyyy-MM-dd.", null);
+        }
+        if (StringUtils.isEmpty(until)) {
+            until = DateTimeUtil.timeFormatIsLegal(until, true);
+        }
+        List<String> repoList = SegmentationUtil.splitStringList(repoUuids);
+        List<String> producerList = (developers == null || developers.length() == 0) ? restInterfaceManager.getDeveloperInRepo(repoUuids, since, until) : SegmentationUtil.splitStringList(developers);
+
+        query.put("since", since);
+        query.put("until", until);
+        query.put("producerList", producerList);
+        query.put("tool", tool);
+        query.put("repoList", repoList);
+
+        try {
+            return new ResponseBean<>(200, success, issueMeasureInfoService.getSelfIntroducedLivingIssueCount(page, ps, order, isAsc, query));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseBean<>(500, failed + e.getMessage(), null);
+        }
+    }
+
 
     @Autowired
     public void setIssueMeasureInfoService(IssueMeasureInfoService issueMeasureInfoService) {

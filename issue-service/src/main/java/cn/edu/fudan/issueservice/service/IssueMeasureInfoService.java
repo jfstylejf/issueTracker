@@ -1,5 +1,6 @@
 package cn.edu.fudan.issueservice.service;
 
+import cn.edu.fudan.issueservice.util.PagedGridResult;
 import com.alibaba.fastjson.JSONObject;
 
 import java.util.List;
@@ -79,4 +80,13 @@ public interface IssueMeasureInfoService {
      * @return 排序后的code quality
      */
     Map<String, Object> handleSortCodeQuality(List<Map<String, Object>> result, Boolean asc, int ps, int page);
+
+    /**
+     *
+     * @param query 查询条件
+     * @return producer, livingIssueCount
+     */
+    PagedGridResult getSelfIntroducedLivingIssueCount(int page, int ps, String order, Boolean isAsc, Map<String, Object> query);
+
+
 }
