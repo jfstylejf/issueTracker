@@ -38,9 +38,8 @@ public class PomAnalysisUtil {
             if (! pomPath.endsWith(CompileTool.maven.compileFile())) {
                 continue;
             }
-            try {
+            try (FileInputStream fis = new FileInputStream(new File(pomPath))) {
                 //pom 为 pom.xml 路径
-                FileInputStream fis = new FileInputStream(new File(pomPath));
                 MavenXpp3Reader reader = new MavenXpp3Reader();
                 Model model = reader.read(fis);
                 modules.addAll(model.getModules());
@@ -49,7 +48,6 @@ public class PomAnalysisUtil {
                 log.error("analyzed pom failed！");
                 log.error(e.getMessage());
             }
-
         }
         List<String> r = new ArrayList<>(4);
         names.keySet().stream().filter(n -> !modules.contains(n)).forEach(n -> r.add(names.get(n)));

@@ -16,10 +16,12 @@
 
     <insert id="addAccounts" parameterType="List">
         INSERT INTO account
-            (uuid, account_name, password, email, account_right, account_dep, account_status, account_role)
+        (uuid, account_name, password, email, account_right, account_dep, account_status, account_role)
         VALUES
         <foreach collection="list" item="account" separator=",">
-            #{account.uuid}, #{account.accountName}, #{account.password}, #{account.email}, #{account.right}, #{account.dep}, #{account.status}, #{account.role}
+        (
+         #{account.uuid}, #{account.accountName}, #{account.password}, #{account.email}, #{account.right}, #{account.dep}, #{account.status}, #{account.role}
+        )
         </foreach>
     </insert>
 
@@ -27,12 +29,23 @@
         select * from account where account_name = #{accountName}
     </select>
 
-    <select id="login" resultMap="account">
+    <select id="getAccountByAccountNameExceptAdmin" parameterType="String" resultMap="account">
+        select uuid,account_name,email,account_right,account_dep,account_status,account_role  from account
+        <where>
+            account_name = #{accountName} and account_right != 0
+        </where>
+    </select>
+
+    <select id="login" parameterType="String" resultMap="account">
         SELECT uuid, account_name, password, email, account_right, account_dep, account_status, account_role
         FROM
             account
-        WHERE
-            account_name = #{accountName} and password = #{password}
+        <where>
+            <if test="accountName != null and accountName != ''">
+              account_name = #{accountName}
+            </if>
+            and password = #{password}
+        </where>
     </select>
 
     <select id="getAccountByEmail" parameterType="String" resultMap="account">
@@ -75,7 +88,7 @@
                     account_status = #{item.status},
                 </if>
             </set>
-            where name = #{item.name}
+            where account_name = #{item.accountName}
         </foreach>
 
     </update>

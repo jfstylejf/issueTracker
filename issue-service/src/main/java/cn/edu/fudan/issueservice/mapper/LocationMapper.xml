@@ -71,4 +71,7 @@
         FROM location WHERE rawIssue_id =#{uuid}
     </select>
 
+    <select id="getRawIssueUuidsByMethodName" parameterType="String" resultType="String">
+        SELECT rawIssue_id FROM location where method_name = #{methodName} and file_path = #{filePath}
+    </select>
 </mapper>

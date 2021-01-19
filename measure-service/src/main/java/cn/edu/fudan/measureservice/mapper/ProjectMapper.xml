@@ -197,13 +197,11 @@
 
     <delete id="deleteRepoMsg">
         DELETE FROM issueTracker.repo_measure
-        <if test="repoUuidList != null and repoUuidList.size >0 ">
-            and repo_id in
-            <foreach collection="repoUuidList" separator="," open="(" close=")" item="repoUuid">
-                #{repoUuid}
-            </foreach>
-        </if>
-        LIMIT 5000;
+        WHERE repo_id in
+        <foreach collection="repoUuidList" separator="," open="(" close=")" item="repoUuid">
+            #{repoUuid}
+        </foreach>
+        LIMIT 5000
     </delete>
 
 </mapper>

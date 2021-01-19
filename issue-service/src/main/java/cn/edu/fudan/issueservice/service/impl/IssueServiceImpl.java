@@ -47,7 +47,9 @@ public class IssueServiceImpl implements IssueService {
 
     private IssueScanDao issueScanDao;
 
-    private final String open = "open", solved = "solved", all = "quantity", remainingIssueCount = "remainingIssueCount", eliminatedIssueCount ="eliminatedIssueCount", newIssueCount = "newIssueCount";
+    private final String open = "open", solved = "solved", all = "quantity", remainingIssueCount = "remainingIssueCount",
+            eliminatedIssueCount ="eliminatedIssueCount", newIssueCount = "newIssueCount", developerStr = "developer",
+            solverStr = "solver", solvedStr = "Solved", statusStr = "status", projectNameStr = "projectName";
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -87,14 +89,14 @@ public class IssueServiceImpl implements IssueService {
 
         for (String repoId : repoIdList) {
             Map<String, String> project = restInterfaceManager.getProjectByRepoId(repoId);
-            projectInfo.put(project.get("projectName"), new ArrayList<>());
+            projectInfo.put(project.get(projectNameStr), new ArrayList<>());
             repoInfo.add(project);
         }
 
         for(Map<String, String> tempRepo : repoInfo){
-            List<Map<String, String>> project= projectInfo.get(tempRepo.get("projectName"));
+            List<Map<String, String>> project= projectInfo.get(tempRepo.get(projectNameStr));
             project.add(tempRepo);
-            projectInfo.put(tempRepo.get("projectName"), project);
+            projectInfo.put(tempRepo.get(projectNameStr), project);
         }
 
         return projectInfo;
@@ -242,7 +244,7 @@ public class IssueServiceImpl implements IssueService {
 
         Map<String, Object> issueFilterList = new HashMap<>(16);
 
-        issueFilterList.put("total", query.get("developer") != null ? issueDao.getIssueFilterListCount(query) : query.get("solver") != null ? issueDao.getSolvedIssueFilterListCount(query) : issueDao.getIssueFilterListCount(query));
+        issueFilterList.put("total", query.get(developerStr) != null ? issueDao.getIssueFilterListCount(query) : query.get(solverStr) != null ? issueDao.getSolvedIssueFilterListCount(query) : issueDao.getIssueFilterListCount(query));
 
         return issueFilterList;
     }
@@ -250,22 +252,22 @@ public class IssueServiceImpl implements IssueService {
     @Override
     public Map<String, Object> getIssueFilterList(Map<String, Object> query, Map<String, Object> issueFilterList){
 
-        List<Map<String, Object>> issues = query.get("developer") != null ? issueDao.getIssueFilterList(query) : query.get("solver") != null ? issueDao.getSolvedIssueFilterList(query) : issueDao.getIssueFilterList(query);
+        List<Map<String, Object>> issues = query.get(developerStr) != null ? issueDao.getIssueFilterList(query) : query.get(solverStr) != null ? issueDao.getSolvedIssueFilterList(query) : issueDao.getIssueFilterList(query);
 
         for(Map<String, Object> issue : issues){
             String issueId = (String) issue.get("uuid");
             issue.put("startCommitDate", DateTimeUtil.format((Date) issue.get("startCommitDate")));
             issue.put("endCommitDate", DateTimeUtil.format((Date) issue.get("endCommitDate")));
             issue.put("createTime", DateTimeUtil.format((Date) issue.get("createTime")));
-            if("Solved".equals(issue.get("status").toString())) {
+            if(solvedStr.equals(issue.get(statusStr).toString())) {
                 Map<String, Object> lastSolvedInfo = rawIssueDao.getLastSolvedInfoOfOneIssue(issueId);
                 if(lastSolvedInfo != null){
-                    issue.put("solver", lastSolvedInfo.get("lastSolver"));
+                    issue.put(solverStr, lastSolvedInfo.get("lastSolver"));
                     issue.put("solveTime", DateTimeUtil.format((Date) lastSolvedInfo.get("commit_time")));
                     issue.put("solveCommit", lastSolvedInfo.get("commit_id"));
                 }
             }else{
-                issue.put("solver", null);
+                issue.put(solverStr, null);
                 issue.put("solveTime", null);
                 issue.put("solveCommit", null);
             }
@@ -300,7 +302,7 @@ public class IssueServiceImpl implements IssueService {
 
         while(iterator.hasNext()){
             Map<String, Object> issue = iterator.next();
-            String rawIssueUuid ="Solved".equals(issue.get("status")) ?
+            String rawIssueUuid =solvedStr.equals(issue.get(statusStr)) ?
                     rawIssueDao.getRawIssueUuidByIssueUuidAndCommit(issue.get("uuid").toString(), (String)issue.get("endCommit")) :
                     rawIssueDao.getRawIssueUuidByIssueUuidAndCommit(issue.get("uuid").toString(), commit);
             List<Location> locations = StringUtils.isEmpty(rawIssueUuid) ? null : locationDao.getLocations(rawIssueUuid);
@@ -320,7 +322,7 @@ public class IssueServiceImpl implements IssueService {
         query.put("start", null);
         query.put("ps", null);
 
-        List<Map<String, Object>> allIssueFilterList = query.get("developer") != null ? issueDao.getIssueFilterList(query) : query.get("solver") != null ? issueDao.getSolvedIssueFilterList(query) : issueDao.getIssueFilterList(query);
+        List<Map<String, Object>> allIssueFilterList = query.get(developerStr) != null ? issueDao.getIssueFilterList(query) : query.get(solverStr) != null ? issueDao.getSolvedIssueFilterList(query) : issueDao.getIssueFilterList(query);
 
         Map<String, JSONObject> allIssueTypeInfo = new HashMap<>(64);
 
@@ -332,8 +334,8 @@ public class IssueServiceImpl implements IssueService {
                 put(open, 0);
             }});
             issueTypeInfo.put(all, issueTypeInfo.getInteger(all) + 1);
-            issueTypeInfo.put(solved, "Solved".equals(issue.get("status")) ? issueTypeInfo.getInteger(solved) + 1 : issueTypeInfo.getInteger(solved));
-            issueTypeInfo.put(open, "Open".equals(issue.get("status")) ? issueTypeInfo.getInteger(open) + 1 : issueTypeInfo.getInteger(open));
+            issueTypeInfo.put(solved, solvedStr.equals(issue.get(statusStr)) ? issueTypeInfo.getInteger(solved) + 1 : issueTypeInfo.getInteger(solved));
+            issueTypeInfo.put(open, "Open".equals(issue.get(statusStr)) ? issueTypeInfo.getInteger(open) + 1 : issueTypeInfo.getInteger(open));
             allIssueTypeInfo.put((String) issue.get("type"), issueTypeInfo);
         }
 

@@ -26,6 +26,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -49,20 +50,27 @@ public class MeasureDeveloperService {
     private MethodMeasureAspect methodMeasureAspect;
 
     private static final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    private static final String Statement_developer = "developer";
+    private static final String Statement_repo = "repo";
+    private static final String Delete = "delete";
+    private static final String Change = "change";
+    private static final String Live = "live";
+    private static final String Loss = "loss";
     private static final String TOOL = "sonarqube";
+    private static final String split = ",";
     /**
      *
      * @param query 查询条件
      * @return
      */
     @SuppressWarnings("unchecked")
-    public List<DeveloperWorkLoad> getDeveloperWorkLoad(Query query, Boolean asc, List<String> developers) {
-        List<DeveloperWorkLoad> developerWorkLoad = new ArrayList<>();
+    public List<DeveloperWorkLoad> getDeveloperWorkLoad(Query query , String developers) {
+        List<DeveloperWorkLoad> developerWorkLoadList = new ArrayList<>();
         List<String> developerList = new ArrayList<>();
         if(query.getDeveloper()!=null && !"".equals(query.getDeveloper())) {
             developerList.add(query.getDeveloper());
-        }else if(developers!=null && developers.size()>0) {
-            developerList = developers;
+        }else if(developers!=null && !"".equals(developers)) {
+            developerList = Arrays.asList(developers.split(split));
         }else {
             developerList = projectDao.getDeveloperList(query);
         }
@@ -70,26 +78,14 @@ public class MeasureDeveloperService {
             if(member == null || "".equals(member)) {
                 continue;
             }
-            // fixme 通过measureDao来获取数据
-            Map<String, Object> workLoadList = repoMeasureMapper.getWorkLoadByCondition(query.getRepoUuidList(), member, query.getSince(), query.getUntil());
-            int addLines = (int)workLoadList.get("addLines");
-            int delLines = (int)workLoadList.get("delLines");
-            int totalLoc = addLines + delLines;
-            developerWorkLoad.add(new DeveloperWorkLoad(member,addLines,delLines,totalLoc,(int)workLoadList.get("commitCount"),(int)workLoadList.get("changedFiles")));
+            query.setDeveloper(member);
+            DeveloperWorkLoad developerWorkLoad = measureDao.getDeveloperWorkLoadData(query);
+            developerWorkLoad.setDeveloperName(member);
+            developerWorkLoad.setTotalLoc(developerWorkLoad.getAddLines() + developerWorkLoad.getDeleteLines());
+            developerWorkLoadList.add(developerWorkLoad);
         }
-        if(developers!=null && developers.size()>0) {
-            return developerWorkLoad;
-        }
-        Collections.sort(developerWorkLoad, (o1, o2) -> {
-            if(asc) {
-                return o1.getTotalLoc()-o2.getTotalLoc();
-            }else {
-                return o2.getTotalLoc()-o1.getTotalLoc();
-            }
-        });
-        return developerWorkLoad;
+        return developerWorkLoadList;
     }
-
 
     public Object getStatementByCondition(String repoUuidList, String developer, String since, String until) throws ParseException {
         List<String> repoList = new ArrayList<>();
@@ -110,12 +106,9 @@ public class MeasureDeveloperService {
         }
         //获取开发者该情况下增、删、change逻辑行数
         int totalStatement =0;
-        JSONObject developerStatements = restInterfaceManager.getStatements(repoUuidList,since,until,developer);
-        if(developerStatements != null ) {
-            JSONObject developerTotalStatements = developerStatements.getJSONObject("developer");
-            if( developerTotalStatements!=null && !developerTotalStatements.isEmpty()) {
-                totalStatement = developerTotalStatements.getJSONObject(developer).getIntValue("total");
-            }
+        List<Map<String,Object>> developerStatements = restInterfaceManager.getStatements(repoUuidList,since,until,developer,Statement_developer);
+        if (developerStatements.size()>0) {
+            totalStatement = (int) developerStatements.get(0).get("total");
         }
         double totalDays =  ( sdf.parse(until).getTime()-sdf.parse(since).getTime() ) / (1000*60*60*24);
         int workDays =  ((int)totalDays)*5/7;
@@ -129,39 +122,37 @@ public class MeasureDeveloperService {
     }
 
     @MethodMeasureAnnotation
+    @SuppressWarnings("unchecked")
     private Efficiency getDeveloperEfficiency(Query query, String branch,
                                               int developerNumber){
         String repoUuid = query.getRepoUuidList().get(0);
         //提交频率指标
         int totalCommitCount = repoMeasureMapper.getCommitCountsByDuration(repoUuid, query.getSince(), query.getUntil(), null);
         int developerCommitCount = repoMeasureMapper.getCommitCountsByDuration(repoUuid, query.getSince(), query.getUntil(), query.getDeveloper());
-        //代码量指标
+        // fixme 代码量指标 全部从repository中拿
         Query query1 = new Query(query.getToken(),query.getSince(),query.getUntil(),null,query.getRepoUuidList());
-        int developerLOC = measureDao.getLocByCondition(query);
-        int totalLOC = measureDao.getLocByCondition(query1);
+        DeveloperWorkLoad developerWorkLoad = measureDao.getDeveloperWorkLoadData(query);
+        DeveloperWorkLoad developerWorkLoad1 = measureDao.getDeveloperWorkLoadData(query1);
+        int developerLOC = developerWorkLoad.getAddLines() + developerWorkLoad.getDeleteLines();
+        int totalLOC = developerWorkLoad1.getAddLines() + developerWorkLoad1.getDeleteLines();
         //获取代码新增、删除逻辑行数数据
-        JSONObject allDeveloperStatements = restInterfaceManager.getStatements(repoUuid,query.getSince(),query.getUntil(),"");
+        List<Map<String,Object>> allDeveloperStatements = restInterfaceManager.getStatements(repoUuid,query.getSince(),query.getUntil(),"",Statement_developer);
         int developerAddStatement = 0;
         int totalAddStatement = 0;
         int developerDelStatement = 0;
         int totalDelStatement = 0;
         int developerValidLine = 0;
         int totalValidLine = 0;
-        JSONObject repoStatements = allDeveloperStatements.getJSONObject("repo");
-        if(repoStatements!=null && !repoStatements.isEmpty()) {
-            totalAddStatement = repoStatements.getJSONObject(repoUuid).getIntValue("add");
-            totalDelStatement = repoStatements.getJSONObject(repoUuid).getIntValue("delete");
-            totalValidLine = repoStatements.getJSONObject(repoUuid).getIntValue("current");
-        }
-        JSONObject developerStatements = allDeveloperStatements.getJSONObject("developer");
-        if(developerStatements!=null && !developerStatements.isEmpty()) {
-            for(String member : developerStatements.keySet()) {
-                if(member.equals(query.getDeveloper())) {
-                    developerAddStatement = developerStatements.getJSONObject(query.getDeveloper()).getIntValue("add");
-                    developerDelStatement = developerStatements.getJSONObject(query.getDeveloper()).getIntValue("delete");
-                    developerValidLine = developerStatements.getJSONObject(query.getDeveloper()).getIntValue("current");
-                    break;
+        if (allDeveloperStatements!=null && allDeveloperStatements.size()>0) {
+            for (Map<String,Object> developerStatement : allDeveloperStatements) {
+                if (developerStatement.get("developerName").equals(query.getDeveloper())) {
+                    developerAddStatement = (int) ((Map<String,Object>) developerStatement.get("add")).get("total");
+                    developerDelStatement = (int) ((Map<String,Object>) developerStatement.get("delete")).get("total");
+                    developerValidLine = (int) ((Map<String,Object>) developerStatement.get("current")).get("total");
                 }
+                totalAddStatement += (int) ((Map<String,Object>) developerStatement.get("add")).get("total");
+                totalDelStatement += (int) ((Map<String,Object>) developerStatement.get("delete")).get("total");
+                totalValidLine += (int) ((Map<String,Object>) developerStatement.get("current")).get("total");
             }
         }
 
@@ -208,49 +199,42 @@ public class MeasureDeveloperService {
                                               int developerNumber, int developerAddStatement, int totalAddStatement,
                                               int developerValidLine, int totalValidLine){
         int developerAddLine = repoMeasureMapper.getAddLinesByDuration(repoUuid, since, until, developer);
-        JSONObject cloneMeasure = restInterfaceManager.getCloneMeasure(repoUuid, developer, since, until);
+        List<Map<String,Object>> cloneMeasure = restInterfaceManager.getCloneMeasure(repoUuid, developer, since, until);
         int increasedCloneLines = 0;
         int selfIncreasedCloneLines = 0;
         int eliminateCloneLines = 0;
         int allEliminateCloneLines = 0;
         if (cloneMeasure != null){
-            increasedCloneLines = Integer.parseInt(cloneMeasure.getString("increasedCloneLines"));
-            selfIncreasedCloneLines = Integer.parseInt(cloneMeasure.getString("selfIncreasedCloneLines"));
-            eliminateCloneLines = Integer.parseInt(cloneMeasure.getString("eliminateCloneLines"));
-            allEliminateCloneLines = Integer.parseInt(cloneMeasure.getString("allEliminateCloneLines"));
+            increasedCloneLines = (int) cloneMeasure.get(0).get("increasedCloneLines");
+            selfIncreasedCloneLines = (int) cloneMeasure.get(0).get("selfIncreasedCloneLines");
+            eliminateCloneLines = (int) cloneMeasure.get(0).get("eliminateCloneLines");
+            allEliminateCloneLines = (int) cloneMeasure.get(0).get("allEliminateCloneLines");
         }
-        JSONObject developerCodeLifeCycle = restInterfaceManager.getCodeLifeCycle(repoUuid,developer,since,until);
+        List<Map<String,Object>> developerChangeCodeLifeCycle = restInterfaceManager.getCodeLifeCycle(repoUuid,developer,since,until,Statement_developer,Change);
+        List<Map<String,Object>> developerDeleteCodeLifeCycle = restInterfaceManager.getCodeLifeCycle(repoUuid,developer,since,until,Statement_developer,Delete);
         double changedCodeAVGAge = 0;
         int changedCodeMAXAge = 0;
         double deletedCodeAVGAge = 0;
         int deletedCodeMAXAge = 0;
-        if(developerCodeLifeCycle!=null) {
-            JSONObject change = developerCodeLifeCycle.getJSONObject("change");
-            JSONObject delete = developerCodeLifeCycle.getJSONObject("delete");
-            if(change!=null && change.getJSONObject("developer")!=null && !change.getJSONObject("developer").isEmpty())  {
-                if(change.getJSONObject("developer").getJSONObject(developer) != null && !change.getJSONObject("developer").getJSONObject(developer).isEmpty()) {
-                    changedCodeAVGAge = change.getJSONObject("developer").getJSONObject(developer).getDoubleValue("average");
-                }
-                if(change.getJSONObject("developer").getJSONObject(developer) != null && !change.getJSONObject("developer").getJSONObject(developer).isEmpty()) {
-                    changedCodeAVGAge = change.getJSONObject("developer").getJSONObject(developer).getIntValue("max");
-                }
-            }
-            if(delete!=null && delete.getJSONObject("developer")!=null && !delete.getJSONObject("developer").isEmpty()) {
-                if(delete.getJSONObject("developer").getJSONObject(developer) != null && !delete.getJSONObject("developer").getJSONObject(developer).isEmpty()) {
-                    changedCodeAVGAge = change.getJSONObject("developer").getJSONObject(developer).getDoubleValue("average");
-                }
-                if(delete.getJSONObject("developer").getJSONObject(developer) != null && !delete.getJSONObject("developer").getJSONObject(developer).isEmpty()) {
-                    changedCodeAVGAge = change.getJSONObject("developer").getJSONObject(developer).getIntValue("max");
-                }
-            }
+        if(developerChangeCodeLifeCycle!=null && developerChangeCodeLifeCycle.size()>0) {
+            changedCodeAVGAge = (double) developerChangeCodeLifeCycle.get(0).get("average");
+            changedCodeMAXAge = (int) developerChangeCodeLifeCycle.get(0).get("max");
+        }
+        if (developerDeleteCodeLifeCycle!=null && developerDeleteCodeLifeCycle.size()>0) {
+            deletedCodeAVGAge = (double) developerDeleteCodeLifeCycle.get(0).get("average");
+            deletedCodeMAXAge = (int) developerDeleteCodeLifeCycle.get(0).get("max");
         }
 
-        JSONObject focusMeasure = restInterfaceManager.getFocusFilesCount(repoUuid,null,since,until);
+        List<Map<String,Object>> focusMeasure = restInterfaceManager.getFocusFilesCount(repoUuid,null,since,until);
         int totalChangedFile = 0;
         int developerFocusFile = 0;
-        if (focusMeasure != null){
-            totalChangedFile = focusMeasure.getIntValue("total");
-            developerFocusFile = focusMeasure.getJSONObject("developer").getIntValue(developer);
+        if (focusMeasure!=null && focusMeasure.size()>0){
+            for (Map<String,Object> focus : focusMeasure) {
+                if (focus.get("developerName").equals(developer)) {
+                    developerFocusFile = (int) focus.get("num");
+                }
+                totalChangedFile += (int) focus.get("num");
+            }
         }
 
         int repoAge = repoMeasureMapper.getRepoAge(repoUuid);
@@ -277,7 +261,7 @@ public class MeasureDeveloperService {
                 .build();
     }
 
-
+    @SuppressWarnings("unchecked")
     @Cacheable(cacheNames = {"developerMetricsNew"})
     public cn.edu.fudan.measureservice.portrait2.DeveloperMetrics getDeveloperMetrics(String repoUuid, String developer, String since, String until, String token, String tool) {
         if ("".equals(since) || since == null){
@@ -336,21 +320,17 @@ public class MeasureDeveloperService {
         int developerValidStatement = 0;
         int totalAddStatement = 0;
         int totalValidStatement = 0;
-        JSONObject developerStatements = restInterfaceManager.getStatements(repoUuid, since, until, developer);
-        JSONObject allDeveloperStatements = restInterfaceManager.getStatements(repoUuid,since,until,"");
-        if  (developerStatements != null){
-            developerTotalStatement = developerStatements.getIntValue("total");
-            if(developerStatements.getJSONObject("developer")!= null && !developerStatements.getJSONObject("developer").isEmpty()) {
-                developerAddStatement = developerStatements.getJSONObject("developer").getJSONObject(developer).getIntValue("add");
-                developerDelStatement = developerStatements.getJSONObject("developer").getJSONObject(developer).getIntValue("delete");
-                developerChangeStatement = developerStatements.getJSONObject("developer").getJSONObject(developer).getIntValue("change");
-                developerValidStatement = developerStatements.getJSONObject("developer").getJSONObject(developer).getIntValue("current");
-            }
-        }
-        if(allDeveloperStatements != null && (allDeveloperStatements.getJSONObject("developer") !=null) ) {
-            for (String member : allDeveloperStatements.getJSONObject("developer").keySet()) {
-                totalAddStatement += allDeveloperStatements.getJSONObject("developer").getJSONObject(member).getIntValue("add");
-                totalValidStatement += allDeveloperStatements.getJSONObject("developer").getJSONObject(member).getIntValue("current");
+        List<Map<String,Object>> allDeveloperStatements = restInterfaceManager.getStatements(repoUuid,since,until,"",Statement_developer);
+        if (allDeveloperStatements.size()>0) {
+            for (Map<String,Object> developerStatement : allDeveloperStatements) {
+                if (developerStatement.get("developerName").equals(developer)) {
+                    developerTotalStatement = (int) developerStatement.get("total");
+                    developerAddStatement = (int) ((Map<String,Object>) developerStatement.get("add")).get("total");
+                    developerChangeStatement = (int) ((Map<String,Object>) developerStatement.get("change")).get("total");
+                    developerValidStatement = (int) ((Map<String,Object>) developerStatement.get("current")).get("total");
+                }
+                totalAddStatement += (int) ((Map<String,Object>) developerStatement.get("add")).get("total");
+                totalValidStatement += (int) ((Map<String,Object>) developerStatement.get("current")).get("total");
             }
         }
 
@@ -412,7 +392,7 @@ public class MeasureDeveloperService {
         int developerJiraCount = 0;
         try {
             Query query = new Query(token,since,until,developer,Collections.singletonList(repoUuid));
-            DeveloperCommitStandard developerCommitStandard = getCommitStandard(query,true,null).get(0);
+            DeveloperCommitStandard developerCommitStandard = getCommitStandard(query,null).get(0);
             developerJiraCount = developerCommitStandard.getDeveloperJiraCommitCount();
         }catch (Exception e) {
             log.error(e.getMessage());
@@ -445,10 +425,10 @@ public class MeasureDeveloperService {
         int totalLOC = repoMeasureMapper.getLOCByCondition(repoUuid,null,since,until);
         int developerAddLine = repoMeasureMapper.getAddLinesByDuration(repoUuid, since, until, developer);
 
-        JSONObject cloneMeasure = restInterfaceManager.getCloneMeasure(repoUuid, developer, since, until);
+        List<Map<String,Object>> cloneMeasure = restInterfaceManager.getCloneMeasure(repoUuid, developer, since, until);
         int increasedCloneLines = 0;
         if (cloneMeasure != null){
-            increasedCloneLines = Integer.parseInt(cloneMeasure.getString("increasedCloneLines"));
+            increasedCloneLines = (int) cloneMeasure.get(0).get("increasedCloneLines");
         }
 
         int developerAssignedJiraCount = 0;//个人被分配到的jira任务个数（注意不是次数）
@@ -750,6 +730,7 @@ public class MeasureDeveloperService {
      * @return Developer
      */
     // fixme 新版本 获得一个开发者的画像 (Contribution,Quality,Effiency)
+    @Cacheable(cacheNames = {"developerPortrait"})
     public DeveloperPortrait getDeveloperPortrait(Query query,Map<String,List<DeveloperRepoInfo>> developerRepoInfos) {
         if(!developerRepoInfos.containsKey(query.getDeveloper())) {
             log.warn("查询库中无该开发者 {}：",query.getDeveloper());
@@ -780,7 +761,6 @@ public class MeasureDeveloperService {
      * @param query 查询条件
      * @return DeveloperRepositoryMetric 开发者库画像
      */
-    @Cacheable(cacheNames = {"developerRepositoryMetric"})
     public DeveloperRepositoryMetric getDeveloperRepositoryMetric(DeveloperRepoInfo developerRepoInfo,Query query) {
         RepoInfo repoInfo = developerRepoInfo.getRepoInfo();
         String projectName = repoInfo.getProjectName();
@@ -791,8 +771,11 @@ public class MeasureDeveloperService {
         query.setRepoUuidList(Collections.singletonList(repoUuid));
         // fixme 数据经由Repostory类自动获取
         // Repository repository = new Repository(query,repoName,projectName);
-        int developerStatement = restInterfaceManager.getStatements(repoUuid,query.getSince(),query.getUntil(),query.getDeveloper()).getIntValue("total");
-
+        int developerStatement = 0;
+        List<Map<String,Object>> developerStatements = restInterfaceManager.getStatements(repoUuid,query.getSince(),query.getUntil(),query.getDeveloper(),Statement_developer);
+        if (developerStatements.size()>0) {
+            developerStatement = (int) developerStatements.get(0).get("total");
+        }
         //----------------------------------开发效率相关指标-------------------------------------
         // fixme 这边等project/all接口更新后加入branch字段
         Efficiency efficiency = getDeveloperEfficiency(query, "", developerNumber);
@@ -819,12 +802,19 @@ public class MeasureDeveloperService {
 
     /**
      *
-     * @param query 查询条件
+     * @param
      * @return 开发者画像相关数据 key : DutyType,involvedRepoCount,totalLevel,value,quality,efficiency
      * @throws ParseException
      */
     @Cacheable(cacheNames = {"developerList"})
-    public synchronized Object getDeveloperList(Query query) throws ParseException {
+    public synchronized Object getDeveloperList(String repoUuid,String projectName,String since,String until,String token) throws ParseException {
+        List<String> repoUuidList;
+        if(projectName!=null && !"".equals(projectName)) {
+            repoUuidList = projectDao.getProjectRepoList(projectName,token);
+        }else {
+            repoUuidList = projectDao.involvedRepoProcess(repoUuid,token);
+        }
+        Query query = new Query(token,since,until,null,repoUuidList);
         if(query.getRepoUuidList().size()==0) {
             log.warn("do not have any authorized repo to see");
             return null;
@@ -837,6 +827,7 @@ public class MeasureDeveloperService {
             Map<String,Object> dev = new HashMap<>();
             log.info("start to get portrait of {}",developer);
             query.setDeveloper(developer);
+            dev.put("developer",developer);
             String dutyType = developerDutyType.get(developer);
             if("1".equals(dutyType)) {
                 dev.put("DutyType","在职");
@@ -862,7 +853,8 @@ public class MeasureDeveloperService {
 
 
     @SuppressWarnings("unchecked")
-    public List<DeveloperCommitStandard> getCommitStandard(Query query, Boolean asc, List<String> developers) {
+    @Cacheable(cacheNames = {"commitStandard"})
+    public List<DeveloperCommitStandard> getCommitStandard(Query query , List<String> developers) {
         List<DeveloperCommitStandard> developerCommitStandardList = new ArrayList<>();
         List<String> developerList = new ArrayList<>();
         if(query.getDeveloper()!=null && !"".equals(query.getDeveloper())) {
@@ -878,7 +870,7 @@ public class MeasureDeveloperService {
             List<Map<String,String>> developerValidCommitInfo = projectDao.getValidCommitMsg(query);
 
             DeveloperCommitStandard developerCommitStandard = new DeveloperCommitStandard();
-            developerCommitStandard.setDeveloperName(developer);
+            developerCommitStandard.setDeveloper(developer);
             developerCommitStandard.setDeveloperValidCommitCount(developerValidCommitInfo.size());
             List<Map<String,String>> developerJiraCommitInfo = new ArrayList<>();
             List<Map<String,String>> developerInvalidCommitInfo = new ArrayList<>();
@@ -892,23 +884,15 @@ public class MeasureDeveloperService {
             }
             developerCommitStandard.setDeveloperJiraCommitInfo(developerJiraCommitInfo);
             developerCommitStandard.setDeveloperJiraCommitCount(developerJiraCommitInfo.size());
+            developerCommitStandard.setDeveloperInvalidCommitCount(developerInvalidCommitInfo.size());
             developerCommitStandard.setDeveloperInvalidCommitInfo(developerInvalidCommitInfo);
             double commitStandard = developerCommitStandard.getDeveloperJiraCommitCount() * 1.0 / developerCommitStandard.getDeveloperValidCommitCount();
             developerCommitStandard.setCommitStandard(commitStandard);
             developerCommitStandardList.add(developerCommitStandard);
         }
-        if(developers!=null && developers.size()>0) {
-            return developerCommitStandardList;
-        }
-        Collections.sort(developerCommitStandardList, (o1, o2) -> {
-            if(asc) {
-                return (int) (o1.getCommitStandard() - o2.getCommitStandard());
-            }else {
-                return (int) (o2.getCommitStandard() - o1.getCommitStandard());
-            }
-        });
         return developerCommitStandardList;
     }
+
 
     @Autowired
     public void setMeasureDeveloperServiceImpl(MeasureDeveloperService measureDeveloperServiceImpl) {
@@ -930,7 +914,7 @@ public class MeasureDeveloperService {
         this.methodMeasureAspect = methodMeasureAspect;
     }
 
-    @CacheEvict(cacheNames = {"portraitLevel","developerMetrics","developerMetricsNew","portraitCompetence","developerRecentNews","developerList","jiraInfoByJiraID"}, allEntries=true, beforeInvocation = true)
+    @CacheEvict(cacheNames = {"developerPortrait","developerMetricsNew","portraitCompetence","developerRecentNews","developerList","commitStandard"}, allEntries=true, beforeInvocation = true)
     public void clearCache() {
         log.info("Successfully clear redis cache in db6.");
     }

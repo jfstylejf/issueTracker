@@ -1,6 +1,5 @@
 package cn.edu.fudan.issueservice.core;
 
-
 import cn.edu.fudan.issueservice.component.ApplicationContextGetBeanHelper;
 import cn.edu.fudan.issueservice.component.RestInterfaceManager;
 import cn.edu.fudan.issueservice.config.ScanThreadExecutorConfig;
@@ -46,6 +45,7 @@ public class ToolInvoker {
     private RestInterfaceManager restInvoker;
     private ApplicationContext applicationContext;
     private IssueRepoDao issueRepoDao;
+
     @Value("${binHome}")
     protected String binHome;
 
@@ -127,21 +127,21 @@ public class ToolInvoker {
 
             //1.配置jGit资源
             JGitHelper jGitInvoker = new JGitHelper (repoPath);
+            String startCommit = issueScanDao.getStartCommitByRepoUuid(repoId);
+            List<String> scannedCommits = new ArrayList<>(issueScanDao.getScannedCommitList(repoId, toolName));
             //判断beginCommit 是否为空，如果为空则获取
             if(beginCommit == null){
-                IssueScan latestIssueScan = issueScanDao.getLatestIssueScanByRepoIdAndTool (repoId, toolName);
-                if(latestIssueScan == null ){
+                if(scannedCommits.isEmpty()){
                     log.error (" need begin commit!");
                     return false;
                 }
-                String latestScannedCommitId = latestIssueScan.getCommitId ();
-                List<String> commitIds =  jGitInvoker.getScanCommitListByBranchAndBeginCommit(branch, latestScannedCommitId);
+                List<String> commitIds =  jGitInvoker.getScanCommitListByBranchAndBeginCommit(branch, startCommit, scannedCommits);
                 //因为必定不为null，所以不做此判断
-                if(commitIds.size () <= 1){
+                if(commitIds.isEmpty()){
                     log.info (" already update! repoId --> {}", repoId);
                     return false;
                 }
-                beginCommit = commitIds.get (1);
+                beginCommit = commitIds.get(0);
             }
 
             IssueMatcher issueMatcher = new IssueMatcher (issueDao, rawIssueDao, issueScanDao, matchStrategy);
@@ -149,7 +149,7 @@ public class ToolInvoker {
             IssueScanTransactionManager issueScanTransactionManager = (IssueScanTransactionManager)applicationContext.getBean("DataPersistManager");
 
             //2.根据策略获取扫描的commit列表
-            ConcurrentLinkedDeque<String>  scanCommits = scanStrategy.getScanCommitLinkedQueue(repoId, jGitInvoker, branch, beginCommit);
+            ConcurrentLinkedDeque<String>  scanCommits = scanStrategy.getScanCommitLinkedQueue(repoId, jGitInvoker, branch, startCommit, scannedCommits);
 
             if(scanCommits == null || scanCommits.isEmpty ()){
                 log.error ("get commit List failed or all commits were scanned! repo id --> {}", repoId);
@@ -359,7 +359,6 @@ public class ToolInvoker {
 
             if(mappedUpdate){
                 //如果之前存在更新的记录，则判断原先的状态是否是stop
-
                 String repoStatus = preUpdateIssueRepo.getStatus ();
                 if(RepoStatusEnum.STOP.getType ().equals (repoStatus)){
                     //第二种：如果原来是stop状态，则更新数据后，重新开始扫描
@@ -368,7 +367,6 @@ public class ToolInvoker {
                     preUpdateIssueRepo.setTotalCommitCount (newAllCount);
                     resultIssueRepo = preUpdateIssueRepo;
                     issueRepoDao.updateIssueRepo (resultIssueRepo);
-
                 }else{
                     //第三种：如果原来是结束状态，则合并后，重新开始开始扫描
                     mainIssueRepo.setEndCommit (preUpdateIssueRepo.getEndCommit ());
@@ -382,9 +380,7 @@ public class ToolInvoker {
                     resultIssueRepo = IssueRepo.initIssueRepo (repoId, branch, beginCommit, toolName, commitSize);
                     resultIssueRepo.setNature (RepoNatureEnum.UPDATE.getType ());
                     issueRepoDao.insertOneIssueRepo (resultIssueRepo);
-
                 }
-
             }else{
                 String repoStatus = mainIssueRepo.getStatus ();
                 if(RepoStatusEnum.STOP.getType ().equals (repoStatus)){

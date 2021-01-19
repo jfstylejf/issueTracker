@@ -6,13 +6,18 @@ import cn.edu.fudan.measureservice.domain.bo.DeveloperCommitStandard;
 import cn.edu.fudan.measureservice.domain.bo.DeveloperWorkLoad;
 import cn.edu.fudan.measureservice.domain.dto.DeveloperRepoInfo;
 import cn.edu.fudan.measureservice.domain.dto.Query;
+import cn.edu.fudan.measureservice.domain.vo.DeveloperCommitStandardFrontend;
+import cn.edu.fudan.measureservice.domain.vo.DeveloperWorkLoadFrontend;
 import cn.edu.fudan.measureservice.portrait.DeveloperMetrics;
 import cn.edu.fudan.measureservice.domain.bo.DeveloperPortrait;
 import cn.edu.fudan.measureservice.service.MeasureDeveloperService;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -24,6 +29,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+@Slf4j
 @RestController
 public class MeasureDeveloperController {
 
@@ -64,9 +70,9 @@ public class MeasureDeveloperController {
     @SuppressWarnings("unchecked")
     @GetMapping("/measure/developer/work-load")
     @CrossOrigin
-    public ResponseBean<List<DeveloperWorkLoad>> getDeveloperWorkLoad(
+    public ResponseBean<Object> getDeveloperWorkLoad(
             @RequestParam(value="developer",required = false)String developer,
-            @RequestParam(value = "developers",required = false) List<String> developers,
+            @RequestParam(value = "developers",required = false) String developers,
             @RequestParam(value="since",required = false)String since,
             @RequestParam(value="until",required = false)String until,
             @RequestParam(value = "project_name",required = false) String projectName,
@@ -87,9 +93,19 @@ public class MeasureDeveloperController {
                 repoUuidList = projectDao.involvedRepoProcess(repoUuid,token);
             }
             Query query = new Query(token,since,until,developer,repoUuidList);
-            List<DeveloperWorkLoad> developerWorkLoadList = measureDeveloperService.getDeveloperWorkLoad(query,asc,developers);
-            if(developers==null || developers.size()==0) {
-                return new ResponseBean<>(200,"success",developerWorkLoadList.subList(page*ps,(page+1) * ps > developerWorkLoadList.size() ? developerWorkLoadList.size() : (page+1)*ps));
+            List<DeveloperWorkLoad> developerWorkLoadList = measureDeveloperService.getDeveloperWorkLoad(query,developers);
+            if (order!=null && !"".equals(order)) {
+                Collections.sort(developerWorkLoadList, (o1, o2) -> {
+                    if(asc) {
+                        return o1.getTotalLoc()-o2.getTotalLoc();
+                    }else {
+                        return o2.getTotalLoc()-o1.getTotalLoc();
+                    }
+                });
+                int totalPage = developerWorkLoadList.size() % ps == 0 ? developerWorkLoadList.size()/ps : developerWorkLoadList.size()/ps + 1;
+                List<DeveloperWorkLoad> selectedDeveloperWorkLoadList = developerWorkLoadList.subList((page-1)*ps,page * ps > developerWorkLoadList.size() ? developerWorkLoadList.size() : page*ps);
+                DeveloperWorkLoadFrontend developerWorkLoadFrontend = new DeveloperWorkLoadFrontend(page,totalPage,developerWorkLoadList.size(),selectedDeveloperWorkLoadList);
+                return new ResponseBean<>(200,"success",developerWorkLoadFrontend);
             }else {
                 return new ResponseBean<>(200,"success",developerWorkLoadList);
             }
@@ -215,14 +231,14 @@ public class MeasureDeveloperController {
 
     @GetMapping("/measure/commit-standard")
     @CrossOrigin
-    public ResponseBean<List<DeveloperCommitStandard>> getCommitStandard(@RequestParam(value = "developer",required = false)String developer,
+    public ResponseBean<Object> getCommitStandard(@RequestParam(value = "developer",required = false)String developer,
                                           @RequestParam(value = "developers",required = false) List<String> developers,
                                           @RequestParam(value = "project_name",required = false) String projectName,
                                           @RequestParam(value = "repo_uuids",required = false)String repoUuid,
                                           @RequestParam(value = "since", required = false)String since,
                                           @RequestParam(value = "until", required = false)String until,
                                           @RequestParam(required = false, defaultValue = "1")int page,
-                                          @RequestParam(required = false, defaultValue = "10")int ps,
+                                          @RequestParam(required = false, defaultValue = "5")int ps,
                                           @RequestParam(required = false, defaultValue = "true") boolean asc,
                                           @RequestParam(required = false, defaultValue = "") String order,
                                           HttpServletRequest request){
@@ -237,11 +253,27 @@ public class MeasureDeveloperController {
                 repoUuidList = projectDao.involvedRepoProcess(repoUuid,token);
             }
             Query query = new Query(token,since,until,developer,repoUuidList);
-            if(developers!=null && developers.size()>0) {
-                return new ResponseBean<>(200,"success",measureDeveloperService.getCommitStandard(query,asc,developers));
+            List<DeveloperCommitStandard> developerCommitStandardList = measureDeveloperService.getCommitStandard(query,developers);
+            if(order!=null && !"".equals(order)) {
+                Collections.sort(developerCommitStandardList, (o1, o2) -> {
+                    if(asc) {
+                        return (int) ((o1.getCommitStandard() - o2.getCommitStandard()) * 100);
+                    }else {
+                        return (int) ((o2.getCommitStandard() - o1.getCommitStandard()) * 100);
+                    }
+                });
+                int totalPage = developerCommitStandardList.size() % ps == 0 ? developerCommitStandardList.size()/ps : developerCommitStandardList.size()/ps + 1;
+                List<DeveloperCommitStandard> selectedDeveloperCommitStandardList = developerCommitStandardList.subList(ps*(page-1),ps*page > developerCommitStandardList.size() ? developerCommitStandardList.size() : ps*page);
+                DeveloperCommitStandardFrontend developerCommitStandardFrontend = new DeveloperCommitStandardFrontend(page,totalPage,developerCommitStandardList.size(),selectedDeveloperCommitStandardList);
+                return new ResponseBean<>(200,"success",developerCommitStandardFrontend);
+            }else if (developer!=null && !"".equals(developer)){
+                // 如果传入单个开发者，此时 page 按照不规范明细进行分页
+                DeveloperCommitStandard developerCommitStandard = developerCommitStandardList.get(0);
+                List<Map<String,String>> developerInvalidCommitList = developerCommitStandard.getDeveloperInvalidCommitInfo().subList((page-1)*ps , page*ps > developerCommitStandard.getDeveloperInvalidCommitCount() ? developerCommitStandard.getDeveloperInvalidCommitCount() : page*ps);
+                developerCommitStandard.setDeveloperInvalidCommitInfo(developerInvalidCommitList);
+                return new ResponseBean<>(200,"success",Collections.singletonList(developerCommitStandard));
             }else {
-                List<DeveloperCommitStandard> developerCommitStandardList = measureDeveloperService.getCommitStandard(query,asc,developers);
-                return new ResponseBean<>(200,"success",developerCommitStandardList.subList(ps*page,ps*(page+1) > developerCommitStandardList.size() ? developerCommitStandardList.size() : ps*(page+1)));
+                return new ResponseBean<>(200,"success",developerCommitStandardList);
             }
         }catch (Exception e){
             e.printStackTrace();
@@ -325,14 +357,7 @@ public class MeasureDeveloperController {
         try{
             until = timeProcess(until);
             String token = request.getHeader("token");
-            List<String> repoUuidList;
-            if(projectName!=null && !"".equals(projectName)) {
-                repoUuidList = projectDao.getProjectRepoList(projectName,token);
-            }else {
-                repoUuidList = projectDao.involvedRepoProcess(repoUuid,token);
-            }
-            Query query = new Query(token,since,until,null,repoUuidList);
-            return new ResponseBean<>(200,"success",(List<Map<String, Object>>) measureDeveloperService.getDeveloperList(query));
+            return new ResponseBean<>(200,"success",(List<Map<String, Object>>) measureDeveloperService.getDeveloperList(repoUuid,projectName,since,until,token));
         }catch (Exception e){
             e.printStackTrace();
             return new ResponseBean<>(401,"failed "+ e.getMessage(),null);
@@ -360,6 +385,5 @@ public class MeasureDeveloperController {
 
     @Autowired
     public void setProjectDao(ProjectDao projectDao) {this.projectDao = projectDao;}
-
 
 }

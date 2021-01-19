@@ -11,8 +11,6 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.UUID;
 import java.util.List;
 
@@ -35,7 +33,7 @@ public class IssueIgnoreController {
     })
     @PutMapping(value = "issue/ignore/{tool}")
     public ResponseBean<String> ignoreIssues(@PathVariable("tool")String tool, @RequestBody List<IgnoreRecord> ignoreRecords){
-        if(ignoreRecords.size() == 0){
+        if(ignoreRecords.isEmpty()){
             return new ResponseBean<>(200, success, null);
         }
         try{

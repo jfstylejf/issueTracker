@@ -3,9 +3,16 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.edu.fudan.measureservice.mapper.MeasureMapper">
 
-    <select id="getWorkLoadByCondition"  resultType="java.util.HashMap">
+    <resultMap id="workLoad" type="DeveloperWorkLoad">
+        <result property="addLines" column="addLines" />
+        <result property="deleteLines" column="delLines" />
+        <result property="commitCount" column="commitCount" />
+        <result property="changedFiles" column="changedFiles" />
+    </resultMap>
+
+    <select id="getDeveloperWorkLoad"  resultMap="workLoad">
         SELECT
-        developer_name as developerName, sum(add_lines) as addLines, sum(del_lines) as delLines, count(*) as commitCount, sum(changed_files) as changedFiles
+        sum(add_lines) AS addLines, sum(del_lines) AS delLines, count(uuid) AS commitCount, sum(changed_files) AS changedFiles
         FROM
         issueTracker.repo_measure
         <where>
@@ -30,31 +37,8 @@
                 </if>
             </trim>
         </where>
-        group by developerName
     </select>
 
-    <select id="getDeveloperAddLines" resultType="int">
-        SELECT IFNULL(SUM(add_lines),0) FROM issueTracker.repo_measure
-        <where>
-            <trim prefixOverrides="and">
-                <if test="developer != null and developer != '' ">
-                    and developer_name = #{developer}
-                </if>
-
-                <if test="repoUuid != null and repoUuid != '' ">
-                    and repo_id = #{repoUuid}
-                </if>
-
-                <if test="since != null and since != '' ">
-                    and <![CDATA[ commit_time >= #{since} ]]>
-                </if>
-
-                <if test="until != null and until != '' ">
-                    and <![CDATA[ commit_time <= #{until} ]]>
-                </if>
-            </trim>
-        </where>
-    </select>
 
     <select id="getDeveloperRankByLoc" parameterType="String" resultType="java.util.HashMap">
         SELECT
@@ -90,7 +74,7 @@
     </select>
 
     <select id="getMsgNumByRepo" resultType="int">
-        SELECT count(uuid) FROM issueTracker.repo_measure
+        SELECT IFNULL(count(uuid),0) FROM issueTracker.repo_measure
         <where>
             <trim prefixOverrides="and">
 
@@ -105,33 +89,7 @@
         </where>
     </select>
 
-    <select id="getLocByCondition" parameterType="String" resultType="int">
-        SELECT
-        IFNULL(SUM( add_lines ) + SUM( del_lines ),0)
-        FROM
-        issueTracker.repo_measure
-        <where>
-            <trim prefixOverrides="and">
-                <if test="developer != null and developer != '' ">
-                    and developer_name = #{developer}
-                </if>
 
-                <if test="repoUuidList != null and repoUuidList.size >0 ">
-                    and repo_id in
-                    <foreach collection="repoUuidList" separator="," open="(" close=")" item="repoUuid">
-                        #{repoUuid}
-                    </foreach>
-                </if>
 
-                <if test="since != null and since != '' ">
-                    and <![CDATA[ commit_time >= #{since} ]]>
-                </if>
-
-                <if test="until != null and until != '' ">
-                    and <![CDATA[ commit_time <= #{until} ]]>
-                </if>
-            </trim>
-        </where>
-    </select>
 
 </mapper>

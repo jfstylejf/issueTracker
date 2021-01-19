@@ -27,6 +27,10 @@ public class AccountDao {
         return accountMapper.getAccountByAccountName(accountName);
     }
 
+    public Account getAccountByAccountNameExceptAdmin(String accountName) {
+        return accountMapper.getAccountByAccountNameExceptAdmin(accountName);
+    }
+
     public boolean isAccountNameExist(String accountName) {
         return getAccountByAccountName(accountName) != null;
     }
@@ -61,7 +65,7 @@ public class AccountDao {
         List<Map<String,Object>> rightList = accountMapper.getRightByAccountName(accountName);
         Map<String,Object> accountInfo = rightList.get(0);
 
-        Integer accountRight = (Integer)accountInfo.get("account_right");
+        Integer accountRight = (Integer) accountInfo.get("account_right");
         accountInfo.put("right", accountRight);
         accountInfo.remove("account_right");
         return accountInfo;
@@ -77,5 +81,9 @@ public class AccountDao {
 
     public void addAccount(Account account) {
         addAccounts(Collections.singletonList(account));
+    }
+
+    public String getAccountName(String email) {
+        return accountMapper.getAccountName(email);
     }
 }

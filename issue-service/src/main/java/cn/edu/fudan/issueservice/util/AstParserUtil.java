@@ -101,13 +101,8 @@ public class AstParserUtil {
         List<String> allFieldsInFile = getAllFieldsInFile(filePath);
         List<String> allMethodsInFile = getAllMethodsInFile(filePath);
 
-        if(allFieldsInFile != null){
-            methodsAndFields.addAll(allFieldsInFile);
-        }
-
-        if(allMethodsInFile != null) {
-            methodsAndFields.addAll(allMethodsInFile);
-        }
+        methodsAndFields.addAll(allFieldsInFile);
+        methodsAndFields.addAll(allMethodsInFile);
 
         return methodsAndFields;
     }
@@ -131,7 +126,7 @@ public class AstParserUtil {
             }
         }catch (Exception e){
             e.printStackTrace();
-            return null;
+            return new ArrayList<>();
         }
         return allMethodsInFile;
     }
@@ -157,7 +152,7 @@ public class AstParserUtil {
             }
         }catch (Exception e){
             e.printStackTrace();
-            return null;
+            return new ArrayList<>();
         }
         return allFieldsInFile;
     }

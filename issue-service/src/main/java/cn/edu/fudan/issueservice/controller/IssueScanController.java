@@ -28,6 +28,8 @@ public class IssueScanController {
 
     private IssueScanService issueScanService;
 
+    private final String invokeToolFailedMessage = "invoke tool:[{}] failed! message is {}";
+
     @ApiOperation(value = "控制扫描开始接口", notes = "@return String", httpMethod = "POST")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "tool", value = "扫描工具名", dataType = "String", required = true, defaultValue = "sonarqube", allowableValues = "sonarqube"),
@@ -45,7 +47,7 @@ public class IssueScanController {
             return new ResponseBean<>(200,"success!",result);
         }catch (Exception e) {
             e.printStackTrace ();
-            log.error("invoke tool:[{}] failed! message is {}", tool, e.getMessage());
+            log.error(invokeToolFailedMessage, tool, e.getMessage());
             return new ResponseBean<>(500, "invoke tool failed!", e.getMessage());
         }
     }
@@ -75,7 +77,7 @@ public class IssueScanController {
             IssueRepo issueRepo = issueScanService.getScanStatus (repoUuid, tool);
             return new ResponseBean<>(200, "success!", issueRepo);
         }catch (Exception e) {
-            log.error("invoke tool:[{}] failed! message is {}", tool, e.getMessage());
+            log.error(invokeToolFailedMessage, tool, e.getMessage());
             return new ResponseBean<>(500, e.getMessage(), null);
         }
     }
@@ -91,7 +93,7 @@ public class IssueScanController {
             issueScanService.stopScan (repoUuid, tool);
             return new ResponseBean<>(200, "stop success!", null);
         }catch (Exception e) {
-            log.error("invoke tool:[{}] failed! message is {}", tool, e.getMessage());
+            log.error(invokeToolFailedMessage, tool, e.getMessage());
             return new ResponseBean<>(500, "invoke tool failed!", e.getMessage());
         }
     }

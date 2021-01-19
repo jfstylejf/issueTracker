@@ -1,17 +1,13 @@
 package cn.edu.fudan.issueservice.service;
 
-
-import cn.edu.fudan.issueservice.util.PagedGridResult;
 import com.alibaba.fastjson.JSONObject;
 
 import java.util.List;
 import java.util.Map;
 
 /**
- * @description: 代码度量信息
- * @author: fancying
- * @create: 2019-04-01 22:11
- **/
+ * @author beethoven
+ */
 public interface IssueMeasureInfoService {
 
     /**
@@ -35,9 +31,10 @@ public interface IssueMeasureInfoService {
      * 返回developer code quality
      * @param query 条件
      * @param codeQuality is codeQuality
+     * @param needAll needAll
      * @return developer code quality
      */
-    Map<String, JSONObject> getDeveloperCodeQuality(Map<String, Object> query, boolean codeQuality);
+    Map<String, Object> getDeveloperCodeQuality(Map<String, Object> query, int codeQuality, Boolean needAll);
 
     /**
      * 清空缓存
@@ -64,21 +61,22 @@ public interface IssueMeasureInfoService {
     List<JSONObject> getLifeCycleDetail(String status, String target, Map<String, Object> query, String token);
 
     /**
-     * 返回自己引入未解决issue
-     * @param page page
-     * @param ps ps
-     * @param order order
-     * @param isAsc isAsc
-     * @param query query
-     * @return 项目总览人员列表中自己引入未解决issue
-     */
-    PagedGridResult getSelfIntroducedLivingIssueCount(int page, int ps, String order, Boolean isAsc, Map<String, Object> query);
-
-    /**
-     * 对lifecycle排序
+     * handleSortDeveloperLifecycle
      * @param developersLifecycle developersLifecycle
      * @param isAsc isAsc
-     * @return 排序后
+     * @param ps ps
+     * @param page page
+     * @return 排序后developersLifecycle
      */
-    List<Map<String, JSONObject>> handleSortDeveloperLifecycle(List<Map<String, JSONObject>> developersLifecycle, Boolean isAsc);
+    List<Map<String, JSONObject>> handleSortDeveloperLifecycle(List<Map<String, JSONObject>> developersLifecycle, Boolean isAsc, int ps, int page);
+
+    /**
+     * 对code quality排序
+     * @param result result
+     * @param asc asc
+     * @param ps  ps
+     * @param page  page
+     * @return 排序后的code quality
+     */
+    Map<String, Object> handleSortCodeQuality(List<Map<String, Object>> result, Boolean asc, int ps, int page);
 }

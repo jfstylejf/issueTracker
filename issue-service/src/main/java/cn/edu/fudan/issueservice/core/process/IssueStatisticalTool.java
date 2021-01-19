@@ -407,7 +407,7 @@ public class IssueStatisticalTool {
      * @return commit time
      */
     private Date getCommitDate(String commitId, JGitHelper jGitInvoker){
-        return DateTimeUtil.localToUTC(jGitInvoker.getCommitTime(commitId));
+        return DateTimeUtil.localToUtc(jGitInvoker.getCommitTime(commitId));
     }
 
     private String getPreScannedFailedCommit(JGitHelper jGitHelper, String repoId, String tool, String commitId) {

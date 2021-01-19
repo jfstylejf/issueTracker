@@ -33,6 +33,8 @@ public class SonarQubeBaseAnalyzer extends BaseAnalyzer {
 
     private RestInterfaceManager restInvoker;
 
+    private final String componentStr = "component";
+
     @Override
     public boolean invoke(String repoUuid, String repoPath, String commit) {
         try {
@@ -77,7 +79,7 @@ public class SonarQubeBaseAnalyzer extends BaseAnalyzer {
         //判断是否确实issue为0,还是没获取到这个commit的sonar结果
         if(!isChanged) {
             JSONObject sonarAnalysisTime = restInvoker.getSonarAnalysisTime(repoUuid + "_" + commit);
-            if (sonarAnalysisTime.containsKey("component")) {
+            if (sonarAnalysisTime.containsKey(componentStr)) {
                 isChanged = true;
                 try {
                     log.info("200s past,the number of issue is 0,but get sonar analysis time,sonar result should be changed");
@@ -117,7 +119,7 @@ public class SonarQubeBaseAnalyzer extends BaseAnalyzer {
                 for(int j = 0; j < sonarRawIssues.size(); j++){
                     JSONObject sonarIssue = sonarRawIssues.getJSONObject(j);
                     //仅解析java文件且非test文件夹
-                    String component = sonarIssue.getString ("component");
+                    String component = sonarIssue.getString (componentStr);
                     if(FileFilter.javaFilenameFilter(component)){
                         continue;
                     }
@@ -202,7 +204,7 @@ public class SonarQubeBaseAnalyzer extends BaseAnalyzer {
                 log.error("textRange is null , sonar issue-->{}",issue.toJSONString());
             }
 
-            sonarPath =issue.getString("component");
+            sonarPath =issue.getString(componentStr);
             if(sonarPath != null) {
                 sonarComponents = sonarPath.split(":");
                 if (sonarComponents.length >= 2) {
@@ -220,7 +222,7 @@ public class SonarQubeBaseAnalyzer extends BaseAnalyzer {
                 //一个flows里面有多个locations， locations是一个数组，目前看sonar的结果每个locations都是一个location，但是不排除有多个。
                 for(int j=0;j<flowLocations.size();j++){
                     JSONObject flowLocation = flowLocations.getJSONObject(j);
-                    String flowComponent = flowLocation.getString("component");
+                    String flowComponent = flowLocation.getString(componentStr);
                     JSONObject flowTextRange = flowLocation.getJSONObject("textRange");
                     if(flowTextRange==null || flowComponent == null){
                         continue;
@@ -293,7 +295,7 @@ public class SonarQubeBaseAnalyzer extends BaseAnalyzer {
         }
         //获取文件路径
         String[] sonarComponents;
-        String sonarPath =issue.getString("component");
+        String sonarPath =issue.getString(componentStr);
         String filePath= null;
         if(sonarPath != null) {
             sonarComponents = sonarPath.split(":");

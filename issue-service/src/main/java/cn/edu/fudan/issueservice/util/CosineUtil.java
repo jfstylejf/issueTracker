@@ -32,9 +32,9 @@ public class CosineUtil {
 
     /**
      * 计算token串的余弦相似度
-     * @param tokensX
-     * @param tokensY
-     * @return
+     * @param tokensX tokensX
+     * @param tokensY tokensY
+     * @return token串的余弦相似度
      */
     public static double cosineSimilarity(List<Object> tokensX, List<Object> tokensY){
         List<Object> allTokens = new ArrayList<>();

@@ -1,10 +1,14 @@
 package cn.edu.fudan.projectmanager.dao;
 
+import cn.edu.fudan.projectmanager.domain.Account;
 import cn.edu.fudan.projectmanager.mapper.AccountMapper;
 import cn.edu.fudan.projectmanager.mapper.ProjectMapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * description:
@@ -18,6 +22,18 @@ public class AccountProjectDao {
 
     public void updateProjectNameAP(String accountUuid,String oldProjectName,String newProjectName) {
         accountMapper.updateProjectNameAP(accountUuid, oldProjectName, newProjectName);
+    }
+
+    public void addProjectLeaderAP(String accountUuid, String newLeaderId, String projectId) {
+        accountMapper.addProjectLeaderAP(accountUuid, newLeaderId, projectId);
+    }
+
+    public void deleteProjectLeaderAP(String accountUuid, String LeaderId, String projectId) {
+        accountMapper.deleteProjectLeaderAP(accountUuid, LeaderId, projectId);
+    }
+
+    public List<Map<String, String>> getLeaderListByProjectId(Integer projectId) {
+        return accountMapper.getLeaderListByProjectId(projectId);
     }
 
     @Autowired

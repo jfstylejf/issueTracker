@@ -15,10 +15,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -44,10 +41,14 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public AccountVO login(String username, String encodedPassword) {
-        //Base64解密
+    public AccountVO login(String username, String encodedPassword, String email) {
+        //Objects.requireNonNull(email,"email not null");
+        //Base64解密,此处密码为真实密码
         String password = Base64Util.decodePassword(encodedPassword);
-        //首次登录或token过期重新登录，返回新的token
+        if(StringUtils.isEmpty(username)) {
+            username = accountDao.getAccountName(email);
+        }
+        //MD5加密密码
         String encodePassword = MD5Util.md5(username + password);
         Account account = accountDao.login(username, encodePassword);
         if (account != null) {
@@ -60,6 +61,14 @@ public class AccountServiceImpl implements AccountService {
         } else {
             return null;
         }
+    }
+
+    @Override
+    public void passwordReset(String username, String encodedPassword) {
+        //Base64解密
+        String password = Base64Util.decodePassword(encodedPassword);
+        //首次登录或token过期重新登录，返回新的token
+        String encodePassword = MD5Util.md5(username + password);
     }
 
     @Override
@@ -99,6 +108,14 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public boolean authByToken(String userToken) {
         return stringRedisTemplate.opsForValue().get("login:" + userToken) != null;
+    }
+
+    @Override
+    public Account getAccountByName(String accountName) {
+        if(accountName != null){
+            return accountDao.getAccountByAccountNameExceptAdmin(accountName);
+        }
+        return null;
     }
 
     @Override
@@ -154,8 +171,7 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public List<Tool> getTools(){
-        return accountDao.getTools
-                ();
+        return accountDao.getTools();
     }
 
     @Override
@@ -176,6 +192,9 @@ public class AccountServiceImpl implements AccountService {
                 filter(gitName -> !accountDao.getAccountGitname().contains(gitName)).
                 map(Account::newInstance).
                 collect(Collectors.toList());
+        if(accounts.size() == 0 || accounts == null){
+            return;
+        }
         accountDao.addAccounts(accounts);
         accountAuthorMapper.batchInsertAccountAuthor(accounts.stream().map(AccountAuthor::newInstanceOf).collect(Collectors.toList()));
 

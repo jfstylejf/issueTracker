@@ -42,6 +42,7 @@ public class IssueScanServiceImpl implements IssueScanService {
     private RestInterfaceManager restInvoker;
     private CommitDao commitDao;
 
+    private final String totalStr = "total";
 
     @GetResource
     @Override
@@ -96,18 +97,19 @@ public class IssueScanServiceImpl implements IssueScanService {
                 IssueScan issueScan = issueScanDao.getLatestIssueScanByRepoIdAndTool (repoId, toolName);
                 if(issueScan == null ){
                     // todo 需返回提示，该项目未扫描，请提供 begin Commit ，此时应该报错，给scan服务调用失败的提示，这样scan就可以根据此情况，重新发送begin commit
-                    return "please provide  begin commit !";
+                    return "please provide begin commit !";
                 }
-                String latestScannedCommitId = issueScan.getCommitId ();
-                List<String> commitIds =  jGitInvoker.getScanCommitListByBranchAndBeginCommit(branch, latestScannedCommitId);
+                String startCommit = issueScanDao.getStartCommitByRepoUuid(repoId);
+                List<String> scannedCommits = new ArrayList<>(issueScanDao.getScannedCommitList(repoId, toolName));
+                List<String> commitIds =  jGitInvoker.getScanCommitListByBranchAndBeginCommit(branch, startCommit, scannedCommits);
                 //因为必定不为null，所以不做此判断
-                if(commitIds.size () <= 1){
+                if(commitIds.isEmpty()){
                     return "scanned";
                 }
-                beginCommit = commitIds.get (1);
+                beginCommit = commitIds.get(0);
                 scanCommitInfoDTO.setIsUpdate (true);
             }
-            scanCommitInfoDTO.setCommitId (beginCommit);
+            scanCommitInfoDTO.setCommitId(beginCommit);
 
             //第四步，加入扫描池队列中
             scanManagementAsync.addProjectToScanQueue(scanCommitInfoDTO);
@@ -180,7 +182,7 @@ public class IssueScanServiceImpl implements IssueScanService {
         //fixme 此处不应该是issue_repo表所有记录的差值的和，而应该是只看最新一条记录的差值
         notScanCommitsInfos.forEach(notScanCommitsInfo -> notScanCommitCount.addAndGet(notScanCommitsInfo.get("total_commit_count") - notScanCommitsInfo.get("scanned_commit_count")));
 
-        return new HashMap<String, Object>(8){{put("total", notScanCommitCount);}};
+        return new HashMap<String, Object>(8){{put(totalStr, notScanCommitCount);}};
     }
 
     @Override
@@ -193,7 +195,7 @@ public class IssueScanServiceImpl implements IssueScanService {
         if(isWhole){
             wholeCommits.forEach(commit -> commit.setScanned(scannedCommitList.contains(commit.getCommitId())));
             return new HashMap<String, Object>(8){{
-                put("total", wholeCommits.size());
+                put(totalStr, wholeCommits.size());
                 put("commitList", wholeCommits.subList((page - 1) * size, Math.min(page * size, wholeCommits.size())));
                 put("pageCount", wholeCommits.size() % size != 0 ? wholeCommits.size() / size + 1 : wholeCommits.size()/size);
             }};
@@ -206,7 +208,7 @@ public class IssueScanServiceImpl implements IssueScanService {
         commits.removeIf(commit -> scannedCommitList.contains(commit.getCommitId()));
 
         return new HashMap<String, Object>(8){{
-            put("total", commits.size());
+            put(totalStr, commits.size());
             put("commitList", commits.subList((page - 1) * size, Math.min(page * size, commits.size())));
             put("pageCount", commits.size() % size != 0 ? commits.size() / size + 1 : commits.size()/size);
         }};

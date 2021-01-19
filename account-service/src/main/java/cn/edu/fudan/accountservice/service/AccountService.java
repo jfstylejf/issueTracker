@@ -19,7 +19,16 @@ public interface AccountService {
      * @param password get user password
      * @return ResponseEntity
      */
-    AccountVO login(String username, String password);
+    AccountVO login(String username, String password, String email);
+
+    /**
+     * passwordReset
+     *
+     * @param username get user accountName
+     * @param password get user password
+     * @return null
+     */
+    void passwordReset(String username, String password);
 
     /**
      * is account accountName exist
@@ -66,6 +75,14 @@ public interface AccountService {
     /**
      * get account by token
      *
+     * @param accountName 用户名
+     * @return Account
+     */
+    Account getAccountByName(String accountName);
+
+    /**
+     * get account by token
+     *
      * @param userToken get user token
      * @return Account
      */
@@ -101,7 +118,6 @@ public interface AccountService {
      */
     void addNewAccounts(List<String> gitname);
 
-
     /**
      *
      * @param repoList 参与的库
@@ -123,5 +139,4 @@ public interface AccountService {
      * @return 获取给定条件下 所有的开发者列表 不进行分页
      */
     List<Map<String, Object>> getDevelopers(List<String> repoList, String since, String until);
-
 }

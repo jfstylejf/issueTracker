@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Arrays;
 import java.util.List;
@@ -32,7 +33,7 @@ import java.util.List;
 @CrossOrigin
 @RequestMapping("/user")
 public class AccountController {
-
+    @Autowired
     private AccountService accountService;
 
     @Autowired
@@ -59,11 +60,7 @@ public class AccountController {
     }
 
     /* 用户昵称=真实姓名=界面显示姓名 */
-    @ApiOperation(value="检查用户昵称是否存在",notes="@return boolean",httpMethod = "GET")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "nickName", value = "开发人员昵称", dataType = "String", required = true,defaultValue = "王贵成"),
-    })
-
+    //废弃接口
     @GetMapping("/nick-name/check")
     @Deprecated
     public Object checkNickName(@RequestParam("nickName") String nickName) {
@@ -76,7 +73,7 @@ public class AccountController {
     })
     @GetMapping("/status")
     public Object getStatusByName(@RequestBody List<String> name) {
-        return new ResponseEntity<>(200, " ",accountService.getStatusByName(name));
+        return new ResponseEntity<>(200, "success",accountService.getStatusByName(name));
     }
 
     @ApiOperation(value="获取用户信息",notes="@return List<Account>",httpMethod = "GET")
@@ -93,7 +90,7 @@ public class AccountController {
     public Object updateAccountStatus(@RequestBody List<Account> statusInfo){
         try{
             accountService.updateAccountStatus(statusInfo);
-            return new ResponseEntity<>(200, "Successful!", null);
+            return new ResponseEntity<>(200, "update success!", null);
         }catch (Exception e){
             return new ResponseEntity<>(401, "update failed! " + e.getMessage(), null);
         }
@@ -116,12 +113,13 @@ public class AccountController {
 
     @ApiOperation(value="用户登录",notes="@return AccountVO",httpMethod = "GET")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "username", value = "用户姓名", dataType = "String", required = true,defaultValue = "admin"),
+            @ApiImplicitParam(name = "username", value = "用户姓名", dataType = "String", required = false,defaultValue = "admin"),
             @ApiImplicitParam(name = "password", value = "密码", dataType = "String", required = true,defaultValue = "YWRtaW4="),
+            @ApiImplicitParam(name = "email", value = "用户邮箱", dataType = "String", required = false,defaultValue = "123@fudan.edu.cn")
     })
     @GetMapping(value = {"/login"})
-    public Object login(@RequestParam("username") String username, @RequestParam("password") String password, HttpServletResponse response) {
-        AccountVO accountVO = accountService.login(username, password);
+    public Object login(@RequestParam(value = "username", required = false) String username, @RequestParam("password") String password,@RequestParam(value = "email", required = false) String email , HttpServletResponse response) {
+        AccountVO accountVO = accountService.login(username, password, email);
         ResponseEntity<AccountVO> responseBean = new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), HttpStatus.INTERNAL_SERVER_ERROR.name(), null);
         if (accountVO != null) {
             CookieUtil.addCookie(response, "userToken", accountVO.getToken(), 24 * 60 * 60);
@@ -130,6 +128,21 @@ public class AccountController {
             responseBean.setData(accountVO);
         }
         return responseBean;
+    }
+
+    @ApiOperation(value="密码重置",notes="@return AccountVO",httpMethod = "GET")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "username", value = "用户姓名", dataType = "String", required = true,defaultValue = "admin"),
+            @ApiImplicitParam(name = "password", value = "密码", dataType = "String", required = true,defaultValue = "YWRtaW4="),
+    })
+    @GetMapping(value = {"/password"})
+    public Object passwordReset(@RequestParam("username") String username, @RequestParam("password") String password, HttpServletResponse response) {
+        try{
+            accountService.passwordReset(username, password);
+            return new ResponseEntity<>(200, "reset success!", null);
+        }catch (Exception e){
+            return new ResponseEntity<>(401, "reset failed! " + e.getMessage(), null);
+        }
     }
 
     @ApiOperation(value="获取当前登录用户的uuid",notes="@return Account Uuid",httpMethod = "GET")
@@ -151,7 +164,7 @@ public class AccountController {
     @GetMapping(value = "/auth/{userToken}")
     public Object auth(@PathVariable("userToken") String userToken) {
         if (accountService.authByToken(userToken)) {
-            return new ResponseEntity<>(200, "auth pass", null);
+            return new ResponseEntity<>(200, "auth pass success", null);
         } else {
             return new ResponseEntity<>(401, "token time out,please login", null);
         }
@@ -177,10 +190,7 @@ public class AccountController {
         return new ResponseEntity<>(200, "success", accountService.getAllAccountId());
     }
 
-    @ApiOperation(value="通过姓名获取用户组别",notes="@return List<String>",httpMethod = "GET")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "accountName", value = "开发人员姓名", dataType = "String", required = true, defaultValue = "chenyuan"),
-    })
+   //废弃接口
     @GetMapping(value = "/accountGroups")
     public Object getGroupsByAccountName(@RequestParam("accountName") String accountName){
         return new ResponseEntity<>(200, "success",accountService.getGroupsByAccountName(accountName));
@@ -197,7 +207,7 @@ public class AccountController {
     public ResponseEntity updateToolsEnable(@RequestBody List<Tool> tools){
         try{
             accountService.updateToolsEnable(tools);
-            return new ResponseEntity<>(200, "Successful!", null);
+            return new ResponseEntity<>(200, "success!", null);
         }catch (Exception e){
             return new ResponseEntity<>(401, "update failed! " + e.getMessage(), null);
         }
@@ -222,6 +232,20 @@ public class AccountController {
         return new ResponseEntity<>(200, "success",accountService.getAccountNameById(accountId));
     }
 
+    @ApiOperation(value="获取用户姓名",httpMethod = "GET")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "account_name", value = "用户名", dataType = "String", required = true),
+    })
+    @GetMapping(value = "/account/name")
+    public ResponseEntity<Object> getAccount(@RequestParam("account_name") String accountName){
+        try {
+            return new ResponseEntity<>(200, "get account success!", accountService.getAccountByName(accountName));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(401, "get account failed!", null);
+        }
+    }
+
     @ApiOperation(value="自动更新人员列表",httpMethod = "POST")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "gitname", value = "更新后的gitname列表", dataType = "List<String>", required = true)
@@ -230,7 +254,7 @@ public class AccountController {
     public ResponseEntity autoUpdateAccount(@RequestBody List<String> gitNames) {
         try{
             accountService.addNewAccounts(gitNames);
-            return new ResponseEntity<>(200, "receive!", null);
+            return new ResponseEntity<>(200, "receive success!", null);
         }catch (Exception e){
             e.printStackTrace();
             return new ResponseEntity<>(401, "failed! " + e.getMessage(), null);
@@ -240,13 +264,13 @@ public class AccountController {
 
     @ApiOperation(value="获取给定条件下的开发人员（聚合后）列表",httpMethod = "GET")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "repo_uuids", value = "repo库", dataType = "String", required = false,defaultValue = "afc0b210-3465-11eb-8dca-4dbb5f7a5f33,153ee1d4-3457-11eb-8dca-4dbb5f7a5f33"),
+            @ApiImplicitParam(name = "repo_uuids", value = "repo库", dataType = "String", required = false,defaultValue = "a140dc46-50db-11eb-b7c3-394c0d058805"),
             @ApiImplicitParam(name = "since", value = "起始时间", dataType = "String", required = false,defaultValue = "2020-01-01"),
             @ApiImplicitParam(name = "until", value = "结束时间", dataType = "String", required = false,defaultValue = "2020-12-31"),
             @ApiImplicitParam(name = "is_whole", value = "是否获取所有数据（不进行分页）", dataType = "Boolean", required = false,defaultValue = "0"),
             @ApiImplicitParam(name = "page", value = "分页的第几页", dataType = "Integer", required = false,defaultValue = "1"),
             @ApiImplicitParam(name = "ps", value = "分页中每页的大小", dataType = "Integer", required = false,defaultValue = "10"),
-            @ApiImplicitParam(name = "order", value = "要排序的字段", dataType = "String", required = false,defaultValue = "developer_unique_name"),
+            @ApiImplicitParam(name = "order", value = "要排序的字段", dataType = "String", required = false,defaultValue = "developerName"),
             @ApiImplicitParam(name = "asc", value = "是否升序", dataType = "Boolean", required = false,defaultValue = "1")
     })
     @GetMapping(value = "/developers")
@@ -256,7 +280,7 @@ public class AccountController {
                                    @RequestParam(value = "is_whole", required = false, defaultValue = "0") Boolean isWhole,
                                    @RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
                                    @RequestParam(value = "ps", required = false, defaultValue = "30") Integer pageSize,
-                                   @RequestParam(value = "order", required = false, defaultValue = "developer_unique_name") String order,
+                                   @RequestParam(value = "order", required = false, defaultValue = "developerName") String order,
                                    @RequestParam(value = "asc", required = false, defaultValue = "1") Boolean isAsc
                                    ){
         String[] repoListArr = repoUuids.split(",");

@@ -2,6 +2,14 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.edu.fudan.projectmanager.mapper.ProjectMapper">
+    <resultMap id="project" type="Project">
+        <id property="id" column="id"/>
+        <result property="projectName" column="project_name"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="createTime" column="create_time"/>
+        <result property="importAccountUuid" column="import_account_uuid"/>
+    </resultMap>
+
 
     <insert id="insertOneProject" parameterType="String">
         insert ignore into project
@@ -26,8 +34,14 @@
 
     </update>
 
-    <select id="getProjectP"  resultType="Map">
-        SELECT id,project_name
-        FROM project
+    <select id="getProjectListP"  resultMap="project">
+       select project_name,id from project
+    </select>
+
+    <select id="getProjectByNameP"  resultMap="project">
+        select * from project
+        <where>
+            project_name = #{projectName}
+        </where>
     </select>
 </mapper>

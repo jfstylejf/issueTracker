@@ -127,15 +127,16 @@ public class JGitHelper {
      * 根据策略获取扫描列表
      * @param branch branch
      * @param beginCommit begin commit
+     * @param scannedCommit scannedCommit
      * @return commit list
      */
-    public List<String> getScanCommitListByBranchAndBeginCommit(String branch, String beginCommit) {
+    public List<String> getScanCommitListByBranchAndBeginCommit(String branch, String beginCommit, List<String> scannedCommit) {
         //checkout to the branch
         checkout(branch);
         //new result set
         Map<String, Set<String>> commitMap = new HashMap<>(512);
         Map<String, Boolean> commitCheckMap = new HashMap<>(512);
-        List<String> scanCommitQueue = new ArrayList<>();
+        List<String> scanCommitQueue = new LinkedList<>();
         //get the start commit time
         Long start = getLongCommitTime(beginCommit);
         //init commitMap:key->commitId,value->set<String> parentsCommitId
@@ -161,13 +162,15 @@ public class JGitHelper {
             for(Map.Entry<String, Set<String>> entry : commitMap.entrySet()){
                 //if parent in commitMap but not in scanCommitQueue, should not add to queue.
                 boolean shouldAddToQueue = shouldAddToQueue(entry.getValue(), scanCommitQueue, commitMap);
-                if(shouldAddToQueue && !commitCheckMap.get(entry.getKey())){
+                boolean isInScanCommitQueue = commitCheckMap.get(entry.getKey());
+                if(shouldAddToQueue && !isInScanCommitQueue){
                     scanCommitQueue.add(entry.getKey());
                     commitCheckMap.put(entry.getKey(), true);
                     break;
                 }
             }
         }
+        scannedCommit.forEach(commit -> scanCommitQueue.removeIf(r -> r.equals(commit)));
         return scanCommitQueue;
     }
 
@@ -215,7 +218,7 @@ public class JGitHelper {
         }catch (Exception e) {
             log.error(e.getMessage());
         }
-        return null;
+        return new String[0];
     }
 
     public Map<String, List<DiffEntry>> getMappedFileList(String commit) {
@@ -225,16 +228,17 @@ public class JGitHelper {
             RevCommit[] parentCommits = currCommit.getParents();
             for (RevCommit p : parentCommits) {
                 RevCommit parentCommit = revWalk.parseCommit(ObjectId.fromString(p.getName()));
-                ObjectReader reader = git.getRepository().newObjectReader();
-                CanonicalTreeParser currTreeIter = new CanonicalTreeParser();
-                currTreeIter.reset(reader, currCommit.getTree().getId());
+                try(ObjectReader reader = git.getRepository().newObjectReader()) {
+                    CanonicalTreeParser currTreeIter = new CanonicalTreeParser();
+                    currTreeIter.reset(reader, currCommit.getTree().getId());
 
-                CanonicalTreeParser parentTreeIter = new CanonicalTreeParser();
-                parentTreeIter.reset(reader, parentCommit.getTree().getId());
-                DiffFormatter diffFormatter = new DiffFormatter(DisabledOutputStream.INSTANCE);
-                diffFormatter.setRepository(git.getRepository());
-                List<DiffEntry> entries = diffFormatter.scan(currTreeIter, parentTreeIter);
-                result.put(parentCommit.getName(), entries);
+                    CanonicalTreeParser parentTreeIter = new CanonicalTreeParser();
+                    parentTreeIter.reset(reader, parentCommit.getTree().getId());
+                    DiffFormatter diffFormatter = new DiffFormatter(DisabledOutputStream.INSTANCE);
+                    diffFormatter.setRepository(git.getRepository());
+                    List<DiffEntry> entries = diffFormatter.scan(currTreeIter, parentTreeIter);
+                    result.put(parentCommit.getName(), entries);
+                }
             }
             return result;
         } catch (IOException e) {

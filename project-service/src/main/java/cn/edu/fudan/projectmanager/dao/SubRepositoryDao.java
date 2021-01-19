@@ -46,6 +46,16 @@ public class SubRepositoryDao {
         return subRepositoryMapper.getAllSubRepoByAccountId(accountUuid);
     }
 
+    public List<SubRepository> getLeaderRepoByAccountUuid(String accountUuid) {
+
+        return subRepositoryMapper.getLeaderRepoByAccountUuid(accountUuid);
+    }
+
+    public List<SubRepository> getRepoByAccountUuid(String accountUuid) {
+
+        return subRepositoryMapper.getRepoByAccountUuid(accountUuid);
+    }
+
     public List<SubRepository> getAllSubRepo() {
         return subRepositoryMapper.getAllSubRepo();
     }
@@ -68,6 +78,14 @@ public class SubRepositoryDao {
 
     public void deleteRepoSR(String accountUuid, String RepoUuid) {
         subRepositoryMapper.deleteRepoSR(accountUuid, RepoUuid);
+    }
+
+    public void putIntoRecycled(String accountUuid, Integer recycled, String repoUuid){
+        subRepositoryMapper.putIntoRecycled(accountUuid, recycled, repoUuid);
+    }
+
+    public void getFromRecycled(String accountUuid, Integer recycled, String repoUuid){
+        subRepositoryMapper.getFromRecycled(accountUuid, recycled, repoUuid);
     }
 
     @Autowired

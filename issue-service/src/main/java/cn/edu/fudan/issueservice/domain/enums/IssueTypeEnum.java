@@ -9,7 +9,6 @@ import lombok.Getter;
 
 @Getter
 public enum IssueTypeEnum {
-
     /**
      * BUG,CODE_SMELL,SECURITY_HOTSPOT,VULNERABILITY  属于sonar issue type
      *
@@ -31,9 +30,6 @@ public enum IssueTypeEnum {
     PERFORMANCE("Performance","findbugs","standard"),
     MULTITHREADED_CORRECTNESS("Multithreaded correctness","findbugs","security"),
     EXPERIMENTAL("Experimental","findbugs","standard");
-
-
-
 
     private final String name;
     private final String category;

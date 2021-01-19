@@ -24,6 +24,14 @@ public interface ProjectControlService {
      */
     void addOneRepo(String token, RepositoryDTO repositoryDTO) throws Exception;
 
+    /**
+     * 本地添加一个仓库
+     * @param token 用户token
+     * @param repositoryDTO repo信息
+     * @throws Exception e
+     */
+    void addOneRepoByLocal(String token, RepositoryDTO repositoryDTO) throws Exception;
+
 
     /**
      * 添加多个仓库
@@ -69,12 +77,6 @@ public interface ProjectControlService {
     void addOneProject(String token, String projectName) throws Exception;
 
     /**
-     * 获取全部项目
-     * @throws Exception e
-     */
-    List<Map<String, Object>> getProjectAll(String token);
-
-    /**
      * 删除项目
      * @param token 用户token
      * @param projectName projectName
@@ -83,7 +85,7 @@ public interface ProjectControlService {
     void deleteProject(String token, String projectName) throws Exception;
 
     /**
-     * 更新库信息
+     * 更新库名
      * @param token 用户token
      * @param oldRepoName 旧名
      * @param newRepoName  新名
@@ -91,14 +93,6 @@ public interface ProjectControlService {
      */
     void updateRepo(String token, String oldRepoName, String newRepoName) throws Exception;
 
-    /**
-     * 更新库所属项目
-     * @param token 用户token
-     * @param oldProjectName  旧名
-     * @param newProjectName  新名
-     * @throws Exception e
-     */
-    void updateRepoProject(String token, String oldProjectName, String newProjectName,String RepoUuid) throws Exception;
 
     /**
      * 删除库
@@ -107,4 +101,14 @@ public interface ProjectControlService {
      * @throws Exception e
      */
     void deleteRepo(@NotNull String token, String repoUuid) throws Exception;
+
+    /**
+     * 更新库回收状态
+     * @param token 用户token
+     * @param recycled 回收状态
+     * @param repoUuid  库的UUID
+     * @throws Exception e
+     */
+    void updateRecycleStatus(String token, Integer recycled, String repoUuid) throws Exception;
+
 }

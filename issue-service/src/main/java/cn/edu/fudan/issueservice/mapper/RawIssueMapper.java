@@ -102,4 +102,11 @@ public interface RawIssueMapper {
      * @return rawIssue
      */
     String getRawIssueUuidByIssueUuidAndCommit(String issueUuid, String commit);
+
+    /**
+     * 获取commit根据rawIssueUuid
+     * @param rawIssueUuid rawIssueUuid
+     * @return commit
+     */
+    String getCommitByRawIssueUuid(String rawIssueUuid);
 }

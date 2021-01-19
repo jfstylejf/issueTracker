@@ -1,5 +1,8 @@
 package cn.edu.fudan.issueservice.util;
 
+/**
+ * @author Beethoven
+ */
 public class SearchUtil {
 
     public static  int dichotomy(String[] strings, String value){
