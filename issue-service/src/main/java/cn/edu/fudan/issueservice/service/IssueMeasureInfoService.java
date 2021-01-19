@@ -86,7 +86,7 @@ public interface IssueMeasureInfoService {
      * @param query 查询条件
      * @return producer, livingIssueCount
      */
-    PagedGridResult getSelfIntroducedLivingIssueCount(int page, int ps, String order, Boolean isAsc, Map<String, Object> query);
+    Object getSelfIntroducedLivingIssueCount(int page, int ps, String order, Boolean isAsc, Map<String, Object> query, Boolean isPagination);
 
 
 }

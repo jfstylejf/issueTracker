@@ -740,7 +740,7 @@
     </select>
 
     <select id="getSelfIntroduceLivingIssueCount" parameterType="Map" resultType="com.alibaba.fastjson.JSONObject">
-        SELECT producer, count(*) as livingIssueCount
+        SELECT producer as developerName, count(*) as livingIssueCount
         FROM issue
         <where>
             solver IS NULL

@@ -246,13 +246,7 @@ public class IssueMeasurementController {
         }
     }
 
-    @ApiOperation(value = "开发者能力页面自己引入未解决缺陷数接口", notes = "@return Map<String, Object>\n{\n" +
-            "        \"addQuality\": 0.5444311156224048,\n" +
-            "        \"loc\": 10837,\n" +
-            "        \"solvedIssueCount\": 27,\n" +
-            "        \"addedIssueCount\": 59,\n" +
-            "        \"solveQuality\": 0.2491464427424564\n" +
-            "    }", httpMethod = "GET")
+    @ApiOperation(value = "开发者能力页面自己引入未解决缺陷数接口", httpMethod = "GET")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "developers", value = "开发人员姓名,支持多人查询"),
             @ApiImplicitParam(name = "repo_uuids", value = "代码库uuid\n支持多选\n以英文逗号,分隔"),
@@ -264,15 +258,15 @@ public class IssueMeasurementController {
             @ApiImplicitParam(name = "asc", value = "是否升序：1表示升序，0表示降序"),
             @ApiImplicitParam(name = "tool", value = "工具名", allowableValues = "sonarqube", defaultValue = "sonarqube"),
     })
-    @GetMapping(value = {"/codewisdom/issue/developer-data/living-issue-count"})
-    public ResponseBean<PagedGridResult> getDeveloperLivingIssueCount(@RequestParam(value = "repo_uuids",required = false)String repoUuids,
+    @GetMapping(value = {"/codewisdom/issue/developer-data/living-issue-count/self"})
+    public ResponseBean<Object> getDeveloperLivingIssueCount(@RequestParam(value = "repo_uuids",required = false)String repoUuids,
                                                                       @RequestParam(value = "developers",required = false)String developers,
                                                                       @RequestParam(value = "tool",required = false, defaultValue = "sonarqube")String tool,
                                                                       @RequestParam(value = "page",required = false, defaultValue = "1")int page,
                                                                       @RequestParam(value = "ps",required = false, defaultValue = "10")int ps,
                                                                       @RequestParam(value = "since",required = false)String since,
                                                                       @RequestParam(value = "until",required = false)String until,
-                                                                      @RequestParam(value = "order", required = false) String order,
+                                                                      @RequestParam(value = "order", required = false, defaultValue = "livingIssueCount") String order,
                                                                       @RequestParam(value = "asc",required = false, defaultValue = "1") Boolean isAsc){
 
         Map<String, Object> query = new HashMap<>(10);
@@ -292,9 +286,13 @@ public class IssueMeasurementController {
         query.put("producerList", producerList);
         query.put("tool", tool);
         query.put("repoList", repoList);
+        query.put("order", order);
+        query.put("asc", isAsc);
 
+        // 是否做分页处理
+        Boolean isPagination = developers == null || developers.length() == 0;
         try {
-            return new ResponseBean<>(200, success, issueMeasureInfoService.getSelfIntroducedLivingIssueCount(page, ps, order, isAsc, query));
+            return new ResponseBean<>(200, success, issueMeasureInfoService.getSelfIntroducedLivingIssueCount(page, ps, order, isAsc, query, isPagination));
         } catch (Exception e) {
             e.printStackTrace();
             return new ResponseBean<>(500, failed + e.getMessage(), null);
