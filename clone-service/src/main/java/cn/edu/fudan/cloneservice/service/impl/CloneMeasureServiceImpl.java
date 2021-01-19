@@ -16,6 +16,7 @@ import cn.edu.fudan.cloneservice.thread.ForkJoinRecursiveTask;
 import cn.edu.fudan.cloneservice.util.ComputeUtil;
 import cn.edu.fudan.cloneservice.util.JGitUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.log4j.util.PropertySource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -31,20 +32,21 @@ import java.util.stream.Collectors;
 @Service
 public class CloneMeasureServiceImpl implements CloneMeasureService {
 
-    private RepoCommitMapper repoCommitMapper;
-    private RestInterfaceManager restInterfaceManager;
-    private CloneMeasureDao cloneMeasureDao;
-    private CloneInfoDao cloneInfoDao;
-    private CloneLocationDao cloneLocationDao;
-    private ForkJoinRecursiveTask forkJoinRecursiveTask;
-    private CloneInfoMapper cloneInfoMapper;
+    private final RepoCommitMapper repoCommitMapper;
+    private final RestInterfaceManager restInterfaceManager;
+    private final CloneMeasureDao cloneMeasureDao;
+    private final CloneInfoDao cloneInfoDao;
+    private final CloneLocationDao cloneLocationDao;
+    private final ForkJoinRecursiveTask forkJoinRecursiveTask;
+    @Autowired
+    private final CloneInfoMapper cloneInfoMapper;
 
     @Override
-    public List<CloneMessage> getCloneMeasure(String repositoryId, String developer, String start, String end, String page, String size, Boolean isDesc) {
+    public List<CloneMessage> getCloneMeasure(String repositoryId, String developers, String start, String end, String page, String size, Boolean isAsc, String order) {
 
         List<CloneMessage> cloneMessages = new ArrayList<>();
 
-        if (StringUtils.isEmpty(developer)) {
+        if (StringUtils.isEmpty(developers)) {
             if (StringUtils.isEmpty(repositoryId)) {
                 log.error("repositoryId and developer is null");
                 return cloneMessages;
@@ -52,50 +54,36 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
             List<String> repoIds = split(repositoryId);
             // 单个repo 维度 存放的是用户的git accountName
             List<String> developerList = new ArrayList<>();
-            log.info("begin:"+String.valueOf(System.currentTimeMillis()/1000));
+            log.info("begin:" + System.currentTimeMillis() / 1000);
             repoIds.forEach(repoId -> developerList.addAll(repoCommitMapper.getAllDeveloper(repoId)));
-            log.info("after get all developer:"+String.valueOf(System.currentTimeMillis()/1000));
+            log.info("after get all developer:" + System.currentTimeMillis() / 1000);
             // 聚合 key gitName value trueName
             Map<String, String> trueNameGitName = getName(developerList);
-            if(trueNameGitName.isEmpty()) return cloneMessages;
+            if (trueNameGitName.isEmpty()) return cloneMessages;
             List<String> developerListSimply = new ArrayList<>();
             Iterator<Map.Entry<String, String>> it = trueNameGitName.entrySet().iterator();
-            while (it.hasNext()){
+            while (it.hasNext()) {
                 Map.Entry<String, String> entry = it.next();
-                if(entry.getValue()!=null){
+                if (entry.getValue() != null) {
                     developerListSimply.add(entry.getKey());
                 }
             }
 
             List<CloneMessage> gitNameClone = new ArrayList<>(developerListSimply.size());
-            log.info("loop:"+developerListSimply.size());
+            log.info("loop:" + developerListSimply.size());
             developerListSimply.forEach(d -> gitNameClone.add(getOneDeveloperCloneInfo(repositoryId, d, start, end, trueNameGitName.get(d))));
 
             Map<String, List<CloneMessage>> map = gitNameClone.parallelStream().collect(Collectors.groupingBy(CloneMessage::getDeveloper));
             map.values().forEach(c -> cloneMessages.add(union(c)));
         } else {
-            List<String> gitName = repoCommitMapper.getAllGitName(developer);
-            gitName.forEach(n -> cloneMessages.add(getOneDeveloperCloneInfo(repositoryId, n, start, end, developer)));
-            CloneMessage u = union(cloneMessages);
-            cloneMessages.clear();
-            cloneMessages.add(u);
-        }
-
-        if(page != null && size != null){
-            int pageDigit = Integer.parseInt(page);
-            int sizeDigit = Integer.parseInt(size);
-            List<CloneMessage> result = new ArrayList<>();
-
-            Collections.sort(cloneMessages);
-            if(isDesc != null && isDesc){
-                Collections.reverse(cloneMessages);
+            List<String> developerList = split(developers);
+            for (String developer : developerList) {
+                List<CloneMessage> cloneMessageEach = new ArrayList<>();
+                List<String> gitName = repoCommitMapper.getAllGitName(developer);
+                gitName.forEach(n -> cloneMessageEach.add(getOneDeveloperCloneInfo(repositoryId, n, start, end, developer)));
+                CloneMessage u = union(cloneMessageEach);
+                cloneMessages.add(u);
             }
-            int index = (pageDigit - 1) * sizeDigit;
-            while((index < cloneMessages.size()) && (index < pageDigit * sizeDigit)){
-                result.add(cloneMessages.get(index));
-                index += 1;
-            }
-            return result;
         }
 
         return cloneMessages;
@@ -105,7 +93,7 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
      * fixme 目前先简单相加 后面从入库的时候就考虑人员聚合
      */
     private CloneMessage union(List<CloneMessage> cloneMessageList) {
-        if (cloneMessageList == null || cloneMessageList.size() == 0) {
+        if (cloneMessageList == null || cloneMessageList.isEmpty()) {
             return null;
         }
         CloneMessage result = cloneMessageList.get(0);
@@ -114,8 +102,9 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
             CloneMessage c = cloneMessageList.get(i);
             result.setIncreasedCloneLines(result.getIncreasedCloneLines() + c.getIncreasedCloneLines());
             result.setSelfIncreasedCloneLines(result.getSelfIncreasedCloneLines() + c.getSelfIncreasedCloneLines());
+            result.setOthersIncreasedCloneLines(result.getOthersIncreasedCloneLines() + c.getOthersIncreasedCloneLines());
             result.setEliminateCloneLines(result.getEliminateCloneLines() + c.getEliminateCloneLines());
-            if ((result.getRepoId()==null&&c.getRepoId()==null)||(!result.getRepoId().equals(c.getRepoId()))) {
+            if ((result.getRepoId() == null && c.getRepoId() == null) || (!result.getRepoId().equals(c.getRepoId()))) {
                 result.setAllEliminateCloneLines(result.getAllEliminateCloneLines() + c.getAllEliminateCloneLines());
             }
         }
@@ -159,13 +148,13 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
         int allDeleteCloneLines = 0;
         int addLines = 0;
         for (String repoId : repoIds) {
-            log.info("loop begin:"+String.valueOf(System.currentTimeMillis()/1000));
+            log.info("loop begin:" + System.currentTimeMillis() / 1000);
             List<String> developerCommitList = repoCommitMapper.getAuthorCommitList(repoId, developer, start, end);
-            log.info("after get author commit list:"+String.valueOf(System.currentTimeMillis()/1000));
+            log.info("after get author commit list:" + System.currentTimeMillis() / 1000);
             List<String> repoCommitList = repoCommitMapper.getCommitList(repoId, start, end);
-            log.info("after get commit list:"+String.valueOf(System.currentTimeMillis()/1000));
+            log.info("after get commit list:" + System.currentTimeMillis() / 1000);
             List<CloneMeasure> cloneMeasures = cloneMeasureDao.getCloneMeasures(repoId);
-            log.info("after get clone measure:"+String.valueOf(System.currentTimeMillis()/1000));
+            log.info("after get clone measure:" + System.currentTimeMillis() / 1000);
 
 
             int preCloneLines = 0;
@@ -190,9 +179,9 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
                     }
                 }
             }
-            log.info("after compute:"+String.valueOf(System.currentTimeMillis()/1000));
+            log.info("after compute:" + System.currentTimeMillis() / 1000);
             addLines += restInterfaceManager.getAddLines(repoId, start, end, trueName);
-            log.info("after rest get add lines:"+String.valueOf(System.currentTimeMillis()/1000));
+            log.info("after rest get add lines:" + System.currentTimeMillis() / 1000);
         }
 
         CloneMessage cloneMessage = new CloneMessage();
@@ -206,15 +195,9 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
         cloneMessage.setAddLines(addLines);
         cloneMessage.setEliminateCloneLines(deleteCloneLines);
         cloneMessage.setAllEliminateCloneLines(allDeleteCloneLines);
-
+        cloneMessage.setOthersIncreasedCloneLines(newCloneLines - selfCloneLines);
         return cloneMessage;
     }
-
-//    @Override
-//    public void deleteCloneMeasureByRepoId(String repoId) {
-//        cloneMeasureDao.deleteCloneMeasureByRepoId(repoId);
-//        cloneInfoDao.deleteCloneInfo(repoId);
-//    }
 
     /**
      * 获取某个版本的clone行数
@@ -233,7 +216,7 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
             for (CloneLocation location : cloneLocations) {
                 String[] nums = location.getNum().split(",");
                 for (String line : nums) {
-                    locationMap = ComputeUtil.putNewNum(locationMap, line, location.getFilePath());
+                    ComputeUtil.putNewNum(locationMap, line, location.getFilePath());
                 }
             }
             log.info("repoId:{} - commitId:{}--->cloneLines:{}", repoId, commitId, cloneLinesWithOutTest);
@@ -360,5 +343,50 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
             repoIds = Arrays.asList(targetRepos);
         }
         return repoIds;
+    }
+
+    @Override
+    public List<CloneMessage> sortByOrder(List<CloneMessage> cloneMessages, String order) {
+        if(cloneMessages.isEmpty()) return new ArrayList<>();
+        switch (order) {
+            case "increasedCloneLinesRate":
+                Collections.sort(cloneMessages);
+                break;
+            case "increasedCloneLines":
+                Comparator<CloneMessage> byIncreasedCloneLines = Comparator.comparing(CloneMessage::getIncreasedCloneLines);
+                cloneMessages.sort(byIncreasedCloneLines);
+                break;
+            case "selfIncreasedCloneLines":
+                Comparator<CloneMessage> bySelfIncreasedCloneLines = Comparator.comparing(CloneMessage::getSelfIncreasedCloneLines);
+                cloneMessages.sort(bySelfIncreasedCloneLines);
+                break;
+            case "othersIncreasedCloneLines":
+                Comparator<CloneMessage> byOthersIncreasedCloneLines = Comparator.comparing(CloneMessage::getOthersIncreasedCloneLines);
+                cloneMessages.sort(byOthersIncreasedCloneLines);
+                break;
+            case "eliminateCloneLines":
+                Comparator<CloneMessage> byEliminateCloneLines = Comparator.comparing(CloneMessage::getEliminateCloneLines);
+                cloneMessages.sort(byEliminateCloneLines);
+                break;
+            case "allEliminateCloneLines":
+                Comparator<CloneMessage> byAllEliminateCloneLines = Comparator.comparing(CloneMessage::getAllEliminateCloneLines);
+                cloneMessages.sort(byAllEliminateCloneLines);
+                break;
+            case "addLines":
+                Comparator<CloneMessage> byAddLines = Comparator.comparing(CloneMessage::getAddLines);
+                cloneMessages.sort(byAddLines);
+                break;
+            case "repoId":
+                Comparator<CloneMessage> byRepoId = Comparator.comparing(CloneMessage::getRepoId);
+                cloneMessages.sort(byRepoId);
+                break;
+            case "developer":
+                Comparator<CloneMessage> byDeveloper = Comparator.comparing(CloneMessage::getDeveloper);
+                cloneMessages.sort(byDeveloper);
+                break;
+            default:
+                Collections.sort(cloneMessages);
+        }
+        return cloneMessages;
     }
 }
