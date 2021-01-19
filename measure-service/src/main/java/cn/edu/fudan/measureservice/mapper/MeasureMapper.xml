@@ -4,9 +4,8 @@
 <mapper namespace="cn.edu.fudan.measureservice.mapper.MeasureMapper">
 
     <resultMap id="workLoad" type="DeveloperWorkLoad">
-        <result property="developerName" column="developer_name" />
         <result property="addLines" column="addLines" />
-        <result property="delLines" column="delLines" />
+        <result property="deleteLines" column="delLines" />
         <result property="commitCount" column="commitCount" />
         <result property="changedFiles" column="changedFiles" />
     </resultMap>

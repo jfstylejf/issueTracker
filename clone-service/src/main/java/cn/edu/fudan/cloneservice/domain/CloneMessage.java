@@ -4,6 +4,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
 /**
  * @author zyh
  * @date 2020/5/23
@@ -17,6 +21,7 @@ public class CloneMessage implements Comparable<CloneMessage>{
     private String developer;
     private Integer increasedCloneLines;
     private Integer selfIncreasedCloneLines;
+    private Integer othersIncreasedCloneLines;
     private String increasedCloneLinesRate;
     private Integer eliminateCloneLines;
     private Integer allEliminateCloneLines;
@@ -41,5 +46,6 @@ public class CloneMessage implements Comparable<CloneMessage>{
         }else if(thisValue < objectValue){
             return -1;
         }
-        return 0;    }
+        return 0;
+    }
 }

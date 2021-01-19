@@ -15,9 +15,10 @@ import java.util.Map;
 @AllArgsConstructor
 @NoArgsConstructor
 public class DeveloperCommitStandard implements Serializable {
-    private String developer;
+    private String developerName;
     private int developerValidCommitCount;
     private int developerJiraCommitCount;
+    private int developerInvalidCommitCount;
     private double commitStandard;
     private List<Map<String,String>> developerJiraCommitInfo;
     private List<Map<String,String>> developerInvalidCommitInfo;

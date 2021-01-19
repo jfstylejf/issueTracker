@@ -33,21 +33,7 @@ public class CodeTrackerDao {
         int developerChangeStatement = 0;
         int developerTotalStatement = 0;
         int developerValidStatement = 0;
-        JSONObject developerStatements = null;
-        try {
-            developerStatements = restInterface.getStatements(query.getRepoUuidList().get(0),query.getSince(),query.getUntil(),query.getDeveloper());
-        }catch (Exception e) {
-            log.error(e.getMessage());
-        }
-        if  (developerStatements != null){
-            developerTotalStatement = developerStatements.getIntValue("total");
-            if(developerStatements.getJSONObject("developer")!= null && !developerStatements.getJSONObject("developer").isEmpty()) {
-                developerAddStatement = developerStatements.getJSONObject("developer").getJSONObject(query.getDeveloper()).getIntValue("ADD");
-                developerDeleteStatement = developerStatements.getJSONObject("developer").getJSONObject(query.getDeveloper()).getIntValue("DELETE");
-                developerChangeStatement = developerStatements.getJSONObject("developer").getJSONObject(query.getDeveloper()).getIntValue("CHANGE");
-                developerValidStatement = developerStatements.getJSONObject("developer").getJSONObject(query.getDeveloper()).getIntValue("CURRENT");
-            }
-        }
+        // Todo line-count返回体有修改，重新获取
         map.put("developerTotalStatement",developerTotalStatement);
         map.put("developerAddStatement",developerAddStatement);
         map.put("developerDeleteStatement",developerDeleteStatement);
@@ -68,22 +54,7 @@ public class CodeTrackerDao {
         int totalChangeStatement = 0;
         int totalStatement = 0;
         int totalValidStatement = 0;
-        String repoUuid = query.getRepoUuidList().get(0);
-        JSONObject allDeveloperStatements = null;
-        try {
-            allDeveloperStatements = restInterface.getStatements(query.getRepoUuidList().get(0),query.getSince(),query.getUntil(),"");
-        }catch (Exception e) {
-            log.error(e.getMessage());
-        }
-        if(allDeveloperStatements !=null ) {
-            totalStatement = allDeveloperStatements.getInteger("total");
-            if(allDeveloperStatements.getJSONObject("repo")!=null && !allDeveloperStatements.getJSONObject("repo").isEmpty()) {
-                totalAddStatement = allDeveloperStatements.getJSONObject("repo").getJSONObject(repoUuid).getIntValue("ADD");
-                totalDeleteStatement = allDeveloperStatements.getJSONObject("repo").getJSONObject(repoUuid).getIntValue("DELETE");
-                totalChangeStatement = allDeveloperStatements.getJSONObject("repo").getJSONObject(repoUuid).getIntValue("CHANGE");
-                totalValidStatement = allDeveloperStatements.getJSONObject("repo").getJSONObject(repoUuid).getIntValue("CURRENT");
-            }
-        }
+        // Todo line-count返回体有修改，重新获取
         map.put("totalStatement",totalStatement);
         map.put("totalAddStatement",totalAddStatement);
         map.put("totalDeleteStatement",totalDeleteStatement);
@@ -104,11 +75,12 @@ public class CodeTrackerDao {
         Map<String,Object> map = new HashMap<>(10);
         int developerChangedFile = 0 ;
         int totalChangedFile = 0;
-        JSONObject changedFileCount = restInterface.getFocusFilesCount(repoUuid,since,until,developer);
+        // fixme
+       /* JSONObject changedFileCount = restInterface.getFocusFilesCount(repoUuid,since,until,developer);
         if(changedFileCount != null) {
             developerChangedFile = changedFileCount.getJSONObject("developer").getIntValue(developer);
             totalChangedFile = changedFileCount.getIntValue("total");
-        }
+        }*/
         map.put("developerChangedFile",developerChangedFile);
         map.put("totalChangedFile",totalChangedFile);
         return map;

@@ -290,9 +290,11 @@ public class IssueOuterController {
         query.put("toolName", toolName);
         query.put("developer", introducer);
         query.put("priority", priority);
+        query.put("detail", true);
 
         Map<String, Object> issueFilterList = issueService.getIssueFilterListCount(query);
         issueFilterList = issueService.getIssueFilterList(query, issueFilterList);
+        issueFilterList = issueService.getIssueFilterListWithDetail(query, issueFilterList);
 
         response.setHeader("content-type", "application/octet-stream");
         response.setHeader("Content-Disposition", "attachment; filename=" + "issues.xls");

@@ -244,7 +244,7 @@ public class MeasureRepoService {
             int commitCounts = 0;
             DeveloperWorkLoad developerWorkLoad = measureDao.getDeveloperWorkLoadData(query);
             if(developerWorkLoad != null) {
-                loc = developerWorkLoad.getAddLines() + developerWorkLoad.getDelLines();
+                loc = developerWorkLoad.getAddLines() + developerWorkLoad.getDeleteLines();
                 commitCounts = developerWorkLoad.getCommitCount();
             }
             //现在采用返回每天的数据，无论当天是否有commit

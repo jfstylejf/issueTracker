@@ -72,17 +72,21 @@ public class RestInterfaceManager {
 
     //------------project-service--------------------------------------------------------------------------------------
 
+    @SuppressWarnings("unchecked")
     @CachePut("projects")
-    public JSONObject getProjectByrepoUuid(String repoUuid,String token){
+    public Map<String,Object> getProjectByrepoUuid(String repoUuid,String token){
         HttpHeaders headers = new HttpHeaders();
         headers.add("token",token);
         HttpEntity request = new HttpEntity(headers);
         StringBuilder url = new StringBuilder();
         url.append(projectServicePath).append("/inner/project?repo_uuid=").append(repoUuid);
-        ResponseEntity responseEntity =restTemplate.exchange(url.toString(),HttpMethod.GET,request,JSONObject.class);
-        String body = responseEntity.getBody().toString();
-        JSONObject result = JSONObject.parseObject(body);
-        return result;
+        ResponseEntity<ResponseBean> responseEntity =restTemplate.exchange(url.toString(),HttpMethod.GET,request,ResponseBean.class);
+        ResponseBean<Map<String,Object>> result = responseEntity.getBody();
+        if (result!=null && result.getCode()==200) {
+            return result.getData();
+        }else {
+            return null;
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -92,10 +96,10 @@ public class RestInterfaceManager {
         HttpEntity request= new HttpEntity(headers);
         StringBuilder url = new StringBuilder();
         url.append(projectServicePath).append("/project/all");
-        ResponseEntity responseEntity = restTemplate.exchange(url.toString(),HttpMethod.GET,request,Map.class);
-        Map<String,List<Map<String,String>>> result = (Map<String,List<Map<String,String>>>) responseEntity.getBody();
+        ResponseEntity<ResponseBean> responseEntity = restTemplate.exchange(url.toString(),HttpMethod.GET,request,ResponseBean.class);
+        ResponseBean result = responseEntity.getBody();
         if(result!=null) {
-            return result;
+            return ( Map<String,List<Map<String,String>>>) result.getData();
         }
         return null;
     }
@@ -265,28 +269,34 @@ public class RestInterfaceManager {
 
     //--------------------------------code-tracker service------------------------------------------------
 
-    public JSONObject getStatements(String repoUuid, String since, String until, String developer){
+    public List<Map<String,Object>> getStatements(String repoUuid, String since, String until, String developer,String type){
         StringBuilder url = new StringBuilder();
-        url.append(uniformServicePath).append("/codewisdom/code/line-count?repo_uuids=").append(repoUuid);
+        url.append(uniformServicePath).append("/codewisdom/code/line-count?level=").append(type);
         if(since!=null) {
             url.append("&since=").append(since);
         }
         if(until!=null) {
             url.append("&until=").append(until);
         }
-        if(developer!=null && !"".equals(developer)) {
-            url.append("&developer=").append(developer);
+        if(repoUuid!=null && !"".equals(repoUuid)) {
+            url.append("&repo_uuids=").append(repoUuid);
         }
-        JSONObject response = restTemplate.getForObject(url.toString(), JSONObject.class);
-        if (response == null || response.getIntValue("code") != 200){
+        if(developer!=null && !"".equals(developer)) {
+            url.append("&developers=").append(developer);
+        }
+        ResponseBean<List<Map<String,Object>>> response = restTemplate.getForObject(url.toString(), ResponseBean.class);
+        if (response == null || response.getCode() != 200){
             return null;
         }
-        return response.getJSONObject("data");
+        return response.getData();
     }
 
-    public JSONObject getCodeLifeCycle(String repoUuid,String developer,String since,String until) {
+    public List<Map<String,Object>> getCodeLifeCycle(String repoUuid,String developer,String since,String until,String level,String type) {
         StringBuilder url = new StringBuilder();
-        url.append(uniformServicePath).append("/codewisdom/code/lifecycle?developer=").append(developer);
+        url.append(uniformServicePath).append("/codewisdom/code/lifecycle?level=").append(level).append("&type=").append(type);
+        if (developer!=null && !"".equals(developer)) {
+            url.append("&developers=").append(developer);
+        }
         if(repoUuid!=null && !"".equals(repoUuid)) {
             url.append("&repo_uuids=").append(repoUuid);
         }
@@ -296,19 +306,19 @@ public class RestInterfaceManager {
         if (until!=null && !"".equals(until)) {
             url.append("&until").append(until);
         }
-        JSONObject response = restTemplate.getForObject(url.toString(),JSONObject.class);
-        if(response!=null && response.getIntValue("code")==200) {
-            return response.getJSONObject("data");
+        ResponseBean<List<Map<String,Object>>> response = restTemplate.getForObject(url.toString(),ResponseBean.class);
+        if(response!=null && response.getCode()==200) {
+            return response.getData();
         }else {
             return null;
         }
     }
 
-    public JSONObject getFocusFilesCount(String repoUuid, String developer,String since, String until){
+    public List<Map<String,Object>> getFocusFilesCount(String repoUuid, String developer,String since, String until){
         StringBuilder url = new StringBuilder();
-        url.append(uniformServicePath).append("/statistics/focus/file/num?developer=").append(developer);
+        url.append(uniformServicePath).append("/statistics/focus/file/num?developers=").append(developer);
         if(repoUuid!=null && !"".equals(repoUuid)) {
-            url.append("&repo_uuid").append(repoUuid);
+            url.append("&repo_uuids").append(repoUuid);
         }
         if (since!=null && !"".equals(since)) {
             url.append("&since=").append(since);
@@ -316,9 +326,9 @@ public class RestInterfaceManager {
         if (until!=null && !"".equals(until)) {
             url.append("&until").append(until);
         }
-        JSONObject response = restTemplate.getForObject(url.toString(),JSONObject.class);
-        if(response!=null && response.get("data")!=null) {
-            return response.getJSONObject("data");
+        ResponseBean<List<Map<String,Object>>> response = restTemplate.getForObject(url.toString(),ResponseBean.class);
+        if(response!=null && response.getCode()==200) {
+            return response.getData();
         }else {
             return  null;
         }
@@ -326,17 +336,22 @@ public class RestInterfaceManager {
 
 
     //-------------------------------------------clone service---------------------------------------
-    public JSONObject getCloneMeasure(String repo_id, String developer, String start, String end){
+    public List<Map<String,Object>> getCloneMeasure(String repoUuid, String developer, String since, String until){
+        StringBuilder url = new StringBuilder();
+        url.append(uniformServicePath).append("/cloneMeasure"  + "?repo_uuids=").append(repoUuid).append("&developers=").append(developer);
+        if (since!=null && !"".equals(since)) {
+            url.append("&since=").append(since);
+        }
+        if (until!=null && !"".equals(until)) {
+            url.append("&until").append(until);
+        }
         try {
-            JSONObject result = restTemplate.getForObject(uniformServicePath+"/cloneMeasure"  + "?repo_uuid=" + repo_id + "&developer=" + developer + "&start=" + start + "&end=" + end, JSONObject.class);
-            if(result==null) {
-                log.error("Response is null");
+            ResponseBean<List<Map<String,Object>>> result = restTemplate.getForObject(url.toString(), ResponseBean.class);
+            if (result!=null && result.getCode()==200) {
+                return result.getData();
+            }else {
                 return null;
             }
-            if(result.getIntValue("code") != 200) {
-                log.error(result.getString("msg"));
-            }
-            return result.getJSONObject("data");
         }catch (Exception e) {
             log.error(e.getMessage());
         }

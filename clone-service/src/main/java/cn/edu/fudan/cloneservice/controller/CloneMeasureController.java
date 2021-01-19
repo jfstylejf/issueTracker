@@ -11,7 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.*;
 
 /**
  * @author znj yp wgc
@@ -32,10 +32,10 @@ public class CloneMeasureController {
     public ResponseBean<CloneMeasure> getLatestCloneLines(@RequestParam("repo_uuid") String repoId){
 
         try{
-            return new ResponseBean(200,"success",cloneMeasureService.getLatestCloneMeasure(repoId));
+            return new ResponseBean<>(200,"success",cloneMeasureService.getLatestCloneMeasure(repoId));
         }catch (Exception e){
             e.printStackTrace();
-            return new ResponseBean(401,"failed",null);
+            return new ResponseBean<>(401,"failed",null);
         }
     }
 
@@ -50,23 +50,44 @@ public class CloneMeasureController {
             @ApiImplicitParam(name = "end", value = "结束时间")
     })
     @GetMapping(value = {"/cloneMeasure"})
-    public ResponseBean<Object> getMeasureCloneData(@RequestParam(value = "repo_uuid", required = false, defaultValue = "") String repoId,
-                                                    @RequestParam(value = "developer", required = false) String developer,
-                                                    @RequestParam(value = "start", required = false) String start,
-                                                    @RequestParam(value = "end", required = false) String end,
+    public ResponseBean<Object> getMeasureCloneData(@RequestParam(value = "repo_uuids", defaultValue = "") String repoId,
+                                                    @RequestParam(value = "developers", required = false) String developers,
+                                                    @RequestParam(value = "since", required = false) String start,
+                                                    @RequestParam(value = "until", required = false) String end,
+                                                    @RequestParam(value = "order",required = false, defaultValue = "") String order,
                                                     @RequestParam(value = "page", required = false, defaultValue = "1") String page,
-                                                    @RequestParam(value = "size", required = false, defaultValue = "5") String size,
-                                                    @RequestParam(value = "desc", required = false) Boolean isDesc){
+                                                    @RequestParam(value = "ps", required = false, defaultValue = "5") String size,
+                                                    @RequestParam(value = "asc", required = false) Boolean isAsc){
         try{
-            List<CloneMessage> result = cloneMeasureService.getCloneMeasure(repoId, developer, start, end, page, size, isDesc);
-            Object data = result;
-            if (! StringUtils.isEmpty(developer) && result.size() > 0) {
-                data = result.get(0);
+            List<CloneMessage> result = cloneMeasureService.getCloneMeasure(repoId, developers, start, end, page, size, isAsc, order);
+            if (!StringUtils.isEmpty(developers) && !result.isEmpty()) {
+                return new ResponseBean<>(200,"success", result);
             }
-            return new ResponseBean(200,"success", data);
+            else{
+                List<CloneMessage> cloneMessageSorted = cloneMeasureService.sortByOrder(result, order);
+                List<CloneMessage> cloneMessageList = new ArrayList<>();
+                if (page != null && size != null) {
+                    int pageDigit = Integer.parseInt(page);
+                    int sizeDigit = Integer.parseInt(size);
+                    if (isAsc != null && !isAsc) {
+                        Collections.reverse(cloneMessageSorted);
+                    }
+                    int index = (pageDigit - 1) * sizeDigit;
+                    while ((index < cloneMessageSorted.size()) && (index < pageDigit * sizeDigit)) {
+                        cloneMessageList.add(cloneMessageSorted.get(index));
+                        index += 1;
+                    }
+                }
+                Map<String, Object> data = new HashMap<>();
+                data.put("page", page);
+                data.put("total", cloneMessageSorted.size()/Integer.parseInt(size) + 1);
+                data.put("records", cloneMessageSorted.size());
+                data.put("rows", cloneMessageList);
+                return new ResponseBean<>(200, "success", data);
+            }
         }catch (Exception e){
             e.printStackTrace();
-            return new ResponseBean(401,"failed",null);
+            return new ResponseBean<>(401,"failed",null);
         }
     }
 

@@ -22,11 +22,13 @@ public class CloneDao {
      * @return selfCloneLines
      */
     public int getSelfCloneLines(Query query) {
-        JSONObject cloneMeasure = restInterface.getCloneMeasure(query.getRepoUuidList().get(0),query.getDeveloper(),query.getSince(), query.getUntil());
+        /*JSONObject cloneMeasure = restInterface.getCloneMeasure(query.getRepoUuidList().get(0),query.getDeveloper(),query.getSince(), query.getUntil());
         int selfCloneLines = 0;
         if (cloneMeasure != null){
             selfCloneLines = Integer.parseInt(cloneMeasure.getString("increasedCloneLines"));
-        }
+        }*/
+        // fixme
+        int selfCloneLines = 0;
         return selfCloneLines;
     }
 
