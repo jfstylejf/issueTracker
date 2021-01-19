@@ -72,17 +72,21 @@ public class RestInterfaceManager {
 
     //------------project-service--------------------------------------------------------------------------------------
 
+    @SuppressWarnings("unchecked")
     @CachePut("projects")
-    public JSONObject getProjectByrepoUuid(String repoUuid,String token){
+    public Map<String,Object> getProjectByrepoUuid(String repoUuid,String token){
         HttpHeaders headers = new HttpHeaders();
         headers.add("token",token);
         HttpEntity request = new HttpEntity(headers);
         StringBuilder url = new StringBuilder();
-        url.append(projectServicePath).append("/inner/repo?repo_uuid=").append(repoUuid);
-        ResponseEntity responseEntity =restTemplate.exchange(url.toString(),HttpMethod.GET,request,JSONObject.class);
-        String body = responseEntity.getBody().toString();
-        JSONObject result = JSONObject.parseObject(body);
-        return result;
+        url.append(projectServicePath).append("/inner/project?repo_uuid=").append(repoUuid);
+        ResponseEntity<ResponseBean> responseEntity =restTemplate.exchange(url.toString(),HttpMethod.GET,request,ResponseBean.class);
+        ResponseBean<Map<String,Object>> result = responseEntity.getBody();
+        if (result!=null && result.getCode()==200) {
+            return result.getData();
+        }else {
+            return null;
+        }
     }
 
     @SuppressWarnings("unchecked")
