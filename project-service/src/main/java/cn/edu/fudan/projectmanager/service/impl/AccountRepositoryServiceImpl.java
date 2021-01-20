@@ -118,12 +118,16 @@ public class AccountRepositoryServiceImpl implements AccountRepositoryService {
     }
 
     @Override
-    public void addProjectLeader(String token, String newLeaderId, String projectId) throws Exception {
+    public boolean addProjectLeader(String token, String newLeaderId, Integer projectId) throws Exception {
         UserInfoDTO userInfoDTO = getUserInfoByToken(token);
         String accountUuid = userInfoDTO.getUuid();
 
+        if(accountProjectDao.isProjectLeaderExist(newLeaderId, projectId) == true){
+            return false;
+        }
+
         if (StringUtils.isEmpty(newLeaderId) || StringUtils.isEmpty(projectId)) {
-            return;
+            return false;
         }
         // 0 表示超级管理员 只有超级管理员能操作
         if (userInfoDTO.getRight() != 0) {
@@ -132,10 +136,11 @@ public class AccountRepositoryServiceImpl implements AccountRepositoryService {
         //只有超级管理员才会有此权限
         log.warn("project leader changed by {}! new leader is {}", userInfoDTO.getUuid(), newLeaderId);
         accountProjectDao.addProjectLeaderAP(accountUuid, newLeaderId, projectId);
+        return true;
     }
 
     @Override
-    public void deleteProjectLeader(String token, String LeaderId, String projectId) throws Exception {
+    public void deleteProjectLeader(String token, String LeaderId, Integer projectId) throws Exception {
         UserInfoDTO userInfoDTO = getUserInfoByToken(token);
         String accountUuid = userInfoDTO.getUuid();
 

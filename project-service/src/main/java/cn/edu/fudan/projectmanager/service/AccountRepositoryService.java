@@ -65,7 +65,7 @@ public interface AccountRepositoryService {
      * @param projectId  项目ID
      * @throws Exception e
      */
-    void addProjectLeader(String token, String newLeaderId, String projectId) throws Exception;
+    boolean addProjectLeader(String token, String newLeaderId, Integer projectId) throws Exception;
 
     /**
      * 删除项目负责人
@@ -74,5 +74,5 @@ public interface AccountRepositoryService {
      * @param projectId  项目ID
      * @throws Exception e
      */
-    void deleteProjectLeader(String token, String LeaderId, String projectId) throws Exception;
+    void deleteProjectLeader(String token, String LeaderId, Integer projectId) throws Exception;
 }
