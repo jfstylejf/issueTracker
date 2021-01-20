@@ -39,5 +39,5 @@ public class SubRepository {
     private Date scanStart;
 
     private String repoName;
-    private List<Map<String,String>> leaders;
+    private List<Map<String, String>> leaders;
 }

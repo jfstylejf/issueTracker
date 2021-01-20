@@ -20,7 +20,7 @@ import java.util.Map;
 public class AccountProjectDao {
     private AccountMapper accountMapper;
 
-    public void updateProjectNameAP(String accountUuid,String oldProjectName,String newProjectName) {
+    public void updateProjectNameAP(String accountUuid, String oldProjectName, String newProjectName) {
         accountMapper.updateProjectNameAP(accountUuid, oldProjectName, newProjectName);
     }
 

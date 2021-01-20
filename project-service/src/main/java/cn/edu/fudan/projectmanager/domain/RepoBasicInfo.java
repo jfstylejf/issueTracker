@@ -1,7 +1,6 @@
 package cn.edu.fudan.projectmanager.domain;
 
 
-
 /**
  * @description:
  * @author: fancying

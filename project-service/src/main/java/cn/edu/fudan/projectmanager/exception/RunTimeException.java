@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
  * create: 2020-09-29 10:37
  **/
 @NoArgsConstructor
-public class RunTimeException extends Exception{
+public class RunTimeException extends Exception {
 
     public RunTimeException(String message) {
         super(message);

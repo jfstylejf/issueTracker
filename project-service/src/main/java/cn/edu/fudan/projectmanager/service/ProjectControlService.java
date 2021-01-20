@@ -18,7 +18,8 @@ public interface ProjectControlService {
 
     /**
      * 添加一个仓库
-     * @param token 用户token
+     *
+     * @param token         用户token
      * @param repositoryDTO repo信息
      * @throws Exception e
      */
@@ -26,7 +27,8 @@ public interface ProjectControlService {
 
     /**
      * 本地添加一个仓库
-     * @param token 用户token
+     *
+     * @param token         用户token
      * @param repositoryDTO repo信息
      * @throws Exception e
      */
@@ -35,8 +37,9 @@ public interface ProjectControlService {
 
     /**
      * 添加多个仓库
-     * @param token 用户token
-     * @param  repositories repo信息
+     *
+     * @param token        用户token
+     * @param repositories repo信息
      * @return Map k v
      * @throws Exception e
      */
@@ -45,24 +48,27 @@ public interface ProjectControlService {
 
     /**
      * 更新项目信息
-     * @param token 用户token
+     *
+     * @param token          用户token
      * @param oldProjectName 旧名
-     * @param newProjectName  新名
+     * @param newProjectName 新名
      * @throws Exception e
      */
     void update(String token, String oldProjectName, String newProjectName) throws Exception;
 
     /**
      * 删除库
-     * @param token 用户token
+     *
+     * @param token     用户token
      * @param subRepoId repo信息
-     * @param empty 是否需要清空回收站
+     * @param empty     是否需要清空回收站
      * @throws Exception e
      */
     void delete(@NotNull String token, String subRepoId, Boolean empty) throws Exception;
 
     /**
      * 查询项目
+     *
      * @param token 用户token
      * @throws Exception e
      */
@@ -70,7 +76,8 @@ public interface ProjectControlService {
 
     /**
      * 添加一个项目
-     * @param token 用户token
+     *
+     * @param token       用户token
      * @param projectName 项目名
      * @throws Exception e
      */
@@ -78,7 +85,8 @@ public interface ProjectControlService {
 
     /**
      * 删除项目
-     * @param token 用户token
+     *
+     * @param token       用户token
      * @param projectName projectName
      * @throws Exception e
      */
@@ -86,9 +94,10 @@ public interface ProjectControlService {
 
     /**
      * 更新库名
-     * @param token 用户token
+     *
+     * @param token       用户token
      * @param oldRepoName 旧名
-     * @param newRepoName  新名
+     * @param newRepoName 新名
      * @throws Exception e
      */
     void updateRepo(String token, String oldRepoName, String newRepoName) throws Exception;
@@ -96,7 +105,8 @@ public interface ProjectControlService {
 
     /**
      * 删除库
-     * @param token 用户token
+     *
+     * @param token    用户token
      * @param repoUuid repo uuid
      * @throws Exception e
      */
@@ -104,9 +114,10 @@ public interface ProjectControlService {
 
     /**
      * 更新库回收状态
-     * @param token 用户token
+     *
+     * @param token    用户token
      * @param recycled 回收状态
-     * @param repoUuid  库的UUID
+     * @param repoUuid 库的UUID
      * @throws Exception e
      */
     void updateRecycleStatus(String token, Integer recycled, String repoUuid) throws Exception;

@@ -50,35 +50,35 @@ public class RestInterfaceManager {
     }
 
     //----------------------------------delete repo----------------------------------------------------
-    public boolean deleteCloneRepo(String repoUuid){
+    public boolean deleteCloneRepo(String repoUuid) {
         ResponseEntity<JSONObject> exchange = restTemplate.exchange(cloneServicePath + "/cloneScan/" + repoUuid, HttpMethod.DELETE, null, JSONObject.class);
         JSONObject body = exchange.getBody();
         assert body != null;
         return body.getIntValue("code") == 200;
     }
 
-    public boolean deleteIssueRepo(String repoUuid){
+    public boolean deleteIssueRepo(String repoUuid) {
         ResponseEntity<JSONObject> exchange = restTemplate.exchange(issueServicePath + "/issue/sonarqube/" + repoUuid, HttpMethod.DELETE, null, JSONObject.class);
         JSONObject body = exchange.getBody();
         assert body != null;
         return body.getIntValue("code") == 200;
     }
 
-    public boolean deleteMeasureRepo(String repoUuid){
+    public boolean deleteMeasureRepo(String repoUuid) {
         ResponseEntity<JSONObject> exchange = restTemplate.exchange(measureServicePath + "/measure/repo/" + repoUuid, HttpMethod.DELETE, null, JSONObject.class);
         JSONObject body = exchange.getBody();
         assert body != null;
-        return body.getIntValue("code") == 200 ;
+        return body.getIntValue("code") == 200;
     }
 
-    public boolean deleteCodetrackerRepo(String repoUuid){
+    public boolean deleteCodetrackerRepo(String repoUuid) {
         ResponseEntity<JSONObject> exchange = restTemplate.exchange(codetrackerServicePath + "/codetracker/" + repoUuid, HttpMethod.DELETE, null, JSONObject.class);
         JSONObject body = exchange.getBody();
         assert body != null;
         return body.getIntValue("code") == 200;
     }
 
-    public boolean deleteScanRepo(String token, String repoUuid){
+    public boolean deleteScanRepo(String token, String repoUuid) {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add("token", token);
         HttpEntity<Object> httpEntity = new HttpEntity<>(httpHeaders);
@@ -88,7 +88,7 @@ public class RestInterfaceManager {
         return body.getIntValue("code") == 200;
     }
 
-    public boolean deleteCommitRepo(String repoUuid){
+    public boolean deleteCommitRepo(String repoUuid) {
         ResponseEntity<JSONObject> exchange = restTemplate.exchange(commitServicePath + "/repository/" + repoUuid, HttpMethod.DELETE, null, JSONObject.class);
         JSONObject body = exchange.getBody();
         assert body != null;
@@ -97,17 +97,17 @@ public class RestInterfaceManager {
 
 
     //----------------------------------account service----------------------------------------------------
-    public String getAccountId(String userToken){
-        Map<String,String> urlParameters=new HashMap<>();
-        urlParameters.put("userToken",userToken);
-        return restTemplate.getForObject(accountServicePath+"/user/accountUuid?userToken={userToken}",String.class,urlParameters);
+    public String getAccountId(String userToken) {
+        Map<String, String> urlParameters = new HashMap<>();
+        urlParameters.put("userToken", userToken);
+        return restTemplate.getForObject(accountServicePath + "/user/accountUuid?userToken={userToken}", String.class, urlParameters);
     }
 
-    public String getAccountName(String accountId){
-        return restTemplate.getForObject(accountServicePath+"/user/accountName?accountUuid="+accountId,String.class);
+    public String getAccountName(String accountId) {
+        return restTemplate.getForObject(accountServicePath + "/user/accountName?accountUuid=" + accountId, String.class);
     }
 
-    public boolean userAuth(String userToken)throws AuthException {
+    public boolean userAuth(String userToken) throws AuthException {
         JSONObject result = restTemplate.getForObject(accountServicePath + "/user/auth/" + userToken, JSONObject.class);
         if (result == null || result.getIntValue("code") != 200) {
             log.error("auth failed!");
@@ -128,13 +128,13 @@ public class RestInterfaceManager {
             log.error(result.getMsg());
             return null;
         }
-        Map<String,Object> data =  (Map<String, Object>) result.getData();
+        Map<String, Object> data = (Map<String, Object>) result.getData();
         return new UserInfoDTO(token, (String) data.get("uuid"), (Integer) data.get("right"));
     }
 
 
     //-----------------------------------repo service--------------------------------------------------------
-    public JSONObject getRepoById(String repoId){
+    public JSONObject getRepoById(String repoId) {
         return restTemplate.getForObject(repoServicePath + "/" + repoId, JSONObject.class);
     }
 
@@ -143,6 +143,6 @@ public class RestInterfaceManager {
     }
 
     public void deleteCodeTrackerOfRepo(String branch, String repoId) {
-        restTemplate.delete(codeTrackerServicePath + "/codetracker?repoUuid=" + repoId + "&branch=" + branch,JSONObject.class);
+        restTemplate.delete(codeTrackerServicePath + "/codetracker?repoUuid=" + repoId + "&branch=" + branch, JSONObject.class);
     }
 }

@@ -21,13 +21,12 @@ import java.util.Date;
 public class KafkaConsumerService {
 
 
-
     @Autowired
     private SubRepositoryDao subRepositoryDao;
 
     /**
-     *  test case
-     *  kafka-console-producer.sh --broker-list localhost:9092 --topic RepoManager
+     * test case
+     * kafka-console-producer.sh --broker-list localhost:9092 --topic RepoManager
      * {"projectId":"170cc963-e452-4600-8ba9-4f699e29a102","language":"java","status":"Downloaded","description":"true","repoId":"d7bda1e6-685b-11ea-8448-6b6e4cffaf55"}
      */
     @KafkaListener(id = "projectUpdate", topics = {"RepoManager"}, groupId = "projectName")
@@ -52,13 +51,13 @@ public class KafkaConsumerService {
     public void updateCommitTime(ConsumerRecord<String, String> consumerRecord) {
         String msg = consumerRecord.value();
         log.debug("message is {}", msg);
-        RepoUpdateInfo  repoUpdateInfo = JSONObject.parseObject(msg, RepoUpdateInfo.class);
+        RepoUpdateInfo repoUpdateInfo = JSONObject.parseObject(msg, RepoUpdateInfo.class);
         log.info("received message from topic -> {}", consumerRecord.topic());
         updateLatestCommitTime(repoUpdateInfo.getRepoId());
     }
 
 
-    private void updateLatestCommitTime(String repoId){
+    private void updateLatestCommitTime(String repoId) {
         Date date = subRepositoryDao.getLatestCommitTime(repoId);
         try {
             SubRepository subRepository = subRepositoryDao.getSubRepoByRepoUuid(repoId);

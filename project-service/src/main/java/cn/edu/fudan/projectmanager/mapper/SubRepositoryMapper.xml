@@ -22,35 +22,30 @@
 
     <insert id="insertOneRepo" parameterType="cn.edu.fudan.projectmanager.domain.SubRepository">
         insert into sub_repository
-        (
-        uuid,
-        url,
-        language,
-        branch,
-        repo_source,
-        download_status,
-        latest_commit_time,
-        repo_uuid,
-        project_name,
-        recycled,
-        import_account_uuid,
-        repo_name
-        )
-        VALUES
-        (
-        #{uuid},
-        #{url},
-        #{language},
-        #{branch},
-        #{repoSource},
-        #{downloadStatus},
-        #{latestCommitTime},
-        #{repoUuid},
-        #{projectName},
-        #{recycled},
-        #{importAccountUuid},
-        #{repoName}
-        )
+        (uuid,
+         url,
+         language,
+         branch,
+         repo_source,
+         download_status,
+         latest_commit_time,
+         repo_uuid,
+         project_name,
+         recycled,
+         import_account_uuid,
+         repo_name)
+        VALUES (#{uuid},
+                #{url},
+                #{language},
+                #{branch},
+                #{repoSource},
+                #{downloadStatus},
+                #{latestCommitTime},
+                #{repoUuid},
+                #{projectName},
+                #{recycled},
+                #{importAccountUuid},
+                #{repoName})
     </insert>
 
     <update id="updateSubRepository" parameterType="cn.edu.fudan.projectmanager.domain.SubRepository">
@@ -79,24 +74,44 @@
     </update>
 
     <select id="getSubRepoByUuid" parameterType="String" resultMap="subRepository">
-        SELECT uuid , url, language, branch, repo_source, download_status,
-               latest_commit_time, repo_uuid, project_name, recycled, import_account_uuid, scan_start
+        SELECT uuid,
+               url,
+               language,
+               branch,
+               repo_source,
+               download_status,
+               latest_commit_time,
+               repo_uuid,
+               project_name,
+               recycled,
+               import_account_uuid,
+               scan_start
         FROM sub_repository
         WHERE uuid = #{uuid}
     </select>
 
     <select id="getSubRepoByRepoUuid" parameterType="String" resultMap="subRepository">
-        SELECT uuid , url, language, branch, repo_source, download_status,repo_name,
-               latest_commit_time, repo_uuid, project_name, recycled, import_account_uuid, scan_start
+        SELECT uuid,
+               url,
+               language,
+               branch,
+               repo_source,
+               download_status,
+               repo_name,
+               latest_commit_time,
+               repo_uuid,
+               project_name,
+               recycled,
+               import_account_uuid,
+               scan_start
         FROM sub_repository
         WHERE repo_uuid = #{repo_uuid}
     </select>
 
 
-
     <select id="getAllSubRepoByAccountId" resultMap="subRepository" parameterType="String">
         SELECT s.uuid, url, language, branch, repo_source, download_status,
-               latest_commit_time, repo_uuid, s.project_name, recycled, import_account_uuid, scan_start, s.repo_name
+        latest_commit_time, repo_uuid, s.project_name, recycled, import_account_uuid, scan_start, s.repo_name
         FROM sub_repository as s , account_repository as r
         <where>
             s.uuid = r.sub_repository_uuid
@@ -131,7 +146,7 @@
         </where>
     </select>
 
-    <select id="getAllSubRepo" resultMap="subRepository" >
+    <select id="getAllSubRepo" resultMap="subRepository">
         SELECT s.uuid, url, language, branch, repo_source, download_status,
         latest_commit_time, repo_uuid, s.project_name, recycled, import_account_uuid, scan_start, s.repo_name
         FROM sub_repository as s inner join account_repository as r
@@ -166,7 +181,7 @@
         <set>
             repo_name = #{newRepoName},
         </set>
-        where   repo_name = #{oldRepoName}
+        where repo_name = #{oldRepoName}
     </update>
 
     <delete id="deleteRepoSR" parameterType="String">

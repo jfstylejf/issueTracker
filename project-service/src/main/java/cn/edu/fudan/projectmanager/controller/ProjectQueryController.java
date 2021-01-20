@@ -32,12 +32,13 @@ public class ProjectQueryController {
 
     /**
      * todo issue 得到所有库信息
+     *
      * @param recycled {@link cn.edu.fudan.projectmanager.domain.SubRepository} EMPTY RESERVATIONS ALL
-     * @return    k projectName v: list [k: repo_id, accountName]
+     * @return k projectName v: list [k: repo_id, accountName]
      */
     @ApiOperation(value = " 得到所有项目和库的关系", notes = "@return Map < String, List < Map < String, String > > >  k projectName v: list [k: repo_id, accountName]")
     @GetMapping(value = "/project/all")
-    public ResponseBean<Map<String, List<Map<String, String>>>> getProjectAndRepoRelation(@RequestParam(name = "recycled", required = false, defaultValue = "0") int recycled) throws Exception{
+    public ResponseBean<Map<String, List<Map<String, String>>>> getProjectAndRepoRelation(@RequestParam(name = "recycled", required = false, defaultValue = "0") int recycled) throws Exception {
         try {
             return new ResponseBean<>(200, "get info success", accountRepository.getProjectAndRepoRelation(recycled));
         } catch (Exception e) {
@@ -45,13 +46,13 @@ public class ProjectQueryController {
         }
     }
 
-    @ApiOperation(value="获取所有库信息",httpMethod = "GET")
+    @ApiOperation(value = "获取所有库信息", httpMethod = "GET")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "recycled", value = "是否被回收", dataType = "int", required = false,defaultValue = "0"),
+            @ApiImplicitParam(name = "recycled", value = "是否被回收", dataType = "int", required = false, defaultValue = "0"),
     })
     @GetMapping(value = {"/project"})
     public ResponseBean<List<SubRepository>> query(HttpServletRequest request,
-                                                  @RequestParam(name = "recycled",required = false, defaultValue = "0") int recycled) {
+                                                   @RequestParam(name = "recycled", required = false, defaultValue = "0") int recycled) {
         String userToken = request.getHeader(TOKEN);
         List<SubRepository> subRepositories = projectControl.query(userToken);
         List<RepositoryVO> repositoryVos = new ArrayList<>(subRepositories.size());
@@ -63,6 +64,7 @@ public class ProjectQueryController {
 
     /**
      * todo issue 所有项目信息
+     *
      * @param
      * @return
      */
@@ -80,7 +82,7 @@ public class ProjectQueryController {
     /**
      * fixme measure
      */
-    @ApiOperation(value="通过库uuid获取指定库的信息",httpMethod = "GET")
+    @ApiOperation(value = "通过库uuid获取指定库的信息", httpMethod = "GET")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "repoUuid", value = "库对应的uuid", dataType = "String", required = true)
     })
@@ -88,7 +90,7 @@ public class ProjectQueryController {
     public ResponseBean<RepositoryVO> getProjectByRepoId(@RequestParam("repo_uuid") String repoUuid) throws Exception {
         SubRepository subRepository = accountRepository.getRepoInfoByRepoId(repoUuid);
         if (subRepository == null) {
-            return new ResponseBean<>(412,"get repo failed!",null);
+            return new ResponseBean<>(412, "get repo failed!", null);
         }
         try {
             return new ResponseBean<>(200, "get repo success", new RepositoryVO(subRepository));
@@ -99,17 +101,17 @@ public class ProjectQueryController {
 
     /**
      * FIXME issue
-     *
+     * <p>
      * List<Project>
      */
-    @ApiOperation(value="通过人员ID获取多个库的信息",httpMethod = "GET")
+    @ApiOperation(value = "通过人员ID获取多个库的信息", httpMethod = "GET")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "accountUuid", value = "引入人uuid", dataType = "String", required = false),
             @ApiImplicitParam(name = "recycled", value = "回收状态", dataType = "int", required = false)
     })
     @GetMapping(value = "/inner/projects")
     public ResponseBean<List<RepositoryVO>> getRepositoryByAccountId(@RequestParam(name = "account_uuid", required = false) String accountUuid,
-                                                       @RequestParam(name = "recycled", required = false, defaultValue = "0") int recycled) throws Exception {
+                                                                     @RequestParam(name = "recycled", required = false, defaultValue = "0") int recycled) throws Exception {
         boolean isAll = recycled == SubRepository.ALL;
         List<SubRepository> repositories = accountRepository.getRepoByAccountUuid(accountUuid);
         List<RepositoryVO> result = new ArrayList<>();
@@ -124,7 +126,7 @@ public class ProjectQueryController {
     /**
      * FIXME issue scan
      */
-    @ApiOperation(value="通过sub_repository表uuid获取库uuid",httpMethod = "GET")
+    @ApiOperation(value = "通过sub_repository表uuid获取库uuid", httpMethod = "GET")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "repoUuid", value = "库对应的uuid", dataType = "String", required = true)
     })
@@ -139,16 +141,17 @@ public class ProjectQueryController {
 
     /**
      * FIXME issue
+     *
      * @return
      */
-    @ApiOperation(value="获取某人import的库",httpMethod = "GET")
+    @ApiOperation(value = "获取某人import的库", httpMethod = "GET")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "accountUuid", value = "人员uuid", dataType = "String", required = false),
             @ApiImplicitParam(name = "recycled", value = "回收状态", dataType = "int", required = false)
     })
     @GetMapping(value = "/inner/project/repo-ids")
     public ResponseBean<List<String>> getProjectIds(@RequestParam(name = "account_uuid", required = false) String accountUuid,
-                                      @RequestParam(name = "recycled", required = false, defaultValue = "0") int recycled) throws Exception {
+                                                    @RequestParam(name = "recycled", required = false, defaultValue = "0") int recycled) throws Exception {
 
         boolean isAll = recycled == SubRepository.ALL;
         List<SubRepository> subRepositories = accountRepository.getRepoByAccountUuid(accountUuid);
@@ -163,10 +166,11 @@ public class ProjectQueryController {
 
     /**
      * description todo 补足注释
+     *
      * @param accountName
-     * @return List<Map<String, Object>> key  account_name account_right account_role project_name
+     * @return List<Map < String, Object>> key  account_name account_right account_role project_name
      */
-    @ApiOperation(value = "根据用户姓名获得其参与项目", notes = "@return List < Map < String, Object > >",httpMethod = "GET")
+    @ApiOperation(value = "根据用户姓名获得其参与项目", notes = "@return List < Map < String, Object > >", httpMethod = "GET")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "accountName", value = "人员姓名", dataType = "String", required = true)
     })

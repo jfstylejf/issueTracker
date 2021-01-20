@@ -35,6 +35,5 @@ public class CompleteDownLoad {
     private Date till_commiit_time;
 
 
-
     // todo RepoManager 的字段做一下修改
 }
