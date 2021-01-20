@@ -87,6 +87,9 @@ public class MeasureDeveloperController {
             until = timeProcess(until);
             String token = request.getHeader("token");
             List<String> repoUuidList;
+            if(token==null || "".equals(token)) {
+                return new ResponseBean<>(204,"success","No token found, add token and try again");
+            }
             if(projectName!=null && !"".equals(projectName)) {
                 repoUuidList = projectDao.getProjectRepoList(projectName,token);
             }else {

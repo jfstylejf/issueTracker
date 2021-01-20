@@ -445,7 +445,7 @@
                 </foreach>
             </if>
         </trim>
-        order by a.status, a.start_commit_date, a.priority, a.display_id
+        order by a.status, a.start_commit_date desc, a.priority, a.display_id
         <if test="start != null  and ps != null ">
             limit #{start},#{ps}
         </if>
@@ -512,7 +512,7 @@
                 </foreach>
             </if>
         </trim>
-        order by a.status, a.start_commit_date, a.priority, a.display_id
+        order by a.status, a.start_commit_date desc, a.priority, a.display_id
         <if test="start != null  and ps != null ">
             limit #{start},#{ps}
         </if>

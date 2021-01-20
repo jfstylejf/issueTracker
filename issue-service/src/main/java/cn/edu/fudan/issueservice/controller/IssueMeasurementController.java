@@ -87,7 +87,8 @@ public class IssueMeasurementController {
                                             @RequestParam(value = "since", required = false) String since,
                                             @RequestParam(value = "until", required = false) String until,
                                             @RequestParam(value = "manual_status",required = false, defaultValue = "Default")String manualStatus,
-                                            @RequestParam(value = "tool", required = false, defaultValue = "sonarqube") String tool) {
+                                            @RequestParam(value = "tool", required = false, defaultValue = "sonarqube") String tool,
+                                            HttpServletRequest httpServletRequest) {
         if(timeError.equals(DateTimeUtil.timeFormatIsLegal(since, false)) || timeError.equals(DateTimeUtil.timeFormatIsLegal(until, true))){
             return new ResponseBean<>(400, timeErrorMessage, null);
         }
@@ -102,7 +103,7 @@ public class IssueMeasurementController {
         try {
             query.put(sinceStr, since != null ? since : restInterfaceManager.getFirstCommitDate(developer));
             query.put(untilStr, until != null ? until : LocalDate.now().toString());
-            return new ResponseBean<>(200, success, issueMeasureInfoService.getDayAvgSolvedIssue(query));
+            return new ResponseBean<>(200, success, issueMeasureInfoService.getDayAvgSolvedIssue(query, httpServletRequest.getHeader(TOKEN)));
         } catch (Exception e) {
             e.printStackTrace();
             return new ResponseBean<>(500, failed + e.getMessage(), null);
@@ -205,7 +206,9 @@ public class IssueMeasurementController {
                                                 @RequestParam(value = "ps",required = false)Integer ps,
                                                 @RequestParam(value = "page",required = false)Integer page,
                                                 @RequestParam(value = "asc",required = false)Boolean asc,
-                                                @RequestParam(value = "all",required = false ,defaultValue = "false")Boolean needAll){
+                                                @RequestParam(value = "all",required = false ,defaultValue = "false")Boolean needAll,
+                                                HttpServletRequest httpServletRequest){
+        String token = httpServletRequest.getHeader(TOKEN);
 
         Map<String, Object> query = new HashMap<>(10);
         List<Map<String, Object>> result = new ArrayList<>();
@@ -224,7 +227,7 @@ public class IssueMeasurementController {
                 List<String> developers = restInterfaceManager.getDeveloperInRepo(repoList, since, until);
                 developers.forEach(r -> {
                     query.put(developerStr, r);
-                    result.add(issueMeasureInfoService.getDeveloperCodeQuality(query, 1, needAll));
+                    result.add(issueMeasureInfoService.getDeveloperCodeQuality(query, needAll, token));
                 });
                 return new ResponseBean<>(200, success, issueMeasureInfoService.handleSortCodeQuality(result, asc, ps, page));
             }
@@ -232,12 +235,12 @@ public class IssueMeasurementController {
             List<String> developers = SegmentationUtil.splitStringList(developer);
             if(developers.isEmpty()){
                 query.put(developerStr, developer);
-                return new ResponseBean<>(200, success, issueMeasureInfoService.getDeveloperCodeQuality(query, 1, needAll));
+                return new ResponseBean<>(200, success, issueMeasureInfoService.getDeveloperCodeQuality(query, needAll, token));
             }
 
             developers.forEach(r -> {
                 query.put(developerStr, r);
-                result.add(issueMeasureInfoService.getDeveloperCodeQuality(query, 1, needAll));
+                result.add(issueMeasureInfoService.getDeveloperCodeQuality(query, needAll, token));
             });
             return new ResponseBean<>(200, success, result);
         } catch (Exception e) {
