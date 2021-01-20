@@ -24,18 +24,19 @@ public interface IssueMeasureInfoService {
     /**
      *  根据条件获取开发者日均解决缺陷数量
      * @param query 条件
+     * @param token token
      * @return  根据条件获取开发者日均解决缺陷数量
      */
-    Map<String,Object> getDayAvgSolvedIssue(Map<String, Object> query);
+    Map<String,Object> getDayAvgSolvedIssue(Map<String, Object> query, String token);
 
     /**
      * 返回developer code quality
      * @param query 条件
-     * @param codeQuality is codeQuality
      * @param needAll needAll
+     * @param token token
      * @return developer code quality
      */
-    Map<String, Object> getDeveloperCodeQuality(Map<String, Object> query, int codeQuality, Boolean needAll);
+    Map<String, Object> getDeveloperCodeQuality(Map<String, Object> query, Boolean needAll, String token);
 
     /**
      * 清空缓存

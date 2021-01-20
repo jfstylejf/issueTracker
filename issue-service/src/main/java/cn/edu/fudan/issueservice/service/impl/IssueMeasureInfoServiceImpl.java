@@ -74,8 +74,8 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
     }
 
     @Override
-    public Map<String,Object> getDayAvgSolvedIssue(Map<String, Object> query) {
-        Map<String, Object> developerCodeQuality = getDeveloperCodeQuality(query, 0, false);
+    public Map<String,Object> getDayAvgSolvedIssue(Map<String, Object> query, String token) {
+        Map<String, Object> developerCodeQuality = getDeveloperCodeQuality(query, false, token);
         JSONObject solvedDetail = (JSONObject) developerCodeQuality.get(SOLVE);
 
         double days = (DateTimeUtil.stringToLocalDate(query.get("until").toString()).toEpochDay() - DateTimeUtil.stringToLocalDate(query.get("since").toString()).toEpochDay()) * 5.0 / 7;
@@ -88,9 +88,9 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
     }
 
     @Override
-    public Map<String, Object> getDeveloperCodeQuality(Map<String, Object> query, int codeQuality, Boolean needAll) {
+    public Map<String, Object> getDeveloperCodeQuality(Map<String, Object> query, Boolean needAll, String token) {
 
-        Map<String, Integer> developerWorkload = restInterfaceManager.getDeveloperWorkload(query);
+        Map<String, Integer> developerWorkload = restInterfaceManager.getDeveloperWorkload(query, token);
 
         Map<String, Object> developersDetail = new HashMap<>(32);
 
@@ -98,7 +98,7 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
         AtomicInteger allAddedIssueCount = new AtomicInteger();
         AtomicInteger allSolvedIssueCount = new AtomicInteger();
 
-        if(codeQuality != 0) {
+        if(query.get(REPO_LIST) instanceof String) {
             query.put(REPO_LIST, SegmentationUtil.splitStringList(query.get(REPO_LIST) == null ? null : query.get(REPO_LIST).toString()));
         }
 

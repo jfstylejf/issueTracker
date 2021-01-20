@@ -353,10 +353,10 @@ public class RestInterfaceManager {
 
     // --------------------------------------------------------measure api ---------------------------------------------------------
 
-    public Map<String, Integer> getDeveloperWorkload(Map<String, Object> query){
+    public Map<String, Integer> getDeveloperWorkload(Map<String, Object> query, String token){
 
         HttpEntity<HttpHeaders> request = new HttpEntity<>(new HttpHeaders(){{
-            add(tokenStr,null);
+            add(tokenStr,token);
         }});
 
         String url = measureServicePath + "/measure/developer/work-load?developer=" +
