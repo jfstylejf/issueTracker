@@ -5,11 +5,9 @@ import cn.edu.fudan.projectmanager.dao.AccountProjectDao;
 import cn.edu.fudan.projectmanager.dao.AccountRepositoryDao;
 import cn.edu.fudan.projectmanager.dao.ProjectDao;
 import cn.edu.fudan.projectmanager.dao.SubRepositoryDao;
-import cn.edu.fudan.projectmanager.domain.AccountRoleEnum;
+import cn.edu.fudan.projectmanager.domain.*;
 import cn.edu.fudan.projectmanager.domain.topic.LocalDownLoad;
 import cn.edu.fudan.projectmanager.domain.topic.NeedDownload;
-import cn.edu.fudan.projectmanager.domain.AccountRepository;
-import cn.edu.fudan.projectmanager.domain.SubRepository;
 import cn.edu.fudan.projectmanager.domain.dto.RepositoryDTO;
 import cn.edu.fudan.projectmanager.domain.dto.UserInfoDTO;
 import cn.edu.fudan.projectmanager.exception.RunTimeException;
@@ -25,10 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import javax.validation.constraints.NotNull;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -268,12 +263,21 @@ public class ProjectControlServiceImpl implements ProjectControlService {
             {
                 leaderRepo.addAll(subRepo);
                 leaderRepo = leaderRepo.stream().distinct().collect(Collectors.toList());
+                leaderRepo.forEach(repo -> {
+                    Integer projectId = projectDao.getProjectIdByName(repo.getProjectName());
+                    repo.setLeaders(accountProjectDao.getLeaderListByProjectId(projectId));
+                });
             }
             return leaderRepo;
         }
 
         // todo 用户权限为 DEVELOPER 时不允许查询项目列表
-        return subRepositoryDao.getAllSubRepoByAccountUuid(userUuid);
+        List<SubRepository> allRepoList = subRepositoryDao.getAllSubRepoByAccountUuid(userUuid);
+        allRepoList.forEach(repo -> {
+            Integer projectId = projectDao.getProjectIdByName(repo.getProjectName());
+            repo.setLeaders(accountProjectDao.getLeaderListByProjectId(projectId));
+        });
+        return allRepoList;
     }
 
     @Override

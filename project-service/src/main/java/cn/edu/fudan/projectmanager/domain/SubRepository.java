@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author fancying
@@ -37,4 +39,5 @@ public class SubRepository {
     private Date scanStart;
 
     private String repoName;
+    private List<Map<String,String>> leaders;
 }

@@ -39,4 +39,11 @@ public interface ProjectMapper {
      * 根据项目名获取项目信息
      */
     Project getProjectByNameP(String projectName);
+
+    /**
+     * 根据项目名获取项目ID
+     * @param projectName 项目名
+     * @return projectId
+     */
+    Integer getProjectIdByNameP(String projectName);
 }

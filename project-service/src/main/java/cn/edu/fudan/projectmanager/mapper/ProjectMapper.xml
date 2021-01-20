@@ -44,4 +44,12 @@
             project_name = #{projectName}
         </where>
     </select>
+
+    <select id="getProjectIdByNameP"  resultType="Integer">
+        select id from project
+        <where>
+            project_name = #{projectName}
+        </where>
+    </select>
+
 </mapper>

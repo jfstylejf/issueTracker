@@ -34,6 +34,8 @@ public class ProjectDao {
         return projectMapper.getProjectByNameP(projectName);
     }
 
+    public Integer getProjectIdByName(String projectName){return projectMapper.getProjectIdByNameP(projectName);};
+
     @Autowired
     public void setProjectMapper(ProjectMapper projectMapper) {
         this.projectMapper = projectMapper;
