@@ -1,6 +1,7 @@
 package cn.edu.fudan.issueservice.component;
 
 import cn.edu.fudan.issueservice.exception.AuthException;
+import cn.edu.fudan.issueservice.util.SegmentationUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.slf4j.Logger;
@@ -46,7 +47,7 @@ public class RestInterfaceManager {
     private String testProjectPath;
 
     private final RestTemplate restTemplate;
-    private final String projectNameStr = "projectName", repoNameStr = "repoName", repoUuidStr = "repoUuid", tokenStr = "token";
+    private final String projectNameStr = "projectName", repoNameStr = "repoName", repoUuidStr = "repoUuid", tokenStr = "token", repoListStr = "repoList";
 
     public RestInterfaceManager(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
@@ -353,15 +354,20 @@ public class RestInterfaceManager {
 
     // --------------------------------------------------------measure api ---------------------------------------------------------
 
-    public Map<String, Integer> getDeveloperWorkload(Map<String, Object> query){
+    @SuppressWarnings("unchecked")
+    public Map<String, Integer> getDeveloperWorkload(Map<String, Object> query, String token){
 
         HttpEntity<HttpHeaders> request = new HttpEntity<>(new HttpHeaders(){{
-            add(tokenStr,null);
+            add(tokenStr,token);
         }});
+
+        if (query.get(repoListStr) instanceof List) {
+            query.put(repoListStr, SegmentationUtil.unionStringList((List<String>) query.get(repoListStr)));
+        }
 
         String url = measureServicePath + "/measure/developer/work-load?developer=" +
                 (StringUtils.isEmpty(query.get("developer")) ? "" : query.get("developer").toString()) +
-                "&repo_uuids=" + (StringUtils.isEmpty(query.get("repoList")) ? "" : query.get("repoList").toString()) +
+                "&repo_uuids=" + (StringUtils.isEmpty(query.get(repoListStr)) ? "" : query.get(repoListStr).toString()) +
                 "&since=" + (StringUtils.isEmpty(query.get("since")) ? "" : query.get("since").toString()) +
                 "&until=" + (StringUtils.isEmpty(query.get("until")) ? "" : query.get("until").toString());
 

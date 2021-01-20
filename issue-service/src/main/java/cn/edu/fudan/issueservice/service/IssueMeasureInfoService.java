@@ -1,5 +1,6 @@
 package cn.edu.fudan.issueservice.service;
 
+import cn.edu.fudan.issueservice.util.PagedGridResult;
 import com.alibaba.fastjson.JSONObject;
 
 import java.util.List;
@@ -23,18 +24,19 @@ public interface IssueMeasureInfoService {
     /**
      *  根据条件获取开发者日均解决缺陷数量
      * @param query 条件
+     * @param token token
      * @return  根据条件获取开发者日均解决缺陷数量
      */
-    Map<String,Object> getDayAvgSolvedIssue(Map<String, Object> query);
+    Map<String,Object> getDayAvgSolvedIssue(Map<String, Object> query, String token);
 
     /**
      * 返回developer code quality
      * @param query 条件
-     * @param codeQuality is codeQuality
      * @param needAll needAll
+     * @param token token
      * @return developer code quality
      */
-    Map<String, Object> getDeveloperCodeQuality(Map<String, Object> query, int codeQuality, Boolean needAll);
+    Map<String, Object> getDeveloperCodeQuality(Map<String, Object> query, Boolean needAll, String token);
 
     /**
      * 清空缓存
@@ -79,4 +81,13 @@ public interface IssueMeasureInfoService {
      * @return 排序后的code quality
      */
     Map<String, Object> handleSortCodeQuality(List<Map<String, Object>> result, Boolean asc, int ps, int page);
+
+    /**
+     *
+     * @param query 查询条件
+     * @return producer, livingIssueCount
+     */
+    Object getSelfIntroducedLivingIssueCount(int page, int ps, String order, Boolean isAsc, Map<String, Object> query, Boolean isPagination);
+
+
 }

@@ -7,8 +7,13 @@ import cn.edu.fudan.issueservice.domain.dbo.RawIssue;
 import cn.edu.fudan.issueservice.domain.enums.*;
 import cn.edu.fudan.issueservice.service.IssueMeasureInfoService;
 import cn.edu.fudan.issueservice.util.DateTimeUtil;
+import cn.edu.fudan.issueservice.util.PagedGridResult;
 import cn.edu.fudan.issueservice.util.SegmentationUtil;
+import com.alibaba.druid.util.StringUtils;
 import com.alibaba.fastjson.JSONObject;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
@@ -69,8 +74,8 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
     }
 
     @Override
-    public Map<String,Object> getDayAvgSolvedIssue(Map<String, Object> query) {
-        Map<String, Object> developerCodeQuality = getDeveloperCodeQuality(query, 0, false);
+    public Map<String,Object> getDayAvgSolvedIssue(Map<String, Object> query, String token) {
+        Map<String, Object> developerCodeQuality = getDeveloperCodeQuality(query, false, token);
         JSONObject solvedDetail = (JSONObject) developerCodeQuality.get(SOLVE);
 
         double days = (DateTimeUtil.stringToLocalDate(query.get("until").toString()).toEpochDay() - DateTimeUtil.stringToLocalDate(query.get("since").toString()).toEpochDay()) * 5.0 / 7;
@@ -83,9 +88,9 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
     }
 
     @Override
-    public Map<String, Object> getDeveloperCodeQuality(Map<String, Object> query, int codeQuality, Boolean needAll) {
+    public Map<String, Object> getDeveloperCodeQuality(Map<String, Object> query, Boolean needAll, String token) {
 
-        Map<String, Integer> developerWorkload = restInterfaceManager.getDeveloperWorkload(query);
+        Map<String, Integer> developerWorkload = restInterfaceManager.getDeveloperWorkload(query, token);
 
         Map<String, Object> developersDetail = new HashMap<>(32);
 
@@ -93,7 +98,7 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
         AtomicInteger allAddedIssueCount = new AtomicInteger();
         AtomicInteger allSolvedIssueCount = new AtomicInteger();
 
-        if(codeQuality != 0) {
+        if(query.get(REPO_LIST) instanceof String) {
             query.put(REPO_LIST, SegmentationUtil.splitStringList(query.get(REPO_LIST) == null ? null : query.get(REPO_LIST).toString()));
         }
 
@@ -233,6 +238,38 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
                     result.subList((page - 1) * ps, Math.min(result.size(), page * ps)));
         }};
     }
+
+    @Override
+    public Object getSelfIntroducedLivingIssueCount(int page, int ps, String order, Boolean isAsc, Map<String, Object> query, Boolean isPagination) {
+        if (!isPagination) {
+            return issueDao.getSelfIntroduceLivingIssueCount(query);
+        }
+        if (StringUtils.isEmpty(order)) {
+            PageHelper.startPage(page, ps);
+        } else {
+            String orderBy = order;
+            if (isAsc != null && isAsc){
+                orderBy = order + ' ' + "asc";
+            }
+            if (isAsc != null && !isAsc){
+                orderBy = order + ' ' + "desc";
+            }
+            PageHelper.startPage(page, ps, orderBy);
+        }
+        List<JSONObject> result = issueDao.getSelfIntroduceLivingIssueCount(query);
+        return setterPagedGrid(result, page);
+    }
+
+    private PagedGridResult setterPagedGrid(List<?> list, Integer page) {
+        PageInfo<?> pageList = new PageInfo<>(list);
+        PagedGridResult grid = new PagedGridResult();
+        grid.setPage(page);
+        grid.setRows(list);
+        grid.setTotal(pageList.getPages());
+        grid.setRecords(pageList.getTotal());
+        return grid;
+    }
+
 
     @Autowired
     public void setRawIssueDao(RawIssueDao rawIssueDao) {

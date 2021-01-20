@@ -260,6 +260,10 @@ public class ProjectController {
                                           @RequestParam("recycled") int recycled,
                                           @RequestParam("repo_uuid") String repoUuid){
         try {
+            SubRepository repository = accountRepository.getRepoInfoByRepoId(repoUuid);
+            if(repository == null){
+                return new ResponseBean<>(412, "repo not exist", null);
+            }
             projectControl.updateRecycleStatus(request.getHeader(TOKEN), recycled, repoUuid);
             return new ResponseBean<>(200, "update success", null);
         } catch (Exception e) {

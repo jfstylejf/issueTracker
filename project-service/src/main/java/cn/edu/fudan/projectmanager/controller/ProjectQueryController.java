@@ -88,7 +88,7 @@ public class ProjectQueryController {
     public ResponseBean<RepositoryVO> getProjectByRepoId(@RequestParam("repo_uuid") String repoUuid) throws Exception {
         SubRepository subRepository = accountRepository.getRepoInfoByRepoId(repoUuid);
         if (subRepository == null) {
-            return null;
+            return new ResponseBean<>(412,"get repo failed!",null);
         }
         try {
             return new ResponseBean<>(200, "get repo success", new RepositoryVO(subRepository));
