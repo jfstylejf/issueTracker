@@ -16,6 +16,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -47,8 +48,9 @@ public class RedisScheduleTask {
     @Scheduled(cron = "0 0 2 * * ?")
     private void configureTasks() throws ParseException {
         String until = dtf.format(LocalDate.now().plusDays(1));
+        Query query = new Query(token,null,until,null,new ArrayList<>());
         measureDeveloperService.clearCache();
-        measureDeveloperService.getDeveloperList(null,null,null,until,token);
+        measureDeveloperService.getDeveloperList(query);
         List<Map<String, Object>> developerList = repoMeasureMapper.getDeveloperListByrepoUuidList(null);
         for (int i = 0; i < developerList.size(); i++){
             Map<String,Object> map = developerList.get(i);

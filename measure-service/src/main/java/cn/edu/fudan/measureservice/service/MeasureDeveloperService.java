@@ -808,14 +808,7 @@ public class MeasureDeveloperService {
      * @throws ParseException
      */
     @Cacheable(cacheNames = {"developerList"})
-    public synchronized Object getDeveloperList(String repoUuid,String projectName,String since,String until,String token) throws ParseException {
-        List<String> repoUuidList;
-        if(projectName!=null && !"".equals(projectName)) {
-            repoUuidList = projectDao.getProjectRepoList(projectName,token);
-        }else {
-            repoUuidList = projectDao.involvedRepoProcess(repoUuid,token);
-        }
-        Query query = new Query(token,since,until,null,repoUuidList);
+    public synchronized Object getDeveloperList(Query query) throws ParseException {
         if(query.getRepoUuidList().size()==0) {
             log.warn("do not have any authorized repo to see");
             return null;
