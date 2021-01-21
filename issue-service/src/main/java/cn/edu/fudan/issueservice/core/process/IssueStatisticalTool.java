@@ -270,11 +270,7 @@ public class IssueStatisticalTool {
         Issue issue = issueDao.getIssueByID(parentRawIssue.getIssue_id());
         //如果issue的最近状态为solved，则更新为open，且reopen次数加1
         if(IssueStatusEnum.SOLVED.getName().equals(issue.getStatus ())){
-            if(issue.getManual_status() != null){
-                issue.setStatus(issue.getManual_status());
-            }else{
-                issue.setStatus(IssueStatusEnum.OPEN.getName());
-            }
+            issue.setStatus(IssueStatusEnum.OPEN.getName());
             if(!isIgnore){
                 reopenIssueCount++;
             }
