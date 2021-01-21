@@ -23,9 +23,8 @@ public class IssueIgnoreController {
 
     private IssueIgnoreService issueIgnoreService;
 
-    private final String success = "success";
-
-    private final String failed = "failed ";
+    private static final String SUCCESS = "success";
+    private static final String FAILED = "failed ";
 
     @ApiOperation(value = "插入IssueIgnore记录", notes = "@return String", httpMethod = "PUT")
     @ApiImplicitParams({
@@ -34,7 +33,7 @@ public class IssueIgnoreController {
     @PutMapping(value = "issue/ignore/{tool}")
     public ResponseBean<String> ignoreIssues(@PathVariable("tool")String tool, @RequestBody List<IgnoreRecord> ignoreRecords){
         if(ignoreRecords.isEmpty()){
-            return new ResponseBean<>(200, success, null);
+            return new ResponseBean<>(200, SUCCESS, null);
         }
         try{
             for(IgnoreRecord ignoreRecord : ignoreRecords) {
@@ -44,10 +43,10 @@ public class IssueIgnoreController {
                 ignoreRecord.setUuid(UUID.randomUUID().toString());
                 ignoreRecord.setIgnoreTime(ignoreRecord.getIgnoreTime());
             }
-            return new ResponseBean<>(200, success, issueIgnoreService.insertIssueIgnoreRecords(ignoreRecords));
+            return new ResponseBean<>(200, SUCCESS, issueIgnoreService.insertIssueIgnoreRecords(ignoreRecords));
         }catch (Exception e){
             e.printStackTrace();
-            return new ResponseBean<>(500,failed + e.getMessage(), null);
+            return new ResponseBean<>(500, FAILED + e.getMessage(), null);
         }
     }
 
@@ -57,10 +56,10 @@ public class IssueIgnoreController {
                                                         @RequestParam("ignore_uuid")String ignoreUuid){
         try{
             issueIgnoreService.deleteIssueIgnoreRecord(tool, issueUuid, ignoreUuid);
-            return new ResponseBean<>(200, success, "delete issue ignore record success");
+            return new ResponseBean<>(200, SUCCESS, "delete issue ignore record success");
         }catch (Exception e){
             e.printStackTrace();
-            return new ResponseBean<>(500, failed + e.getMessage(), null);
+            return new ResponseBean<>(500, FAILED + e.getMessage(), null);
         }
     }
 
