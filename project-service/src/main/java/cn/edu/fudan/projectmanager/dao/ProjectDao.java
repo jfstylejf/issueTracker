@@ -18,21 +18,27 @@ import java.util.Map;
 public class ProjectDao {
     private ProjectMapper projectMapper;
 
-    public void insertOneProject(String accountUuid,String projectName){
-        projectMapper.insertOneProject(accountUuid,projectName);
+    public void insertOneProject(String accountUuid, String projectName) {
+        projectMapper.insertOneProject(accountUuid, projectName);
     }
 
-    public void updateProjectNameP(String accountUuid,String oldProjectName, String newProjectName) {
+    public void updateProjectNameP(String accountUuid, String oldProjectName, String newProjectName) {
         projectMapper.updateProjectNameP(accountUuid, oldProjectName, newProjectName);
     }
 
-    public List<Project> getProjectList(){
+    public List<Project> getProjectList() {
         return projectMapper.getProjectListP();
     }
 
     public Project getProjectByName(String projectName) {
         return projectMapper.getProjectByNameP(projectName);
     }
+
+    public Integer getProjectIdByName(String projectName) {
+        return projectMapper.getProjectIdByNameP(projectName);
+    }
+
+    ;
 
     @Autowired
     public void setProjectMapper(ProjectMapper projectMapper) {

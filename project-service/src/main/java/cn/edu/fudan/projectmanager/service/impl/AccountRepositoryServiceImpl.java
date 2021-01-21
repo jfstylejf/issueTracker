@@ -44,18 +44,18 @@ public class AccountRepositoryServiceImpl implements AccountRepositoryService {
     private AccountMapper accountMapper;
 
     /**
-     * @return  k projectName v: list [k: repo_id, name]
+     * @return k projectName v: list [k: repo_id, name]
      */
     @Override
     public Map<String, List<Map<String, String>>> getProjectAndRepoRelation(int recycled) {
-        List<Map<String, Object>> projects =  subRepositoryDao.getAllProjectRepoRelation();
+        List<Map<String, Object>> projects = subRepositoryDao.getAllProjectRepoRelation();
         boolean isAll = recycled == SubRepository.ALL;
 
-        Map<String, List< Map<String, String>>> result = new HashMap<>(8);
+        Map<String, List<Map<String, String>>> result = new HashMap<>(8);
         for (Map<String, Object> project : projects) {
 
-            int recycledStatus = (int)project.get("recycled");
-            if (!isAll && recycled != recycledStatus){
+            int recycledStatus = (int) project.get("recycled");
+            if (!isAll && recycled != recycledStatus) {
                 continue;
             }
 
@@ -63,20 +63,20 @@ public class AccountRepositoryServiceImpl implements AccountRepositoryService {
             if (StringUtils.isEmpty(projectName)) {
                 projectName = "unnamed";
             }
-            if (! result.keySet().contains(projectName)) {
+            if (!result.keySet().contains(projectName)) {
                 result.put(projectName, new ArrayList<>(4));
             }
-            List< Map<String, String>> v = result.get(projectName);
+            List<Map<String, String>> v = result.get(projectName);
             Map<String, String> p = new HashMap<>(4);
-            p.put("repo_id", (String)project.get("repo_uuid"));
-            p.put("name", (String)project.get("repo_name"));
+            p.put("repo_id", (String) project.get("repo_uuid"));
+            p.put("name", (String) project.get("repo_name"));
             v.add(p);
         }
         return result;
     }
 
     @Override
-    public List<Map<String, Object>> getProjectAll(String token)throws Exception {
+    public List<Map<String, Object>> getProjectAll(String token) throws Exception {
         List<Project> projectList = projectDao.getProjectList();
         List<Map<String, Object>> results = new ArrayList<>();
         projectList.forEach(project -> {
@@ -95,12 +95,12 @@ public class AccountRepositoryServiceImpl implements AccountRepositoryService {
     }
 
     @Override
-    public String getRepoUuidByUuid(String uuid) throws Exception{
+    public String getRepoUuidByUuid(String uuid) throws Exception {
         return subRepositoryDao.getSubRepoByUuid(uuid).getRepoUuid();
     }
 
     @Override
-    public void updateRepoProject(String token, String oldProjectName, String newProjectName,String RepoUuid) throws Exception {
+    public void updateRepoProject(String token, String oldProjectName, String newProjectName, String RepoUuid) throws Exception {
         UserInfoDTO userInfoDTO = getUserInfoByToken(token);
         String accountUuid = userInfoDTO.getUuid();
 
@@ -118,12 +118,16 @@ public class AccountRepositoryServiceImpl implements AccountRepositoryService {
     }
 
     @Override
-    public void addProjectLeader(String token, String newLeaderId, String projectId) throws Exception {
+    public boolean addProjectLeader(String token, String newLeaderId, Integer projectId) throws Exception {
         UserInfoDTO userInfoDTO = getUserInfoByToken(token);
         String accountUuid = userInfoDTO.getUuid();
 
+        if (accountProjectDao.isProjectLeaderExist(newLeaderId, projectId) == true) {
+            return false;
+        }
+
         if (StringUtils.isEmpty(newLeaderId) || StringUtils.isEmpty(projectId)) {
-            return;
+            return false;
         }
         // 0 表示超级管理员 只有超级管理员能操作
         if (userInfoDTO.getRight() != 0) {
@@ -132,10 +136,11 @@ public class AccountRepositoryServiceImpl implements AccountRepositoryService {
         //只有超级管理员才会有此权限
         log.warn("project leader changed by {}! new leader is {}", userInfoDTO.getUuid(), newLeaderId);
         accountProjectDao.addProjectLeaderAP(accountUuid, newLeaderId, projectId);
+        return true;
     }
 
     @Override
-    public void deleteProjectLeader(String token, String LeaderId, String projectId) throws Exception {
+    public void deleteProjectLeader(String token, String LeaderId, Integer projectId) throws Exception {
         UserInfoDTO userInfoDTO = getUserInfoByToken(token);
         String accountUuid = userInfoDTO.getUuid();
 
@@ -152,12 +157,12 @@ public class AccountRepositoryServiceImpl implements AccountRepositoryService {
     }
 
     @Override
-    public List<SubRepository> getRepoByAccountUuid(String accountUuid) throws Exception{
+    public List<SubRepository> getRepoByAccountUuid(String accountUuid) throws Exception {
         return subRepositoryDao.getAllSubRepoByAccountUuid(accountUuid);
     }
 
     @Override
-    public List<Map<String, Object>> getProjectInfoByAccountName(String accountName) throws Exception{
+    public List<Map<String, Object>> getProjectInfoByAccountName(String accountName) throws Exception {
         // 根据accountName 查询权限
         int accountRight = accountMapper.queryRightByAccountName(accountName);
         if (accountRight == AccountRoleEnum.ADMIN.getRight()) {
@@ -166,7 +171,7 @@ public class AccountRepositoryServiceImpl implements AccountRepositoryService {
         return accountMapper.getProjectInfoByAccountName(accountName);
     }
 
-    private synchronized UserInfoDTO getUserInfoByToken(String token) throws Exception{
+    private synchronized UserInfoDTO getUserInfoByToken(String token) throws Exception {
         if (StringUtils.isEmpty(token)) {
             throw new RunTimeException("need user token");
         }
@@ -207,7 +212,9 @@ public class AccountRepositoryServiceImpl implements AccountRepositoryService {
     }
 
     @Autowired
-    public void setAccountProjectDao(AccountProjectDao accountProjectDao) {this.accountProjectDao = accountProjectDao;}
+    public void setAccountProjectDao(AccountProjectDao accountProjectDao) {
+        this.accountProjectDao = accountProjectDao;
+    }
 
     @Autowired
     public void setAccountMapper(AccountMapper accountMapper) {

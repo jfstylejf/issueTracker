@@ -2,6 +2,7 @@ package cn.edu.fudan.cloneservice.mapper;
 
 import cn.edu.fudan.cloneservice.domain.CloneMeasure;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -56,4 +57,12 @@ public interface CloneMeasureMapper {
      * @return
      */
     CloneMeasure getLatestCloneLines(@Param("repo_ids") List<String> repoIds);
+
+    /**
+     * description
+     * @param repositoryId repoId
+     * @return list
+     */
+    List<String> getAllDeveloper(@Param("repositoryId") String repositoryId, @Param("start") String start, @Param("end") String end);
+
 }

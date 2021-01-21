@@ -17,8 +17,8 @@ import java.util.List;
 @AllArgsConstructor
 public class CloneMessage implements Comparable<CloneMessage>{
 
-    private String repoId;
-    private String developer;
+    private String repoUuid;
+    private String developerName;
     private Integer increasedCloneLines;
     private Integer selfIncreasedCloneLines;
     private Integer othersIncreasedCloneLines;

@@ -13,15 +13,10 @@
 
     <insert id="insertOneProject" parameterType="String">
         insert ignore into project
-        (
-            project_name,
-            import_account_uuid
-        )
-        VALUES
-        (
-            #{projectName},
-            #{accountUuid}
-        )
+        (project_name,
+         import_account_uuid)
+        VALUES (#{projectName},
+                #{accountUuid})
     </insert>
 
     <update id="updateProjectNameP" parameterType="String">
@@ -30,18 +25,27 @@
             project_name = #{newProjectName},
             import_account_uuid =#{accountUuid}
         </set>
-        where   project_name = #{oldProjectName}
+        where project_name = #{oldProjectName}
 
     </update>
 
-    <select id="getProjectListP"  resultMap="project">
-       select project_name,id from project
+    <select id="getProjectListP" resultMap="project">
+        select project_name, id
+        from project
     </select>
 
-    <select id="getProjectByNameP"  resultMap="project">
+    <select id="getProjectByNameP" resultMap="project">
         select * from project
         <where>
             project_name = #{projectName}
         </where>
     </select>
+
+    <select id="getProjectIdByNameP" resultType="Integer">
+        select id from project
+        <where>
+            project_name = #{projectName}
+        </where>
+    </select>
+
 </mapper>

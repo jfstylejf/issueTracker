@@ -24,7 +24,7 @@ public class RepositoryVO implements Serializable {
     private String url;
     private String language;
     private String branch;
-    private String downloadStatus ;
+    private String downloadStatus;
     private Date latestCommitTime;
     private String projectName;
     private Date scanStart;
@@ -35,13 +35,13 @@ public class RepositoryVO implements Serializable {
 
     }
 
-    public RepositoryVO (SubRepository repository) {
+    public RepositoryVO(SubRepository repository) {
         uuid = repository.getUuid();
         repoUuid = repository.getRepoUuid();
         url = repository.getUrl();
         language = repository.getLanguage();
         branch = repository.getBranch();
-        downloadStatus  = repository.getDownloadStatus();
+        downloadStatus = repository.getDownloadStatus();
         latestCommitTime = repository.getLatestCommitTime();
         projectName = repository.getProjectName();
         scanStart = repository.getScanStart();

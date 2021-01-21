@@ -5,11 +5,9 @@ import cn.edu.fudan.projectmanager.dao.AccountProjectDao;
 import cn.edu.fudan.projectmanager.dao.AccountRepositoryDao;
 import cn.edu.fudan.projectmanager.dao.ProjectDao;
 import cn.edu.fudan.projectmanager.dao.SubRepositoryDao;
-import cn.edu.fudan.projectmanager.domain.AccountRoleEnum;
+import cn.edu.fudan.projectmanager.domain.*;
 import cn.edu.fudan.projectmanager.domain.topic.LocalDownLoad;
 import cn.edu.fudan.projectmanager.domain.topic.NeedDownload;
-import cn.edu.fudan.projectmanager.domain.AccountRepository;
-import cn.edu.fudan.projectmanager.domain.SubRepository;
 import cn.edu.fudan.projectmanager.domain.dto.RepositoryDTO;
 import cn.edu.fudan.projectmanager.domain.dto.UserInfoDTO;
 import cn.edu.fudan.projectmanager.exception.RunTimeException;
@@ -25,10 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import javax.validation.constraints.NotNull;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -70,8 +65,8 @@ public class ProjectControlServiceImpl implements ProjectControlService {
             throw new RunTimeException("the repo url is EMPTY!");
         }
         final String urlPostfix = ".git";
-        if(url.endsWith(urlPostfix)){
-            url = url.substring(0, url.length()-4);
+        if (url.endsWith(urlPostfix)) {
+            url = url.substring(0, url.length() - 4);
         }
         boolean isPrivate = repositoryDTO.getPrivateRepo();
         Pattern pattern = Pattern.compile(repoUrlPattern);
@@ -81,13 +76,13 @@ public class ProjectControlServiceImpl implements ProjectControlService {
         }
 
         String accountUuid = userInfoDTO.getUuid();
-        String branch = repositoryDTO.getBranch() ;
+        String branch = repositoryDTO.getBranch();
         String username = repositoryDTO.getUsername();
         // TODO password 应该用 base64 加密
         String password = repositoryDTO.getPassword();
 
 
-        if(isPrivate && StringUtils.isEmpty(username) && StringUtils.isEmpty(password)){
+        if (isPrivate && StringUtils.isEmpty(username) && StringUtils.isEmpty(password)) {
             throw new RunTimeException("this projectName is private,please provide your git username and password!");
         }
 
@@ -97,7 +92,7 @@ public class ProjectControlServiceImpl implements ProjectControlService {
         }
 
         // 一个 Repo目前只扫描一个分支
-        if(accountRepositoryDao.hasRepo(branch, url)) {
+        if (accountRepositoryDao.hasRepo(branch, url)) {
             throw new RunTimeException("The repo accountName has already been used! ");
         }
 
@@ -136,8 +131,8 @@ public class ProjectControlServiceImpl implements ProjectControlService {
             throw new RunTimeException("the repo url is EMPTY!");
         }
         final String urlPostfix = ".git";
-        if(url.endsWith(urlPostfix)){
-            url = url.substring(0, url.length()-4);
+        if (url.endsWith(urlPostfix)) {
+            url = url.substring(0, url.length() - 4);
         }
         boolean isPrivate = repositoryDTO.getPrivateRepo();
         Pattern pattern = Pattern.compile(repoUrlPattern);
@@ -147,12 +142,12 @@ public class ProjectControlServiceImpl implements ProjectControlService {
         }
 
         String accountUuid = userInfoDTOLocal.getUuid();
-        String branch = repositoryDTO.getBranch() ;
+        String branch = repositoryDTO.getBranch();
         String username = repositoryDTO.getUsername();
         // TODO password 应该用 base64 加密
         String password = repositoryDTO.getPassword();
 
-        if(isPrivate && StringUtils.isEmpty(username) && StringUtils.isEmpty(password)){
+        if (isPrivate && StringUtils.isEmpty(username) && StringUtils.isEmpty(password)) {
             throw new RunTimeException("this projectName is private,please provide your git username and password!");
         }
 
@@ -162,7 +157,7 @@ public class ProjectControlServiceImpl implements ProjectControlService {
         }
 
         // 一个 Repo目前只扫描一个分支
-        if(accountRepositoryDao.hasRepo(branch, url)) {
+        if (accountRepositoryDao.hasRepo(branch, url)) {
             throw new RunTimeException("The repo accountName has already been used! ");
         }
 
@@ -188,20 +183,20 @@ public class ProjectControlServiceImpl implements ProjectControlService {
             //只有subRepository表中不存在才会下载，向RepoManager这个Topic发送消息，请求开始下载
             //flag代表添加代码库的方式，1为本地添加，0为前端添加
             int flag = 1;
-            sendLocal(flag, uuid, url,  username, branch, repoSource, repoName);
+            sendLocal(flag, uuid, url, username, branch, repoSource, repoName);
         }
         log.info("success add repo {}", url);
     }
 
     @Override
     @SneakyThrows
-    public Map<String, Boolean> addRepos(String token, List<RepositoryDTO> repositories){
+    public Map<String, Boolean> addRepos(String token, List<RepositoryDTO> repositories) {
         Map<String, Boolean> result = new HashMap<>(repositories.size() >> 1);
         repositories.forEach(r -> {
             try {
                 addOneRepo(token, r);
                 result.put(r.getProjectName(), Boolean.TRUE);
-            }catch (Exception e) {
+            } catch (Exception e) {
                 log.error("add one repo failed, url is {}! message is {}", r.getUrl(), e.getMessage());
                 result.put(r.getProjectName(), Boolean.FALSE);
             }
@@ -234,11 +229,11 @@ public class ProjectControlServiceImpl implements ProjectControlService {
     public void delete(String token, String subRepoUuid, Boolean empty) throws Exception {
         UserInfoDTO userInfoDTO = getUserInfoByToken(token);
         // 0 表示超级管理员 只有超级管理员能操作
-        if ( userInfoDTO.getRight() != 0) {
+        if (userInfoDTO.getRight() != 0) {
             throw new RunTimeException("this user has no right to change project accountName");
         }
 
-        if (! empty) {
+        if (!empty) {
             subRepositoryDao.setRecycled(subRepoUuid);
             return;
         }
@@ -251,7 +246,7 @@ public class ProjectControlServiceImpl implements ProjectControlService {
 
     @Override
     @SneakyThrows
-    public List<SubRepository> query(String token){
+    public List<SubRepository> query(String token) {
         UserInfoDTO userInfoDTO = getUserInfoByToken(token);
         String userUuid = userInfoDTO.getUuid();
 
@@ -264,16 +259,24 @@ public class ProjectControlServiceImpl implements ProjectControlService {
 
             List<SubRepository> leaderRepo = subRepositoryDao.getLeaderRepoByAccountUuid(userUuid);
             List<SubRepository> subRepo = subRepositoryDao.getRepoByAccountUuid(userUuid);
-            if (subRepo!=null)
-            {
+            if (subRepo != null) {
                 leaderRepo.addAll(subRepo);
                 leaderRepo = leaderRepo.stream().distinct().collect(Collectors.toList());
+                leaderRepo.forEach(repo -> {
+                    Integer projectId = projectDao.getProjectIdByName(repo.getProjectName());
+                    repo.setLeaders(accountProjectDao.getLeaderListByProjectId(projectId));
+                });
             }
             return leaderRepo;
         }
 
         // todo 用户权限为 DEVELOPER 时不允许查询项目列表
-        return subRepositoryDao.getAllSubRepoByAccountUuid(userUuid);
+        List<SubRepository> allRepoList = subRepositoryDao.getAllSubRepoByAccountUuid(userUuid);
+        allRepoList.forEach(repo -> {
+            Integer projectId = projectDao.getProjectIdByName(repo.getProjectName());
+            repo.setLeaders(accountProjectDao.getLeaderListByProjectId(projectId));
+        });
+        return allRepoList;
     }
 
     @Override
@@ -281,17 +284,16 @@ public class ProjectControlServiceImpl implements ProjectControlService {
         UserInfoDTO userInfoDTO = getUserInfoByToken(token);
         String accountUuid = userInfoDTO.getUuid();
         // 0 表示超级管理员 只有超级管理员能操作
-        if ( userInfoDTO.getRight() != 0) {
+        if (userInfoDTO.getRight() != 0) {
             throw new RunTimeException("this user has no right to add project");
         }
 
 
-        if(projectDao.getProjectByName(projectName) != null)
-        {
+        if (projectDao.getProjectByName(projectName) != null) {
             throw new RunTimeException("project name has been used");
         }
         //project表中插入信息
-        projectDao.insertOneProject(accountUuid,projectName);
+        projectDao.insertOneProject(accountUuid, projectName);
     }
 
     @Override
@@ -317,20 +319,20 @@ public class ProjectControlServiceImpl implements ProjectControlService {
     }
 
 
-    private void send(String projectId, String url,boolean isPrivate,String username,String password, String branch,String repoSource) {
-        NeedDownload needDownload = new NeedDownload(projectId, repoSource, url, isPrivate, username, password , branch);
+    private void send(String projectId, String url, boolean isPrivate, String username, String password, String branch, String repoSource) {
+        NeedDownload needDownload = new NeedDownload(projectId, repoSource, url, isPrivate, username, password, branch);
         kafkaTemplate.send("ProjectManager", JSONObject.toJSONString(needDownload));
         log.info("send message to topic ProjectManage ---> " + JSONObject.toJSONString(needDownload));
     }
 
     //flag, uuid, url,  username, branch, repoSource, repoName
-    private void sendLocal(int flag, String projectId, String url,String username, String branch,String repoSource, String repoName){
+    private void sendLocal(int flag, String projectId, String url, String username, String branch, String repoSource, String repoName) {
         LocalDownLoad localDownLoad = new LocalDownLoad(flag, projectId, url, username, branch, repoSource, repoName);
         kafkaTemplate.send("ProjectManager", JSONObject.toJSONString(localDownLoad));
         log.info("send message to topic ProjectManage ---> " + JSONObject.toJSONString(localDownLoad));
     }
 
-    private synchronized UserInfoDTO getUserInfoByToken(String token) throws Exception{
+    private synchronized UserInfoDTO getUserInfoByToken(String token) throws Exception {
         if (StringUtils.isEmpty(token)) {
             throw new RunTimeException("need user token");
         }
@@ -361,37 +363,37 @@ public class ProjectControlServiceImpl implements ProjectControlService {
         subRepositoryDao.deleteRepoSR(accountUuid, repoUuid);
 
         boolean deleteCloneRepoSuccess = rest.deleteCloneRepo(repoUuid);
-        if(!deleteCloneRepoSuccess){
+        if (!deleteCloneRepoSuccess) {
             log.error("clone repo delete failed!");
         }
 
         boolean deleteCodetrackerRepoSuccess = rest.deleteCodetrackerRepo(repoUuid);
-        if(!deleteCodetrackerRepoSuccess){
+        if (!deleteCodetrackerRepoSuccess) {
             log.error("codetracker repo delete failed!");
         }
 
         boolean deleteCommitRepoSucess = rest.deleteCommitRepo(repoUuid);
-        if(!deleteCommitRepoSucess){
+        if (!deleteCommitRepoSucess) {
             log.error("commit repo delete failed!");
         }
 
         boolean deleteIssueRepoSuccess = rest.deleteIssueRepo(repoUuid);
-        if(!deleteIssueRepoSuccess){
+        if (!deleteIssueRepoSuccess) {
             log.error("issue repo delete failed!");
         }
 
         boolean deleteMeasureRepoSucess = rest.deleteMeasureRepo(repoUuid);
-        if(!deleteMeasureRepoSucess){
+        if (!deleteMeasureRepoSucess) {
             log.error("measure repo delete failed!");
         }
 
         boolean deleteScanRepoSucess = rest.deleteScanRepo(token, repoUuid);
-        if(!deleteScanRepoSucess){
+        if (!deleteScanRepoSucess) {
             log.error("scan repo delete failed!");
         }
 
-        if(!deleteCloneRepoSuccess || !deleteCodetrackerRepoSuccess || !deleteCommitRepoSucess || !deleteIssueRepoSuccess
-            || !deleteMeasureRepoSucess || !deleteScanRepoSucess){
+        if (!deleteCloneRepoSuccess || !deleteCodetrackerRepoSuccess || !deleteCommitRepoSucess || !deleteIssueRepoSuccess
+                || !deleteMeasureRepoSucess || !deleteScanRepoSucess) {
             throw new RunTimeException("delete failed!");
         }
     }
@@ -443,7 +445,9 @@ public class ProjectControlServiceImpl implements ProjectControlService {
     }
 
     @Autowired
-    public void setAccountProjectDao(AccountProjectDao accountProjectDao) {this.accountProjectDao = accountProjectDao;}
+    public void setAccountProjectDao(AccountProjectDao accountProjectDao) {
+        this.accountProjectDao = accountProjectDao;
+    }
 
     @Autowired
     public void setKafkaTemplate(KafkaTemplate kafkaTemplate) {

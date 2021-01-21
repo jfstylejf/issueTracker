@@ -14,13 +14,13 @@
 
 
     <insert id="insertAccountRepositories" parameterType="List">
-        INSERT  IGNORE INTO account_repository
+        INSERT IGNORE INTO account_repository
         (
-            uuid,
-            repo_name,
-            account_uuid,
-            sub_repository_uuid,
-            project_name
+        uuid,
+        repo_name,
+        account_uuid,
+        sub_repository_uuid,
+        project_name
         )
         VALUES
         <foreach collection="list" item="item" separator=",">
@@ -40,13 +40,13 @@
             project_name = #{newProjectName},
         </set>
         <where>
-           project_name = #{oldProjectName}
+            project_name = #{oldProjectName}
         </where>
     </update>
 
     <update id="updateRepoProjectAR" parameterType="String">
         update account_repository as a
-        inner join  sub_repository AS s ON s.uuid = a.sub_repository_uuid
+        inner join sub_repository AS s ON s.uuid = a.sub_repository_uuid
         <set>
             a.project_name = #{newProjectName},
         </set>
@@ -56,9 +56,10 @@
     </update>
 
     <delete id="deleteRepoAR" parameterType="String">
-        delete from account_repository
+        delete
+        from account_repository
         where sub_repository_uuid =
-        (select uuid from sub_repository where repo_uuid = #{RepoUuid} AND recycled = 1);
+              (select uuid from sub_repository where repo_uuid = #{RepoUuid} AND recycled = 1);
     </delete>
 
 

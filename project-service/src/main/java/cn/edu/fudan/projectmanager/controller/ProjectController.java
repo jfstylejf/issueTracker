@@ -31,10 +31,11 @@ public class ProjectController {
 
     /**
      * description: 添加库
+     *
      * @param repositoryDTO url isPrivate username password accountName type branch
-     * @param request header
+     * @param request       header
      */
-    @ApiOperation(value="添加新的库",httpMethod = "POST")
+    @ApiOperation(value = "添加新的库", httpMethod = "POST")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "repositoryDTO", value = "库的信息", dataType = "RepositoryDTO", required = true)
     })
@@ -49,7 +50,7 @@ public class ProjectController {
         }
     }
 
-    @ApiOperation(value="在本地添加新的库",httpMethod = "POST")
+    @ApiOperation(value = "在本地添加新的库", httpMethod = "POST")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "repositoryDTO", value = "库的信息", dataType = "RepositoryDTO", required = true)
     })
@@ -75,7 +76,7 @@ public class ProjectController {
             return new ResponseBean<>(400, "上传失败，请选择文件!", null);
         }
         List<RepositoryDTO> repositories = analysisFile(file);
-        Map<String, Boolean> result =  projectControl.addRepos(userToken, repositories);
+        Map<String, Boolean> result = projectControl.addRepos(userToken, repositories);
         if (result.values().contains(Boolean.FALSE)) {
             return new ResponseBean<>(400, "not all repo add success", result);
         }
@@ -103,17 +104,17 @@ public class ProjectController {
      */
     @DeleteMapping(value = {"/project/{sub_repo_uuid}"})
     public ResponseBean delete(HttpServletRequest request, @PathVariable("sub_repo_uuid") String subRepoId,
-                               @RequestParam(value = "empty", required = false,defaultValue = "false") Boolean empty) {
+                               @RequestParam(value = "empty", required = false, defaultValue = "false") Boolean empty) {
         try {
             projectControl.delete(request.getHeader(TOKEN), subRepoId, empty);
             return new ResponseBean<>(200, "delete success!", null);
         } catch (Exception e) {
-            return new ResponseBean<>(401, "delete failed! " + e.getMessage() , null);
+            return new ResponseBean<>(401, "delete failed! " + e.getMessage(), null);
         }
     }
 
 
-    @ApiOperation(value="修改项目名称",httpMethod = "PUT")
+    @ApiOperation(value = "修改项目名称", httpMethod = "PUT")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "oldProjectName", value = "旧的项目名", dataType = "String", required = true),
             @ApiImplicitParam(name = "newProjectName", value = "新的项目名", dataType = "String", required = true)
@@ -121,7 +122,7 @@ public class ProjectController {
     @PutMapping(value = {"/project"})
     public ResponseBean updateProject(HttpServletRequest request,
                                       @RequestParam("old_project_name") String oldProjectName,
-                                      @RequestParam("new_project_name") String newProjectName){
+                                      @RequestParam("new_project_name") String newProjectName) {
         try {
             projectControl.update(request.getHeader(TOKEN), oldProjectName, newProjectName);
             return new ResponseBean<>(200, "update success", null);
@@ -131,10 +132,10 @@ public class ProjectController {
     }
 
     @DeleteMapping(value = {"/project"})
-    public ResponseBean delete(@RequestParam("project_name")String projectName,
-                         HttpServletRequest request) {
+    public ResponseBean delete(@RequestParam("project_name") String projectName,
+                               HttpServletRequest request) {
         try {
-            projectControl.deleteProject(projectName,request.getHeader(TOKEN));
+            projectControl.deleteProject(projectName, request.getHeader(TOKEN));
             return new ResponseBean(200, "projectName delete success!", null);
         } catch (Exception e) {
             e.printStackTrace();
@@ -144,15 +145,16 @@ public class ProjectController {
 
     /**
      * description: 添加项目
+     *
      * @param projectName
-     * @param request header
+     * @param request     header
      */
-    @ApiOperation(value="添加项目",httpMethod = "POST")
+    @ApiOperation(value = "添加项目", httpMethod = "POST")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "projectName", value = "项目名称", dataType = "String", required = true)
     })
     @PostMapping(value = {"/project"})
-    public ResponseBean addNewProject(HttpServletRequest request, @RequestParam ("project_name") String projectName) {
+    public ResponseBean addNewProject(HttpServletRequest request, @RequestParam("project_name") String projectName) {
         String token = request.getHeader(TOKEN);
         try {
             projectControl.addOneProject(token, projectName);
@@ -162,15 +164,15 @@ public class ProjectController {
         }
     }
 
-    @ApiOperation(value="修改库名称",httpMethod = "PUT")
+    @ApiOperation(value = "修改库名称", httpMethod = "PUT")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "oldRepoName", value = "旧的库名", dataType = "String", required = true),
             @ApiImplicitParam(name = "newRepoName", value = "新的库名", dataType = "String", required = true)
     })
     @PutMapping(value = {"/repository"})
     public ResponseBean updateRepository(HttpServletRequest request,
-                                      @RequestParam("old_repo_name") String oldRepoName,
-                                      @RequestParam("new_repo_name") String newRepoName){
+                                         @RequestParam("old_repo_name") String oldRepoName,
+                                         @RequestParam("new_repo_name") String newRepoName) {
         try {
             projectControl.updateRepo(request.getHeader(TOKEN), oldRepoName, newRepoName);
             return new ResponseBean<>(200, "update success", null);
@@ -179,7 +181,7 @@ public class ProjectController {
         }
     }
 
-    @ApiOperation(value="修改库的所属项目",httpMethod = "PUT")
+    @ApiOperation(value = "修改库的所属项目", httpMethod = "PUT")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "oldProjectName", value = "旧的项目名", dataType = "String", required = true),
             @ApiImplicitParam(name = "newProjectName", value = "新的项目名", dataType = "String", required = true),
@@ -189,22 +191,22 @@ public class ProjectController {
     public ResponseBean updateRepoProject(HttpServletRequest request,
                                           @RequestParam("old_project_name") String oldProjectName,
                                           @RequestParam("new_project_name") String newProjectName,
-                                          @RequestParam("repo_uuid") String RepoUuid){
+                                          @RequestParam("repo_uuid") String RepoUuid) {
         try {
-            accountRepository.updateRepoProject(request.getHeader(TOKEN), oldProjectName, newProjectName,RepoUuid);
+            accountRepository.updateRepoProject(request.getHeader(TOKEN), oldProjectName, newProjectName, RepoUuid);
             return new ResponseBean<>(200, "update success", null);
         } catch (Exception e) {
             return new ResponseBean<>(401, "update failed :" + e.getMessage(), null);
         }
     }
 
-    @ApiOperation(value="删除库",httpMethod = "DELETE")
+    @ApiOperation(value = "删除库", httpMethod = "DELETE")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "projectUuid", value = "库的uuid", dataType = "String", required = true)
     })
     @DeleteMapping(value = {"/repo/{repo_uuid}"})
-    public ResponseBean<Object> deleteRepo(@PathVariable("repo_uuid")String repoUuid,
-                               HttpServletRequest request) {
+    public ResponseBean<Object> deleteRepo(@PathVariable("repo_uuid") String repoUuid,
+                                           HttpServletRequest request) {
         try {
             projectControl.deleteRepo(request.getHeader(TOKEN), repoUuid);
             return new ResponseBean<>(200, "repo delete success!", null);
@@ -214,34 +216,37 @@ public class ProjectController {
         }
     }
 
-    @ApiOperation(value="新增项目负责人",httpMethod = "POST")
+    @ApiOperation(value = "新增项目负责人", httpMethod = "POST")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "newLeaderId", value = "新的负责人ID", dataType = "String", required = true),
-            @ApiImplicitParam(name = "projectId", value = "项目id", dataType = "String", required = true)
+            @ApiImplicitParam(name = "projectId", value = "项目id", dataType = "Integer", required = true)
 
     })
     @PostMapping(value = {"/project/leader"})
     public ResponseBean addLeader(HttpServletRequest request,
-                                         @RequestParam("newLeaderId") String newLeaderId,
-                                         @RequestParam("projectId") String projectId){
+                                  @RequestParam("newLeaderId") String newLeaderId,
+                                  @RequestParam("projectId") Integer projectId) {
         try {
-            accountRepository.addProjectLeader(request.getHeader(TOKEN), newLeaderId, projectId);
+            boolean result = accountRepository.addProjectLeader(request.getHeader(TOKEN), newLeaderId, projectId);
+            if (result == false) {
+                return new ResponseBean<>(412, "update failed!", null);
+            }
             return new ResponseBean<>(200, "update success", null);
         } catch (Exception e) {
             return new ResponseBean<>(401, "update failed :" + e.getMessage(), null);
         }
     }
 
-    @ApiOperation(value="删除项目负责人",httpMethod = "DELETE")
+    @ApiOperation(value = "删除项目负责人", httpMethod = "DELETE")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "LeaderId", value = "负责人ID", dataType = "String", required = true),
-            @ApiImplicitParam(name = "projectId", value = "项目id", dataType = "String", required = true)
+            @ApiImplicitParam(name = "projectId", value = "项目id", dataType = "Integer", required = true)
 
     })
     @DeleteMapping(value = {"/project/leader"})
     public ResponseBean deleteLeader(HttpServletRequest request,
                                      @RequestParam("LeaderId") String LeaderId,
-                                     @RequestParam("projectId") String projectId){
+                                     @RequestParam("projectId") Integer projectId) {
         try {
             accountRepository.deleteProjectLeader(request.getHeader(TOKEN), LeaderId, projectId);
             return new ResponseBean<>(200, "update success", null);
@@ -250,18 +255,18 @@ public class ProjectController {
         }
     }
 
-    @ApiOperation(value="修改回收站状态",httpMethod = "PUT")
+    @ApiOperation(value = "修改回收站状态", httpMethod = "PUT")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "recycled", value = "库的回收状态", dataType = "int", required = true),
             @ApiImplicitParam(name = "repo_uuid", value = "库uuid", dataType = "String", required = true)
     })
     @PutMapping(value = {"/repository/recycle"})
     public ResponseBean updateRecycleStatus(HttpServletRequest request,
-                                          @RequestParam("recycled") int recycled,
-                                          @RequestParam("repo_uuid") String repoUuid){
+                                            @RequestParam("recycled") int recycled,
+                                            @RequestParam("repo_uuid") String repoUuid) {
         try {
             SubRepository repository = accountRepository.getRepoInfoByRepoId(repoUuid);
-            if(repository == null){
+            if (repository == null) {
                 return new ResponseBean<>(412, "repo not exist", null);
             }
             projectControl.updateRecycleStatus(request.getHeader(TOKEN), recycled, repoUuid);
