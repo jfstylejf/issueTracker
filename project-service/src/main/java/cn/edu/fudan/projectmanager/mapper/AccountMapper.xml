@@ -3,23 +3,31 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.edu.fudan.projectmanager.mapper.AccountMapper">
 
+    <resultMap id="projectLeader" type="ProjectLeader">
+        <id property="projectId" column="project_id"/>
+        <result property="projectName" column="project_name"/>
+        <result property="accountName" column="account_name"/>
+        <result property="accountUuid" column="account_uuid"/>
+        <result property="accountRole" column="account_role"/>
+    </resultMap>
+
     <select id="getProjectInfoByAccountName" parameterType="String" resultType="java.util.HashMap">
         SELECT p.account_name,account_right,p.account_role,p.project_name
         FROM account as a ,account_project as p
         WHERE a.account_name = p.account_name
-        <if test="accountName != null" >
+        <if test="accountName != null">
             and a.account_name = #{accountName}
         </if>
     </select>
 
     <insert id="insertAccountRepositories" parameterType="List">
-        INSERT  IGNORE INTO account_repository
+        INSERT IGNORE INTO account_repository
         (
-            uuid,
-            repo_name,
-            account_uuid,
-            sub_repository_uuid,
-            project_name
+        uuid,
+        repo_name,
+        account_uuid,
+        sub_repository_uuid,
+        project_name
         )
         VALUES
         <foreach collection="list" item="accountRepositories" separator=",">
@@ -34,13 +42,13 @@
     <update id="updateProjectNameAP" parameterType="String">
         update account_project
         <set>
-                project_name = #{newProjectName},
+            project_name = #{newProjectName},
         </set>
-        where   project_name = #{oldProjectName}
+        where project_name = #{oldProjectName}
     </update>
 
     <insert id="addProjectLeaderAP" parameterType="String">
-        INSERT  IGNORE INTO account_project
+        INSERT IGNORE INTO account_project
         (
         account_uuid,
         account_name,
@@ -72,9 +80,17 @@
 
     <select id="getLeaderListByProjectId" parameterType="String" resultType="java.util.HashMap">
         SELECT account_uuid,account_name
-        from  account_project
+        from account_project
         <where>
             project_id = #{projectId};
+        </where>
+    </select>
+
+    <select id="getProjectLeader" resultMap="projectLeader">
+        SELECT account_uuid, account_name, project_id, project_name, account_role
+        from account_project
+        <where>
+            project_id = #{projectId} and account_uuid = #{newLeaderId};
         </where>
     </select>
 

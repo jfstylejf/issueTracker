@@ -22,7 +22,7 @@ public enum AccountRoleEnum {
 
     private int right;
 
-    AccountRoleEnum(int right){
+    AccountRoleEnum(int right) {
         this.right = right;
     }
 

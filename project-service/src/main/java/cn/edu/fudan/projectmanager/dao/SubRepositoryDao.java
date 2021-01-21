@@ -18,19 +18,19 @@ public class SubRepositoryDao {
 
     private SubRepositoryMapper subRepositoryMapper;
 
-    public Integer insertOneRepo(SubRepository subRepository){
+    public Integer insertOneRepo(SubRepository subRepository) {
         return subRepositoryMapper.insertOneRepo(subRepository);
     }
 
-    public void updateRepository(SubRepository subRepository){
+    public void updateRepository(SubRepository subRepository) {
         subRepositoryMapper.updateSubRepository(subRepository);
     }
 
-    public SubRepository getSubRepoByUuid(String uuid){
+    public SubRepository getSubRepoByUuid(String uuid) {
         return subRepositoryMapper.getSubRepoByUuid(uuid);
     }
 
-    public Date getLatestCommitTime(String repoId){
+    public Date getLatestCommitTime(String repoId) {
         return subRepositoryMapper.getLatestCommitTime(repoId);
     }
 
@@ -60,19 +60,19 @@ public class SubRepositoryDao {
         return subRepositoryMapper.getAllSubRepo();
     }
 
-    public List<Map<String, Object>> getAllProjectRepoRelation(){
+    public List<Map<String, Object>> getAllProjectRepoRelation() {
         return subRepositoryMapper.getAllProjectRepoRelation();
     }
 
-    public void updateRepoName(String accountUuid,String oldRepoName, String newRepoName) {
+    public void updateRepoName(String accountUuid, String oldRepoName, String newRepoName) {
         subRepositoryMapper.updateRepoName(accountUuid, oldRepoName, newRepoName);
     }
 
-    public void updateProjectNameSR(String accountUuid,String oldProjectName, String newProjectName) {
+    public void updateProjectNameSR(String accountUuid, String oldProjectName, String newProjectName) {
         subRepositoryMapper.updateProjectNameSR(accountUuid, oldProjectName, newProjectName);
     }
 
-    public void updateRepoProjectSR(String accountUuid, String oldProjectName, String newProjectName ,String RepoUuid) {
+    public void updateRepoProjectSR(String accountUuid, String oldProjectName, String newProjectName, String RepoUuid) {
         subRepositoryMapper.updateRepoProjectSR(accountUuid, oldProjectName, newProjectName, RepoUuid);
     }
 
@@ -80,11 +80,11 @@ public class SubRepositoryDao {
         subRepositoryMapper.deleteRepoSR(accountUuid, RepoUuid);
     }
 
-    public void putIntoRecycled(String accountUuid, Integer recycled, String repoUuid){
+    public void putIntoRecycled(String accountUuid, Integer recycled, String repoUuid) {
         subRepositoryMapper.putIntoRecycled(accountUuid, recycled, repoUuid);
     }
 
-    public void getFromRecycled(String accountUuid, Integer recycled, String repoUuid){
+    public void getFromRecycled(String accountUuid, Integer recycled, String repoUuid) {
         subRepositoryMapper.getFromRecycled(accountUuid, recycled, repoUuid);
     }
 

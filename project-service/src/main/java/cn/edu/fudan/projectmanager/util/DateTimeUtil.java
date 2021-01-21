@@ -44,18 +44,18 @@ public class DateTimeUtil {
 
     private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
-    public static String timeTotimeStamp(String s)  {
+    public static String timeTotimeStamp(String s) {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Date date = null;
-        try{
-            date  = simpleDateFormat.parse(s);
-        }catch(ParseException e){
+        try {
+            date = simpleDateFormat.parse(s);
+        } catch (ParseException e) {
             e.printStackTrace();
         }
 
         long ts = date.getTime();
         //除以1000是将毫秒转成秒
-        String res = String.valueOf(ts/1000);
+        String res = String.valueOf(ts / 1000);
         return res;
     }
 
@@ -69,52 +69,55 @@ public class DateTimeUtil {
         return date.format(dateTimeFormatter);
     }
 
-    public  static LocalDateTime stringToLocalDate(String dateString){
-        return LocalDateTime.parse(dateString,dateTimeFormatter);
+    public static LocalDateTime stringToLocalDate(String dateString) {
+        return LocalDateTime.parse(dateString, dateTimeFormatter);
     }
 
-    public static String UTCTimeToBeijingTime(String UTCTimeString){
+    public static String UTCTimeToBeijingTime(String UTCTimeString) {
         LocalDateTime date = stringToLocalDate(UTCTimeString);
-        return date.plusHours(8).toString().replace('T',' ');
+        return date.plusHours(8).toString().replace('T', ' ');
     }
 
     /**
-      * 在原日期的基础上增加小时数
-      * @param date
-      * @param i
-      * @return
-      */
-    public static Date addHourOfDate(Date date,int i){
-        if (date != null){
+     *      * 在原日期的基础上增加小时数
+     *      * @param date
+     *      * @param i
+     *      * @return
+     *      
+     */
+    public static Date addHourOfDate(Date date, int i) {
+        if (date != null) {
             Calendar c = Calendar.getInstance();
             c.setTime(date);
             c.add(Calendar.HOUR_OF_DAY, i);
             Date newDate = c.getTime();
             return newDate;
-        }else return null;
+        } else return null;
 
     }
 
     /**
-      * 在原日期的基础上增加天数
-      * @param date
-      * @param i
-      * @return
-      */
-    public static Date addDayOfDate(Date date,int i){
-        if (date != null){
+     *      * 在原日期的基础上增加天数
+     *      * @param date
+     *      * @param i
+     *      * @return
+     *      
+     */
+    public static Date addDayOfDate(Date date, int i) {
+        if (date != null) {
             Calendar c = Calendar.getInstance();
             c.setTime(date);
             c.add(Calendar.DATE, i);
             Date newDate = c.getTime();
             return newDate;
-        }else return null;
+        } else return null;
 
-}
+    }
 
 
     /**
      * 10位时间戳转Date
+     *
      * @param time
      * @return
      */
@@ -132,7 +135,7 @@ public class DateTimeUtil {
 
     }
 
-    public static Date stringToDate(String date){
+    public static Date stringToDate(String date) {
         Date result = null;
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         try {
@@ -143,18 +146,18 @@ public class DateTimeUtil {
         return result;
     }
 
-    public static LocalDate dateToLocalDate(Date date){
+    public static LocalDate dateToLocalDate(Date date) {
         return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
     }
 
     public static Date localToUTC(Date localDate) {
 
 
-        long localTimeInMillis=localDate.getTime();
+        long localTimeInMillis = localDate.getTime();
 
         /** long时间转换成Calendar */
 
-        Calendar calendar= Calendar.getInstance();
+        Calendar calendar = Calendar.getInstance();
 
         calendar.setTimeInMillis(localTimeInMillis);
 
@@ -172,7 +175,7 @@ public class DateTimeUtil {
 
         /** 取得的时间就是UTC标准时间 */
 
-        Date utcDate=new Date(calendar.getTimeInMillis());
+        Date utcDate = new Date(calendar.getTimeInMillis());
 
         return utcDate;
 

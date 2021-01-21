@@ -19,31 +19,34 @@ import java.util.Map;
 public interface SubRepositoryMapper {
 
 
-
     /**
      * 插入repo信息
+     *
      * @param subRepository s
      * @return integer 返回影响行数n（n为0时实际为插入失败）
      */
-    Integer insertOneRepo (SubRepository subRepository);
+    Integer insertOneRepo(SubRepository subRepository);
 
     /**
      * 更新subRepo表
+     *
      * @param subRepository s
      */
     void updateSubRepository(SubRepository subRepository);
 
     /**
      * 通过uuid得到subRepo
+     *
      * @param uuid
      * @return subRepository
      */
-    SubRepository getSubRepoByUuid(@Param("uuid")String uuid);
+    SubRepository getSubRepoByUuid(@Param("uuid") String uuid);
 
-    SubRepository  getSubRepoByRepoUuid(@Param("repo_uuid")String repoUuid);
+    SubRepository getSubRepoByRepoUuid(@Param("repo_uuid") String repoUuid);
 
     /**
      * 获取repo最新commit时间
+     *
      * @param repoUuid uuid
      * @return date
      */
@@ -76,50 +79,56 @@ public interface SubRepositoryMapper {
 
     /**
      * 更新项目名
-     * @param accountUuid 当前人员uuid
+     *
+     * @param accountUuid    当前人员uuid
      * @param oldProjectName 旧项目名
      * @param newProjectName 新项目名
      */
-    void updateProjectNameSR(@Param("accountUuid") String accountUuid, @Param("oldProjectName")String oldProjectName, @Param("newProjectName")String newProjectName);
+    void updateProjectNameSR(@Param("accountUuid") String accountUuid, @Param("oldProjectName") String oldProjectName, @Param("newProjectName") String newProjectName);
 
     /**
      * 更新库名
+     *
      * @param accountUuid 当前人员uuid
      * @param oldRepoName 旧库名
      * @param newRepoName 新库名
      */
-    void updateRepoName(@Param("accountUuid") String accountUuid, @Param("oldRepoName")String oldRepoName, @Param("newRepoName")String newRepoName);
+    void updateRepoName(@Param("accountUuid") String accountUuid, @Param("oldRepoName") String oldRepoName, @Param("newRepoName") String newRepoName);
 
 
     /**
      * 更新repo所属项目
-     * @param accountUuid 当前人员uuid
+     *
+     * @param accountUuid    当前人员uuid
      * @param oldProjectName 旧项目名
      * @param newProjectName 新项目名
-     * @param RepoUuid 库uuid
+     * @param RepoUuid       库uuid
      */
-    void updateRepoProjectSR(@Param("accountUuid") String accountUuid, @Param("oldProjectName")String oldProjectName, @Param("newProjectName")String newProjectName,@Param("RepoUuid")String RepoUuid);
+    void updateRepoProjectSR(@Param("accountUuid") String accountUuid, @Param("oldProjectName") String oldProjectName, @Param("newProjectName") String newProjectName, @Param("RepoUuid") String RepoUuid);
 
     /**
      * 删除库
+     *
      * @param accountUuid 当前人员uuid
-     * @param RepoUuid 库uuid
+     * @param RepoUuid    库uuid
      */
-    void deleteRepoSR(@Param("accountUuid") String accountUuid, @Param("RepoUuid")String RepoUuid);
+    void deleteRepoSR(@Param("accountUuid") String accountUuid, @Param("RepoUuid") String RepoUuid);
 
     /**
      * 将库放入回收站中
+     *
      * @param accountUuid 当前人员uuid
-     * @param recycled 回收状态
-     * @param repoUuid 库UUID
+     * @param recycled    回收状态
+     * @param repoUuid    库UUID
      */
-    void putIntoRecycled(@Param("accountUuid") String accountUuid, @Param("recycled")Integer recycled, @Param("repoUuid")String repoUuid);
+    void putIntoRecycled(@Param("accountUuid") String accountUuid, @Param("recycled") Integer recycled, @Param("repoUuid") String repoUuid);
 
     /**
      * 将库从回收站中取出
+     *
      * @param accountUuid 当前人员uuid
-     * @param recycled 回收状态
-     * @param repoUuid 库UUID
+     * @param recycled    回收状态
+     * @param repoUuid    库UUID
      */
-    void getFromRecycled(@Param("accountUuid") String accountUuid, @Param("recycled")Integer recycled, @Param("repoUuid")String repoUuid);
+    void getFromRecycled(@Param("accountUuid") String accountUuid, @Param("recycled") Integer recycled, @Param("repoUuid") String repoUuid);
 }

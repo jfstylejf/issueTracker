@@ -18,11 +18,11 @@ public class AccountRepositoryDao {
 
     private AccountRepositoryMapper accountRepositoryMapper;
 
-    public void insertAccountRepository(AccountRepository accountRepository){
+    public void insertAccountRepository(AccountRepository accountRepository) {
         insertAccountRepositories(Collections.singletonList(accountRepository));
     }
 
-    public void insertAccountRepositories(List<AccountRepository> accountRepositories){
+    public void insertAccountRepositories(List<AccountRepository> accountRepositories) {
         accountRepositoryMapper.insertAccountRepositories(accountRepositories);
     }
 
@@ -35,7 +35,7 @@ public class AccountRepositoryDao {
         accountRepositoryMapper.updateProjectNameAR(accountUuid, oldProjectName, newProjectName);
     }
 
-    public void updateRepoProjectAR(String accountUuid, String oldProjectName, String newProjectName ,String RepoUuid) {
+    public void updateRepoProjectAR(String accountUuid, String oldProjectName, String newProjectName, String RepoUuid) {
         accountRepositoryMapper.updateRepoProjectAR(accountUuid, oldProjectName, newProjectName, RepoUuid);
     }
 

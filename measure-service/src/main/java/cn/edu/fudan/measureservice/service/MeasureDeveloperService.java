@@ -275,12 +275,12 @@ public class MeasureDeveloperService {
             until = df.format(today);
         }
 
-        JSONObject projects = restInterfaceManager.getProjectByrepoUuid(repoUuid,token);
+        Map<String,Object> projects = restInterfaceManager.getProjectByrepoUuid(repoUuid,token);
         String branch = null;
         String repoName = null;
-        if(projects!=null) {
-            branch = projects.getString("branch");
-            repoName = projects.getString("repoName");
+        if (projects!=null) {
+            branch = (String) projects.get("branch");
+            repoName = (String) projects.get("repoName");
             repoName = repoName.replace("/","");
         }
         //获取程序员在本项目中第一次提交commit的日期
@@ -504,12 +504,12 @@ public class MeasureDeveloperService {
         for( String member : developerList) {
             List<cn.edu.fudan.measureservice.portrait2.DeveloperMetrics> developerMetricsList = new ArrayList<>();
             for (String repo : repoList) {
-                JSONObject projects = restInterfaceManager.getProjectByrepoUuid(repo,token);
+                Map<String,Object> projects = restInterfaceManager.getProjectByrepoUuid(repo,token);
                 if(projects == null) {
                     continue;
                 }
                 String tool = "sonarqube";
-                String repoName = projects.getString("repoName");
+                String repoName = (String) projects.get("repoName");
                 if(repoName!=null) {
                     repoName = repoName.replace("/","");
                 }
@@ -546,7 +546,7 @@ public class MeasureDeveloperService {
                 firstCommitDate = firstCommitDateTime.toLocalDate();
             }
             //todo 日后需要添加程序员类型接口 目前统一认为是java后端工程师
-            String index = repoMeasureMapper.getDeveloperType(key);
+            /*String index = repoMeasureMapper.getDeveloperType(key);
             String developerType = null ;
             if("L".equals(index)) {
                 developerType = "项目负责人";
@@ -554,7 +554,8 @@ public class MeasureDeveloperService {
                 developerType = "JAVA后端工程师";
             }else if ("M".equals(index)) {
                 developerType= "开发经理";
-            }
+            }*/
+            String developerType = "JAVA后端工程师";
             // 获取开发者在所有项目中的整个的用户画像
             cn.edu.fudan.measureservice.portrait2.DeveloperMetrics totalDeveloperMetrics = getTotalDeveloperMetrics(developerMetricMap.get(key),key,firstCommitDate);
             int totalCommitCount = totalDeveloperMetrics.getTotalCommitCount();
@@ -870,7 +871,7 @@ public class MeasureDeveloperService {
             List<Map<String,String>> developerValidCommitInfo = projectDao.getValidCommitMsg(query);
 
             DeveloperCommitStandard developerCommitStandard = new DeveloperCommitStandard();
-            developerCommitStandard.setDeveloper(developer);
+            developerCommitStandard.setDeveloperName(developer);
             developerCommitStandard.setDeveloperValidCommitCount(developerValidCommitInfo.size());
             List<Map<String,String>> developerJiraCommitInfo = new ArrayList<>();
             List<Map<String,String>> developerInvalidCommitInfo = new ArrayList<>();

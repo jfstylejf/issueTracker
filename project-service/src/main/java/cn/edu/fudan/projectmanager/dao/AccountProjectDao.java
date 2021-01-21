@@ -20,15 +20,19 @@ import java.util.Map;
 public class AccountProjectDao {
     private AccountMapper accountMapper;
 
-    public void updateProjectNameAP(String accountUuid,String oldProjectName,String newProjectName) {
+    public void updateProjectNameAP(String accountUuid, String oldProjectName, String newProjectName) {
         accountMapper.updateProjectNameAP(accountUuid, oldProjectName, newProjectName);
     }
 
-    public void addProjectLeaderAP(String accountUuid, String newLeaderId, String projectId) {
+    public void addProjectLeaderAP(String accountUuid, String newLeaderId, Integer projectId) {
         accountMapper.addProjectLeaderAP(accountUuid, newLeaderId, projectId);
     }
 
-    public void deleteProjectLeaderAP(String accountUuid, String LeaderId, String projectId) {
+    public boolean isProjectLeaderExist(String newLeaderId, Integer projectId) {
+        return accountMapper.getProjectLeader(newLeaderId, projectId) != null;
+    }
+
+    public void deleteProjectLeaderAP(String accountUuid, String LeaderId, Integer projectId) {
         accountMapper.deleteProjectLeaderAP(accountUuid, LeaderId, projectId);
     }
 

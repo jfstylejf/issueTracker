@@ -28,4 +28,15 @@ public class SegmentationUtil {
         }
         return Arrays.asList(splitString.split(","));
     }
+
+    public static String unionStringList(List<String> list){
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < list.size(); i++) {
+            if(i != 0){
+                result.append(",");
+            }
+            result.append(list.get(i));
+        }
+        return result.toString();
+    }
 }

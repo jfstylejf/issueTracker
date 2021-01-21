@@ -4,7 +4,9 @@ import cn.edu.fudan.issueservice.component.RestInterfaceManager;
 import cn.edu.fudan.issueservice.domain.ResponseBean;
 import cn.edu.fudan.issueservice.service.IssueMeasureInfoService;
 import cn.edu.fudan.issueservice.util.DateTimeUtil;
+import cn.edu.fudan.issueservice.util.PagedGridResult;
 import cn.edu.fudan.issueservice.util.SegmentationUtil;
+import com.alibaba.druid.util.StringUtils;
 import com.alibaba.fastjson.JSONObject;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -85,7 +87,8 @@ public class IssueMeasurementController {
                                             @RequestParam(value = "since", required = false) String since,
                                             @RequestParam(value = "until", required = false) String until,
                                             @RequestParam(value = "manual_status",required = false, defaultValue = "Default")String manualStatus,
-                                            @RequestParam(value = "tool", required = false, defaultValue = "sonarqube") String tool) {
+                                            @RequestParam(value = "tool", required = false, defaultValue = "sonarqube") String tool,
+                                            HttpServletRequest httpServletRequest) {
         if(timeError.equals(DateTimeUtil.timeFormatIsLegal(since, false)) || timeError.equals(DateTimeUtil.timeFormatIsLegal(until, true))){
             return new ResponseBean<>(400, timeErrorMessage, null);
         }
@@ -100,7 +103,7 @@ public class IssueMeasurementController {
         try {
             query.put(sinceStr, since != null ? since : restInterfaceManager.getFirstCommitDate(developer));
             query.put(untilStr, until != null ? until : LocalDate.now().toString());
-            return new ResponseBean<>(200, success, issueMeasureInfoService.getDayAvgSolvedIssue(query));
+            return new ResponseBean<>(200, success, issueMeasureInfoService.getDayAvgSolvedIssue(query, httpServletRequest.getHeader(TOKEN)));
         } catch (Exception e) {
             e.printStackTrace();
             return new ResponseBean<>(500, failed + e.getMessage(), null);
@@ -126,10 +129,10 @@ public class IssueMeasurementController {
             @ApiImplicitParam(name = "ps", value = "页大小\n范围0-100\n为0时只返回issue数量", defaultValue = "10"),
             @ApiImplicitParam(name = "status", value = "issue状态", allowableValues = "living , other_solved , self_solved"),
             @ApiImplicitParam(name = "percent", value = "-1返回数量\n-2返回详情\n不传默认-2", allowableValues = "-1 , -2"),
-            @ApiImplicitParam(name = "target", value = "缺陷时谁引入\nself 自己引入,other 他人引入", allowableValues = "self , other"),
+            @ApiImplicitParam(name = "target", value = "缺陷是谁引入\nself 自己引入,other 他人引入", allowableValues = "self , other"),
     })
     @GetMapping(value = "/codewisdom/issue/lifecycle")
-    public ResponseBean<Object> getIssueLifecycleByConditions(HttpServletRequest request,@RequestParam(value = "developer", required = false) String developer,
+    public ResponseBean<Object> getIssueLifecycleByConditions(HttpServletRequest request,@RequestParam(value = "developers", required = false) String developer,
                                                @RequestParam(value = "repo_uuids", required = false) String repoUuids,
                                                @RequestParam(value = "since", required = false) String since,
                                                @RequestParam(value = "until", required = false) String until,
@@ -203,7 +206,9 @@ public class IssueMeasurementController {
                                                 @RequestParam(value = "ps",required = false)Integer ps,
                                                 @RequestParam(value = "page",required = false)Integer page,
                                                 @RequestParam(value = "asc",required = false)Boolean asc,
-                                                @RequestParam(value = "all",required = false ,defaultValue = "false")Boolean needAll){
+                                                @RequestParam(value = "all",required = false ,defaultValue = "false")Boolean needAll,
+                                                HttpServletRequest httpServletRequest){
+        String token = httpServletRequest.getHeader(TOKEN);
 
         Map<String, Object> query = new HashMap<>(10);
         List<Map<String, Object>> result = new ArrayList<>();
@@ -222,7 +227,7 @@ public class IssueMeasurementController {
                 List<String> developers = restInterfaceManager.getDeveloperInRepo(repoList, since, until);
                 developers.forEach(r -> {
                     query.put(developerStr, r);
-                    result.add(issueMeasureInfoService.getDeveloperCodeQuality(query, 1, needAll));
+                    result.add(issueMeasureInfoService.getDeveloperCodeQuality(query, needAll, token));
                 });
                 return new ResponseBean<>(200, success, issueMeasureInfoService.handleSortCodeQuality(result, asc, ps, page));
             }
@@ -230,12 +235,12 @@ public class IssueMeasurementController {
             List<String> developers = SegmentationUtil.splitStringList(developer);
             if(developers.isEmpty()){
                 query.put(developerStr, developer);
-                return new ResponseBean<>(200, success, issueMeasureInfoService.getDeveloperCodeQuality(query, 1, needAll));
+                return new ResponseBean<>(200, success, issueMeasureInfoService.getDeveloperCodeQuality(query, needAll, token));
             }
 
             developers.forEach(r -> {
                 query.put(developerStr, r);
-                result.add(issueMeasureInfoService.getDeveloperCodeQuality(query, 1, needAll));
+                result.add(issueMeasureInfoService.getDeveloperCodeQuality(query, needAll, token));
             });
             return new ResponseBean<>(200, success, result);
         } catch (Exception e) {
@@ -243,6 +248,60 @@ public class IssueMeasurementController {
             return new ResponseBean<>(500, failed + e.getMessage(), null);
         }
     }
+
+    @ApiOperation(value = "开发者能力页面自己引入未解决缺陷数接口", httpMethod = "GET")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "developers", value = "开发人员姓名,支持多人查询"),
+            @ApiImplicitParam(name = "repo_uuids", value = "代码库uuid\n支持多选\n以英文逗号,分隔"),
+            @ApiImplicitParam(name = "since", value = "起始时间\n格式要求: yyyy-MM-dd"),
+            @ApiImplicitParam(name = "until", value = "终止时间\n格式要求: yyyy-MM-dd"),
+            @ApiImplicitParam(name = "page", value = "分页查询的第几页"),
+            @ApiImplicitParam(name = "ps", value = "分页查询每页的大小"),
+            @ApiImplicitParam(name = "order", value = "需要排序的字段"),
+            @ApiImplicitParam(name = "asc", value = "是否升序：1表示升序，0表示降序"),
+            @ApiImplicitParam(name = "tool", value = "工具名", allowableValues = "sonarqube", defaultValue = "sonarqube"),
+    })
+    @GetMapping(value = {"/codewisdom/issue/developer-data/living-issue-count/self"})
+    public ResponseBean<Object> getDeveloperLivingIssueCount(@RequestParam(value = "repo_uuids",required = false)String repoUuids,
+                                                                      @RequestParam(value = "developers",required = false)String developers,
+                                                                      @RequestParam(value = "tool",required = false, defaultValue = "sonarqube")String tool,
+                                                                      @RequestParam(value = "page",required = false, defaultValue = "1")int page,
+                                                                      @RequestParam(value = "ps",required = false, defaultValue = "10")int ps,
+                                                                      @RequestParam(value = "since",required = false)String since,
+                                                                      @RequestParam(value = "until",required = false)String until,
+                                                                      @RequestParam(value = "order", required = false, defaultValue = "livingIssueCount") String order,
+                                                                      @RequestParam(value = "asc",required = false, defaultValue = "1") Boolean isAsc){
+
+        Map<String, Object> query = new HashMap<>(10);
+
+        String timeError = "time format error";
+        if(timeError.equals(DateTimeUtil.timeFormatIsLegal(since, false)) || timeError.equals(DateTimeUtil.timeFormatIsLegal(until, true))){
+            return new ResponseBean<>(400, "The input time format error,should be yyyy-MM-dd.", null);
+        }
+        if (StringUtils.isEmpty(until)) {
+            until = DateTimeUtil.timeFormatIsLegal(until, true);
+        }
+        List<String> repoList = SegmentationUtil.splitStringList(repoUuids);
+        List<String> producerList = (developers == null || developers.length() == 0) ? restInterfaceManager.getDeveloperInRepo(repoUuids, since, until) : SegmentationUtil.splitStringList(developers);
+
+        query.put("since", since);
+        query.put("until", until);
+        query.put("producerList", producerList);
+        query.put("tool", tool);
+        query.put("repoList", repoList);
+        query.put("order", order);
+        query.put("asc", isAsc);
+
+        // 是否做分页处理
+        Boolean isPagination = developers == null || developers.length() == 0;
+        try {
+            return new ResponseBean<>(200, success, issueMeasureInfoService.getSelfIntroducedLivingIssueCount(page, ps, order, isAsc, query, isPagination));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseBean<>(500, failed + e.getMessage(), null);
+        }
+    }
+
 
     @Autowired
     public void setIssueMeasureInfoService(IssueMeasureInfoService issueMeasureInfoService) {
