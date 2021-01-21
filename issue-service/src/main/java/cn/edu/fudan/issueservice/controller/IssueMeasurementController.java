@@ -4,7 +4,6 @@ import cn.edu.fudan.issueservice.component.RestInterfaceManager;
 import cn.edu.fudan.issueservice.domain.ResponseBean;
 import cn.edu.fudan.issueservice.service.IssueMeasureInfoService;
 import cn.edu.fudan.issueservice.util.DateTimeUtil;
-import cn.edu.fudan.issueservice.util.PagedGridResult;
 import cn.edu.fudan.issueservice.util.SegmentationUtil;
 import com.alibaba.druid.util.StringUtils;
 import com.alibaba.fastjson.JSONObject;
@@ -32,11 +31,15 @@ public class IssueMeasurementController {
 
     private RestInterfaceManager restInterfaceManager;
 
-    private final String success = "success", failed = "failed ";
-
-    private final String TOKEN = "token", repos = "repoList", sinceStr = "since", untilStr = "until", developerStr = "developer";
-
-    private final String timeError = "time format error", timeErrorMessage = "The input time format error,should be yyyy-MM-dd.";
+    private static final String SUCCESS = "success";
+    private static final String FAILED = "failed ";
+    private static final String TOKEN = "token";
+    private static final String REPO_LIST = "repoList";
+    private static final String SINCE = "since";
+    private static final String UNTIL = "until";
+    private static final String DEVELOPER = "developer";
+    private static final String TIME_FORMAT_ERROR = "time format error";
+    private static final String TIME_ERROR_MESSAGE = "The input time format error,should be yyyy-MM-dd.";
 
     @ApiOperation(value = "获取issueTypeCounts", notes = "@return List<Map.Entry<String, JSONObject>>\n[\n" +
             "        {\n" +
@@ -61,10 +64,10 @@ public class IssueMeasurementController {
                                                                                      @RequestParam(value = "commit", required = false) String commitUuid) {
         List<String> repoList = SegmentationUtil.splitStringList(repoUuids);
         try{
-            return new ResponseBean<>(200, success, issueMeasureInfoService.getNotSolvedIssueCountByToolAndRepoUuid(repoList, category, order, commitUuid));
+            return new ResponseBean<>(200, SUCCESS, issueMeasureInfoService.getNotSolvedIssueCountByToolAndRepoUuid(repoList, category, order, commitUuid));
         }catch (Exception e){
             e.printStackTrace();
-            return new ResponseBean<>(500, failed + e.getMessage(),null);
+            return new ResponseBean<>(500, FAILED + e.getMessage(),null);
         }
     }
 
@@ -89,24 +92,24 @@ public class IssueMeasurementController {
                                             @RequestParam(value = "manual_status",required = false, defaultValue = "Default")String manualStatus,
                                             @RequestParam(value = "tool", required = false, defaultValue = "sonarqube") String tool,
                                             HttpServletRequest httpServletRequest) {
-        if(timeError.equals(DateTimeUtil.timeFormatIsLegal(since, false)) || timeError.equals(DateTimeUtil.timeFormatIsLegal(until, true))){
-            return new ResponseBean<>(400, timeErrorMessage, null);
+        if(TIME_FORMAT_ERROR.equals(DateTimeUtil.timeFormatIsLegal(since, false)) || TIME_FORMAT_ERROR.equals(DateTimeUtil.timeFormatIsLegal(until, true))){
+            return new ResponseBean<>(400, TIME_ERROR_MESSAGE, null);
         }
 
         Map<String, Object> query = new HashMap<>(10);
 
-        query.put(repos, repoUuid == null ? null : new ArrayList<String>(){{add(repoUuid);}});
-        query.put(developerStr, developer);
+        query.put(REPO_LIST, repoUuid == null ? null : new ArrayList<String>(){{add(repoUuid);}});
+        query.put(DEVELOPER, developer);
         query.put("tool", tool);
         query.put("manual_status", manualStatus);
 
         try {
-            query.put(sinceStr, since != null ? since : restInterfaceManager.getFirstCommitDate(developer));
-            query.put(untilStr, until != null ? until : LocalDate.now().toString());
-            return new ResponseBean<>(200, success, issueMeasureInfoService.getDayAvgSolvedIssue(query, httpServletRequest.getHeader(TOKEN)));
+            query.put(SINCE, since != null ? since : restInterfaceManager.getFirstCommitDate(developer));
+            query.put(UNTIL, until != null ? until : LocalDate.now().toString());
+            return new ResponseBean<>(200, SUCCESS, issueMeasureInfoService.getDayAvgSolvedIssue(query, httpServletRequest.getHeader(TOKEN)));
         } catch (Exception e) {
             e.printStackTrace();
-            return new ResponseBean<>(500, failed + e.getMessage(), null);
+            return new ResponseBean<>(500, FAILED + e.getMessage(), null);
         }
     }
 
@@ -150,9 +153,9 @@ public class IssueMeasurementController {
         List<String> repoList = SegmentationUtil.splitStringList(repoUuids);
         //init query
         Map<String, Object> query = new HashMap<>(18);
-        query.put(repos, repoList);
-        query.put(sinceStr, since);
-        query.put(untilStr, until);
+        query.put(REPO_LIST, repoList);
+        query.put(SINCE, since);
+        query.put(UNTIL, until);
         query.put("tool", tool);
         //check need detail or just number info
         try {
@@ -166,16 +169,16 @@ public class IssueMeasurementController {
                         put(producer, issueMeasureInfoService.getIssuesLifeCycle(status, target, query));
                     }});
                 });
-                return new ResponseBean<>(200, success, issueMeasureInfoService.handleSortDeveloperLifecycle(developersLifecycle, isAsc, ps, page));
+                return new ResponseBean<>(200, SUCCESS, issueMeasureInfoService.handleSortDeveloperLifecycle(developersLifecycle, isAsc, ps, page));
             }
             query.put("producer", developer);
             query.put("ps", ps);
             query.put("start", (page - 1) * ps);
             String token = request.getHeader(TOKEN);
-            return new ResponseBean<>(200, success, issueMeasureInfoService.getLifeCycleDetail(status, target, query, token));
+            return new ResponseBean<>(200, SUCCESS, issueMeasureInfoService.getLifeCycleDetail(status, target, query, token));
         } catch (Exception e){
             e.printStackTrace();
-            return new ResponseBean<>(500, failed + e.getMessage(), null);
+            return new ResponseBean<>(500, FAILED + e.getMessage(), null);
         }
     }
 
@@ -212,40 +215,40 @@ public class IssueMeasurementController {
 
         Map<String, Object> query = new HashMap<>(10);
         List<Map<String, Object>> result = new ArrayList<>();
-        if(timeError.equals(DateTimeUtil.timeFormatIsLegal(since, false)) || timeError.equals(DateTimeUtil.timeFormatIsLegal(until, true))){
-            return new ResponseBean<>(400, timeErrorMessage, null);
+        if(TIME_FORMAT_ERROR.equals(DateTimeUtil.timeFormatIsLegal(since, false)) || TIME_FORMAT_ERROR.equals(DateTimeUtil.timeFormatIsLegal(until, true))){
+            return new ResponseBean<>(400, TIME_ERROR_MESSAGE, null);
         }
 
-        query.put(sinceStr, since);
-        query.put(untilStr, until);
-        query.put("tool", tool);
-        query.put(repos, repoList);
+        query.put(SINCE, since);
+        query.put(UNTIL, until);
+        query.put("toolName", tool);
+        query.put(REPO_LIST, repoList);
         query.put("manual_status", manualStatus);
 
         try {
             if (asc != null) {
                 List<String> developers = restInterfaceManager.getDeveloperInRepo(repoList, since, until);
                 developers.forEach(r -> {
-                    query.put(developerStr, r);
+                    query.put(DEVELOPER, r);
                     result.add(issueMeasureInfoService.getDeveloperCodeQuality(query, needAll, token));
                 });
-                return new ResponseBean<>(200, success, issueMeasureInfoService.handleSortCodeQuality(result, asc, ps, page));
+                return new ResponseBean<>(200, SUCCESS, issueMeasureInfoService.handleSortCodeQuality(result, asc, ps, page));
             }
 
             List<String> developers = SegmentationUtil.splitStringList(developer);
             if(developers.isEmpty()){
-                query.put(developerStr, developer);
-                return new ResponseBean<>(200, success, issueMeasureInfoService.getDeveloperCodeQuality(query, needAll, token));
+                query.put(DEVELOPER, developer);
+                return new ResponseBean<>(200, SUCCESS, issueMeasureInfoService.getDeveloperCodeQuality(query, needAll, token));
             }
 
             developers.forEach(r -> {
-                query.put(developerStr, r);
+                query.put(DEVELOPER, r);
                 result.add(issueMeasureInfoService.getDeveloperCodeQuality(query, needAll, token));
             });
-            return new ResponseBean<>(200, success, result);
+            return new ResponseBean<>(200, SUCCESS, result);
         } catch (Exception e) {
             e.printStackTrace();
-            return new ResponseBean<>(500, failed + e.getMessage(), null);
+            return new ResponseBean<>(500, FAILED + e.getMessage(), null);
         }
     }
 
@@ -274,9 +277,8 @@ public class IssueMeasurementController {
 
         Map<String, Object> query = new HashMap<>(10);
 
-        String timeError = "time format error";
-        if(timeError.equals(DateTimeUtil.timeFormatIsLegal(since, false)) || timeError.equals(DateTimeUtil.timeFormatIsLegal(until, true))){
-            return new ResponseBean<>(400, "The input time format error,should be yyyy-MM-dd.", null);
+        if(TIME_FORMAT_ERROR.equals(DateTimeUtil.timeFormatIsLegal(since, false)) || TIME_FORMAT_ERROR.equals(DateTimeUtil.timeFormatIsLegal(until, true))){
+            return new ResponseBean<>(400, TIME_ERROR_MESSAGE, null);
         }
         if (StringUtils.isEmpty(until)) {
             until = DateTimeUtil.timeFormatIsLegal(until, true);
@@ -284,21 +286,21 @@ public class IssueMeasurementController {
         List<String> repoList = SegmentationUtil.splitStringList(repoUuids);
         List<String> producerList = (developers == null || developers.length() == 0) ? restInterfaceManager.getDeveloperInRepo(repoUuids, since, until) : SegmentationUtil.splitStringList(developers);
 
-        query.put("since", since);
-        query.put("until", until);
+        query.put(SINCE, since);
+        query.put(UNTIL, until);
         query.put("producerList", producerList);
         query.put("tool", tool);
-        query.put("repoList", repoList);
+        query.put(REPO_LIST, repoList);
         query.put("order", order);
         query.put("asc", isAsc);
 
         // 是否做分页处理
         Boolean isPagination = developers == null || developers.length() == 0;
         try {
-            return new ResponseBean<>(200, success, issueMeasureInfoService.getSelfIntroducedLivingIssueCount(page, ps, order, isAsc, query, isPagination));
+            return new ResponseBean<>(200, SUCCESS, issueMeasureInfoService.getSelfIntroducedLivingIssueCount(page, ps, order, isAsc, query, isPagination, producerList));
         } catch (Exception e) {
             e.printStackTrace();
-            return new ResponseBean<>(500, failed + e.getMessage(), null);
+            return new ResponseBean<>(500, FAILED + e.getMessage(), null);
         }
     }
 
