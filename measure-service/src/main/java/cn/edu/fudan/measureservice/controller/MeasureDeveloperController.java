@@ -370,7 +370,7 @@ public class MeasureDeveloperController {
                 repoUuidList = projectDao.involvedRepoProcess(repoUuid,token);
             }
             Query query = new Query(token,since,until,null,repoUuidList);
-            return new ResponseBean<>(200,"success", measureDeveloperService.getDeveloperList(query));
+            return new ResponseBean<>(200,"success", measureDeveloperService.getDeveloperLevelList(query));
         }catch (Exception e){
             e.printStackTrace();
             return new ResponseBean<>(401,"failed "+ e.getMessage(),null);
