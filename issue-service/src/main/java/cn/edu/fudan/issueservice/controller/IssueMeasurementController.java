@@ -286,11 +286,11 @@ public class IssueMeasurementController {
         List<String> repoList = SegmentationUtil.splitStringList(repoUuids);
         List<String> producerList = (developers == null || developers.length() == 0) ? restInterfaceManager.getDeveloperInRepo(repoUuids, since, until) : SegmentationUtil.splitStringList(developers);
 
-        query.put("since", since);
-        query.put("until", until);
+        query.put(SINCE, since);
+        query.put(UNTIL, until);
         query.put("producerList", producerList);
         query.put("tool", tool);
-        query.put("repoList", repoList);
+        query.put(REPO_LIST, repoList);
         query.put("order", order);
         query.put("asc", isAsc);
 
