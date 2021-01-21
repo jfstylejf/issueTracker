@@ -64,5 +64,21 @@
         order by commit_time desc limit 1
     </select>
 
+    <select id="getAllDeveloper" resultType="String">
+        select distinct(developer)
+        FROM issueTracker.commit_view
+        <where>
+            <trim prefixOverrides="and">
+                repo_id = #{repositoryId}
+                <if test="start != null and start != '' ">
+                    and <![CDATA[ commit_time >= #{start} ]]>
+                </if>
+
+                <if test="end != null and end != '' ">
+                and <![CDATA[ commit_time <= #{end} ]]>
+                </if>
+            </trim>
+        </where>
+    </select>
 </mapper>
 
