@@ -1,6 +1,7 @@
 package cn.edu.fudan.measureservice.schedule;
 
 import cn.edu.fudan.measureservice.controller.MeasureDeveloperController;
+import cn.edu.fudan.measureservice.dao.ProjectDao;
 import cn.edu.fudan.measureservice.domain.dto.Query;
 import cn.edu.fudan.measureservice.mapper.RepoMeasureMapper;
 import cn.edu.fudan.measureservice.service.MeasureDeveloperService;
@@ -31,6 +32,7 @@ import java.util.Map;
 public class RedisScheduleTask {
 
     private static final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    private ProjectDao projectDao;
 
     @Value("${token}")
     private String token;
@@ -48,8 +50,10 @@ public class RedisScheduleTask {
     @Scheduled(cron = "0 0 2 * * ?")
     private void configureTasks() throws ParseException {
         String until = dtf.format(LocalDate.now().plusDays(1));
-        Query query = new Query(token,null,until,null,new ArrayList<>());
+        List<String> leaderIntegratedRepoList = projectDao.getVisibleRepoInfoByToken(token);
+        Query query = new Query(token,null,until,null,leaderIntegratedRepoList);
         measureDeveloperService.clearCache();
+        log.info("start to get developerList with query : {}",query);
         measureDeveloperService.getDeveloperList(query);
         List<Map<String, Object>> developerList = repoMeasureMapper.getDeveloperListByrepoUuidList(null);
         for (int i = 0; i < developerList.size(); i++){
@@ -69,6 +73,11 @@ public class RedisScheduleTask {
     @Autowired
     public void setRepoMeasureMapper(RepoMeasureMapper repoMeasureMapper) {
         this.repoMeasureMapper = repoMeasureMapper;
+    }
+
+    @Autowired
+    public void setProjectDao(ProjectDao projectDao) {
+        this.projectDao = projectDao;
     }
 
     @Autowired

@@ -808,7 +808,8 @@ public class MeasureDeveloperService {
      * @throws ParseException
      */
     @Cacheable(cacheNames = {"developerList"})
-    public synchronized Object getDeveloperList(Query query) throws ParseException {
+    public synchronized Object getDeveloperList(Query redisQuery) throws ParseException {
+        Query query = new Query(redisQuery);
         if(query.getRepoUuidList().size()==0) {
             log.warn("do not have any authorized repo to see");
             return null;
