@@ -150,23 +150,24 @@ public class IssueServiceImpl implements IssueService {
 
         LocalDate indexDay2 = LocalDate.parse(indexDay.toString(),DateTimeUtil.Y_M_D_formatter);
         Map<String, Object> firstDateScanResult = findFirstDateScanResult(repoUuids, indexDay2, firstDate, tool);
+        firstDateScanResult.put(remainingIssueCount, Integer.valueOf(firstDateScanResult.get(remainingIssueCount).toString()));
         result.add(firstDateScanResult);
         indexDay = indexDay.plusDays(1);
 
         while(untilDay.isAfter(indexDay) || untilDay.isEqual(indexDay)){
             Map<String, Object> map = new HashMap<>(16);
             List<Map<String, Object>> repoIssueCounts2 = scanResultDao.getRepoIssueCounts(repoUuids, indexDay.toString(), indexDay.toString(), tool, null);
-            if(repoIssueCounts2.size() == 0){
+            if(repoIssueCounts2.isEmpty()){
                 map.put(newIssueCount, 0);
                 map.put(eliminatedIssueCount, 0);
-                map.put(remainingIssueCount, result.get(result.size() - 1).get(remainingIssueCount));
+                map.put(remainingIssueCount, Integer.valueOf(result.get(result.size() - 1).get(remainingIssueCount).toString()));
             }else{
                 BigDecimal now = new BigDecimal((String)repoIssueCounts2.get(repoIssueCounts2.size() - 1).get(remainingIssueCount));
                 BigDecimal last = new BigDecimal((String)result.get(result.size() - 1).get(remainingIssueCount));
                 long temp = now.longValue() - last.longValue();
                 map.put(newIssueCount, temp > 0 ? temp : 0);
                 map.put(eliminatedIssueCount, temp < 0 ? -temp : 0);
-                map.put(remainingIssueCount, repoIssueCounts2.get(repoIssueCounts2.size() - 1).get(remainingIssueCount));
+                map.put(remainingIssueCount, Integer.valueOf(repoIssueCounts2.get(repoIssueCounts2.size() - 1).get(remainingIssueCount).toString()));
             }
             map.put("date", indexDay.toString());
             result.add(map);
@@ -181,7 +182,7 @@ public class IssueServiceImpl implements IssueService {
         map.put("date", indexDay.toString());
         while(indexDay.isAfter(firstDate) || indexDay.isEqual(firstDate)){
             List<Map<String, Object>> repoIssueCounts = scanResultDao.getRepoIssueCounts(repoUuids, indexDay.toString(), indexDay.toString(), tool, null);
-            if(repoIssueCounts.size() != 0){
+            if(!repoIssueCounts.isEmpty()){
                 map.put(newIssueCount, repoIssueCounts.get(repoIssueCounts.size() - 1).get(newIssueCount));
                 map.put(eliminatedIssueCount, repoIssueCounts.get(repoIssueCounts.size() - 1).get(eliminatedIssueCount));
                 map.put(remainingIssueCount, repoIssueCounts.get(repoIssueCounts.size() - 1).get(remainingIssueCount));
