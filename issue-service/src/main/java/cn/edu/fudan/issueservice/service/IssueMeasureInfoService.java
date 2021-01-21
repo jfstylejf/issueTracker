@@ -83,11 +83,14 @@ public interface IssueMeasureInfoService {
     Map<String, Object> handleSortCodeQuality(List<Map<String, Object>> result, Boolean asc, int ps, int page);
 
     /**
-     *
-     * @param query 查询条件
-     * @return producer, livingIssueCount
+     * 返回自己引入未解决缺陷数
+     * @param page page
+     * @param ps ps
+     * @param order order
+     * @param isAsc isAsc
+     * @param query query
+     * @param isPagination isPagination
+     * @return 自己引入未解决缺陷数
      */
     Object getSelfIntroducedLivingIssueCount(int page, int ps, String order, Boolean isAsc, Map<String, Object> query, Boolean isPagination);
-
-
 }

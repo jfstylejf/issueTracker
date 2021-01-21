@@ -244,18 +244,7 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
         if (!isPagination) {
             return issueDao.getSelfIntroduceLivingIssueCount(query);
         }
-        if (StringUtils.isEmpty(order)) {
-            PageHelper.startPage(page, ps);
-        } else {
-            String orderBy = order;
-            if (isAsc != null && isAsc){
-                orderBy = order + ' ' + "asc";
-            }
-            if (isAsc != null && !isAsc){
-                orderBy = order + ' ' + "desc";
-            }
-            PageHelper.startPage(page, ps, orderBy);
-        }
+        PagedGridResult.handlePageHelper(page, ps, order, isAsc);
         List<JSONObject> result = issueDao.getSelfIntroduceLivingIssueCount(query);
         return setterPagedGrid(result, page);
     }

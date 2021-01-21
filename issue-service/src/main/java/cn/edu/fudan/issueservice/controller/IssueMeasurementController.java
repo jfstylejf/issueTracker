@@ -274,9 +274,8 @@ public class IssueMeasurementController {
 
         Map<String, Object> query = new HashMap<>(10);
 
-        String timeError = "time format error";
         if(timeError.equals(DateTimeUtil.timeFormatIsLegal(since, false)) || timeError.equals(DateTimeUtil.timeFormatIsLegal(until, true))){
-            return new ResponseBean<>(400, "The input time format error,should be yyyy-MM-dd.", null);
+            return new ResponseBean<>(400, timeErrorMessage, null);
         }
         if (StringUtils.isEmpty(until)) {
             until = DateTimeUtil.timeFormatIsLegal(until, true);
