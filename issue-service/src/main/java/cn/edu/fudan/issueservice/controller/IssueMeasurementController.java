@@ -221,7 +221,7 @@ public class IssueMeasurementController {
 
         query.put(SINCE, since);
         query.put(UNTIL, until);
-        query.put("tool", tool);
+        query.put("toolName", tool);
         query.put(REPO_LIST, repoList);
         query.put("manual_status", manualStatus);
 
