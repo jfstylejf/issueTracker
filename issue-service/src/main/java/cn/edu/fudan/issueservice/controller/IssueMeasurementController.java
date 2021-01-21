@@ -295,7 +295,7 @@ public class IssueMeasurementController {
         // 是否做分页处理
         Boolean isPagination = developers == null || developers.length() == 0;
         try {
-            return new ResponseBean<>(200, success, issueMeasureInfoService.getSelfIntroducedLivingIssueCount(page, ps, order, isAsc, query, isPagination));
+            return new ResponseBean<>(200, success, issueMeasureInfoService.getSelfIntroducedLivingIssueCount(page, ps, order, isAsc, query, isPagination, producerList));
         } catch (Exception e) {
             e.printStackTrace();
             return new ResponseBean<>(500, failed + e.getMessage(), null);

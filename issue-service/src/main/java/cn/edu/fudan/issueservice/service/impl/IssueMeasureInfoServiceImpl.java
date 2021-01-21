@@ -38,7 +38,7 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
     private RestInterfaceManager restInterfaceManager;
 
     private final static String REPO_LIST = "repoList", DEVELOPER = "developer", QUANTITY = "quantity",  DEVELOPER_NAME = "developerName",
-            ADD = "add", SOLVE = "solve", ISSUE_COUNT = "issueCount", LOC ="loc";
+            ADD = "add", SOLVE = "solve", ISSUE_COUNT = "issueCount", LOC ="loc", LIVING_ISSUE_COUNT = "livingIssueCount";
 
     @Override
     public List<Map.Entry<String, JSONObject>> getNotSolvedIssueCountByToolAndRepoUuid(List<String> repoUuids, String tool, String order, String commitUuid) {
@@ -240,10 +240,15 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
     }
 
     @Override
-    public Object getSelfIntroducedLivingIssueCount(int page, int ps, String order, Boolean isAsc, Map<String, Object> query, Boolean isPagination) {
+    public Object getSelfIntroducedLivingIssueCount(int page, int ps, String order, Boolean isAsc, Map<String, Object> query, Boolean isPagination, List<String> producerList) {
+        // 不分页，一般会传入指定的producerList
         if (!isPagination) {
-            return issueDao.getSelfIntroduceLivingIssueCount(query);
+            List<JSONObject> result = issueDao.getSelfIntroduceLivingIssueCount(query);
+            result = addBlackData(result, producerList);
+            return result;
         }
+
+        // 需要做分页
         if (StringUtils.isEmpty(order)) {
             PageHelper.startPage(page, ps);
         } else {
@@ -257,6 +262,7 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
             PageHelper.startPage(page, ps, orderBy);
         }
         List<JSONObject> result = issueDao.getSelfIntroduceLivingIssueCount(query);
+        result = addBlackData(result, producerList);
         return setterPagedGrid(result, page);
     }
 
@@ -268,6 +274,33 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
         grid.setTotal(pageList.getPages());
         grid.setRecords(pageList.getTotal());
         return grid;
+    }
+
+    private List<JSONObject> addBlackData(List<JSONObject> result, List<String> producerList) {
+        if (producerList.size() == 0) {
+            return new ArrayList<>();
+        }
+        // key 为 producer value 表示这个producer在result中是否存在 1表示存在 0表示不存在
+        Map<String, Integer> producerMap = new HashMap();
+        for (String producer : producerList) {
+            // 初始化 默认都不存在
+            producerMap.put(producer, 0);
+        }
+        // 对result中有记录的 将对应的producer的状态设置为1
+        for (JSONObject re : result) {
+            producerMap.put(re.getString(DEVELOPER_NAME), 1);
+        }
+
+        // 遍历map，对于那些value为0的 把这些人的数据（0）添加到 返回的result中
+        for (Map.Entry<String, Integer> entry : producerMap.entrySet()) {
+            if (entry.getValue() == 0) {
+                JSONObject obj = new JSONObject();
+                obj.put(DEVELOPER_NAME, entry.getKey());
+                obj.put(LIVING_ISSUE_COUNT, 0);
+                result.add(obj);
+            }
+        }
+        return result;
     }
 
 
