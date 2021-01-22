@@ -1,6 +1,7 @@
 package cn.edu.fudan.measureservice.dao;
 
 import cn.edu.fudan.measureservice.component.RestInterfaceManager;
+import cn.edu.fudan.measureservice.domain.bo.DeveloperLevel;
 import cn.edu.fudan.measureservice.domain.dto.DeveloperRepoInfo;
 import cn.edu.fudan.measureservice.domain.dto.Query;
 import cn.edu.fudan.measureservice.domain.dto.RepoInfo;
@@ -50,6 +51,7 @@ public class ProjectDao {
     public List<String> getDeveloperList(Query query) {
         return projectMapper.getDeveloperList(query.getRepoUuidList(),query.getSince(),query.getUntil());
     }
+
 
     /**
      * fixme
@@ -368,6 +370,32 @@ public class ProjectDao {
         return source;
     }
 
+    /**
+     * 人员列表星级数据入库
+     * @param developerLevelList
+     * @return
+     */
+    public Boolean insertDeveloperLevel(List<DeveloperLevel> developerLevelList) {
+        try {
+            for (DeveloperLevel developerLevel : developerLevelList) {
+                projectMapper.insertDeveloperLevel(developerLevel);
+            }
+            return true;
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public List<DeveloperLevel> getDeveloperLevelList(List<String> developerList) {
+        try {
+            return projectMapper.getDeveloperLevelList(developerList);
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new ArrayList<>();
+    }
+
 
     public Map<String,RepoInfo> getRepoInfoMap() {
         return repoInfoMap;
@@ -376,6 +404,7 @@ public class ProjectDao {
     public Map<String,List<RepoInfo>> getProjectInfo() {
         return projectInfo;
     }
+
 
     @Autowired
     public void setRestInterface(RestInterfaceManager restInterface) {

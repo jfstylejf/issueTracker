@@ -10,6 +10,8 @@
         <result property="changedFiles" column="changedFiles" />
     </resultMap>
 
+
+
     <select id="getDeveloperWorkLoad"  resultMap="workLoad">
         SELECT
         sum(add_lines) AS addLines, sum(del_lines) AS delLines, count(uuid) AS commitCount, sum(changed_files) AS changedFiles

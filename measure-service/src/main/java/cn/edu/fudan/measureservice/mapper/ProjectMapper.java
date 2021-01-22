@@ -1,5 +1,6 @@
 package cn.edu.fudan.measureservice.mapper;
 
+import cn.edu.fudan.measureservice.domain.bo.DeveloperLevel;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
@@ -124,4 +125,17 @@ public interface ProjectMapper {
      * @return String firstCommitDate
      */
     String getDeveloperRepoFirstCommitDate(@Param("repoUuid") String repoUuid,@Param("developer") String developer);
+
+    /**
+     * 开发者星级数据入库
+     * @param developerLevel
+     */
+    void insertDeveloperLevel(DeveloperLevel developerLevel);
+
+    /**
+     * 从库中获取开发者星级数据
+     * @param developerList 开发者人员列表
+     * @return
+     */
+    List<DeveloperLevel> getDeveloperLevelList(@Param("developerList") List<String> developerList);
 }
