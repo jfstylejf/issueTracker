@@ -6,7 +6,7 @@
 
     <resultMap id="developerLevel" type="DeveloperLevel">
         <id property="developerName" column="developer_unique_name" />
-        <result property="effiency" column="effiency" />
+        <result property="efficiency" column="efficiency" />
         <result property="quality" column="quality" />
         <result property="contribution" column="contribution" />
         <result property="totalLevel" column="total_level" />
@@ -17,7 +17,7 @@
     <insert id="insertDeveloperLevel" parameterType="DeveloperLevel">
         insert into issueTracker.developer_level (
             developer_unique_name,
-            effiency,
+            efficiency,
             contribution,
             quality,
             total_level,
@@ -27,7 +27,7 @@
         values
         (
              #{developerName},
-             #{effiency},
+             #{efficiency},
              #{contribution},
              #{quality},
              #{totalLevel},
@@ -35,7 +35,7 @@
              #{dutyType}
         )
         ON DUPLICATE KEY UPDATE
-            effiency = #{effiency},
+            efficiency = #{efficiency},
             contribution = #{contribution},
             quality = #{quality},
             total_level = #{totalLevel},
@@ -44,7 +44,7 @@
     </insert>
 
     <select id="getDeveloperLevelList" resultMap="developerLevel">
-        SELECT developer_unique_name, effiency, quality, contribution, total_level, involved_repo_count, duty_type FROM issueTracker.developer_level
+        SELECT developer_unique_name, efficiency, quality, contribution, total_level, involved_repo_count, duty_type FROM issueTracker.developer_level
         <where>
             <if test="developerList!=null and developerList.size>0">
                 developer_unique_name in

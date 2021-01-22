@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class DeveloperLevel {
     private String developerName;
-    private double effiency;
+    private double efficiency;
     private double quality;
     private double contribution;
     private double totalLevel;
