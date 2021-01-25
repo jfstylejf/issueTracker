@@ -163,7 +163,7 @@ public class IssueServiceImpl implements IssueService {
                 map.put(remainingIssueCount, Integer.valueOf(result.get(result.size() - 1).get(remainingIssueCount).toString()));
             }else{
                 BigDecimal now = new BigDecimal((String)repoIssueCounts2.get(repoIssueCounts2.size() - 1).get(remainingIssueCount));
-                BigDecimal last = new BigDecimal((String)result.get(result.size() - 1).get(remainingIssueCount));
+                BigDecimal last = new BigDecimal((int)result.get(result.size() - 1).get(remainingIssueCount));
                 long temp = now.longValue() - last.longValue();
                 map.put(newIssueCount, temp > 0 ? temp : 0);
                 map.put(eliminatedIssueCount, temp < 0 ? -temp : 0);
