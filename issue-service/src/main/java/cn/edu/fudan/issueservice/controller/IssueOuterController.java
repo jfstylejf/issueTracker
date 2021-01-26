@@ -284,6 +284,7 @@ public class IssueOuterController {
         String[] spiltStrings = {status};
         SegmentationUtil.splitString(queryName, spiltStrings, query);
 
+        query.put("manual_status", "Default");
         query.put("since", since);
         query.put("until", until);
         query.put("toolName", toolName);
