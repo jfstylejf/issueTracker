@@ -261,6 +261,7 @@ public class IssueOuterController {
                               @RequestParam(value = "until", required = false) String until,
                               @RequestParam(value = "introducer", required = false) String introducer,
                               @RequestParam(value = "status", required = false) String status,
+                              @RequestParam(value = "manual_status", required = false) String manualStatus,
                               @RequestParam(value = "priority", required = false) String priority, HttpServletResponse response) {
 
         Map<String, Object> query = new HashMap<>(16);
@@ -284,7 +285,7 @@ public class IssueOuterController {
         String[] spiltStrings = {status};
         SegmentationUtil.splitString(queryName, spiltStrings, query);
 
-        query.put("manual_status", "Default");
+        query.put("manual_status", manualStatus);
         query.put("since", since);
         query.put("until", until);
         query.put("toolName", toolName);
