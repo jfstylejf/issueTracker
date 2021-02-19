@@ -57,7 +57,7 @@ public class ProjectControlServiceImpl implements ProjectControlService {
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void addOneRepo(String token, RepositoryDTO repositoryDTO) throws Exception {
+    public boolean addOneRepo(String token, RepositoryDTO repositoryDTO) throws Exception {
         UserInfoDTO userInfoDTO = getUserInfoByToken(token);
         String url = repositoryDTO.getUrl().trim();
         String repoSource = repositoryDTO.getRepoSource().toLowerCase();
@@ -108,6 +108,11 @@ public class ProjectControlServiceImpl implements ProjectControlService {
                 projectName(projectName).importAccountUuid(accountUuid).
                 downloadStatus(SubRepository.DOWNLOADING).recycled(SubRepository.RESERVATIONS).build();
 
+        //判断，不允许添加重复repo
+        if(subRepositoryDao.getSubRepoByUrl(url) != null ){
+            return false;
+        }
+
         //subRepository表中插入信息
         int effectRow = subRepositoryDao.insertOneRepo(subRepo);
 
@@ -120,6 +125,7 @@ public class ProjectControlServiceImpl implements ProjectControlService {
             send(uuid, url, isPrivate, username, password, branch, repoSource);
         }
         log.info("success add repo {}", url);
+        return true;
     }
 
     @Override

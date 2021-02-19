@@ -114,6 +114,9 @@ public class ProjectQueryController {
                                                                      @RequestParam(name = "recycled", required = false, defaultValue = "0") int recycled) throws Exception {
         boolean isAll = recycled == SubRepository.ALL;
         List<SubRepository> repositories = accountRepository.getRepoByAccountUuid(accountUuid);
+        if(repositories == null){
+            return new ResponseBean<>(412, "account not exist" , null);
+        }
         List<RepositoryVO> result = new ArrayList<>();
         repositories.stream().filter(r -> isAll || recycled == r.getRecycled()).forEach(r -> result.add(new RepositoryVO(r)));
         try {
