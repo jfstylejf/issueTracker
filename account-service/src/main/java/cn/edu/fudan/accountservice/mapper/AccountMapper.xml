@@ -134,4 +134,14 @@
 
     </update>
 
+    <update id="setPasswordByUserName" parameterType="String">
+        update account
+        <set>
+            password = #{encodePassword}
+        </set>
+        <where>
+            account_name = #{username}
+        </where>
+    </update>
+
 </mapper>

@@ -86,4 +86,5 @@ public class AccountDao {
     public String getAccountName(String email) {
         return accountMapper.getAccountName(email);
     }
+    public void setPasswordByUserName(String username, String encodePassword){accountMapper.setPasswordByUserName(username, encodePassword); }
 }
