@@ -288,7 +288,9 @@ public class JGitHelper implements Closeable {
                 DiffFormatter diffFormatter = new DiffFormatter(DisabledOutputStream.INSTANCE);
                 diffFormatter.setRepository(git.getRepository());
                 List<DiffEntry> entries = diffFormatter.scan(currTreeIter, parentTreeIter);
-                result.put(parentCommit.getName(), entries);
+                List<DiffEntry> renameDiff = getDiffEntry(parentCommit, currCommit);
+
+                result.put(parentCommit.getName(), renameDiff);
             }
             return result;
         } catch (IOException e) {
@@ -296,6 +298,7 @@ public class JGitHelper implements Closeable {
         }
         return null;
     }
+
 
     @SneakyThrows
     private List<DiffEntry> getDiffEntry(RevCommit parentCommit, RevCommit currCommit, int score) {

@@ -35,11 +35,10 @@ public class IssueOuterController {
 
     private RestInterfaceManager restInterfaceManager;
 
-    private final String success = "success", failed = "failed ";
-
-    private final String TOKEN = "token";
-
-    private final String timeError = "time format error";
+    private static final String SUCCESS = "success";
+    private static final String FAILED = "failed ";
+    private static final String TOKEN = "token";
+    private static final String TIME_FORMAT_ERROR = "time format error";
 
     @ApiOperation(value = "根据缺陷扫描工具获取该工具下扫描的所有的issue类型", notes = "@return  List < String > ", httpMethod = "GET")
     @ApiImplicitParams({
@@ -48,9 +47,9 @@ public class IssueOuterController {
     @GetMapping(value = {"/issue/issue-types"})
     public ResponseBean<List<String>> getExistIssueTypes(@RequestParam(name = "tool",defaultValue = "sonarqube")String tool) {
         try{
-            return new ResponseBean<>(200, success, issueService.getExistIssueTypes(tool));
+            return new ResponseBean<>(200, SUCCESS, issueService.getExistIssueTypes(tool));
         }catch (Exception e){
-            return new ResponseBean<>(500, failed + e.getMessage(), null);
+            return new ResponseBean<>(500, FAILED + e.getMessage(), null);
         }
     }
 
@@ -58,9 +57,9 @@ public class IssueOuterController {
     @GetMapping(value = {"/issue/issue-severities"})
     public ResponseBean<List<String>> getIssueSeverities() {
         try{
-            return new ResponseBean<>(200, success, issueService.getIssueSeverities());
+            return new ResponseBean<>(200, SUCCESS, issueService.getIssueSeverities());
         }catch (Exception e){
-            return new ResponseBean<>(500, failed + e.getMessage(), null);
+            return new ResponseBean<>(500, FAILED + e.getMessage(), null);
         }
     }
 
@@ -68,9 +67,9 @@ public class IssueOuterController {
     @GetMapping(value = {"/issue/issue-status"})
     public ResponseBean<List<String>> getIssueStatus() {
         try{
-            return new ResponseBean<>(200, success, issueService.getIssueStatus());
+            return new ResponseBean<>(200, SUCCESS, issueService.getIssueStatus());
         }catch (Exception e){
-            return new ResponseBean<>(500, failed + e.getMessage(), null);
+            return new ResponseBean<>(500, FAILED + e.getMessage(), null);
         }
     }
 
@@ -89,10 +88,10 @@ public class IssueOuterController {
     @GetMapping(value = {"/issue/developer/repo-with-issues"})
     public ResponseBean<Map<String, List<Map<String, String>>>> getRepoWithIssues(@RequestParam(name = "developer")String developer) {
         try {
-            return new ResponseBean<>(200, success, issueService.getRepoWithIssues(developer));
+            return new ResponseBean<>(200, SUCCESS, issueService.getRepoWithIssues(developer));
         } catch (Exception e) {
             e.printStackTrace();
-            return new ResponseBean<>(500, failed + e.getMessage(), null);
+            return new ResponseBean<>(500, FAILED + e.getMessage(), null);
         }
     }
 
@@ -148,11 +147,11 @@ public class IssueOuterController {
         Map<String, Object> query = new HashMap<>(32);
 
         if(ps < 0 || ps > 100){
-            return new ResponseBean<>(400, failed + "page size should in [0,100]!", null);
+            return new ResponseBean<>(400, FAILED + "page size should in [0,100]!", null);
         }
 
-        if(timeError.equals(DateTimeUtil.timeFormatIsLegal(since, false)) || timeError.equals(DateTimeUtil.timeFormatIsLegal(until, true))){
-            return new ResponseBean<>(400, failed + "The input time format error,should be yyyy-MM-dd.", null);
+        if(TIME_FORMAT_ERROR.equals(DateTimeUtil.timeFormatIsLegal(since, false)) || TIME_FORMAT_ERROR.equals(DateTimeUtil.timeFormatIsLegal(until, true))){
+            return new ResponseBean<>(400, FAILED + "The input time format error,should be yyyy-MM-dd.", null);
         }
 
         if(!StringUtils.isEmpty(priority)){
@@ -164,7 +163,7 @@ public class IssueOuterController {
             List<String> repoList = getRepoListByUrlProjectNameRepoUuids(url, projectName, repoUuids, userToken);
             query.put("repoList", repoList);
         } catch (UrlException e) {
-            return new ResponseBean<>(400, failed + e.getMessage(), null);
+            return new ResponseBean<>(400, FAILED + e.getMessage(), null);
         }
         //处理查询条件
         String[] queryName = {"status", "filesPath", "issueUuids"};
@@ -190,7 +189,7 @@ public class IssueOuterController {
         //step1 ps = 0 only return total(because fetch time --)  or  ps != 0 do select;
         Map<String, Object> issueFilterList = issueService.getIssueFilterListCount(query);
         if(ps == 0){
-            return new ResponseBean<>(200, success, issueFilterList);
+            return new ResponseBean<>(200, SUCCESS, issueFilterList);
         }
         //step2 select issueList (always(since,until,status,types,filesPath,repoList,priority,toolName,start,ps,category) and
         //                        options(commit ? do select commit : pass)(solver ? select introducer and solver : select introducer))
@@ -200,7 +199,7 @@ public class IssueOuterController {
         //step3 final check asc and order,do this need much time.
         issueFilterList = issueService.getIssueFilterListWithOrder(query, issueFilterList);
 
-        return new ResponseBean<>(200, success, issueFilterList);
+        return new ResponseBean<>(200, SUCCESS, issueFilterList);
     }
 
     private List<String> getRepoListByUrlProjectNameRepoUuids(String url, String projectName, String repoUuids, String userToken) throws UrlException {
@@ -262,6 +261,7 @@ public class IssueOuterController {
                               @RequestParam(value = "until", required = false) String until,
                               @RequestParam(value = "introducer", required = false) String introducer,
                               @RequestParam(value = "status", required = false) String status,
+                              @RequestParam(value = "manual_status", required = false) String manualStatus,
                               @RequestParam(value = "priority", required = false) String priority, HttpServletResponse response) {
 
         Map<String, Object> query = new HashMap<>(16);
@@ -277,7 +277,7 @@ public class IssueOuterController {
             return;
         }
 
-        if(timeError.equals(DateTimeUtil.timeFormatIsLegal(since, false)) || timeError.equals(DateTimeUtil.timeFormatIsLegal(until, true))){
+        if(TIME_FORMAT_ERROR.equals(DateTimeUtil.timeFormatIsLegal(since, false)) || TIME_FORMAT_ERROR.equals(DateTimeUtil.timeFormatIsLegal(until, true))){
             return;
         }
 
@@ -285,6 +285,7 @@ public class IssueOuterController {
         String[] spiltStrings = {status};
         SegmentationUtil.splitString(queryName, spiltStrings, query);
 
+        query.put("manual_status", manualStatus);
         query.put("since", since);
         query.put("until", until);
         query.put("toolName", toolName);
@@ -294,7 +295,7 @@ public class IssueOuterController {
 
         Map<String, Object> issueFilterList = issueService.getIssueFilterListCount(query);
         issueFilterList = issueService.getIssueFilterList(query, issueFilterList);
-        issueFilterList = issueService.getIssueFilterListWithDetail(query, issueFilterList);
+//        issueFilterList = issueService.getIssueFilterListWithDetail(query, issueFilterList);
 
         response.setHeader("content-type", "application/octet-stream");
         response.setHeader("Content-Disposition", "attachment; filename=" + "issues.xls");
@@ -326,9 +327,9 @@ public class IssueOuterController {
                               @RequestParam(name="tool", required = false, defaultValue = "sonarqube")String tool) {
         List<String> repoList = SegmentationUtil.splitStringList(repoUuids);
         try{
-            return new ResponseBean<>(200,success, issueService.getRepoIssueCounts(repoList, since, until, tool));
+            return new ResponseBean<>(200, SUCCESS, issueService.getRepoIssueCounts(repoList, since, until, tool));
         }catch (Exception e){
-            return new ResponseBean<>(500, failed + e.getMessage(),null);
+            return new ResponseBean<>(500, FAILED + e.getMessage(),null);
         }
     }
 
@@ -342,10 +343,10 @@ public class IssueOuterController {
         try {
             String userToken = request.getHeader(TOKEN);
             issueService.updatePriority(issueUuid,priority,userToken);
-            return new ResponseBean<>(200, success, "issues update priority success!");
+            return new ResponseBean<>(200, SUCCESS, "issues update priority success!");
         } catch (Exception e) {
             e.printStackTrace();
-            return new ResponseBean<>(500, failed + e.getMessage(), "issues update priority failed!");
+            return new ResponseBean<>(500, FAILED + e.getMessage(), "issues update priority failed!");
         }
     }
 
@@ -359,10 +360,10 @@ public class IssueOuterController {
         try {
             String userToken = request.getHeader(TOKEN);
             issueService.updateStatus(issueUuid,status,userToken);
-            return new ResponseBean<>(200, success, "issues update status success!");
+            return new ResponseBean<>(200, SUCCESS, "issues update status success!");
         } catch (Exception e) {
             e.printStackTrace();
-            return new ResponseBean<>(500, failed + e.getMessage(), "issues update status failed!");
+            return new ResponseBean<>(500, FAILED + e.getMessage(), "issues update status failed!");
         }
     }
 
@@ -376,10 +377,10 @@ public class IssueOuterController {
         List<String> repoUuidList = SegmentationUtil.splitStringList(repoUuids);
 
         try {
-            return new ResponseBean<>(200, success, issueService.getIssueIntroducers(repoUuidList));
+            return new ResponseBean<>(200, SUCCESS, issueService.getIssueIntroducers(repoUuidList));
         } catch (Exception e) {
             e.printStackTrace();
-            return new ResponseBean<>(500, failed + e.getMessage(), null);
+            return new ResponseBean<>(500, FAILED + e.getMessage(), null);
         }
     }
 

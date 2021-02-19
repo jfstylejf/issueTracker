@@ -9,16 +9,14 @@ import cn.edu.fudan.cloneservice.domain.CommitChange;
 import cn.edu.fudan.cloneservice.dao.CloneLocationDao;
 import cn.edu.fudan.cloneservice.domain.clone.CloneLocation;
 import cn.edu.fudan.cloneservice.mapper.CloneInfoMapper;
+import cn.edu.fudan.cloneservice.mapper.CloneMeasureMapper;
 import cn.edu.fudan.cloneservice.mapper.RepoCommitMapper;
 import cn.edu.fudan.cloneservice.service.CloneMeasureService;
-import cn.edu.fudan.cloneservice.service.ScanService;
 import cn.edu.fudan.cloneservice.thread.ForkJoinRecursiveTask;
 import cn.edu.fudan.cloneservice.util.ComputeUtil;
 import cn.edu.fudan.cloneservice.util.JGitUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.logging.log4j.util.PropertySource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -38,6 +36,7 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
     private final CloneInfoDao cloneInfoDao;
     private final CloneLocationDao cloneLocationDao;
     private final ForkJoinRecursiveTask forkJoinRecursiveTask;
+    private final CloneMeasureMapper cloneMeasureMapper;
     @Autowired
     private final CloneInfoMapper cloneInfoMapper;
 
@@ -55,7 +54,7 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
             // 单个repo 维度 存放的是用户的git accountName
             List<String> developerList = new ArrayList<>();
             log.info("begin:" + System.currentTimeMillis() / 1000);
-            repoIds.forEach(repoId -> developerList.addAll(repoCommitMapper.getAllDeveloper(repoId)));
+            repoIds.forEach(repoId -> developerList.addAll(cloneMeasureMapper.getAllDeveloper(repoId, start, end)));
             log.info("after get all developer:" + System.currentTimeMillis() / 1000);
             // 聚合 key gitName value trueName
             Map<String, String> trueNameGitName = getName(developerList);
@@ -73,7 +72,7 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
             log.info("loop:" + developerListSimply.size());
             developerListSimply.forEach(d -> gitNameClone.add(getOneDeveloperCloneInfo(repositoryId, d, start, end, trueNameGitName.get(d))));
 
-            Map<String, List<CloneMessage>> map = gitNameClone.parallelStream().collect(Collectors.groupingBy(CloneMessage::getDeveloper));
+            Map<String, List<CloneMessage>> map = gitNameClone.parallelStream().collect(Collectors.groupingBy(CloneMessage::getDeveloperName));
             map.values().forEach(c -> cloneMessages.add(union(c)));
         } else {
             List<String> developerList = split(developers);
@@ -94,7 +93,7 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
      */
     private CloneMessage union(List<CloneMessage> cloneMessageList) {
         if (cloneMessageList == null || cloneMessageList.isEmpty()) {
-            return null;
+            return new CloneMessage();
         }
         CloneMessage result = cloneMessageList.get(0);
         for (int i = 1; i < cloneMessageList.size(); i++) {
@@ -104,7 +103,7 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
             result.setSelfIncreasedCloneLines(result.getSelfIncreasedCloneLines() + c.getSelfIncreasedCloneLines());
             result.setOthersIncreasedCloneLines(result.getOthersIncreasedCloneLines() + c.getOthersIncreasedCloneLines());
             result.setEliminateCloneLines(result.getEliminateCloneLines() + c.getEliminateCloneLines());
-            if ((result.getRepoId() == null && c.getRepoId() == null) || (!result.getRepoId().equals(c.getRepoId()))) {
+            if ((result.getRepoUuid() == null && c.getRepoUuid() == null) || (!result.getRepoUuid().equals(c.getRepoUuid()))) {
                 result.setAllEliminateCloneLines(result.getAllEliminateCloneLines() + c.getAllEliminateCloneLines());
             }
         }
@@ -185,11 +184,11 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
         }
 
         CloneMessage cloneMessage = new CloneMessage();
-        cloneMessage.setDeveloper(trueName);
+        cloneMessage.setDeveloperName(trueName);
         if (StringUtils.isEmpty(trueName)) {
-            cloneMessage.setDeveloper(developer);
+            cloneMessage.setDeveloperName(developer);
         }
-        cloneMessage.setRepoId(repositoryId);
+        cloneMessage.setRepoUuid(repositoryId);
         cloneMessage.setIncreasedCloneLines(newCloneLines);
         cloneMessage.setSelfIncreasedCloneLines(selfCloneLines);
         cloneMessage.setAddLines(addLines);
@@ -319,13 +318,14 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
     }
 
     @Autowired
-    public CloneMeasureServiceImpl(RepoCommitMapper repoCommitMapper, RestInterfaceManager restInterfaceManager, CloneMeasureDao cloneMeasureDao, CloneInfoDao cloneInfoDao, CloneLocationDao cloneLocationDao, ForkJoinRecursiveTask forkJoinRecursiveTask, CloneInfoMapper cloneInfoMapper) {
+    public CloneMeasureServiceImpl(RepoCommitMapper repoCommitMapper, RestInterfaceManager restInterfaceManager, CloneMeasureDao cloneMeasureDao, CloneInfoDao cloneInfoDao, CloneLocationDao cloneLocationDao, ForkJoinRecursiveTask forkJoinRecursiveTask, CloneMeasureMapper cloneMeasureMapper, CloneInfoMapper cloneInfoMapper) {
         this.repoCommitMapper = repoCommitMapper;
         this.restInterfaceManager = restInterfaceManager;
         this.cloneMeasureDao = cloneMeasureDao;
         this.cloneInfoDao = cloneInfoDao;
         this.cloneLocationDao = cloneLocationDao;
         this.forkJoinRecursiveTask = forkJoinRecursiveTask;
+        this.cloneMeasureMapper = cloneMeasureMapper;
         this.cloneInfoMapper = cloneInfoMapper;
     }
 
@@ -377,11 +377,11 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
                 cloneMessages.sort(byAddLines);
                 break;
             case "repoId":
-                Comparator<CloneMessage> byRepoId = Comparator.comparing(CloneMessage::getRepoId);
+                Comparator<CloneMessage> byRepoId = Comparator.comparing(CloneMessage::getRepoUuid);
                 cloneMessages.sort(byRepoId);
                 break;
             case "developer":
-                Comparator<CloneMessage> byDeveloper = Comparator.comparing(CloneMessage::getDeveloper);
+                Comparator<CloneMessage> byDeveloper = Comparator.comparing(CloneMessage::getDeveloperName);
                 cloneMessages.sort(byDeveloper);
                 break;
             default:

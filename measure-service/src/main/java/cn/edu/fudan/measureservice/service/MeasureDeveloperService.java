@@ -6,14 +6,12 @@ import cn.edu.fudan.measureservice.component.RestInterfaceManager;
 import cn.edu.fudan.measureservice.dao.JiraDao;
 import cn.edu.fudan.measureservice.dao.MeasureDao;
 import cn.edu.fudan.measureservice.dao.ProjectDao;
-import cn.edu.fudan.measureservice.domain.bo.DeveloperCommitStandard;
-import cn.edu.fudan.measureservice.domain.bo.DeveloperWorkLoad;
+import cn.edu.fudan.measureservice.domain.bo.*;
+import cn.edu.fudan.measureservice.domain.bo.DeveloperPortrait;
 import cn.edu.fudan.measureservice.domain.dto.DeveloperRepoInfo;
 import cn.edu.fudan.measureservice.domain.dto.Query;
 import cn.edu.fudan.measureservice.domain.dto.RepoInfo;
 import cn.edu.fudan.measureservice.mapper.RepoMeasureMapper;
-import cn.edu.fudan.measureservice.domain.bo.DeveloperPortrait;
-import cn.edu.fudan.measureservice.domain.bo.DeveloperRepositoryMetric;
 import cn.edu.fudan.measureservice.portrait.*;
 import cn.edu.fudan.measureservice.portrait2.Contribution;
 import cn.edu.fudan.measureservice.util.DateTimeUtil;
@@ -807,22 +805,14 @@ public class MeasureDeveloperService {
      * @return 开发者画像相关数据 key : DutyType,involvedRepoCount,totalLevel,value,quality,efficiency
      * @throws ParseException
      */
-    @Cacheable(cacheNames = {"developerList"})
-    public synchronized Object getDeveloperList(String repoUuid,String projectName,String since,String until,String token) throws ParseException {
-        List<String> repoUuidList;
-        if(projectName!=null && !"".equals(projectName)) {
-            repoUuidList = projectDao.getProjectRepoList(projectName,token);
-        }else {
-            repoUuidList = projectDao.involvedRepoProcess(repoUuid,token);
-        }
-        Query query = new Query(token,since,until,null,repoUuidList);
+    public synchronized void getDeveloperList(Query redisQuery) throws ParseException {
+        Query query = new Query(redisQuery);
         if(query.getRepoUuidList().size()==0) {
             log.warn("do not have any authorized repo to see");
-            return null;
         }
         Map<String,List<DeveloperRepoInfo>> developerRepoInfos = projectDao.getDeveloperRepoInfoList(query);
         Map<String,String> developerDutyType = projectDao.getDeveloperDutyType(developerRepoInfos.keySet());
-        List<Map<String, Object>> result = new ArrayList<>();
+        List<DeveloperLevel> developerLevelList = new ArrayList<>();
         // fixme 单个人员的画像补全 , 需要建一个全局变量，来保存developer相关的developerRepoInfo
         for(String developer : developerRepoInfos.keySet()) {
             Map<String,Object> dev = new HashMap<>();
@@ -831,9 +821,9 @@ public class MeasureDeveloperService {
             dev.put("developer",developer);
             String dutyType = developerDutyType.get(developer);
             if("1".equals(dutyType)) {
-                dev.put("DutyType","在职");
+                dutyType = "在职";
             } else{
-                dev.put("DutyType","离职");
+                dutyType = "离职";
             }
             int involvedRepoCount = developerRepoInfos.get(developer).size();
             dev.put("involvedRepoCount",involvedRepoCount);
@@ -842,14 +832,40 @@ public class MeasureDeveloperService {
             double value = developerPortrait.getValue();
             double quality = developerPortrait.getQuality();
             double efficiency = developerPortrait.getEfficiency();
-            dev.put("totalLevel",totalLevel);
-            dev.put("value",value);
-            dev.put("quality",quality);
-            dev.put("efficiency",efficiency);
-            result.add(dev);
+            DeveloperLevel developerLevel = new DeveloperLevel(developer,efficiency,quality,value,totalLevel,involvedRepoCount,dutyType);
+            developerLevelList.add(developerLevel);
+        }
+        try {
+            if(projectDao.insertDeveloperLevel(developerLevelList)){
+                log.info("INSERT developerLevel SUCCESS!\n");
+            }else {
+                log.info("FAILED TO INSERT developerLevel\n");
+            }
+        }catch (Exception e) {
+            e.getMessage();
         }
         log.info(methodMeasureAspect.toString());
-        return result;
+    }
+
+    /**
+     * 从数据库中获取开发者星级数据
+     * @param query
+     * @return
+     */
+    public List<DeveloperLevel> getDeveloperLevelList(Query query) {
+        try {
+            List<String> developerList = projectDao.getDeveloperList(query);
+            List<DeveloperLevel> developerLevelList = projectDao.getDeveloperLevelList(developerList);
+            if (developerLevelList.size()>0) {
+                return developerLevelList;
+            }else {
+                getDeveloperList(query);
+                return projectDao.getDeveloperLevelList(developerList);
+            }
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new ArrayList<>();
     }
 
 
@@ -915,7 +931,7 @@ public class MeasureDeveloperService {
         this.methodMeasureAspect = methodMeasureAspect;
     }
 
-    @CacheEvict(cacheNames = {"developerPortrait","developerMetricsNew","portraitCompetence","developerRecentNews","developerList","commitStandard"}, allEntries=true, beforeInvocation = true)
+    @CacheEvict(cacheNames = {"developerPortrait","developerMetricsNew","portraitCompetence","developerRecentNews","commitStandard"}, allEntries=true, beforeInvocation = true)
     public void clearCache() {
         log.info("Successfully clear redis cache in db6.");
     }

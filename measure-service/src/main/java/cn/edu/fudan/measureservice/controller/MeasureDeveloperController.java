@@ -348,7 +348,7 @@ public class MeasureDeveloperController {
     @SuppressWarnings("unchecked")
     @GetMapping("/measure/developer-list")
     @CrossOrigin
-    public ResponseBean<List<Map<String, Object>>> getDeveloperList(@RequestParam(value = "repo_uuids", required = false)String repoUuid,
+    public ResponseBean<Object> getDeveloperList(@RequestParam(value = "repo_uuids", required = false)String repoUuid,
                                                                     @RequestParam(value = "project_name" ,required = false) String projectName,
                                                                     @RequestParam(value = "since" , required = false ) String since,
                                                                     @RequestParam(value = "until" , required = false ) String until,
@@ -360,7 +360,17 @@ public class MeasureDeveloperController {
         try{
             until = timeProcess(until);
             String token = request.getHeader("token");
-            return new ResponseBean<>(200,"success",(List<Map<String, Object>>) measureDeveloperService.getDeveloperList(repoUuid,projectName,since,until,token));
+            List<String> repoUuidList;
+            if(token==null || "".equals(token)) {
+                return new ResponseBean<>(204,"success","No token found, add token and try again");
+            }
+            if(projectName!=null && !"".equals(projectName)) {
+                repoUuidList = projectDao.getProjectRepoList(projectName,token);
+            }else {
+                repoUuidList = projectDao.involvedRepoProcess(repoUuid,token);
+            }
+            Query query = new Query(token,since,until,null,repoUuidList);
+            return new ResponseBean<>(200,"success", measureDeveloperService.getDeveloperLevelList(query));
         }catch (Exception e){
             e.printStackTrace();
             return new ResponseBean<>(401,"failed "+ e.getMessage(),null);

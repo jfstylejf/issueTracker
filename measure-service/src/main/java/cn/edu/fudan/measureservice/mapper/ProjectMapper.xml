@@ -3,6 +3,58 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.edu.fudan.measureservice.mapper.ProjectMapper">
 
+
+    <resultMap id="developerLevel" type="DeveloperLevel">
+        <id property="developerName" column="developer_unique_name" />
+        <result property="efficiency" column="efficiency" />
+        <result property="quality" column="quality" />
+        <result property="contribution" column="contribution" />
+        <result property="totalLevel" column="total_level" />
+        <result property="involvedRepoCount" column="involved_repo_count" />
+        <result property="dutyType" column="duty_type" />
+    </resultMap>
+
+    <insert id="insertDeveloperLevel" parameterType="DeveloperLevel">
+        insert into issueTracker.developer_level (
+            developer_unique_name,
+            efficiency,
+            contribution,
+            quality,
+            total_level,
+            involved_repo_count,
+            duty_type
+        )
+        values
+        (
+             #{developerName},
+             #{efficiency},
+             #{contribution},
+             #{quality},
+             #{totalLevel},
+             #{involvedRepoCount},
+             #{dutyType}
+        )
+        ON DUPLICATE KEY UPDATE
+            efficiency = #{efficiency},
+            contribution = #{contribution},
+            quality = #{quality},
+            total_level = #{totalLevel},
+            involved_repo_count = #{involvedRepoCount},
+            duty_type = #{dutyType}
+    </insert>
+
+    <select id="getDeveloperLevelList" resultMap="developerLevel">
+        SELECT developer_unique_name, efficiency, quality, contribution, total_level, involved_repo_count, duty_type FROM issueTracker.developer_level
+        <where>
+            <if test="developerList!=null and developerList.size>0">
+                developer_unique_name in
+                <foreach collection="developerList" separator="," open="(" close=")" item="developer">
+                    #{developer}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
     <select id="getDeveloperList"  resultType="String">
         SELECT DISTINCT developer_unique_name FROM issueTracker.commit_view
         <where>
