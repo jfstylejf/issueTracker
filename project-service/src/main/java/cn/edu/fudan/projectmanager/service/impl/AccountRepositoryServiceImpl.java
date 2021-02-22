@@ -47,7 +47,7 @@ public class AccountRepositoryServiceImpl implements AccountRepositoryService {
      * @return k projectName v: list [k: repo_id, name]
      */
     @Override
-    public Map<String, List<Map<String, String>>> getProjectAndRepoRelation(int recycled) {
+    public Map<String, List<Map<String, String>>> getProjectAndRepoRelation(int recycled, List<String> projectNameList) {
         List<Map<String, Object>> projects = subRepositoryDao.getAllProjectRepoRelation();
         boolean isAll = recycled == SubRepository.ALL;
 
@@ -60,6 +60,10 @@ public class AccountRepositoryServiceImpl implements AccountRepositoryService {
             }
 
             String projectName = (String) project.get("project_name");
+            if(!projectNameList.isEmpty() && !projectNameList.contains(projectName)){
+                continue;
+            }
+
             if (StringUtils.isEmpty(projectName)) {
                 projectName = "unnamed";
             }

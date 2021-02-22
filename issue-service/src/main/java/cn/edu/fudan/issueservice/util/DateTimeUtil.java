@@ -7,8 +7,10 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoField;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author WZY
@@ -16,7 +18,9 @@ import java.util.Date;
  **/
 public class DateTimeUtil {
 
-    private final static String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
+    private static final  String DATE_FORMAT_WITH_DETAIL = "yyyy-MM-dd HH:mm:ss";
+
+    private static final  String DATE_FORMAT = "yyyy-MM-dd";
 
     private static final DateTimeFormatter Y_M_D_H_M_S_FORMATTER = new DateTimeFormatterBuilder()
             .appendValue(ChronoField.YEAR)
@@ -45,17 +49,17 @@ public class DateTimeUtil {
     }
 
     public static String format(Date date){
-        return new SimpleDateFormat(DATE_FORMAT).format(date);
+        return new SimpleDateFormat(DATE_FORMAT_WITH_DETAIL).format(date);
     }
 
     public static LocalDate stringToLocalDate(String date){
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern(DATE_FORMAT);
         return LocalDate.parse(date, fmt);
     }
 
     public static Date stringToDate(String date){
         Date result = null;
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(DATE_FORMAT);
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(DATE_FORMAT_WITH_DETAIL);
         try {
             result = simpleDateFormat.parse(date);
         } catch (ParseException e) {
@@ -66,7 +70,7 @@ public class DateTimeUtil {
 
     public static Date localToUtc(String localTime) {
 
-        SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
+        SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT_WITH_DETAIL);
 
         Date localDate= null;
 
@@ -111,5 +115,54 @@ public class DateTimeUtil {
         }
 
         return time;
+    }
+
+    public static List<String[]> getPeriodsByInterval(String since, String until, String interval) throws ParseException {
+
+        List<String[]> periods = new ArrayList<>();
+
+        SimpleDateFormat format = new SimpleDateFormat(DATE_FORMAT);
+
+        Calendar calBegin = Calendar.getInstance();
+        calBegin.setTime(format.parse(since));
+        Calendar calEnd = Calendar.getInstance();
+        calEnd.setTime(format.parse(until));
+
+        List<String> dateList = new ArrayList<>();
+        while (format.parse(until).after(calBegin.getTime())) {
+            dateList.add(format.format(calBegin.getTime()));
+            calBegin.add(Calendar.DAY_OF_MONTH, 1);
+        }
+        dateList.add(format.format(calBegin.getTime()));
+
+        switch (interval){
+            case "day":
+                dateList.forEach(date -> periods.add(new String[]{date, date}));
+                break;
+            case "week":
+                getFirstDayAndLastDayInWeek(dateList, periods);
+                break;
+            case "month":
+                getFirstDayAndLastDayInMonth(dateList, periods);
+                break;
+            case "year":
+                getFirstDayAndLastDayInYear(dateList, periods);
+                break;
+            default:
+        }
+
+        return periods;
+    }
+
+    private static void getFirstDayAndLastDayInYear(List<String> dateList, List<String[]> periods) {
+
+    }
+
+    private static void getFirstDayAndLastDayInMonth(List<String> dateList, List<String[]> periods) {
+
+    }
+
+    private static void getFirstDayAndLastDayInWeek(List<String> dateList, List<String[]> periods) {
+
     }
 }
