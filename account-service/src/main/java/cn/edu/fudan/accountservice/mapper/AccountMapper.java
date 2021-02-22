@@ -98,4 +98,11 @@ public interface AccountMapper {
 
     @Select("select account_name from account where email = #{email}")
     String getAccountName(String email);
+
+    /**
+     * 通过accountName获取password
+     * @param username 用户名
+     * @param encodePassword 新密码
+     */
+    void setPasswordByUserName(String username, String encodePassword);
 }

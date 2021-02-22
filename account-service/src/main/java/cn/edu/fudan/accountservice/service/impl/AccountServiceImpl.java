@@ -64,11 +64,10 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public void passwordReset(String username, String encodedPassword) {
-        //Base64解密
-        String password = Base64Util.decodePassword(encodedPassword);
-        //首次登录或token过期重新登录，返回新的token
+    public void passwordReset(String username, String password) {
+        //用MD5加密密码存入数据库
         String encodePassword = MD5Util.md5(username + password);
+        accountDao.setPasswordByUserName(username, encodePassword);
     }
 
     @Override

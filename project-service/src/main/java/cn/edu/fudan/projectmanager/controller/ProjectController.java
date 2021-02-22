@@ -43,7 +43,10 @@ public class ProjectController {
     public ResponseBean addProject(HttpServletRequest request, @RequestBody RepositoryDTO repositoryDTO) {
         String token = request.getHeader(TOKEN);
         try {
-            projectControl.addOneRepo(token, repositoryDTO);
+            boolean result = projectControl.addOneRepo(token, repositoryDTO);
+            if(!result){
+                return new ResponseBean<>(406, "add failed,repo duplicated!", null);
+            }
             return new ResponseBean<>(200, "add success", null);
         } catch (Exception e) {
             return new ResponseBean<>(401, "add failed :" + e.getMessage(), null);

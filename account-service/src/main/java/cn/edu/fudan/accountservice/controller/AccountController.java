@@ -118,7 +118,7 @@ public class AccountController {
             @ApiImplicitParam(name = "email", value = "用户邮箱", dataType = "String", required = false,defaultValue = "123@fudan.edu.cn")
     })
     @GetMapping(value = {"/login"})
-    public Object login(@RequestParam(value = "username", required = false) String username, @RequestParam("password") String password,@RequestParam(value = "email", required = false) String email , HttpServletResponse response) {
+    public Object login(@RequestParam(value = "username", required = false) String username, @RequestParam("password") String password, @RequestParam(value = "email", required = false) String email , HttpServletResponse response) {
         AccountVO accountVO = accountService.login(username, password, email);
         ResponseEntity<AccountVO> responseBean = new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), HttpStatus.INTERNAL_SERVER_ERROR.name(), null);
         if (accountVO != null) {
@@ -130,12 +130,12 @@ public class AccountController {
         return responseBean;
     }
 
-    @ApiOperation(value="密码重置",notes="@return AccountVO",httpMethod = "GET")
+    @ApiOperation(value="密码重置", httpMethod = "PUT")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "username", value = "用户姓名", dataType = "String", required = true,defaultValue = "admin"),
-            @ApiImplicitParam(name = "password", value = "密码", dataType = "String", required = true,defaultValue = "YWRtaW4="),
+            @ApiImplicitParam(name = "username", value = "用户姓名", dataType = "String", required = true),
+            @ApiImplicitParam(name = "password", value = "新密码", dataType = "String", required = true)
     })
-    @GetMapping(value = {"/password"})
+    @PutMapping(value = {"/password"})
     public Object passwordReset(@RequestParam("username") String username, @RequestParam("password") String password, HttpServletResponse response) {
         try{
             accountService.passwordReset(username, password);

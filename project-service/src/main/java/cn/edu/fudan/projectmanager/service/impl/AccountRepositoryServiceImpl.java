@@ -14,6 +14,7 @@ import cn.edu.fudan.projectmanager.mapper.AccountMapper;
 import cn.edu.fudan.projectmanager.service.AccountRepositoryService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -162,6 +163,10 @@ public class AccountRepositoryServiceImpl implements AccountRepositoryService {
 
     @Override
     public List<SubRepository> getRepoByAccountUuid(String accountUuid) throws Exception {
+        String accountName = rest.getAccountName(accountUuid);
+        if(accountName == null){
+            return null;
+        }
         return subRepositoryDao.getAllSubRepoByAccountUuid(accountUuid);
     }
 
