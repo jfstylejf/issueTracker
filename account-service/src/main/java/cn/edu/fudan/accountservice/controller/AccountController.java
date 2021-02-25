@@ -138,7 +138,10 @@ public class AccountController {
     @PutMapping(value = {"/password"})
     public Object passwordReset(@RequestParam("username") String username, @RequestParam("password") String password, HttpServletResponse response) {
         try{
-            accountService.passwordReset(username, password);
+            boolean result = accountService.passwordReset(username, password);
+            if(!result){
+                return new ResponseEntity<>(412, "account not exist!", null);
+            }
             return new ResponseEntity<>(200, "reset success!", null);
         }catch (Exception e){
             return new ResponseEntity<>(401, "reset failed! " + e.getMessage(), null);
