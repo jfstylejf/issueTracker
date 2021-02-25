@@ -62,7 +62,7 @@ public class ProjectControlServiceImpl implements ProjectControlService {
         String url = repositoryDTO.getUrl().trim();
         String repoSource = repositoryDTO.getRepoSource().toLowerCase();
         if (StringUtils.isEmpty(url)) {
-            throw new RunTimeException("the repo url is EMPTY!");
+            throw new RunTimeException("URL为空!");
         }
         final String urlPostfix = ".git";
         if (url.endsWith(urlPostfix)) {
@@ -72,7 +72,7 @@ public class ProjectControlServiceImpl implements ProjectControlService {
         Pattern pattern = Pattern.compile(repoUrlPattern);
         Matcher matcher = pattern.matcher(url);
         if (!matcher.matches()) {
-            throw new RunTimeException("invalid url!");
+            throw new RunTimeException("无效URL!");
         }
 
         String accountUuid = userInfoDTO.getUuid();
@@ -83,7 +83,7 @@ public class ProjectControlServiceImpl implements ProjectControlService {
 
 
         if (isPrivate && StringUtils.isEmpty(username) && StringUtils.isEmpty(password)) {
-            throw new RunTimeException("this projectName is private,please provide your git username and password!");
+            throw new RunTimeException("私有项目，请提供您的用户名及密码!");
         }
 
         String repoName = repositoryDTO.getRepoName();
@@ -93,7 +93,7 @@ public class ProjectControlServiceImpl implements ProjectControlService {
 
         // 一个 Repo目前只扫描一个分支
         if (accountRepositoryDao.hasRepo(branch, url)) {
-            throw new RunTimeException("The repo accountName has already been used! ");
+            throw new RunTimeException("该库已存在当前分支! ");
         }
 
         String projectName = repositoryDTO.getProjectName();
