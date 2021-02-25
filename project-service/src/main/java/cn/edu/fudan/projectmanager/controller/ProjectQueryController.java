@@ -5,6 +5,7 @@ import cn.edu.fudan.projectmanager.domain.SubRepository;
 import cn.edu.fudan.projectmanager.domain.vo.RepositoryVO;
 import cn.edu.fudan.projectmanager.service.AccountRepositoryService;
 import cn.edu.fudan.projectmanager.service.ProjectControlService;
+import com.alibaba.druid.util.StringUtils;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -38,9 +40,11 @@ public class ProjectQueryController {
      */
     @ApiOperation(value = " 得到所有项目和库的关系", notes = "@return Map < String, List < Map < String, String > > >  k projectName v: list [k: repo_id, accountName]")
     @GetMapping(value = "/project/all")
-    public ResponseBean<Map<String, List<Map<String, String>>>> getProjectAndRepoRelation(@RequestParam(name = "recycled", required = false, defaultValue = "0") int recycled) throws Exception {
+    public ResponseBean<Map<String, List<Map<String, String>>>> getProjectAndRepoRelation(@RequestParam(name = "recycled", required = false, defaultValue = "0") int recycled,
+                                                                                          @RequestParam(name = "project_names", required = false) String projectNames) throws Exception {
         try {
-            return new ResponseBean<>(200, "get info success", accountRepository.getProjectAndRepoRelation(recycled));
+            List<String> projectNameList = StringUtils.isEmpty(projectNames) ? new ArrayList<>() : Arrays.asList(projectNames.split(","));
+            return new ResponseBean<>(200, "get info success", accountRepository.getProjectAndRepoRelation(recycled, projectNameList));
         } catch (Exception e) {
             return new ResponseBean<>(401, "get info failed :" + e.getMessage(), null);
         }

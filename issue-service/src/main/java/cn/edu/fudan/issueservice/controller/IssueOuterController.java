@@ -384,6 +384,20 @@ public class IssueOuterController {
         }
     }
 
+    @GetMapping("project/data/all-issues")
+    public ResponseBean<List<JSONObject>> getAllIssueByProject(@RequestParam(value = "projectIds", required = false) String projectIds,
+                                                               @RequestParam(value = "since") String since,
+                                                               @RequestParam(value = "until") String until,
+                                                               @RequestParam(value = "interval", required = false, defaultValue = "week") String interval,
+                                                               HttpServletRequest httpServletRequest) {
+        try {
+            List<String> repoUuids = restInterfaceManager.getAllRepoUuidsByProjectName(httpServletRequest.getHeader(TOKEN), projectIds);
+            return new ResponseBean<>(200, SUCCESS, issueService.getAllIssuesInProject(projectIds, since, until, interval));
+        }catch (Exception e){
+            return new ResponseBean<>(500, FAILED + e.getMessage(), null);
+        }
+    }
+
     @Autowired
     public void setRestInterfaceManager(RestInterfaceManager restInterfaceManager) {
         this.restInterfaceManager = restInterfaceManager;

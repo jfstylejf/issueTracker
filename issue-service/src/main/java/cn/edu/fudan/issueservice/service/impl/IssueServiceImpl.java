@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
+import java.text.ParseException;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -371,6 +372,14 @@ public class IssueServiceImpl implements IssueService {
         }
 
         return allIssueTypeList;
+    }
+
+    @Override
+    public List<JSONObject> getAllIssuesInProject(String projectIds, String since, String until, String interval) throws ParseException {
+        List<JSONObject> issuesDetail = new ArrayList<>();
+        List<String[]> periods = DateTimeUtil.getPeriodsByInterval(since, until, interval);
+
+        return issuesDetail;
     }
 
     @Autowired
