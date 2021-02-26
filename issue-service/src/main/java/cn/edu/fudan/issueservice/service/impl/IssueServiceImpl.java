@@ -375,10 +375,12 @@ public class IssueServiceImpl implements IssueService {
     }
 
     @Override
-    public List<JSONObject> getAllIssuesInProject(String projectIds, String since, String until, String interval) throws ParseException {
+    public List<JSONObject> getAllIssuesInProject(List<String> repoUuids, String since, String until, String interval) throws ParseException {
         List<JSONObject> issuesDetail = new ArrayList<>();
         List<String[]> periods = DateTimeUtil.getPeriodsByInterval(since, until, interval);
-
+        for (String[] period : periods) {
+            int openIssueNum = issueDao.getIssueCountInRepos(repoUuids, period[0], period[1]);
+        }
         return issuesDetail;
     }
 

@@ -23,9 +23,9 @@ public interface IssueMapper {
      * delete issue by repo id and category
      *
      * @param repoId get issue repo id
-     * @param tool get issue tool
+     * @param tool   get issue tool
      */
-    void deleteIssueByRepoIdAndTool(@Param("repo_id")String repoId,@Param("tool")String tool);
+    void deleteIssueByRepoIdAndTool(@Param("repo_id") String repoId, @Param("tool") String tool);
 
     /**
      * batch update issue
@@ -44,6 +44,7 @@ public interface IssueMapper {
 
     /**
      * 返回开发者参与并且有引入过issue的项目的repoUuid
+     *
      * @param developer 开发者
      * @return 返回开发者参与并且有引入过issue的项目的repo_id
      */
@@ -55,27 +56,29 @@ public interface IssueMapper {
      * @param tool get issue tool
      * @return List<Issue>
      */
-    List<String> getExistIssueTypes(@Param("tool")String tool);
+    List<String> getExistIssueTypes(@Param("tool") String tool);
 
     /**
      * update one issue priority
      *
-     * @param issueId get issue id
+     * @param issueId  get issue id
      * @param priority get issue priority
      */
-    void updateOneIssuePriority(@Param("uuid")String issueId, @Param("priority") int priority);
+    void updateOneIssuePriority(@Param("uuid") String issueId, @Param("priority") int priority);
 
     /**
      * update one issue status
-     * @param issueId issueUuid
-     * @param status status
+     *
+     * @param issueId      issueUuid
+     * @param status       status
      * @param manualStatus manualStatus
      */
-    void updateOneIssueStatus(@Param("uuid")String issueId,@Param("status")String status, @Param("manual_status") String manualStatus);
+    void updateOneIssueStatus(@Param("uuid") String issueId, @Param("status") String status, @Param("manual_status") String manualStatus);
 
 
     /**
      * get max issue display id
+     *
      * @param repoId get issue repo id
      * @return Integer
      */
@@ -85,29 +88,32 @@ public interface IssueMapper {
      * get not solved issue all list by category and repo id
      *
      * @param repoUuids get issue repo id
-     * @param tool get issue type
+     * @param tool      get issue type
      * @return List<Issue>
      */
-    List<Issue> getNotSolvedIssueAllListByToolAndRepoId(@Param("repoUuids") List<String> repoUuids,@Param("tool")  String tool);
+    List<Issue> getNotSolvedIssueAllListByToolAndRepoId(@Param("repoUuids") List<String> repoUuids, @Param("tool") String tool);
 
     /**
      * 获取指定repocategory的issue列表且status不等于statusLis中任何一个。
-     * @param repoId repoUuid
-     * @param tool tool
+     *
+     * @param repoId     repoUuid
+     * @param tool       tool
      * @param statusList statusList
      * @return 获取指定repocategory的issue列表且status不等于statusLis中任何一个
      */
-    List<Issue> getIssueByRepoIdAndToolAndStatusList(@Param("repo_id")String repoId, @Param("tool")String tool, @Param("status_list")List<String> statusList);
+    List<Issue> getIssueByRepoIdAndToolAndStatusList(@Param("repo_id") String repoId, @Param("tool") String tool, @Param("status_list") List<String> statusList);
 
     /**
      * 获取指定缺陷id列表的缺陷集
+     *
      * @param issueIdList repoUuidList
      * @return 获取指定缺陷id列表的缺陷集
      */
-    List<Issue> getIssuesByIds(@Param("issueId_list")List<String> issueIdList);
+    List<Issue> getIssuesByIds(@Param("issueId_list") List<String> issueIdList);
 
     /**
      * 返回筛选后issues数量
+     *
      * @param query 条件
      * @return 筛选后issues数量
      */
@@ -115,6 +121,7 @@ public interface IssueMapper {
 
     /**
      * 根据条件筛选issue
+     *
      * @param query 条件
      * @return issue列表
      */
@@ -122,6 +129,7 @@ public interface IssueMapper {
 
     /**
      * 返回解决issues数量
+     *
      * @param query 条件
      * @return 返回解决issues数量
      */
@@ -129,6 +137,7 @@ public interface IssueMapper {
 
     /**
      * 返回解决issues列表
+     *
      * @param query 条件
      * @return 返回解决issues列表
      */
@@ -136,18 +145,20 @@ public interface IssueMapper {
 
     /**
      * update issue manual status
-     * @param repoUuid 所在repo库
-     * @param issueUuid issueUuid
+     *
+     * @param repoUuid     所在repo库
+     * @param issueUuid    issueUuid
      * @param manualStatus 要改成的 目标状态 Ignore, Misinformation, To review, Default
-     * @param issueType 要忽略的issue 类型
-     * @param tool issue 的检测工具
-     * @param currentTime 当前更新记录的时间
+     * @param issueType    要忽略的issue 类型
+     * @param tool         issue 的检测工具
+     * @param currentTime  当前更新记录的时间
      */
-    void updateIssueManualStatus(@Param("repoUuid")String repoUuid, @Param("issueUuid")String issueUuid, @Param("manualStatus")String manualStatus,
-                                 @Param("issueType")String issueType, @Param("tool")String tool, @Param("currentTime") String currentTime);
+    void updateIssueManualStatus(@Param("repoUuid") String repoUuid, @Param("issueUuid") String issueUuid, @Param("manualStatus") String manualStatus,
+                                 @Param("issueType") String issueType, @Param("tool") String tool, @Param("currentTime") String currentTime);
 
     /**
      * 获取自己引入自己解决的issue
+     *
      * @param query condition
      * @return issue date list
      */
@@ -155,6 +166,7 @@ public interface IssueMapper {
 
     /**
      * 获取他人引入自己解决的issue
+     *
      * @param query condition
      * @return issue date list
      */
@@ -162,6 +174,7 @@ public interface IssueMapper {
 
     /**
      * 获取自己引入未解决的issue
+     *
      * @param query condition
      * @return issue date list
      */
@@ -169,6 +182,7 @@ public interface IssueMapper {
 
     /**
      * 获取自己引入他人解决的issue
+     *
      * @param query condition
      * @return issue date list
      */
@@ -176,6 +190,7 @@ public interface IssueMapper {
 
     /**
      * 获取自己引入自己解决的issue detail
+     *
      * @param query condition
      * @return issue detail list
      */
@@ -183,6 +198,7 @@ public interface IssueMapper {
 
     /**
      * 获取他人引入自己解决的issue detail
+     *
      * @param query condition
      * @return issue detail list
      */
@@ -190,6 +206,7 @@ public interface IssueMapper {
 
     /**
      * 获取自己引入未解决的issue detail
+     *
      * @param query condition
      * @return issue detail list
      */
@@ -197,6 +214,7 @@ public interface IssueMapper {
 
     /**
      * 获取自己引入他人解决的issue detail
+     *
      * @param query condition
      * @return issue detail list
      */
@@ -204,6 +222,7 @@ public interface IssueMapper {
 
     /**
      * issueIntroducers
+     *
      * @param repoUuids repoUuid list
      * @return issueIntroducers
      */
@@ -211,9 +230,19 @@ public interface IssueMapper {
 
     /**
      * 获取自己引入未解决的issue 数量
+     *
      * @param query condition
      * @return 按照人员group by的 producer, livingCount
      */
     List<JSONObject> getSelfIntroduceLivingIssueCount(Map<String, Object> query);
 
+    /**
+     * issue count
+     *
+     * @param repoUuids repoUuids
+     * @param since since
+     * @param until until
+     * @return issue count
+     */
+    int getIssueCountInRepos(@Param("repoUuids") List<String> repoUuids, String since, String until);
 }
