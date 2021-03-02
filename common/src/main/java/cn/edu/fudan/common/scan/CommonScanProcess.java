@@ -186,9 +186,7 @@ public abstract class CommonScanProcess implements CommonScanService {
      **/
     protected abstract void insertRepoScan(RepoScan repoScan);
 
-    public <T extends RepoRestManager> void setRepoRestManager(T restInterfaceManager) {
-        this.repoRestManager = restInterfaceManager;
-    }
+    public abstract <T extends RepoRestManager> void setRepoRestManager(T restInterfaceManager);
 
 
     @Override
