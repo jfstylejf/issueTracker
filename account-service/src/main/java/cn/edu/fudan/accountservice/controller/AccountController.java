@@ -126,6 +126,8 @@ public class AccountController {
             responseBean.setCode(HttpStatus.OK.value());
             responseBean.setMsg(HttpStatus.OK.name());
             responseBean.setData(accountVO);
+        }else {
+            return new ResponseEntity(412, "username or password is wrong!", null);
         }
         return responseBean;
     }
@@ -154,7 +156,11 @@ public class AccountController {
     })
     @GetMapping(value = "/accountId")
     public Object getAccountID(@RequestParam("userToken") String userToken) {
-        return new ResponseEntity<>(200, "success", accountService.getAccountByToken(userToken).getUuid());
+        Account account = accountService.getAccountByToken(userToken);
+        if(account == null){
+            return new ResponseEntity<>(412, "account not exist!", null);
+        }
+        return new ResponseEntity<>(200, "success", account.getUuid());
     }
 
     /**
@@ -232,7 +238,11 @@ public class AccountController {
     })
     @GetMapping(value = "/accountName")
     public Object getAccountNameById(@RequestParam("accountId") String accountId){
-        return new ResponseEntity<>(200, "success",accountService.getAccountNameById(accountId));
+        String result = accountService.getAccountNameById(accountId);
+        if(result == null){
+            return new ResponseEntity<>(412, "account not exist!",accountService.getAccountNameById(accountId));
+        }
+        return new ResponseEntity<>(200, "success",result);
     }
 
     @ApiOperation(value="获取用户姓名",httpMethod = "GET")
