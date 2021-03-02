@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
  * @author Song Rui
  */
 public interface UnifyAuthor {
-    Logger log = LoggerFactory.getLogger(CommonCommonScanProcess.class);
+    Logger log = LoggerFactory.getLogger(CommonScanProcess.class);
 
     /**
      * 针对一个开发者有多个开发账号的情况，将账号名转化为唯一名称

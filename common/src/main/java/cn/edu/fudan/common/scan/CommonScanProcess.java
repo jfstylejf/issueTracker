@@ -17,8 +17,8 @@ import java.util.stream.Collectors;
 
 @Getter
 @NoArgsConstructor
-public abstract class CommonCommonScanProcess implements CommonScanService {
-    private static final Logger log = LoggerFactory.getLogger(CommonCommonScanProcess.class);
+public abstract class CommonScanProcess implements CommonScanService {
+    private static final Logger log = LoggerFactory.getLogger(CommonScanProcess.class);
     private static final String KEY_DELIMITER = "-";
 
     /**
