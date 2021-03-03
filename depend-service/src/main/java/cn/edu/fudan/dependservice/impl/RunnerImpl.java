@@ -1,6 +1,5 @@
 package cn.edu.fudan.dependservice.impl;
 
-import cn.edu.fudan.dependservice.Runner;
 import cn.edu.fudan.dependservice.config.ShHomeConfig;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -10,7 +9,7 @@ import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Data
-public class RunnerImpl implements Runner {
+public class RunnerImpl {
     private String shHome;
     private String shName;
     private String repoPath="/home/fdse/codeWisdom/service/dependence-analysis/scenario-engine";
@@ -21,31 +20,6 @@ public class RunnerImpl implements Runner {
         this.setShName("tdepend.sh");
     }
 
-//    public String getRepoPath() {
-//        return repoPath;
-//    }
-//
-//    public void setRepoPath(String repoPath) {
-//        this.repoPath = repoPath;
-//    }
-//
-//    public String getShHome() {
-//        return shHome;
-//    }
-//
-//    public void setShHome(String shHome) {
-//        this.shHome = shHome;
-//    }
-//
-//    public String getShName() {
-//        return shName;
-//    }
-//
-//    public void setShName(String shName) {
-//        this.shName = shName;
-//    }
-
-    @Override
     public void runTool(String repoPath, String commitID) {
         invoke(repoPath,commitID);
 
