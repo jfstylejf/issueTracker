@@ -285,9 +285,9 @@ public class JGitHelper implements Closeable {
 
                 CanonicalTreeParser parentTreeIter = new CanonicalTreeParser();
                 parentTreeIter.reset(reader, parentCommit.getTree().getId());
-                DiffFormatter diffFormatter = new DiffFormatter(DisabledOutputStream.INSTANCE);
-                diffFormatter.setRepository(git.getRepository());
-                List<DiffEntry> entries = diffFormatter.scan(currTreeIter, parentTreeIter);
+//                DiffFormatter diffFormatter = new DiffFormatter(DisabledOutputStream.INSTANCE);
+//                diffFormatter.setRepository(git.getRepository());
+//                List<DiffEntry> entries = diffFormatter.scan(currTreeIter, parentTreeIter);
                 List<DiffEntry> renameDiff = getDiffEntry(parentCommit, currCommit);
 
                 result.put(parentCommit.getName(), renameDiff);
