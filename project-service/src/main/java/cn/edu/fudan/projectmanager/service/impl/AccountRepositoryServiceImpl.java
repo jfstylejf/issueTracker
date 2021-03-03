@@ -14,6 +14,7 @@ import cn.edu.fudan.projectmanager.mapper.AccountMapper;
 import cn.edu.fudan.projectmanager.service.AccountRepositoryService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -47,7 +48,7 @@ public class AccountRepositoryServiceImpl implements AccountRepositoryService {
      * @return k projectName v: list [k: repo_id, name]
      */
     @Override
-    public Map<String, List<Map<String, String>>> getProjectAndRepoRelation(int recycled) {
+    public Map<String, List<Map<String, String>>> getProjectAndRepoRelation(int recycled, List<String> projectNameList) {
         List<Map<String, Object>> projects = subRepositoryDao.getAllProjectRepoRelation();
         boolean isAll = recycled == SubRepository.ALL;
 
@@ -60,6 +61,10 @@ public class AccountRepositoryServiceImpl implements AccountRepositoryService {
             }
 
             String projectName = (String) project.get("project_name");
+            if(!projectNameList.isEmpty() && !projectNameList.contains(projectName)){
+                continue;
+            }
+
             if (StringUtils.isEmpty(projectName)) {
                 projectName = "unnamed";
             }
@@ -158,6 +163,10 @@ public class AccountRepositoryServiceImpl implements AccountRepositoryService {
 
     @Override
     public List<SubRepository> getRepoByAccountUuid(String accountUuid) throws Exception {
+        String accountName = rest.getAccountName(accountUuid);
+        if(accountName == null){
+            return null;
+        }
         return subRepositoryDao.getAllSubRepoByAccountUuid(accountUuid);
     }
 

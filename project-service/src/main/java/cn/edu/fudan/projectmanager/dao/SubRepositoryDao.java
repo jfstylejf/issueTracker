@@ -97,4 +97,8 @@ public class SubRepositoryDao {
         return subRepositoryMapper.getSubRepoByRepoUuid(repoUuid);
     }
 
+    public SubRepository getSubRepoByUrl(String url) {
+        return subRepositoryMapper.getSubRepoByUrl(url);
+    }
+
 }

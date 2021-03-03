@@ -108,6 +108,25 @@
         WHERE repo_uuid = #{repo_uuid}
     </select>
 
+    <select id="getSubRepoByUrl" parameterType="String" resultMap="subRepository">
+        SELECT uuid,
+               url,
+               language,
+               branch,
+               repo_source,
+               download_status,
+               repo_name,
+               latest_commit_time,
+               repo_uuid,
+               project_name,
+               recycled,
+               import_account_uuid,
+               scan_start
+        FROM sub_repository
+        <where>
+          url = #{url}
+        </where>
+    </select>
 
     <select id="getAllSubRepoByAccountId" resultMap="subRepository" parameterType="String">
         SELECT s.uuid, url, language, branch, repo_source, download_status,

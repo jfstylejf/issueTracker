@@ -1,6 +1,5 @@
 package cn.edu.fudan.issueservice.util;
 
-import cn.edu.fudan.issueservice.domain.dbo.Location;
 import cn.edu.fudan.issueservice.domain.enums.IssueTypeInChineseEnum;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
@@ -32,14 +31,13 @@ public class ExcelUtil {
         sheet.setColumnWidth(2, 5000);
         sheet.setColumnWidth(3, 9000);
         sheet.setColumnWidth(4, 24000);
-        sheet.setColumnWidth(5, 10000);
-        sheet.setColumnWidth(6, 4000);
-        sheet.setColumnWidth(7, 6000);
+        sheet.setColumnWidth(5, 4000);
+        sheet.setColumnWidth(6, 6000);
+        sheet.setColumnWidth(7, 4000);
         sheet.setColumnWidth(8, 4000);
         sheet.setColumnWidth(9, 4000);
-        sheet.setColumnWidth(10, 4000);
-        sheet.setColumnWidth(11, 6000);
-        sheet.setColumnWidth(12, 11000);
+        sheet.setColumnWidth(10, 6000);
+        sheet.setColumnWidth(11, 11000);
         //列表数据的标头
         HSSFRow titleRow = sheet.createRow(0);
         HSSFCell cell0 = titleRow.createCell(0);
@@ -58,29 +56,26 @@ public class ExcelUtil {
         cell4.setCellValue("缺陷所在文件位置");
         cell4.setCellStyle(style);
         HSSFCell cell5 = titleRow.createCell(5);
-        cell5.setCellValue("缺陷所在行号");
+        cell5.setCellValue("引入者");
         cell5.setCellStyle(style);
         HSSFCell cell6 = titleRow.createCell(6);
-        cell6.setCellValue("引入者");
+        cell6.setCellValue("引入时间");
         cell6.setCellStyle(style);
         HSSFCell cell7 = titleRow.createCell(7);
-        cell7.setCellValue("引入时间");
+        cell7.setCellValue("状态");
         cell7.setCellStyle(style);
         HSSFCell cell8 = titleRow.createCell(8);
-        cell8.setCellValue("状态");
+        cell8.setCellValue("优先级");
         cell8.setCellStyle(style);
         HSSFCell cell9 = titleRow.createCell(9);
-        cell9.setCellValue("优先级");
+        cell9.setCellValue("解决者");
         cell9.setCellStyle(style);
         HSSFCell cell10 = titleRow.createCell(10);
-        cell10.setCellValue("解决者");
+        cell10.setCellValue("解决时间");
         cell10.setCellStyle(style);
         HSSFCell cell11 = titleRow.createCell(11);
-        cell11.setCellValue("解决时间");
+        cell11.setCellValue("解决缺陷commit");
         cell11.setCellStyle(style);
-        HSSFCell cell12 = titleRow.createCell(12);
-        cell12.setCellValue("解决缺陷commit");
-        cell12.setCellStyle(style);
         //处理表格数据
         handleExcelData(workbook, sheet, issueFilterList, allRepoToRepoName);
 
@@ -116,33 +111,26 @@ public class ExcelUtil {
             cell4.setCellValue((String) issue.get("targetFiles"));
             cell4.setCellStyle(style);
             HSSFCell cell5 = row.createCell(5);
-            List<Location> detail = (List<Location>) issue.get("detail");
-            detail.sort((o1, o2) -> o1.getStart_line() - o2.getStart_line());
-            StringBuilder bugLines = new StringBuilder();
-            detail.forEach(location -> bugLines.append(location.getBug_lines()).append(" "));
-            cell5.setCellValue(bugLines.toString());
+            cell5.setCellValue((String) issue.get("producer"));
             cell5.setCellStyle(style);
             HSSFCell cell6 = row.createCell(6);
-            cell6.setCellValue((String) issue.get("producer"));
+            cell6.setCellValue((String) issue.get("startCommitDate"));
             cell6.setCellStyle(style);
             HSSFCell cell7 = row.createCell(7);
-            cell7.setCellValue((String) issue.get("startCommitDate"));
+            cell7.setCellValue((String) issue.get("status"));
             cell7.setCellStyle(style);
             HSSFCell cell8 = row.createCell(8);
-            cell8.setCellValue((String) issue.get("status"));
+            cell8.setCellValue((String) issue.get("priority"));
             cell8.setCellStyle(style);
             HSSFCell cell9 = row.createCell(9);
-            cell9.setCellValue((String) issue.get("priority"));
+            cell9.setCellValue((String) issue.get("solver"));
             cell9.setCellStyle(style);
             HSSFCell cell10 = row.createCell(10);
-            cell10.setCellValue((String) issue.get("solver"));
+            cell10.setCellValue((String) issue.get("solveTime"));
             cell10.setCellStyle(style);
             HSSFCell cell11 = row.createCell(11);
-            cell11.setCellValue((String) issue.get("solveTime"));
+            cell11.setCellValue((String) issue.get("solveCommit"));
             cell11.setCellStyle(style);
-            HSSFCell cell12 = row.createCell(12);
-            cell12.setCellValue((String) issue.get("solveCommit"));
-            cell12.setCellStyle(style);
             i++;
         }
     }

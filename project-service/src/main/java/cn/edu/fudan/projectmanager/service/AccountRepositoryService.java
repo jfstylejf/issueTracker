@@ -44,9 +44,12 @@ public interface AccountRepositoryService {
     /**
      * 获取项目和库的对应关系
      *
+     * @param recycled    recycled
+     * @param projectName projectName
+     * @return 项目和库的对应关系
      * @throws Exception e
      */
-    Map<String, List<Map<String, String>>> getProjectAndRepoRelation(int recycled) throws Exception;
+    Map<String, List<Map<String, String>>> getProjectAndRepoRelation(int recycled, List<String> projectName) throws Exception;
 
     /**
      * 获取项目列表

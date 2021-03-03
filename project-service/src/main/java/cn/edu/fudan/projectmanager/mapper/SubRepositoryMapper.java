@@ -45,6 +45,14 @@ public interface SubRepositoryMapper {
     SubRepository getSubRepoByRepoUuid(@Param("repo_uuid") String repoUuid);
 
     /**
+     * 根据url获取信息
+     *
+     * @param url url
+     * @return SubRepository
+     */
+    SubRepository getSubRepoByUrl(@Param("url") String url);
+
+    /**
      * 获取repo最新commit时间
      *
      * @param repoUuid uuid
