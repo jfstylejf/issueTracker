@@ -133,12 +133,12 @@ public interface IssueService {
     /**
      * 返回项目总览缺陷数量图
      *
-     * @param projectIds projectIds
+     * @param repoUuids repoUuids
      * @param since since
      * @param until until
      * @param interval interval
      * @return 项目总览缺陷数量
      * @throws ParseException ParseException
      */
-    List<JSONObject> getAllIssuesInProject(String projectIds, String since, String until, String interval) throws ParseException;
+    List<JSONObject> getAllIssuesInProject(List<String> repoUuids, String since, String until, String interval) throws ParseException;
 }

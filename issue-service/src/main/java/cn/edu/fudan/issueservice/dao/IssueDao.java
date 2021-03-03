@@ -130,4 +130,7 @@ public class IssueDao {
     }
 
 
+    public int getIssueCountInRepos(List<String> repoUuids, String since, String until) {
+        return issueMapper.getIssueCountInRepos(repoUuids, since, until);
+    }
 }

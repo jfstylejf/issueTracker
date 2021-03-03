@@ -28,7 +28,7 @@ public interface AccountService {
      * @param password get user password
      * @return null
      */
-    void passwordReset(String username, String password);
+    boolean passwordReset(String username, String password);
 
     /**
      * is account accountName exist
