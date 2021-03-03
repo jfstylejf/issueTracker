@@ -1,6 +1,6 @@
 package cn.edu.fudan.dependservice.service.impl;
 
-import cn.edu.fudan.common.component.RepoRestManager;
+import cn.edu.fudan.common.component.BaseRepoRestManager;
 import cn.edu.fudan.common.domain.po.scan.RepoScan;
 import cn.edu.fudan.common.scan.CommonScanProcess;
 import cn.edu.fudan.common.scan.ToolScan;
@@ -40,7 +40,7 @@ public class ScanServiceImpl extends CommonScanProcess {
     }
 
     @Override
-    public <T extends RepoRestManager> void setRepoRestManager(T restInterfaceManager) {
+    public <T extends BaseRepoRestManager> void setBaseRepoRestManager(T restInterfaceManager) {
 
     }
 

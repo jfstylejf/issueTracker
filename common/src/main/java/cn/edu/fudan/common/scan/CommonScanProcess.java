@@ -1,6 +1,6 @@
 package cn.edu.fudan.common.scan;
 
-import cn.edu.fudan.common.component.RepoRestManager;
+import cn.edu.fudan.common.component.BaseRepoRestManager;
 import cn.edu.fudan.common.domain.ScanInfo;
 import cn.edu.fudan.common.domain.po.scan.RepoScan;
 import cn.edu.fudan.common.jgit.JGitHelper;
@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.util.Assert;
 
@@ -26,7 +27,7 @@ public abstract class CommonScanProcess implements CommonScanService {
      * value true/false true 代表还需要更新扫描一次
      **/
     private final ConcurrentHashMap<String, Boolean> scanStatusMap = new ConcurrentHashMap<>();
-    private RepoRestManager repoRestManager;
+    protected BaseRepoRestManager baseRepoRestManager;
     private final Short lock = 1;
 
     /**
@@ -96,7 +97,7 @@ public abstract class CommonScanProcess implements CommonScanService {
 
         ToolScan specificTool = getToolScan(tool);
         // 获取repo所在路径
-        String repoPath = repoRestManager.getCodeServiceRepo(repoUuid);
+        String repoPath = baseRepoRestManager.getCodeServiceRepo(repoUuid);
         if (repoPath == null) {
             log.error("{} : can't get repoPath", repoUuid);
             return;
@@ -159,7 +160,7 @@ public abstract class CommonScanProcess implements CommonScanService {
             repoScan.setStatus(ScanInfo.Status.FAILED.getStatus());
             updateRepoScan(repoScan);
         } finally {
-            repoRestManager.freeRepo(repoUuid, repoPath);
+            baseRepoRestManager.freeRepo(repoUuid, repoPath);
         }
 
     }
@@ -186,8 +187,8 @@ public abstract class CommonScanProcess implements CommonScanService {
      **/
     protected abstract void insertRepoScan(RepoScan repoScan);
 
-    public abstract <T extends RepoRestManager> void setRepoRestManager(T restInterfaceManager);
-
+    @Autowired
+    public abstract <T extends BaseRepoRestManager> void setBaseRepoRestManager(T restInterfaceManager);
 
     @Override
     public boolean stopScan(String repoUuid, String toolName) {

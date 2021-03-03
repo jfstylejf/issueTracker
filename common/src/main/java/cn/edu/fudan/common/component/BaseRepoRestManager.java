@@ -1,15 +1,13 @@
 package cn.edu.fudan.common.component;
 
 import com.alibaba.fastjson.JSONObject;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Optional;
 
 @Slf4j
-@AllArgsConstructor
-public class RepoRestManager {
+public abstract class BaseRepoRestManager {
     protected RestTemplate restTemplate;
     protected String codeServiceRepoPath;
 
@@ -17,7 +15,7 @@ public class RepoRestManager {
     private static final String beginWithRepoParam = "?repo_id=";
 
     public String getCodeServiceRepo(String repoId) {
-        JSONObject data = (Optional.ofNullable(this.restTemplate.getForObject(this.codeServiceRepoPath + beginWithRepoParam + repoId, JSONObject.class, new Object[0])).orElse(new JSONObject())).getJSONObject("data");
+        JSONObject data = (Optional.ofNullable(this.restTemplate.getForObject(this.codeServiceRepoPath + beginWithRepoParam + repoId, JSONObject.class)).orElse(new JSONObject())).getJSONObject("data");
         if (data == null) {
             return null;
         } else {
@@ -34,9 +32,14 @@ public class RepoRestManager {
 
     public void freeRepo(String repoId, String path) {
         (Optional.ofNullable(this.restTemplate
-                .getForObject(this.codeServiceRepoPath + FREE_REPO_PATH + beginWithRepoParam + repoId + "&path=" + path, JSONObject.class, new Object[0]))
+                .getForObject(this.codeServiceRepoPath + FREE_REPO_PATH + beginWithRepoParam + repoId + "&path=" + path, JSONObject.class))
                 .orElse(new JSONObject())).getJSONObject("data")
                 .getString("status");
+    }
+
+    public BaseRepoRestManager(final RestTemplate restTemplate, final String codeServiceRepoPath) {
+        this.restTemplate = restTemplate;
+        this.codeServiceRepoPath = codeServiceRepoPath;
     }
 
 }
