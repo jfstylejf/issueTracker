@@ -168,7 +168,7 @@ public abstract class CommonScanProcess implements CommonScanService {
     protected abstract ToolScan getToolScan(String tool);
 
     /**
-     * 根据repoUuid 和 代码库的地址决定需要调用的工具列表
+     * 根据repoUuid 和 tool 代码库的地址决定需要调用的工具列表
      **/
     protected abstract List<String> getScannedCommitList(String repoUuid, String tool);
 
