@@ -110,7 +110,7 @@ public interface ProjectControlService {
      * @param repoUuid repo uuid
      * @throws Exception e
      */
-    void deleteRepo(@NotNull String token, String repoUuid) throws Exception;
+    void deleteRepo(@NotNull String token, String repoUuid, String repoUUID) throws Exception;
 
     /**
      * 更新库回收状态

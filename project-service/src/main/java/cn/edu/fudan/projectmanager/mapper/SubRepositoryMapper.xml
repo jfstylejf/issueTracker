@@ -230,5 +230,11 @@
         </where>
     </update>
 
+    <delete id="deleteRepoByUuid" parameterType="String">
+        delete from sub_repository
+        <where>
+            uuid = #{RepoUUID};
+        </where>
+    </delete>
 
 </mapper>

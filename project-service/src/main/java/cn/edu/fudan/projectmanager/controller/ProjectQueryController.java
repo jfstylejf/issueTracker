@@ -55,15 +55,16 @@ public class ProjectQueryController {
             @ApiImplicitParam(name = "recycled", value = "是否被回收", dataType = "int", required = false, defaultValue = "0"),
     })
     @GetMapping(value = {"/project"})
-    public ResponseBean<List<SubRepository>> query(HttpServletRequest request,
+    public ResponseBean<List<RepositoryVO>> query(HttpServletRequest request,
                                                    @RequestParam(name = "recycled", required = false, defaultValue = "0") int recycled) {
         String userToken = request.getHeader(TOKEN);
         List<SubRepository> subRepositories = projectControl.query(userToken);
         List<RepositoryVO> repositoryVos = new ArrayList<>(subRepositories.size());
-        subRepositories.stream().filter(s -> s.getRecycled() == recycled).
-                forEach(s -> repositoryVos.add(new RepositoryVO(s)));
+        subRepositories.stream()
+                .filter(s -> s.getRecycled() == recycled)
+                .forEach(s -> repositoryVos.add(new RepositoryVO(s)));
 
-        return new ResponseBean<>(200, "success", subRepositories);
+        return new ResponseBean<>(200, "success", repositoryVos);
     }
 
     /**

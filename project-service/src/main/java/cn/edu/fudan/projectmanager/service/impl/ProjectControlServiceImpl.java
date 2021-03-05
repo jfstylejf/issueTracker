@@ -356,7 +356,7 @@ public class ProjectControlServiceImpl implements ProjectControlService {
 
 
     @Override
-    public void deleteRepo(@NotNull String token, String repoUuid) throws Exception {
+    public void deleteRepo(@NotNull String token, String repoUuid, String repoUUID) throws Exception {
         UserInfoDTO userInfoDTO = getUserInfoByToken(token);
         String accountUuid = userInfoDTO.getUuid();
         // 0 表示超级管理员 只有超级管理员能操作
@@ -365,6 +365,11 @@ public class ProjectControlServiceImpl implements ProjectControlService {
         }
         //该repo的所有projectName 都会改变 只有超级管理员才会有此权限
         log.warn("repo delete by {}! repo uuid is {}", accountUuid, repoUuid);
+
+        if(repoUUID != null){
+            subRepositoryDao.deleteRepoByUuid(repoUUID);
+            return;
+        }
         accountRepositoryDao.deleteRepoAR(accountUuid, repoUuid);
         subRepositoryDao.deleteRepoSR(accountUuid, repoUuid);
 

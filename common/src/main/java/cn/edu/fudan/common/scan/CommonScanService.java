@@ -1,8 +1,9 @@
 package cn.edu.fudan.common.scan;
 
 import cn.edu.fudan.common.domain.po.scan.RepoScan;
+import org.springframework.stereotype.Service;
 
-
+@Service
 public interface CommonScanService {
 
     /**

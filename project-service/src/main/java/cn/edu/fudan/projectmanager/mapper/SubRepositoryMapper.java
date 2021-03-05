@@ -139,4 +139,11 @@ public interface SubRepositoryMapper {
      * @param repoUuid    库UUID
      */
     void getFromRecycled(@Param("accountUuid") String accountUuid, @Param("recycled") Integer recycled, @Param("repoUuid") String repoUuid);
+
+    /**
+     * 通过表uuid删除库
+     *
+     * @param RepoUUID    库uuid
+     */
+    void deleteRepoByUuid(@Param("RepoUUID") String RepoUUID);
 }

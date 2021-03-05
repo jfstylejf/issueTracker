@@ -80,6 +80,10 @@ public class SubRepositoryDao {
         subRepositoryMapper.deleteRepoSR(accountUuid, RepoUuid);
     }
 
+    public void deleteRepoByUuid(String RepoUUID){
+        subRepositoryMapper.deleteRepoByUuid(RepoUUID);
+    }
+
     public void putIntoRecycled(String accountUuid, Integer recycled, String repoUuid) {
         subRepositoryMapper.putIntoRecycled(accountUuid, recycled, repoUuid);
     }
