@@ -88,46 +88,11 @@ public class ScanServiceImpl extends CommonScanProcess {
     public RepoScan getRepoScanStatus(String repoUuid) {
         return null;
     }
-//    public  List getExcel() throws FileNotFoundException, IOException {
-//        File excelFile = new File("D:\\allIdea\\IssueTracker-test\\depend-service\\src\\main\\resources\\c.xlsx");
-//        XSSFWorkbook wb = new XSSFWorkbook(new FileInputStream(excelFile));
-//        XSSFSheet sheet = wb.getSheetAt(0);
-//        List<List<String>> listAll = new ArrayList<List<String>>();
-//        for (Row row : sheet) {
-//            List<String> list = new ArrayList<String>();
-//            for (Cell cell : row) {
-//                switch (cell.getCellType()) {
-//                    case Cell.CELL_TYPE_STRING://字符串
-//                        String  categoryName = cell.getRichStringCellValue().getString();
-//                        list.add(categoryName);
-//                        System.out.print(" ");
-//                        break;
-//                    case Cell.CELL_TYPE_NUMERIC://数值与日期
-//                        String axis = Double.toString(cell.getNumericCellValue());
-//                        list.add(axis);
-//                        System.out.print(" ");
-//                        break;
-//                    default:
-//                }
-//            }
-//            listAll.add(list);
-//            System.out.println();
-//        }
-//        System.out.println(listAll);
-//        System.out.println(listAll.size());
-//        return listAll;
-//    }
+
 
     public static void main(String[] args) {
         ScanServiceImpl s=new ScanServiceImpl();
         System.out.println("hhhh");
-        try {
-            s.getExcel();
-
-
-        }catch (Exception e){
-            e.printStackTrace();
-        }
     }
 
 }

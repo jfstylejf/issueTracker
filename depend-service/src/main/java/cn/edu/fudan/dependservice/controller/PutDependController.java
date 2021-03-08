@@ -1,5 +1,6 @@
 package cn.edu.fudan.dependservice.controller;
 
+import cn.edu.fudan.common.scan.ToolScan;
 import cn.edu.fudan.dependservice.impl.RunnerImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -13,24 +14,15 @@ public class PutDependController {
 
     private ApplicationContext applicationContext;
 
+    @Autowired
+    ToolScan toolScan;
+
     @RequestMapping(value = {"/putDepend"}, method = RequestMethod.GET)
     //String repoPath
     public String put2Database(@RequestParam(name = "repoPath") String repoPath) {
-        System.out.println();
-        // if ok return true else return false;
-        StringBuilder res=new StringBuilder();
-        res.append("now dir:"+System.getProperty("user.dir"));
-        res.append("\n");
+        toolScan.scanOneCommit(null);
 
-        res.append("repoPath:"+repoPath);
-        res.append("\n");
-        repoPath="/home/fdse/codeWisdom/service/dependence-analysis/scenario-engine";
-        RunnerImpl runner=new RunnerImpl(applicationContext);
-
-//        runner.setShHome("D:\\allIdea\\IssueTracker-test\\depend-service\\src\\main\\java\\cn\\edu\\fudan\\dependservice\\");
-        //D:\allIdea\IssueTracker-test\depend-service\src\main\java\cn\edu\fudan\dependservice
-        runner.runTool(repoPath,"tempCommitID");
-        return res.toString();
+        return "run ok";
         //
     }
 
