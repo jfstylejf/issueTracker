@@ -24,7 +24,10 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-jdbc</artifactId>
@@ -80,7 +83,9 @@
             <groupId>cn.edu.fudan</groupId>
             <artifactId>common</artifactId>
             <version>1.0-SNAPSHOT</version>
-            <scope>compile</scope>
+<!--            <scope>compile</scope>-->
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/common-1.0-SNAPSHOT.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>org.apache.poi</groupId>
@@ -91,6 +96,11 @@
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>
             <version>3.17</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jgit</groupId>
+            <artifactId>org.eclipse.jgit</artifactId>
+            <version>5.4.0.201906121030-r</version>
         </dependency>
     </dependencies>
 
@@ -121,11 +131,4 @@
 
         </plugins>
     </build>
-
-
-
-
-
-
-
 </project>

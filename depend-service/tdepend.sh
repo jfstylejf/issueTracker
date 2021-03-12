@@ -8,7 +8,7 @@ detectPath='/home/fdse/codeWisdom/service/dependence-analysis'
 
 neo4jHome=/home/fdse/codeWisdom/service/dependence-analysis/
 javaHome=/home/fdse/user/Component/sonar/sonarJava/jdk-11.0.4/bin/
-repoPath=/home/fdse/codeWisdom/service/dependence-analysis/scenario-engine
+repoPath=$1
 logFile=/home/fdse/codeWisdom/service/dependence-analysis/l.log
 echo "var 0 =$0" >>$logFile
 echo "var 1 =$1" >>$logFile
@@ -27,14 +27,11 @@ cd  deHome0303
 res1=`${javaHome}java -jar multi-dependency-1.5.0.jar -a ./application-kingsley.yml && echo first step ok`
 echo "first step ok" >> $logFile
 echo "res1= $res1"  >> $ logFile
-echo "---------------------------------------------------"
 
 cd ..
 res2=`./neo4j-community-4.2.3/bin/neo4j start `
-echo "start neo4j ok $res2" >> $logFile
-echo $res2
-echo "start neo4j ok____________________________________________________________________________________"
-sleep 5
+echo "start neo4j ok  $res2" >> $logFile
+sleep 10
 cd deHome0303
 ${javaHome}java -jar -Dspring.config.location=application-kingsley.yml  multi-dependency-1.5.0.jar -m &
 #echo  "run succsee" >> $logFile
