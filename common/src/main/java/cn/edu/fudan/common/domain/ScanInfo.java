@@ -43,7 +43,6 @@ public class ScanInfo implements Serializable {
      */
     public enum Status {
 
-        // 增加、删除、自己改变、移动、因 子节点的改变而改变、非逻辑上改变内容 （如增加注释、空格等）、只是改变行号、无变化
         /**
          * scanning
          */
@@ -52,7 +51,7 @@ public class ScanInfo implements Serializable {
         COMPLETE("complete"),
         FAILED("failed");
 
-        private String status;
+        private final String status;
 
         Status(String status) {
             this.status = status;

@@ -132,20 +132,21 @@ public class IssueServiceImpl implements IssueService {
     @Override
     public List<Map<String, Object>> getRepoIssueCounts(List<String> repoUuids, String since, String until, String tool) {
         List<Map<String, Object>> result = new ArrayList<>();
-
-        LocalDate firstDate = LocalDate.parse(scanResultDao.findFirstDateByRepo(repoUuids).substring(0, 10), DateTimeUtil.Y_M_D_formatter);
         LocalDate indexDay = LocalDate.parse(since,DateTimeUtil.Y_M_D_formatter);
         LocalDate untilDay = LocalDate.parse(until,DateTimeUtil.Y_M_D_formatter);
 
+        String firstDateByRepo = scanResultDao.findFirstDateByRepo(repoUuids);
+        if (firstDateByRepo == null){
+            while(indexDay.isBefore(untilDay) || indexDay.isEqual(untilDay)){
+                indexDay = getInitInfoInLocalDate(result, indexDay);
+            }
+            return result;
+        }
+        LocalDate firstDate = LocalDate.parse(firstDateByRepo.substring(0, 10), DateTimeUtil.Y_M_D_formatter);
+
         if(indexDay.isBefore(firstDate)){
             while(indexDay.isBefore(firstDate)){
-                Map<String, Object> map = new HashMap<>(8);
-                map.put("date", indexDay.toString());
-                map.put(newIssueCount, 0);
-                map.put(eliminatedIssueCount, 0);
-                map.put(remainingIssueCount, 0);
-                result.add(map);
-                indexDay = indexDay.plusDays(1);
+                indexDay = getInitInfoInLocalDate(result, indexDay);
             }
         }
 
@@ -176,6 +177,17 @@ public class IssueServiceImpl implements IssueService {
         }
 
         return result;
+    }
+
+    private LocalDate getInitInfoInLocalDate(List<Map<String, Object>> result, LocalDate indexDay) {
+        Map<String, Object> map = new HashMap<>(8);
+        map.put("date", indexDay.toString());
+        map.put(newIssueCount, 0);
+        map.put(eliminatedIssueCount, 0);
+        map.put(remainingIssueCount, 0);
+        result.add(map);
+        indexDay = indexDay.plusDays(1);
+        return indexDay;
     }
 
     private Map<String, Object> findFirstDateScanResult(List<String> repoUuids, LocalDate indexDay, LocalDate firstDate, String tool) {
@@ -375,10 +387,12 @@ public class IssueServiceImpl implements IssueService {
     }
 
     @Override
-    public List<JSONObject> getAllIssuesInProject(String projectIds, String since, String until, String interval) throws ParseException {
+    public List<JSONObject> getAllIssuesInProject(List<String> repoUuids, String since, String until, String interval) throws ParseException {
         List<JSONObject> issuesDetail = new ArrayList<>();
         List<String[]> periods = DateTimeUtil.getPeriodsByInterval(since, until, interval);
-
+        for (String[] period : periods) {
+            int openIssueNum = issueDao.getIssueCountInRepos(repoUuids, period[0], period[1]);
+        }
         return issuesDetail;
     }
 

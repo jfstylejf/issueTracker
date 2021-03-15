@@ -13,7 +13,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
  **/
 @EnableSwagger2
 @SpringBootApplication
-@MapperScan("cn.edu.fudan.measureservice.mapper")
+@MapperScan("cn.edu.fudan.dependservice.mapper")
 public class DependServiceApplication {
 
     public static void main(String[] args) {

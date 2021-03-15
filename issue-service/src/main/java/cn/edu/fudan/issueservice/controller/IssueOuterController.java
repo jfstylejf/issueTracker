@@ -392,7 +392,7 @@ public class IssueOuterController {
                                                                HttpServletRequest httpServletRequest) {
         try {
             List<String> repoUuids = restInterfaceManager.getAllRepoUuidsByProjectName(httpServletRequest.getHeader(TOKEN), projectIds);
-            return new ResponseBean<>(200, SUCCESS, issueService.getAllIssuesInProject(projectIds, since, until, interval));
+            return new ResponseBean<>(200, SUCCESS, issueService.getAllIssuesInProject(repoUuids, since, until, interval));
         }catch (Exception e){
             return new ResponseBean<>(500, FAILED + e.getMessage(), null);
         }
