@@ -1,0 +1,520 @@
+ INFO [background-preinit] 2021-03-14 16:17:03,216 (Version.java:21): HV000001: Hibernate Validator 6.0.10.Final
+ INFO [main] 2021-03-14 16:17:03,457 (StartupInfoLogger.java:50): Starting CloneServiceApplication on LAPTOP-TSNHQQ9V with PID 10620 (C:\Users\86189\Desktop\clone\IssueTracker-Master\clone-service\target\classes started by 86189 in C:\Users\86189\Desktop\clone\IssueTracker-Master\clone-service)
+ INFO [main] 2021-03-14 16:17:03,463 (SpringApplication.java:659): No active profile set, falling back to default profiles: default
+ INFO [main] 2021-03-14 16:17:03,545 (AbstractApplicationContext.java:590): Refreshing org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext@6304101a: startup date [Sun Mar 14 16:17:03 CST 2021]; root of context hierarchy
+ INFO [main] 2021-03-14 16:17:04,805 (DefaultListableBeanFactory.java:824): Overriding bean definition for bean 'cloneMeasureLock' with a different definition: replacing [Generic bean: class [cn.edu.fudan.cloneservice.lock.CloneMeasureLock]; scope=singleton; abstract=false; lazyInit=false; autowireMode=0; dependencyCheck=0; autowireCandidate=true; primary=false; factoryBeanName=null; factoryMethodName=null; initMethodName=null; destroyMethodName=null; defined in file [C:\Users\86189\Desktop\clone\IssueTracker-Master\clone-service\target\classes\cn\edu\fudan\cloneservice\lock\CloneMeasureLock.class]] with [Root bean: class [null]; scope=; abstract=false; lazyInit=false; autowireMode=3; dependencyCheck=0; autowireCandidate=true; primary=false; factoryBeanName=syncConfig; factoryMethodName=cloneMeasureLock; initMethodName=null; destroyMethodName=(inferred); defined in class path resource [cn/edu/fudan/cloneservice/config/SyncConfig.class]]
+ INFO [main] 2021-03-14 16:17:05,368 (PostProcessorRegistrationDelegate.java:328): Bean 'org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration' of type [org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration$$EnhancerBySpringCGLIB$$f97139c0] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+ INFO [main] 2021-03-14 16:17:05,709 (TomcatWebServer.java:91): Tomcat initialized with port(s): 8080 (http)
+ INFO [localhost-startStop-1] 2021-03-14 16:17:06,135 (ServletWebServerApplicationContext.java:285): Root WebApplicationContext: initialization completed in 2590 ms
+ INFO [background-preinit] 2021-03-14 16:17:06,432 (Version.java:21): HV000001: Hibernate Validator 6.0.10.Final
+ INFO [localhost-startStop-1] 2021-03-14 16:17:06,498 (ServletRegistrationBean.java:186): Servlet dispatcherServlet mapped to [/]
+ INFO [localhost-startStop-1] 2021-03-14 16:17:06,501 (ServletRegistrationBean.java:186): Servlet statViewServlet mapped to [/druid/*]
+ INFO [localhost-startStop-1] 2021-03-14 16:17:06,509 (AbstractFilterRegistrationBean.java:245): Mapping filter: 'characterEncodingFilter' to: [/*]
+ INFO [localhost-startStop-1] 2021-03-14 16:17:06,509 (AbstractFilterRegistrationBean.java:245): Mapping filter: 'hiddenHttpMethodFilter' to: [/*]
+ INFO [localhost-startStop-1] 2021-03-14 16:17:06,510 (AbstractFilterRegistrationBean.java:245): Mapping filter: 'httpPutFormContentFilter' to: [/*]
+ INFO [localhost-startStop-1] 2021-03-14 16:17:06,510 (AbstractFilterRegistrationBean.java:245): Mapping filter: 'requestContextFilter' to: [/*]
+ INFO [localhost-startStop-1] 2021-03-14 16:17:06,510 (AbstractFilterRegistrationBean.java:258): Mapping filter: 'webStatFilter' to urls: [/*]
+ INFO [main] 2021-03-14 16:17:06,662 (StartupInfoLogger.java:50): Starting CloneServiceApplication on LAPTOP-TSNHQQ9V with PID 18568 (C:\Users\86189\Desktop\clone\IssueTracker-Master\clone-service\target\classes started by 86189 in C:\Users\86189\Desktop\clone\IssueTracker-Master\clone-service)
+ INFO [main] 2021-03-14 16:17:06,665 (SpringApplication.java:659): No active profile set, falling back to default profiles: default
+ INFO [main] 2021-03-14 16:17:06,751 (AbstractApplicationContext.java:590): Refreshing org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext@3370f42: startup date [Sun Mar 14 16:17:06 CST 2021]; root of context hierarchy
+ WARN [main] 2021-03-14 16:17:06,937 (AbstractApplicationContext.java:558): Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'restInterfaceManager': Injection of autowired dependencies failed; nested exception is java.lang.IllegalArgumentException: Could not resolve placeholder 'code.service.path' in value "${code.service.path}"
+ INFO [main] 2021-03-14 16:17:06,988 (ConditionEvaluationReportLoggingListener.java:101): 
+
+Error starting ApplicationContext. To display the conditions report re-run your application with 'debug' enabled.
+ERROR [main] 2021-03-14 16:17:06,998 (SpringApplication.java:842): Application run failed
+org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'restInterfaceManager': Injection of autowired dependencies failed; nested exception is java.lang.IllegalArgumentException: Could not resolve placeholder 'code.service.path' in value "${code.service.path}"
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.postProcessPropertyValues(AutowiredAnnotationBeanPostProcessor.java:379)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.populateBean(AbstractAutowireCapableBeanFactory.java:1350)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:580)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:503)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:317)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:222)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:315)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:199)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:760)
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:869)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:550)
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:140)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:759)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:395)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:327)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1255)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1243)
+	at cn.edu.fudan.cloneservice.CloneServiceApplication.main(CloneServiceApplication.java:18)
+Caused by: java.lang.IllegalArgumentException: Could not resolve placeholder 'code.service.path' in value "${code.service.path}"
+	at org.springframework.util.PropertyPlaceholderHelper.parseStringValue(PropertyPlaceholderHelper.java:172)
+	at org.springframework.util.PropertyPlaceholderHelper.replacePlaceholders(PropertyPlaceholderHelper.java:124)
+	at org.springframework.core.env.AbstractPropertyResolver.doResolvePlaceholders(AbstractPropertyResolver.java:237)
+	at org.springframework.core.env.AbstractPropertyResolver.resolveRequiredPlaceholders(AbstractPropertyResolver.java:211)
+	at org.springframework.context.support.PropertySourcesPlaceholderConfigurer.lambda$processProperties$0(PropertySourcesPlaceholderConfigurer.java:175)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.resolveEmbeddedValue(AbstractBeanFactory.java:839)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.doResolveDependency(DefaultListableBeanFactory.java:1086)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveDependency(DefaultListableBeanFactory.java:1065)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.inject(AutowiredAnnotationBeanPostProcessor.java:584)
+	at org.springframework.beans.factory.annotation.InjectionMetadata.inject(InjectionMetadata.java:91)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.postProcessPropertyValues(AutowiredAnnotationBeanPostProcessor.java:373)
+	... 17 more
+ INFO [main] 2021-03-14 16:17:07,556 (DefaultListableBeanFactory.java:824): Overriding bean definition for bean 'cloneMeasureLock' with a different definition: replacing [Generic bean: class [cn.edu.fudan.cloneservice.lock.CloneMeasureLock]; scope=singleton; abstract=false; lazyInit=false; autowireMode=0; dependencyCheck=0; autowireCandidate=true; primary=false; factoryBeanName=null; factoryMethodName=null; initMethodName=null; destroyMethodName=null; defined in file [C:\Users\86189\Desktop\clone\IssueTracker-Master\clone-service\target\classes\cn\edu\fudan\cloneservice\lock\CloneMeasureLock.class]] with [Root bean: class [null]; scope=; abstract=false; lazyInit=false; autowireMode=3; dependencyCheck=0; autowireCandidate=true; primary=false; factoryBeanName=syncConfig; factoryMethodName=cloneMeasureLock; initMethodName=null; destroyMethodName=(inferred); defined in class path resource [cn/edu/fudan/cloneservice/config/SyncConfig.class]]
+ INFO [main] 2021-03-14 16:17:08,463 (PostProcessorRegistrationDelegate.java:328): Bean 'org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration' of type [org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration$$EnhancerBySpringCGLIB$$46382a28] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+ INFO [main] 2021-03-14 16:17:09,497 (TomcatWebServer.java:91): Tomcat initialized with port(s): 8080 (http)
+ INFO [localhost-startStop-1] 2021-03-14 16:17:09,949 (ServletWebServerApplicationContext.java:285): Root WebApplicationContext: initialization completed in 3198 ms
+ INFO [localhost-startStop-1] 2021-03-14 16:17:10,283 (ServletRegistrationBean.java:186): Servlet dispatcherServlet mapped to [/]
+ INFO [localhost-startStop-1] 2021-03-14 16:17:10,286 (ServletRegistrationBean.java:186): Servlet statViewServlet mapped to [/druid/*]
+ INFO [localhost-startStop-1] 2021-03-14 16:17:10,290 (AbstractFilterRegistrationBean.java:245): Mapping filter: 'characterEncodingFilter' to: [/*]
+ INFO [localhost-startStop-1] 2021-03-14 16:17:10,291 (AbstractFilterRegistrationBean.java:245): Mapping filter: 'hiddenHttpMethodFilter' to: [/*]
+ INFO [localhost-startStop-1] 2021-03-14 16:17:10,291 (AbstractFilterRegistrationBean.java:245): Mapping filter: 'httpPutFormContentFilter' to: [/*]
+ INFO [localhost-startStop-1] 2021-03-14 16:17:10,291 (AbstractFilterRegistrationBean.java:245): Mapping filter: 'requestContextFilter' to: [/*]
+ INFO [localhost-startStop-1] 2021-03-14 16:17:10,292 (AbstractFilterRegistrationBean.java:258): Mapping filter: 'webStatFilter' to urls: [/*]
+ WARN [main] 2021-03-14 16:17:11,022 (AbstractApplicationContext.java:558): Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'restInterfaceManager': Injection of autowired dependencies failed; nested exception is java.lang.IllegalArgumentException: Could not resolve placeholder 'code.service.path' in value "${code.service.path}"
+ INFO [main] 2021-03-14 16:17:11,053 (ConditionEvaluationReportLoggingListener.java:101): 
+
+Error starting ApplicationContext. To display the conditions report re-run your application with 'debug' enabled.
+ERROR [main] 2021-03-14 16:17:11,061 (SpringApplication.java:842): Application run failed
+org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'restInterfaceManager': Injection of autowired dependencies failed; nested exception is java.lang.IllegalArgumentException: Could not resolve placeholder 'code.service.path' in value "${code.service.path}"
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.postProcessPropertyValues(AutowiredAnnotationBeanPostProcessor.java:379)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.populateBean(AbstractAutowireCapableBeanFactory.java:1350)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:580)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:503)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:317)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:222)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:315)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:199)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:760)
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:869)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:550)
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:140)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:759)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:395)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:327)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1255)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1243)
+	at cn.edu.fudan.cloneservice.CloneServiceApplication.main(CloneServiceApplication.java:18)
+Caused by: java.lang.IllegalArgumentException: Could not resolve placeholder 'code.service.path' in value "${code.service.path}"
+	at org.springframework.util.PropertyPlaceholderHelper.parseStringValue(PropertyPlaceholderHelper.java:172)
+	at org.springframework.util.PropertyPlaceholderHelper.replacePlaceholders(PropertyPlaceholderHelper.java:124)
+	at org.springframework.core.env.AbstractPropertyResolver.doResolvePlaceholders(AbstractPropertyResolver.java:237)
+	at org.springframework.core.env.AbstractPropertyResolver.resolveRequiredPlaceholders(AbstractPropertyResolver.java:211)
+	at org.springframework.context.support.PropertySourcesPlaceholderConfigurer.lambda$processProperties$0(PropertySourcesPlaceholderConfigurer.java:175)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.resolveEmbeddedValue(AbstractBeanFactory.java:839)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.doResolveDependency(DefaultListableBeanFactory.java:1086)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveDependency(DefaultListableBeanFactory.java:1065)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.inject(AutowiredAnnotationBeanPostProcessor.java:584)
+	at org.springframework.beans.factory.annotation.InjectionMetadata.inject(InjectionMetadata.java:91)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.postProcessPropertyValues(AutowiredAnnotationBeanPostProcessor.java:373)
+	... 17 more
+ INFO [background-preinit] 2021-03-14 16:24:46,862 (Version.java:21): HV000001: Hibernate Validator 6.0.10.Final
+ INFO [main] 2021-03-14 16:24:47,017 (StartupInfoLogger.java:50): Starting CloneServiceApplication on LAPTOP-TSNHQQ9V with PID 4692 (C:\Users\86189\Desktop\clone\IssueTracker-Master\clone-service\target\classes started by 86189 in C:\Users\86189\Desktop\clone\IssueTracker-Master\clone-service)
+ INFO [main] 2021-03-14 16:24:47,020 (SpringApplication.java:659): No active profile set, falling back to default profiles: default
+ INFO [main] 2021-03-14 16:24:47,102 (AbstractApplicationContext.java:590): Refreshing org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext@6304101a: startup date [Sun Mar 14 16:24:47 CST 2021]; root of context hierarchy
+ INFO [main] 2021-03-14 16:24:47,864 (DefaultListableBeanFactory.java:824): Overriding bean definition for bean 'cloneMeasureLock' with a different definition: replacing [Generic bean: class [cn.edu.fudan.cloneservice.lock.CloneMeasureLock]; scope=singleton; abstract=false; lazyInit=false; autowireMode=0; dependencyCheck=0; autowireCandidate=true; primary=false; factoryBeanName=null; factoryMethodName=null; initMethodName=null; destroyMethodName=null; defined in file [C:\Users\86189\Desktop\clone\IssueTracker-Master\clone-service\target\classes\cn\edu\fudan\cloneservice\lock\CloneMeasureLock.class]] with [Root bean: class [null]; scope=; abstract=false; lazyInit=false; autowireMode=3; dependencyCheck=0; autowireCandidate=true; primary=false; factoryBeanName=syncConfig; factoryMethodName=cloneMeasureLock; initMethodName=null; destroyMethodName=(inferred); defined in class path resource [cn/edu/fudan/cloneservice/config/SyncConfig.class]]
+ INFO [main] 2021-03-14 16:24:48,242 (PostProcessorRegistrationDelegate.java:328): Bean 'org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration' of type [org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration$$EnhancerBySpringCGLIB$$f97139c0] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+ INFO [main] 2021-03-14 16:24:48,496 (TomcatWebServer.java:91): Tomcat initialized with port(s): 8080 (http)
+ INFO [localhost-startStop-1] 2021-03-14 16:24:48,802 (ServletWebServerApplicationContext.java:285): Root WebApplicationContext: initialization completed in 1700 ms
+ INFO [localhost-startStop-1] 2021-03-14 16:24:48,998 (ServletRegistrationBean.java:186): Servlet dispatcherServlet mapped to [/]
+ INFO [localhost-startStop-1] 2021-03-14 16:24:48,999 (ServletRegistrationBean.java:186): Servlet statViewServlet mapped to [/druid/*]
+ INFO [localhost-startStop-1] 2021-03-14 16:24:49,003 (AbstractFilterRegistrationBean.java:245): Mapping filter: 'characterEncodingFilter' to: [/*]
+ INFO [localhost-startStop-1] 2021-03-14 16:24:49,003 (AbstractFilterRegistrationBean.java:245): Mapping filter: 'hiddenHttpMethodFilter' to: [/*]
+ INFO [localhost-startStop-1] 2021-03-14 16:24:49,003 (AbstractFilterRegistrationBean.java:245): Mapping filter: 'httpPutFormContentFilter' to: [/*]
+ INFO [localhost-startStop-1] 2021-03-14 16:24:49,003 (AbstractFilterRegistrationBean.java:245): Mapping filter: 'requestContextFilter' to: [/*]
+ INFO [localhost-startStop-1] 2021-03-14 16:24:49,004 (AbstractFilterRegistrationBean.java:258): Mapping filter: 'webStatFilter' to urls: [/*]
+ WARN [main] 2021-03-14 16:24:49,180 (AbstractApplicationContext.java:558): Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'restInterfaceManager': Injection of autowired dependencies failed; nested exception is java.lang.IllegalArgumentException: Could not resolve placeholder 'code.service.path' in value "${code.service.path}"
+ INFO [main] 2021-03-14 16:24:49,204 (ConditionEvaluationReportLoggingListener.java:101): 
+
+Error starting ApplicationContext. To display the conditions report re-run your application with 'debug' enabled.
+ERROR [main] 2021-03-14 16:24:49,212 (SpringApplication.java:842): Application run failed
+org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'restInterfaceManager': Injection of autowired dependencies failed; nested exception is java.lang.IllegalArgumentException: Could not resolve placeholder 'code.service.path' in value "${code.service.path}"
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.postProcessPropertyValues(AutowiredAnnotationBeanPostProcessor.java:379)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.populateBean(AbstractAutowireCapableBeanFactory.java:1350)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:580)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:503)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:317)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:222)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:315)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:199)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:760)
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:869)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:550)
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:140)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:759)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:395)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:327)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1255)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1243)
+	at cn.edu.fudan.cloneservice.CloneServiceApplication.main(CloneServiceApplication.java:18)
+Caused by: java.lang.IllegalArgumentException: Could not resolve placeholder 'code.service.path' in value "${code.service.path}"
+	at org.springframework.util.PropertyPlaceholderHelper.parseStringValue(PropertyPlaceholderHelper.java:172)
+	at org.springframework.util.PropertyPlaceholderHelper.replacePlaceholders(PropertyPlaceholderHelper.java:124)
+	at org.springframework.core.env.AbstractPropertyResolver.doResolvePlaceholders(AbstractPropertyResolver.java:237)
+	at org.springframework.core.env.AbstractPropertyResolver.resolveRequiredPlaceholders(AbstractPropertyResolver.java:211)
+	at org.springframework.context.support.PropertySourcesPlaceholderConfigurer.lambda$processProperties$0(PropertySourcesPlaceholderConfigurer.java:175)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.resolveEmbeddedValue(AbstractBeanFactory.java:839)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.doResolveDependency(DefaultListableBeanFactory.java:1086)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveDependency(DefaultListableBeanFactory.java:1065)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.inject(AutowiredAnnotationBeanPostProcessor.java:584)
+	at org.springframework.beans.factory.annotation.InjectionMetadata.inject(InjectionMetadata.java:91)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.postProcessPropertyValues(AutowiredAnnotationBeanPostProcessor.java:373)
+	... 17 more
+ INFO [background-preinit] 2021-03-14 16:36:59,058 (Version.java:21): HV000001: Hibernate Validator 6.0.10.Final
+ INFO [main] 2021-03-14 16:36:59,244 (StartupInfoLogger.java:50): Starting CloneServiceApplication on LAPTOP-TSNHQQ9V with PID 18852 (C:\Users\86189\Desktop\clone\IssueTracker-Master\clone-service\target\classes started by 86189 in C:\Users\86189\Desktop\clone\IssueTracker-Master\clone-service)
+ INFO [main] 2021-03-14 16:36:59,247 (SpringApplication.java:659): No active profile set, falling back to default profiles: default
+ INFO [main] 2021-03-14 16:36:59,332 (AbstractApplicationContext.java:590): Refreshing org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext@6304101a: startup date [Sun Mar 14 16:36:59 CST 2021]; root of context hierarchy
+ INFO [main] 2021-03-14 16:37:00,133 (DefaultListableBeanFactory.java:824): Overriding bean definition for bean 'cloneMeasureLock' with a different definition: replacing [Generic bean: class [cn.edu.fudan.cloneservice.lock.CloneMeasureLock]; scope=singleton; abstract=false; lazyInit=false; autowireMode=0; dependencyCheck=0; autowireCandidate=true; primary=false; factoryBeanName=null; factoryMethodName=null; initMethodName=null; destroyMethodName=null; defined in file [C:\Users\86189\Desktop\clone\IssueTracker-Master\clone-service\target\classes\cn\edu\fudan\cloneservice\lock\CloneMeasureLock.class]] with [Root bean: class [null]; scope=; abstract=false; lazyInit=false; autowireMode=3; dependencyCheck=0; autowireCandidate=true; primary=false; factoryBeanName=syncConfig; factoryMethodName=cloneMeasureLock; initMethodName=null; destroyMethodName=(inferred); defined in class path resource [cn/edu/fudan/cloneservice/config/SyncConfig.class]]
+ INFO [main] 2021-03-14 16:37:00,518 (PostProcessorRegistrationDelegate.java:328): Bean 'org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration' of type [org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration$$EnhancerBySpringCGLIB$$cd9fef9a] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+ INFO [main] 2021-03-14 16:37:00,779 (TomcatWebServer.java:91): Tomcat initialized with port(s): 8080 (http)
+ INFO [localhost-startStop-1] 2021-03-14 16:37:01,085 (ServletWebServerApplicationContext.java:285): Root WebApplicationContext: initialization completed in 1753 ms
+ INFO [localhost-startStop-1] 2021-03-14 16:37:01,262 (ServletRegistrationBean.java:186): Servlet dispatcherServlet mapped to [/]
+ INFO [localhost-startStop-1] 2021-03-14 16:37:01,264 (ServletRegistrationBean.java:186): Servlet statViewServlet mapped to [/druid/*]
+ INFO [localhost-startStop-1] 2021-03-14 16:37:01,267 (AbstractFilterRegistrationBean.java:245): Mapping filter: 'characterEncodingFilter' to: [/*]
+ INFO [localhost-startStop-1] 2021-03-14 16:37:01,267 (AbstractFilterRegistrationBean.java:245): Mapping filter: 'hiddenHttpMethodFilter' to: [/*]
+ INFO [localhost-startStop-1] 2021-03-14 16:37:01,267 (AbstractFilterRegistrationBean.java:245): Mapping filter: 'httpPutFormContentFilter' to: [/*]
+ INFO [localhost-startStop-1] 2021-03-14 16:37:01,267 (AbstractFilterRegistrationBean.java:245): Mapping filter: 'requestContextFilter' to: [/*]
+ INFO [localhost-startStop-1] 2021-03-14 16:37:01,267 (AbstractFilterRegistrationBean.java:258): Mapping filter: 'webStatFilter' to urls: [/*]
+ WARN [main] 2021-03-14 16:37:01,454 (AbstractApplicationContext.java:558): Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'restInterfaceManager': Injection of autowired dependencies failed; nested exception is java.lang.IllegalArgumentException: Could not resolve placeholder 'code.service.path' in value "${code.service.path}"
+ INFO [main] 2021-03-14 16:37:01,478 (ConditionEvaluationReportLoggingListener.java:101): 
+
+Error starting ApplicationContext. To display the conditions report re-run your application with 'debug' enabled.
+ERROR [main] 2021-03-14 16:37:01,484 (SpringApplication.java:842): Application run failed
+org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'restInterfaceManager': Injection of autowired dependencies failed; nested exception is java.lang.IllegalArgumentException: Could not resolve placeholder 'code.service.path' in value "${code.service.path}"
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.postProcessPropertyValues(AutowiredAnnotationBeanPostProcessor.java:379)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.populateBean(AbstractAutowireCapableBeanFactory.java:1350)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:580)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:503)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:317)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:222)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:315)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:199)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:760)
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:869)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:550)
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:140)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:759)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:395)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:327)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1255)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1243)
+	at cn.edu.fudan.cloneservice.CloneServiceApplication.main(CloneServiceApplication.java:18)
+Caused by: java.lang.IllegalArgumentException: Could not resolve placeholder 'code.service.path' in value "${code.service.path}"
+	at org.springframework.util.PropertyPlaceholderHelper.parseStringValue(PropertyPlaceholderHelper.java:172)
+	at org.springframework.util.PropertyPlaceholderHelper.replacePlaceholders(PropertyPlaceholderHelper.java:124)
+	at org.springframework.core.env.AbstractPropertyResolver.doResolvePlaceholders(AbstractPropertyResolver.java:237)
+	at org.springframework.core.env.AbstractPropertyResolver.resolveRequiredPlaceholders(AbstractPropertyResolver.java:211)
+	at org.springframework.context.support.PropertySourcesPlaceholderConfigurer.lambda$processProperties$0(PropertySourcesPlaceholderConfigurer.java:175)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.resolveEmbeddedValue(AbstractBeanFactory.java:839)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.doResolveDependency(DefaultListableBeanFactory.java:1086)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveDependency(DefaultListableBeanFactory.java:1065)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.inject(AutowiredAnnotationBeanPostProcessor.java:584)
+	at org.springframework.beans.factory.annotation.InjectionMetadata.inject(InjectionMetadata.java:91)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.postProcessPropertyValues(AutowiredAnnotationBeanPostProcessor.java:373)
+	... 17 more
+ INFO [background-preinit] 2021-03-14 16:47:21,487 (Version.java:21): HV000001: Hibernate Validator 6.0.10.Final
+ INFO [main] 2021-03-14 16:47:21,641 (StartupInfoLogger.java:50): Starting CloneServiceApplication on LAPTOP-TSNHQQ9V with PID 18968 (C:\Users\86189\Desktop\clone\IssueTracker-Master\clone-service\target\classes started by 86189 in C:\Users\86189\Desktop\clone\IssueTracker-Master\clone-service)
+ INFO [main] 2021-03-14 16:47:21,644 (SpringApplication.java:659): No active profile set, falling back to default profiles: default
+ INFO [main] 2021-03-14 16:47:21,703 (AbstractApplicationContext.java:590): Refreshing org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext@6304101a: startup date [Sun Mar 14 16:47:21 CST 2021]; root of context hierarchy
+ INFO [main] 2021-03-14 16:47:22,490 (DefaultListableBeanFactory.java:824): Overriding bean definition for bean 'cloneMeasureLock' with a different definition: replacing [Generic bean: class [cn.edu.fudan.cloneservice.lock.CloneMeasureLock]; scope=singleton; abstract=false; lazyInit=false; autowireMode=0; dependencyCheck=0; autowireCandidate=true; primary=false; factoryBeanName=null; factoryMethodName=null; initMethodName=null; destroyMethodName=null; defined in file [C:\Users\86189\Desktop\clone\IssueTracker-Master\clone-service\target\classes\cn\edu\fudan\cloneservice\lock\CloneMeasureLock.class]] with [Root bean: class [null]; scope=; abstract=false; lazyInit=false; autowireMode=3; dependencyCheck=0; autowireCandidate=true; primary=false; factoryBeanName=syncConfig; factoryMethodName=cloneMeasureLock; initMethodName=null; destroyMethodName=(inferred); defined in class path resource [cn/edu/fudan/cloneservice/config/SyncConfig.class]]
+ INFO [main] 2021-03-14 16:47:22,876 (PostProcessorRegistrationDelegate.java:328): Bean 'org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration' of type [org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration$$EnhancerBySpringCGLIB$$78bd8790] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+ INFO [main] 2021-03-14 16:47:23,126 (TomcatWebServer.java:91): Tomcat initialized with port(s): 8080 (http)
+ INFO [localhost-startStop-1] 2021-03-14 16:47:23,420 (ServletWebServerApplicationContext.java:285): Root WebApplicationContext: initialization completed in 1717 ms
+ INFO [localhost-startStop-1] 2021-03-14 16:47:23,602 (ServletRegistrationBean.java:186): Servlet dispatcherServlet mapped to [/]
+ INFO [localhost-startStop-1] 2021-03-14 16:47:23,603 (ServletRegistrationBean.java:186): Servlet statViewServlet mapped to [/druid/*]
+ INFO [localhost-startStop-1] 2021-03-14 16:47:23,607 (AbstractFilterRegistrationBean.java:245): Mapping filter: 'characterEncodingFilter' to: [/*]
+ INFO [localhost-startStop-1] 2021-03-14 16:47:23,607 (AbstractFilterRegistrationBean.java:245): Mapping filter: 'hiddenHttpMethodFilter' to: [/*]
+ INFO [localhost-startStop-1] 2021-03-14 16:47:23,607 (AbstractFilterRegistrationBean.java:245): Mapping filter: 'httpPutFormContentFilter' to: [/*]
+ INFO [localhost-startStop-1] 2021-03-14 16:47:23,607 (AbstractFilterRegistrationBean.java:245): Mapping filter: 'requestContextFilter' to: [/*]
+ INFO [localhost-startStop-1] 2021-03-14 16:47:23,607 (AbstractFilterRegistrationBean.java:258): Mapping filter: 'webStatFilter' to urls: [/*]
+ WARN [main] 2021-03-14 16:47:23,796 (AbstractApplicationContext.java:558): Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'restInterfaceManager': Injection of autowired dependencies failed; nested exception is java.lang.IllegalArgumentException: Could not resolve placeholder 'repository.service.path' in value "${repository.service.path}"
+ INFO [main] 2021-03-14 16:47:23,818 (ConditionEvaluationReportLoggingListener.java:101): 
+
+Error starting ApplicationContext. To display the conditions report re-run your application with 'debug' enabled.
+ERROR [main] 2021-03-14 16:47:23,824 (SpringApplication.java:842): Application run failed
+org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'restInterfaceManager': Injection of autowired dependencies failed; nested exception is java.lang.IllegalArgumentException: Could not resolve placeholder 'repository.service.path' in value "${repository.service.path}"
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.postProcessPropertyValues(AutowiredAnnotationBeanPostProcessor.java:379)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.populateBean(AbstractAutowireCapableBeanFactory.java:1350)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:580)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:503)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:317)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:222)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:315)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:199)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:760)
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:869)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:550)
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:140)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:759)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:395)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:327)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1255)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1243)
+	at cn.edu.fudan.cloneservice.CloneServiceApplication.main(CloneServiceApplication.java:18)
+Caused by: java.lang.IllegalArgumentException: Could not resolve placeholder 'repository.service.path' in value "${repository.service.path}"
+	at org.springframework.util.PropertyPlaceholderHelper.parseStringValue(PropertyPlaceholderHelper.java:172)
+	at org.springframework.util.PropertyPlaceholderHelper.replacePlaceholders(PropertyPlaceholderHelper.java:124)
+	at org.springframework.core.env.AbstractPropertyResolver.doResolvePlaceholders(AbstractPropertyResolver.java:237)
+	at org.springframework.core.env.AbstractPropertyResolver.resolveRequiredPlaceholders(AbstractPropertyResolver.java:211)
+	at org.springframework.context.support.PropertySourcesPlaceholderConfigurer.lambda$processProperties$0(PropertySourcesPlaceholderConfigurer.java:175)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.resolveEmbeddedValue(AbstractBeanFactory.java:839)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.doResolveDependency(DefaultListableBeanFactory.java:1086)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveDependency(DefaultListableBeanFactory.java:1065)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.inject(AutowiredAnnotationBeanPostProcessor.java:584)
+	at org.springframework.beans.factory.annotation.InjectionMetadata.inject(InjectionMetadata.java:91)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.postProcessPropertyValues(AutowiredAnnotationBeanPostProcessor.java:373)
+	... 17 more
+ INFO [background-preinit] 2021-03-14 17:00:08,528 (Version.java:21): HV000001: Hibernate Validator 6.0.10.Final
+ INFO [main] 2021-03-14 17:00:08,712 (StartupInfoLogger.java:50): Starting CloneServiceApplication on LAPTOP-TSNHQQ9V with PID 20260 (C:\Users\86189\Desktop\clone\IssueTracker-Master\clone-service\target\classes started by 86189 in C:\Users\86189\Desktop\clone\IssueTracker-Master\clone-service)
+ INFO [main] 2021-03-14 17:00:08,715 (SpringApplication.java:659): No active profile set, falling back to default profiles: default
+ INFO [main] 2021-03-14 17:00:08,791 (AbstractApplicationContext.java:590): Refreshing org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext@6304101a: startup date [Sun Mar 14 17:00:08 CST 2021]; root of context hierarchy
+ INFO [main] 2021-03-14 17:00:09,537 (DefaultListableBeanFactory.java:824): Overriding bean definition for bean 'cloneMeasureLock' with a different definition: replacing [Generic bean: class [cn.edu.fudan.cloneservice.lock.CloneMeasureLock]; scope=singleton; abstract=false; lazyInit=false; autowireMode=0; dependencyCheck=0; autowireCandidate=true; primary=false; factoryBeanName=null; factoryMethodName=null; initMethodName=null; destroyMethodName=null; defined in file [C:\Users\86189\Desktop\clone\IssueTracker-Master\clone-service\target\classes\cn\edu\fudan\cloneservice\lock\CloneMeasureLock.class]] with [Root bean: class [null]; scope=; abstract=false; lazyInit=false; autowireMode=3; dependencyCheck=0; autowireCandidate=true; primary=false; factoryBeanName=syncConfig; factoryMethodName=cloneMeasureLock; initMethodName=null; destroyMethodName=(inferred); defined in class path resource [cn/edu/fudan/cloneservice/config/SyncConfig.class]]
+ INFO [main] 2021-03-14 17:00:09,926 (PostProcessorRegistrationDelegate.java:328): Bean 'org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration' of type [org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration$$EnhancerBySpringCGLIB$$930ffd7d] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+ INFO [main] 2021-03-14 17:00:10,175 (TomcatWebServer.java:91): Tomcat initialized with port(s): 8080 (http)
+ INFO [localhost-startStop-1] 2021-03-14 17:00:10,475 (ServletWebServerApplicationContext.java:285): Root WebApplicationContext: initialization completed in 1685 ms
+ INFO [localhost-startStop-1] 2021-03-14 17:00:10,670 (ServletRegistrationBean.java:186): Servlet dispatcherServlet mapped to [/]
+ INFO [localhost-startStop-1] 2021-03-14 17:00:10,672 (ServletRegistrationBean.java:186): Servlet statViewServlet mapped to [/druid/*]
+ INFO [localhost-startStop-1] 2021-03-14 17:00:10,676 (AbstractFilterRegistrationBean.java:245): Mapping filter: 'characterEncodingFilter' to: [/*]
+ INFO [localhost-startStop-1] 2021-03-14 17:00:10,676 (AbstractFilterRegistrationBean.java:245): Mapping filter: 'hiddenHttpMethodFilter' to: [/*]
+ INFO [localhost-startStop-1] 2021-03-14 17:00:10,677 (AbstractFilterRegistrationBean.java:245): Mapping filter: 'httpPutFormContentFilter' to: [/*]
+ INFO [localhost-startStop-1] 2021-03-14 17:00:10,677 (AbstractFilterRegistrationBean.java:245): Mapping filter: 'requestContextFilter' to: [/*]
+ INFO [localhost-startStop-1] 2021-03-14 17:00:10,677 (AbstractFilterRegistrationBean.java:258): Mapping filter: 'webStatFilter' to urls: [/*]
+ WARN [main] 2021-03-14 17:00:10,850 (AbstractApplicationContext.java:558): Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'restInterfaceManager': Injection of autowired dependencies failed; nested exception is java.lang.IllegalArgumentException: Could not resolve placeholder 'code.service.path' in value "${code.service.path}"
+ INFO [main] 2021-03-14 17:00:10,872 (ConditionEvaluationReportLoggingListener.java:101): 
+
+Error starting ApplicationContext. To display the conditions report re-run your application with 'debug' enabled.
+ERROR [main] 2021-03-14 17:00:10,878 (SpringApplication.java:842): Application run failed
+org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'restInterfaceManager': Injection of autowired dependencies failed; nested exception is java.lang.IllegalArgumentException: Could not resolve placeholder 'code.service.path' in value "${code.service.path}"
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.postProcessPropertyValues(AutowiredAnnotationBeanPostProcessor.java:379)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.populateBean(AbstractAutowireCapableBeanFactory.java:1350)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:580)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:503)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:317)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:222)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:315)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:199)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:760)
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:869)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:550)
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:140)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:759)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:395)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:327)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1255)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1243)
+	at cn.edu.fudan.cloneservice.CloneServiceApplication.main(CloneServiceApplication.java:18)
+Caused by: java.lang.IllegalArgumentException: Could not resolve placeholder 'code.service.path' in value "${code.service.path}"
+	at org.springframework.util.PropertyPlaceholderHelper.parseStringValue(PropertyPlaceholderHelper.java:172)
+	at org.springframework.util.PropertyPlaceholderHelper.replacePlaceholders(PropertyPlaceholderHelper.java:124)
+	at org.springframework.core.env.AbstractPropertyResolver.doResolvePlaceholders(AbstractPropertyResolver.java:237)
+	at org.springframework.core.env.AbstractPropertyResolver.resolveRequiredPlaceholders(AbstractPropertyResolver.java:211)
+	at org.springframework.context.support.PropertySourcesPlaceholderConfigurer.lambda$processProperties$0(PropertySourcesPlaceholderConfigurer.java:175)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.resolveEmbeddedValue(AbstractBeanFactory.java:839)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.doResolveDependency(DefaultListableBeanFactory.java:1086)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveDependency(DefaultListableBeanFactory.java:1065)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.inject(AutowiredAnnotationBeanPostProcessor.java:584)
+	at org.springframework.beans.factory.annotation.InjectionMetadata.inject(InjectionMetadata.java:91)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.postProcessPropertyValues(AutowiredAnnotationBeanPostProcessor.java:373)
+	... 17 more
+ INFO [background-preinit] 2021-03-14 17:05:56,735 (Version.java:21): HV000001: Hibernate Validator 6.0.10.Final
+ INFO [main] 2021-03-14 17:05:57,100 (StartupInfoLogger.java:50): Starting CloneServiceApplication on LAPTOP-TSNHQQ9V with PID 20084 (C:\Users\86189\Desktop\clone\IssueTracker-Master\clone-service\target\classes started by 86189 in C:\Users\86189\Desktop\clone\IssueTracker-Master\clone-service)
+ INFO [main] 2021-03-14 17:05:57,121 (SpringApplication.java:659): No active profile set, falling back to default profiles: default
+ INFO [main] 2021-03-14 17:05:57,254 (AbstractApplicationContext.java:590): Refreshing org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext@6057aebb: startup date [Sun Mar 14 17:05:57 CST 2021]; root of context hierarchy
+ INFO [main] 2021-03-14 17:05:58,202 (DefaultListableBeanFactory.java:824): Overriding bean definition for bean 'cloneMeasureLock' with a different definition: replacing [Generic bean: class [cn.edu.fudan.cloneservice.lock.CloneMeasureLock]; scope=singleton; abstract=false; lazyInit=false; autowireMode=0; dependencyCheck=0; autowireCandidate=true; primary=false; factoryBeanName=null; factoryMethodName=null; initMethodName=null; destroyMethodName=null; defined in file [C:\Users\86189\Desktop\clone\IssueTracker-Master\clone-service\target\classes\cn\edu\fudan\cloneservice\lock\CloneMeasureLock.class]] with [Root bean: class [null]; scope=; abstract=false; lazyInit=false; autowireMode=3; dependencyCheck=0; autowireCandidate=true; primary=false; factoryBeanName=syncConfig; factoryMethodName=cloneMeasureLock; initMethodName=null; destroyMethodName=(inferred); defined in class path resource [cn/edu/fudan/cloneservice/config/SyncConfig.class]]
+ INFO [main] 2021-03-14 17:05:58,740 (PostProcessorRegistrationDelegate.java:328): Bean 'org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration' of type [org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration$$EnhancerBySpringCGLIB$$9808ae4a] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+ INFO [main] 2021-03-14 17:05:59,077 (TomcatWebServer.java:91): Tomcat initialized with port(s): 8080 (http)
+ INFO [localhost-startStop-1] 2021-03-14 17:05:59,429 (ServletWebServerApplicationContext.java:285): Root WebApplicationContext: initialization completed in 2175 ms
+ INFO [localhost-startStop-1] 2021-03-14 17:05:59,656 (ServletRegistrationBean.java:186): Servlet dispatcherServlet mapped to [/]
+ INFO [localhost-startStop-1] 2021-03-14 17:05:59,658 (ServletRegistrationBean.java:186): Servlet statViewServlet mapped to [/druid/*]
+ INFO [localhost-startStop-1] 2021-03-14 17:05:59,663 (AbstractFilterRegistrationBean.java:245): Mapping filter: 'characterEncodingFilter' to: [/*]
+ INFO [localhost-startStop-1] 2021-03-14 17:05:59,663 (AbstractFilterRegistrationBean.java:245): Mapping filter: 'hiddenHttpMethodFilter' to: [/*]
+ INFO [localhost-startStop-1] 2021-03-14 17:05:59,663 (AbstractFilterRegistrationBean.java:245): Mapping filter: 'httpPutFormContentFilter' to: [/*]
+ INFO [localhost-startStop-1] 2021-03-14 17:05:59,664 (AbstractFilterRegistrationBean.java:245): Mapping filter: 'requestContextFilter' to: [/*]
+ INFO [localhost-startStop-1] 2021-03-14 17:05:59,664 (AbstractFilterRegistrationBean.java:258): Mapping filter: 'webStatFilter' to urls: [/*]
+ WARN [main] 2021-03-14 17:05:59,887 (AbstractApplicationContext.java:558): Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'restInterfaceManager': Injection of autowired dependencies failed; nested exception is java.lang.IllegalArgumentException: Could not resolve placeholder 'code.service.path' in value "${code.service.path}"
+ INFO [main] 2021-03-14 17:05:59,919 (ConditionEvaluationReportLoggingListener.java:101): 
+
+Error starting ApplicationContext. To display the conditions report re-run your application with 'debug' enabled.
+ERROR [main] 2021-03-14 17:05:59,928 (SpringApplication.java:842): Application run failed
+org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'restInterfaceManager': Injection of autowired dependencies failed; nested exception is java.lang.IllegalArgumentException: Could not resolve placeholder 'code.service.path' in value "${code.service.path}"
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.postProcessPropertyValues(AutowiredAnnotationBeanPostProcessor.java:379)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.populateBean(AbstractAutowireCapableBeanFactory.java:1350)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:580)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:503)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:317)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:222)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:315)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:199)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:760)
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:869)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:550)
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:140)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:759)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:395)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:327)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1255)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1243)
+	at cn.edu.fudan.cloneservice.CloneServiceApplication.main(CloneServiceApplication.java:18)
+Caused by: java.lang.IllegalArgumentException: Could not resolve placeholder 'code.service.path' in value "${code.service.path}"
+	at org.springframework.util.PropertyPlaceholderHelper.parseStringValue(PropertyPlaceholderHelper.java:172)
+	at org.springframework.util.PropertyPlaceholderHelper.replacePlaceholders(PropertyPlaceholderHelper.java:124)
+	at org.springframework.core.env.AbstractPropertyResolver.doResolvePlaceholders(AbstractPropertyResolver.java:237)
+	at org.springframework.core.env.AbstractPropertyResolver.resolveRequiredPlaceholders(AbstractPropertyResolver.java:211)
+	at org.springframework.context.support.PropertySourcesPlaceholderConfigurer.lambda$processProperties$0(PropertySourcesPlaceholderConfigurer.java:175)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.resolveEmbeddedValue(AbstractBeanFactory.java:839)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.doResolveDependency(DefaultListableBeanFactory.java:1086)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveDependency(DefaultListableBeanFactory.java:1065)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.inject(AutowiredAnnotationBeanPostProcessor.java:584)
+	at org.springframework.beans.factory.annotation.InjectionMetadata.inject(InjectionMetadata.java:91)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.postProcessPropertyValues(AutowiredAnnotationBeanPostProcessor.java:373)
+	... 17 more
+ INFO [background-preinit] 2021-03-14 17:10:51,845 (Version.java:21): HV000001: Hibernate Validator 6.0.10.Final
+ INFO [main] 2021-03-14 17:10:52,118 (StartupInfoLogger.java:50): Starting CloneServiceApplication on LAPTOP-TSNHQQ9V with PID 9684 (C:\Users\86189\Desktop\clone\IssueTracker-Master\clone-service\target\classes started by 86189 in C:\Users\86189\Desktop\clone\IssueTracker-Master\clone-service)
+ INFO [main] 2021-03-14 17:10:52,121 (SpringApplication.java:659): No active profile set, falling back to default profiles: default
+ INFO [main] 2021-03-14 17:10:52,207 (AbstractApplicationContext.java:590): Refreshing org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext@352c1b98: startup date [Sun Mar 14 17:10:52 CST 2021]; root of context hierarchy
+ INFO [main] 2021-03-14 17:10:53,105 (DefaultListableBeanFactory.java:824): Overriding bean definition for bean 'cloneMeasureLock' with a different definition: replacing [Generic bean: class [cn.edu.fudan.cloneservice.lock.CloneMeasureLock]; scope=singleton; abstract=false; lazyInit=false; autowireMode=0; dependencyCheck=0; autowireCandidate=true; primary=false; factoryBeanName=null; factoryMethodName=null; initMethodName=null; destroyMethodName=null; defined in file [C:\Users\86189\Desktop\clone\IssueTracker-Master\clone-service\target\classes\cn\edu\fudan\cloneservice\lock\CloneMeasureLock.class]] with [Root bean: class [null]; scope=; abstract=false; lazyInit=false; autowireMode=3; dependencyCheck=0; autowireCandidate=true; primary=false; factoryBeanName=syncConfig; factoryMethodName=cloneMeasureLock; initMethodName=null; destroyMethodName=(inferred); defined in class path resource [cn/edu/fudan/cloneservice/config/SyncConfig.class]]
+ INFO [main] 2021-03-14 17:10:53,665 (PostProcessorRegistrationDelegate.java:328): Bean 'org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration' of type [org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration$$EnhancerBySpringCGLIB$$69b8ec8f] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+ INFO [main] 2021-03-14 17:10:54,036 (TomcatWebServer.java:91): Tomcat initialized with port(s): 8080 (http)
+ INFO [localhost-startStop-1] 2021-03-14 17:10:54,395 (ServletWebServerApplicationContext.java:285): Root WebApplicationContext: initialization completed in 2187 ms
+ INFO [localhost-startStop-1] 2021-03-14 17:10:54,630 (ServletRegistrationBean.java:186): Servlet dispatcherServlet mapped to [/]
+ INFO [localhost-startStop-1] 2021-03-14 17:10:54,631 (ServletRegistrationBean.java:186): Servlet statViewServlet mapped to [/druid/*]
+ INFO [localhost-startStop-1] 2021-03-14 17:10:54,636 (AbstractFilterRegistrationBean.java:245): Mapping filter: 'characterEncodingFilter' to: [/*]
+ INFO [localhost-startStop-1] 2021-03-14 17:10:54,636 (AbstractFilterRegistrationBean.java:245): Mapping filter: 'hiddenHttpMethodFilter' to: [/*]
+ INFO [localhost-startStop-1] 2021-03-14 17:10:54,637 (AbstractFilterRegistrationBean.java:245): Mapping filter: 'httpPutFormContentFilter' to: [/*]
+ INFO [localhost-startStop-1] 2021-03-14 17:10:54,637 (AbstractFilterRegistrationBean.java:245): Mapping filter: 'requestContextFilter' to: [/*]
+ INFO [localhost-startStop-1] 2021-03-14 17:10:54,637 (AbstractFilterRegistrationBean.java:258): Mapping filter: 'webStatFilter' to urls: [/*]
+ WARN [main] 2021-03-14 17:10:54,883 (AbstractApplicationContext.java:558): Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'restInterfaceManager': Injection of autowired dependencies failed; nested exception is java.lang.IllegalArgumentException: Could not resolve placeholder 'code.service.path' in value "${code.service.path}"
+ INFO [main] 2021-03-14 17:10:54,913 (ConditionEvaluationReportLoggingListener.java:101): 
+
+Error starting ApplicationContext. To display the conditions report re-run your application with 'debug' enabled.
+ERROR [main] 2021-03-14 17:10:54,921 (SpringApplication.java:842): Application run failed
+org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'restInterfaceManager': Injection of autowired dependencies failed; nested exception is java.lang.IllegalArgumentException: Could not resolve placeholder 'code.service.path' in value "${code.service.path}"
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.postProcessPropertyValues(AutowiredAnnotationBeanPostProcessor.java:379)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.populateBean(AbstractAutowireCapableBeanFactory.java:1350)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:580)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:503)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:317)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:222)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:315)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:199)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:760)
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:869)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:550)
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:140)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:759)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:395)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:327)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1255)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1243)
+	at cn.edu.fudan.cloneservice.CloneServiceApplication.main(CloneServiceApplication.java:18)
+Caused by: java.lang.IllegalArgumentException: Could not resolve placeholder 'code.service.path' in value "${code.service.path}"
+	at org.springframework.util.PropertyPlaceholderHelper.parseStringValue(PropertyPlaceholderHelper.java:172)
+	at org.springframework.util.PropertyPlaceholderHelper.replacePlaceholders(PropertyPlaceholderHelper.java:124)
+	at org.springframework.core.env.AbstractPropertyResolver.doResolvePlaceholders(AbstractPropertyResolver.java:237)
+	at org.springframework.core.env.AbstractPropertyResolver.resolveRequiredPlaceholders(AbstractPropertyResolver.java:211)
+	at org.springframework.context.support.PropertySourcesPlaceholderConfigurer.lambda$processProperties$0(PropertySourcesPlaceholderConfigurer.java:175)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.resolveEmbeddedValue(AbstractBeanFactory.java:839)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.doResolveDependency(DefaultListableBeanFactory.java:1086)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveDependency(DefaultListableBeanFactory.java:1065)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.inject(AutowiredAnnotationBeanPostProcessor.java:584)
+	at org.springframework.beans.factory.annotation.InjectionMetadata.inject(InjectionMetadata.java:91)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.postProcessPropertyValues(AutowiredAnnotationBeanPostProcessor.java:373)
+	... 17 more
+ INFO [background-preinit] 2021-03-14 17:14:47,415 (Version.java:21): HV000001: Hibernate Validator 6.0.10.Final
+ INFO [main] 2021-03-14 17:14:47,725 (StartupInfoLogger.java:50): Starting CloneServiceApplication on LAPTOP-TSNHQQ9V with PID 9500 (C:\Users\86189\Desktop\clone\IssueTracker-Master\clone-service\target\classes started by 86189 in C:\Users\86189\Desktop\clone\IssueTracker-Master\clone-service)
+ INFO [main] 2021-03-14 17:14:47,729 (SpringApplication.java:659): No active profile set, falling back to default profiles: default
+ INFO [main] 2021-03-14 17:14:47,824 (AbstractApplicationContext.java:590): Refreshing org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext@352c1b98: startup date [Sun Mar 14 17:14:47 CST 2021]; root of context hierarchy
+ INFO [main] 2021-03-14 17:14:48,736 (DefaultListableBeanFactory.java:824): Overriding bean definition for bean 'cloneMeasureLock' with a different definition: replacing [Generic bean: class [cn.edu.fudan.cloneservice.lock.CloneMeasureLock]; scope=singleton; abstract=false; lazyInit=false; autowireMode=0; dependencyCheck=0; autowireCandidate=true; primary=false; factoryBeanName=null; factoryMethodName=null; initMethodName=null; destroyMethodName=null; defined in file [C:\Users\86189\Desktop\clone\IssueTracker-Master\clone-service\target\classes\cn\edu\fudan\cloneservice\lock\CloneMeasureLock.class]] with [Root bean: class [null]; scope=; abstract=false; lazyInit=false; autowireMode=3; dependencyCheck=0; autowireCandidate=true; primary=false; factoryBeanName=syncConfig; factoryMethodName=cloneMeasureLock; initMethodName=null; destroyMethodName=(inferred); defined in class path resource [cn/edu/fudan/cloneservice/config/SyncConfig.class]]
+ INFO [main] 2021-03-14 17:14:49,336 (PostProcessorRegistrationDelegate.java:328): Bean 'org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration' of type [org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration$$EnhancerBySpringCGLIB$$69b8ec8f] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+ INFO [main] 2021-03-14 17:14:49,721 (TomcatWebServer.java:91): Tomcat initialized with port(s): 8080 (http)
+ INFO [localhost-startStop-1] 2021-03-14 17:14:50,078 (ServletWebServerApplicationContext.java:285): Root WebApplicationContext: initialization completed in 2255 ms
+ INFO [localhost-startStop-1] 2021-03-14 17:14:50,298 (ServletRegistrationBean.java:186): Servlet dispatcherServlet mapped to [/]
+ INFO [localhost-startStop-1] 2021-03-14 17:14:50,300 (ServletRegistrationBean.java:186): Servlet statViewServlet mapped to [/druid/*]
+ INFO [localhost-startStop-1] 2021-03-14 17:14:50,304 (AbstractFilterRegistrationBean.java:245): Mapping filter: 'characterEncodingFilter' to: [/*]
+ INFO [localhost-startStop-1] 2021-03-14 17:14:50,304 (AbstractFilterRegistrationBean.java:245): Mapping filter: 'hiddenHttpMethodFilter' to: [/*]
+ INFO [localhost-startStop-1] 2021-03-14 17:14:50,305 (AbstractFilterRegistrationBean.java:245): Mapping filter: 'httpPutFormContentFilter' to: [/*]
+ INFO [localhost-startStop-1] 2021-03-14 17:14:50,305 (AbstractFilterRegistrationBean.java:245): Mapping filter: 'requestContextFilter' to: [/*]
+ INFO [localhost-startStop-1] 2021-03-14 17:14:50,305 (AbstractFilterRegistrationBean.java:258): Mapping filter: 'webStatFilter' to urls: [/*]
+ WARN [main] 2021-03-14 17:14:50,566 (AbstractApplicationContext.java:558): Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'restInterfaceManager': Injection of autowired dependencies failed; nested exception is java.lang.IllegalArgumentException: Could not resolve placeholder 'code.service.path' in value "${code.service.path}"
+ INFO [main] 2021-03-14 17:14:50,598 (ConditionEvaluationReportLoggingListener.java:101): 
+
+Error starting ApplicationContext. To display the conditions report re-run your application with 'debug' enabled.
+ERROR [main] 2021-03-14 17:14:50,606 (SpringApplication.java:842): Application run failed
+org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'restInterfaceManager': Injection of autowired dependencies failed; nested exception is java.lang.IllegalArgumentException: Could not resolve placeholder 'code.service.path' in value "${code.service.path}"
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.postProcessPropertyValues(AutowiredAnnotationBeanPostProcessor.java:379)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.populateBean(AbstractAutowireCapableBeanFactory.java:1350)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:580)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:503)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:317)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:222)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:315)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:199)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:760)
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:869)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:550)
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:140)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:759)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:395)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:327)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1255)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1243)
+	at cn.edu.fudan.cloneservice.CloneServiceApplication.main(CloneServiceApplication.java:18)
+Caused by: java.lang.IllegalArgumentException: Could not resolve placeholder 'code.service.path' in value "${code.service.path}"
+	at org.springframework.util.PropertyPlaceholderHelper.parseStringValue(PropertyPlaceholderHelper.java:172)
+	at org.springframework.util.PropertyPlaceholderHelper.replacePlaceholders(PropertyPlaceholderHelper.java:124)
+	at org.springframework.core.env.AbstractPropertyResolver.doResolvePlaceholders(AbstractPropertyResolver.java:237)
+	at org.springframework.core.env.AbstractPropertyResolver.resolveRequiredPlaceholders(AbstractPropertyResolver.java:211)
+	at org.springframework.context.support.PropertySourcesPlaceholderConfigurer.lambda$processProperties$0(PropertySourcesPlaceholderConfigurer.java:175)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.resolveEmbeddedValue(AbstractBeanFactory.java:839)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.doResolveDependency(DefaultListableBeanFactory.java:1086)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveDependency(DefaultListableBeanFactory.java:1065)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.inject(AutowiredAnnotationBeanPostProcessor.java:584)
+	at org.springframework.beans.factory.annotation.InjectionMetadata.inject(InjectionMetadata.java:91)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.postProcessPropertyValues(AutowiredAnnotationBeanPostProcessor.java:373)
+	... 17 more
+ INFO [background-preinit] 2021-03-14 17:19:08,832 (Version.java:21): HV000001: Hibernate Validator 6.0.10.Final
+ INFO [main] 2021-03-14 17:19:09,246 (StartupInfoLogger.java:50): Starting CloneServiceApplication on LAPTOP-TSNHQQ9V with PID 12344 (C:\Users\86189\Desktop\clone\IssueTracker-Master\clone-service\target\classes started by 86189 in C:\Users\86189\Desktop\clone\IssueTracker-Master\clone-service)
+ INFO [main] 2021-03-14 17:19:09,255 (SpringApplication.java:659): No active profile set, falling back to default profiles: default
+ INFO [main] 2021-03-14 17:19:09,405 (AbstractApplicationContext.java:590): Refreshing org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext@1a72a540: startup date [Sun Mar 14 17:19:09 CST 2021]; root of context hierarchy
+ INFO [main] 2021-03-14 17:19:10,644 (DefaultListableBeanFactory.java:824): Overriding bean definition for bean 'cloneMeasureLock' with a different definition: replacing [Generic bean: class [cn.edu.fudan.cloneservice.lock.CloneMeasureLock]; scope=singleton; abstract=false; lazyInit=false; autowireMode=0; dependencyCheck=0; autowireCandidate=true; primary=false; factoryBeanName=null; factoryMethodName=null; initMethodName=null; destroyMethodName=null; defined in file [C:\Users\86189\Desktop\clone\IssueTracker-Master\clone-service\target\classes\cn\edu\fudan\cloneservice\lock\CloneMeasureLock.class]] with [Root bean: class [null]; scope=; abstract=false; lazyInit=false; autowireMode=3; dependencyCheck=0; autowireCandidate=true; primary=false; factoryBeanName=syncConfig; factoryMethodName=cloneMeasureLock; initMethodName=null; destroyMethodName=(inferred); defined in class path resource [cn/edu/fudan/cloneservice/config/SyncConfig.class]]
+ INFO [main] 2021-03-14 17:19:11,322 (PostProcessorRegistrationDelegate.java:328): Bean 'org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration' of type [org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration$$EnhancerBySpringCGLIB$$892b123] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+ INFO [main] 2021-03-14 17:19:11,734 (TomcatWebServer.java:91): Tomcat initialized with port(s): 8080 (http)
+ INFO [localhost-startStop-1] 2021-03-14 17:19:12,330 (ServletWebServerApplicationContext.java:285): Root WebApplicationContext: initialization completed in 2925 ms
+ INFO [localhost-startStop-1] 2021-03-14 17:19:12,696 (ServletRegistrationBean.java:186): Servlet dispatcherServlet mapped to [/]
+ INFO [localhost-startStop-1] 2021-03-14 17:19:12,698 (ServletRegistrationBean.java:186): Servlet statViewServlet mapped to [/druid/*]
+ INFO [localhost-startStop-1] 2021-03-14 17:19:12,703 (AbstractFilterRegistrationBean.java:245): Mapping filter: 'characterEncodingFilter' to: [/*]
+ INFO [localhost-startStop-1] 2021-03-14 17:19:12,704 (AbstractFilterRegistrationBean.java:245): Mapping filter: 'hiddenHttpMethodFilter' to: [/*]
+ INFO [localhost-startStop-1] 2021-03-14 17:19:12,704 (AbstractFilterRegistrationBean.java:245): Mapping filter: 'httpPutFormContentFilter' to: [/*]
+ INFO [localhost-startStop-1] 2021-03-14 17:19:12,704 (AbstractFilterRegistrationBean.java:245): Mapping filter: 'requestContextFilter' to: [/*]
+ INFO [localhost-startStop-1] 2021-03-14 17:19:12,704 (AbstractFilterRegistrationBean.java:258): Mapping filter: 'webStatFilter' to urls: [/*]
+ WARN [main] 2021-03-14 17:19:12,994 (AbstractApplicationContext.java:558): Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'restInterfaceManager': Injection of autowired dependencies failed; nested exception is java.lang.IllegalArgumentException: Could not resolve placeholder 'code.service.path' in value "${code.service.path}"
+ INFO [main] 2021-03-14 17:19:13,033 (ConditionEvaluationReportLoggingListener.java:101): 
+
+Error starting ApplicationContext. To display the conditions report re-run your application with 'debug' enabled.
+ERROR [main] 2021-03-14 17:19:13,046 (SpringApplication.java:842): Application run failed
+org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'restInterfaceManager': Injection of autowired dependencies failed; nested exception is java.lang.IllegalArgumentException: Could not resolve placeholder 'code.service.path' in value "${code.service.path}"
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.postProcessPropertyValues(AutowiredAnnotationBeanPostProcessor.java:379)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.populateBean(AbstractAutowireCapableBeanFactory.java:1350)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:580)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:503)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:317)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:222)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:315)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:199)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:760)
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:869)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:550)
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:140)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:759)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:395)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:327)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1255)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1243)
+	at cn.edu.fudan.cloneservice.CloneServiceApplication.main(CloneServiceApplication.java:18)
+Caused by: java.lang.IllegalArgumentException: Could not resolve placeholder 'code.service.path' in value "${code.service.path}"
+	at org.springframework.util.PropertyPlaceholderHelper.parseStringValue(PropertyPlaceholderHelper.java:172)
+	at org.springframework.util.PropertyPlaceholderHelper.replacePlaceholders(PropertyPlaceholderHelper.java:124)
+	at org.springframework.core.env.AbstractPropertyResolver.doResolvePlaceholders(AbstractPropertyResolver.java:237)
+	at org.springframework.core.env.AbstractPropertyResolver.resolveRequiredPlaceholders(AbstractPropertyResolver.java:211)
+	at org.springframework.context.support.PropertySourcesPlaceholderConfigurer.lambda$processProperties$0(PropertySourcesPlaceholderConfigurer.java:175)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.resolveEmbeddedValue(AbstractBeanFactory.java:839)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.doResolveDependency(DefaultListableBeanFactory.java:1086)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveDependency(DefaultListableBeanFactory.java:1065)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.inject(AutowiredAnnotationBeanPostProcessor.java:584)
+	at org.springframework.beans.factory.annotation.InjectionMetadata.inject(InjectionMetadata.java:91)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.postProcessPropertyValues(AutowiredAnnotationBeanPostProcessor.java:373)
+	... 17 more

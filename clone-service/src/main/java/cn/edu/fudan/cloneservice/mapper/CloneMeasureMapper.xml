@@ -18,7 +18,7 @@
     </select>
 
     <select id="getCloneMeasures" resultMap="cloneMeasure">
-    select * from clone_measure where repo_id=#{repo_id}
+    select * from clone_measure where commit_id in (select distinct commit_id from clone_measure where repo_id=#{repo_id})
     </select>
 
     <insert id="insertCloneMeasure" parameterType="cn.edu.fudan.cloneservice.domain.CloneMeasure">

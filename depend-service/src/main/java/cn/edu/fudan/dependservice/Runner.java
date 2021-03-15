@@ -12,5 +12,4 @@ import org.springframework.stereotype.Service;
 public interface Runner {
 
     void runTool(String repoPath, String commitID);
-
 }

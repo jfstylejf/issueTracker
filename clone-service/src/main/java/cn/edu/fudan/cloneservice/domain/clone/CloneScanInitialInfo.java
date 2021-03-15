@@ -10,14 +10,15 @@ public class CloneScanInitialInfo {
     private String repoId;
     private String repoPath;
     private boolean isSuccess;
-
+    private String language;
     public CloneScanInitialInfo(){}
 
-    public CloneScanInitialInfo(CloneScan cloneScan, String repoId, String repoPath, boolean isSuccess) {
+    public CloneScanInitialInfo(CloneScan cloneScan, String repoId, String repoPath, boolean isSuccess, String language) {
         this.cloneScan = cloneScan;
         this.repoId = repoId;
         this.repoPath = repoPath;
         this.isSuccess = isSuccess;
+        this.language = language;
     }
 
     public CloneScan getCloneScan() {
@@ -39,6 +40,8 @@ public class CloneScanInitialInfo {
     public String getRepoPath() {
         return repoPath;
     }
+
+    public String getLanguage(){ return language;}
 
     public void setRepoPath(String repoPath) {
         this.repoPath = repoPath;

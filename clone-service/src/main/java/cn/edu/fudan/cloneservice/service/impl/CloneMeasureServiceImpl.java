@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -84,7 +85,6 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
                 cloneMessages.add(u);
             }
         }
-
         return cloneMessages;
     }
 
@@ -279,7 +279,6 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
         if (cloneInfoList.size() > 0) {
             cloneInfoDao.insertCloneInfo(cloneInfoList);
         }
-
     }
 
     private List<CloneInfo> getCloneInfoList(String repoId, String commitId, Map<String, String> addCloneLocationMap, Map<String, String> selfCloneLocationMap) {
