@@ -44,9 +44,9 @@ public interface RepoCommitMapper {
      * @param end end data
      * @return list
      */
-    @Select("SELECT commit_id FROM issueTracker.commit_view " +
+    @Select("SELECT distinct(commit_id) FROM issueTracker.commit_view " +
             "WHERE repo_id = #{repoId} AND developer = #{author}" +
-            "AND commit_time >= #{start} AND commit_time <= #{end} ORDER BY commit_time;")
+            "AND commit_time >= #{start} AND commit_time <= #{end} and length(parent_commit) < 50 ORDER BY commit_time;")
     List<String> getAuthorCommitList(String repoId, String author, String start, String end);
 
 
@@ -57,8 +57,8 @@ public interface RepoCommitMapper {
      * @param end end data
      * @return list
      */
-    @Select("SELECT commit_id FROM issueTracker.commit_view " +
-            "WHERE repo_id = #{repoId} AND commit_time >= #{start} AND commit_time <= #{end} ORDER BY commit_time;")
+    @Select("SELECT distinct(commit_id) FROM issueTracker.commit_view " +
+            "WHERE repo_id = #{repoId} AND commit_time >= #{start} AND commit_time <= #{end} AND length(parent_commit) < 50 ORDER BY commit_time;")
     List<String> getCommitList(String repoId, String start, String end);
 
 

@@ -21,6 +21,12 @@ public class ShHomeConfig {
     @Value("${dependenceHome}")
     private String dependenceHome;
 
+    @Value("${resultFileDir}")
+    private String resultFileDir;
+
+    @Value("${shName}")
+    private String shName;
+
 //    public RestTemplate restTemplate(){
 //        return new RestTemplate();
 //    }

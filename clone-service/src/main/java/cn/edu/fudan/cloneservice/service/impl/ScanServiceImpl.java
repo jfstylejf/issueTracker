@@ -9,11 +9,22 @@ import cn.edu.fudan.cloneservice.service.ScanService;
 import cn.edu.fudan.cloneservice.task.ScanTask;
 import cn.edu.fudan.cloneservice.util.JGitHelper;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.NoHeadException;
+import org.eclipse.jgit.internal.storage.file.FileRepository;
+import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.PersonIdent;
+import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -27,7 +38,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 @Service
 public class ScanServiceImpl implements ScanService {
-    
+
     private ScanTask scanTask;
 
     private CloneScanDao cloneScanDao;
@@ -50,19 +61,20 @@ public class ScanServiceImpl implements ScanService {
     }
 
     @Override
-    @Async("taskExecutor")
-    public void cloneScan(String repoUuid, String startCommitId, String branch) {
-        synchronized (lock) {
-            if (scanStatus.keySet().contains(repoUuid)) {
-                scanStatus.put(repoUuid, true);
-                return;
-            }
-            scanStatus.putIfAbsent(repoUuid, false);
+//    @Async("taskExecutor")
+    public void cloneScan(String repoUuid, String startCommitId, String branch) throws IOException, GitAPIException {
+//        synchronized (lock) {
+        if (scanStatus.keySet().contains(repoUuid)) {
+            scanStatus.put(repoUuid, true);
+            return;
         }
+        scanStatus.putIfAbsent(repoUuid, false);
+//        }
+        log.info("1");
         prepareForScan(repoUuid, branch, startCommitId);
     }
 
-    private void prepareForScan(String repoUuid, String branch, String beginCommit) {
+    private void prepareForScan(String repoUuid, String branch, String beginCommit) throws IOException, GitAPIException {
         boolean isUpdate = false;
         // 更新操作
         if (StringUtils.isEmpty(beginCommit)) {
@@ -71,16 +83,16 @@ public class ScanServiceImpl implements ScanService {
             beginCommit = cloneMeasureDao.getLatestCloneLines(repoUuids).getCommitId();
             if (StringUtils.isEmpty(beginCommit)) {
                 log.warn("{} : hasn't scanned before", repoUuid);
-                checkAfterScan(repoUuid,branch);
+                checkAfterScan(repoUuid, branch);
                 return;
             }
             isUpdate = true;
         }
         beginScan(repoUuid, branch, beginCommit, isUpdate);
-        checkAfterScan(repoUuid,branch);
+        checkAfterScan(repoUuid, branch);
     }
 
-    private void beginScan(String repoUuid, String branch, String beginCommit, boolean isUpdate) {
+    private void beginScan(String repoUuid, String branch, String beginCommit, boolean isUpdate) throws IOException, GitAPIException {
         log.info("{} -> start clone scan", Thread.currentThread().getName());
         String repoPath = rest.getRepoPath(repoUuid);
         if (repoPath == null) {
@@ -88,6 +100,7 @@ public class ScanServiceImpl implements ScanService {
             return;
         }
         JGitHelper jGitHelper = new JGitHelper(repoPath);
+
         //fixme beginScan if update,begin 1.
         List<String> commitList = jGitHelper.getCommitListByBranchAndBeginCommit(branch, beginCommit, isUpdate);
         int commitSize = commitList.size();
@@ -121,7 +134,7 @@ public class ScanServiceImpl implements ScanService {
         jGitHelper.close();
     }
 
-    private void executeLastCommit(String uuid, String repoUuid, List<String> commitList, String repoPath) {
+    private void executeLastCommit(String uuid, String repoUuid, List<String> commitList, String repoPath) throws IOException {
         String latestCommitId = commitList.get(commitList.size() - 1);
         scanTask.runSynchronously(repoUuid, latestCommitId, "method", repoPath);
 
@@ -135,7 +148,7 @@ public class ScanServiceImpl implements ScanService {
 
     }
 
-    private void checkAfterScan(String repoUuid, String branch) {
+    private void checkAfterScan(String repoUuid, String branch) throws IOException, GitAPIException {
         if (! scanStatus.keySet().contains(repoUuid)) {
             log.error("{} : not in scan map", repoUuid);
             return;

@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.UUID;
 
@@ -53,11 +54,12 @@ public class ScanOperationAdapter implements ScanOperation {
         cloneScan.setCommitId(commitId);
         cloneScan.setUuid(uuid);
         cloneScanDao.insertCloneScan(cloneScan);
-        return new CloneScanInitialInfo(cloneScan, repoId, repoPath, true);
+        String language = restInterfaceManager.getLanguage(repoId);
+        return new CloneScanInitialInfo(cloneScan, repoId, repoPath, true, language);
     }
 
     @Override
-    public CloneScanResult doScan(CloneScanInitialInfo cloneScanInitialInfo) {
+    public CloneScanResult doScan(CloneScanInitialInfo cloneScanInitialInfo) throws IOException {
         //等待子类的具体实现
         throw new UnsupportedOperationException();
     }

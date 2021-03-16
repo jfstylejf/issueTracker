@@ -2,6 +2,7 @@ package cn.edu.fudan.common.component;
 
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Bean;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Optional;
@@ -16,6 +17,7 @@ public abstract class BaseRepoRestManager {
 
     public String getCodeServiceRepo(String repoId) {
         JSONObject data = (Optional.ofNullable(this.restTemplate.getForObject(this.codeServiceRepoPath + beginWithRepoParam + repoId, JSONObject.class)).orElse(new JSONObject())).getJSONObject("data");
+        log.info(data.toJSONString());
         if (data == null) {
             return null;
         } else {

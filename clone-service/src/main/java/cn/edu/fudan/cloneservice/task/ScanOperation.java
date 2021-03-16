@@ -4,6 +4,8 @@ package cn.edu.fudan.cloneservice.task;
 import cn.edu.fudan.cloneservice.domain.clone.CloneScanInitialInfo;
 import cn.edu.fudan.cloneservice.domain.clone.CloneScanResult;
 
+import java.io.IOException;
+
 /**
  * @author zyh
  * @date 2020/5/25
@@ -34,7 +36,7 @@ public interface ScanOperation {
      * @param cloneScanInitialInfo CloneScanInitialInfo
      * @return scan result
      */
-    CloneScanResult doScan(CloneScanInitialInfo cloneScanInitialInfo);
+    CloneScanResult doScan(CloneScanInitialInfo cloneScanInitialInfo) throws IOException;
 
     /**
      * 更新scan的结果
