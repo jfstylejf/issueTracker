@@ -1,12 +1,15 @@
 package cn.edu.fudan.cloneservice.component;
 
 import cn.edu.fudan.cloneservice.domain.CommitInfo;
+import cn.edu.fudan.cloneservice.domain.ResponseBean;
 import com.alibaba.fastjson.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import lombok.extern.slf4j.Slf4j;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -16,7 +19,6 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @Component
 public class RestInterfaceManager {
-
 
     @Value("${code.service.path}")
     private String codeServicePath;
@@ -31,6 +33,7 @@ public class RestInterfaceManager {
     @Value("${measure.service.path}")
     private String measureServicePath;
 
+    @Autowired
     private RestTemplate restTemplate;
 
     public RestInterfaceManager(RestTemplate restTemplate) {
@@ -65,6 +68,12 @@ public class RestInterfaceManager {
         return repoPath;
     }
 
+//    public FileInfo getFileInfo(String filePath){
+//        FileInfo fileInfo = restTemplate.getForObject(issueServicePath + "/fileInfo?filePath="+filePath, FileInfo.class);
+//        log.info("getFileInfoSuccess");
+//        return fileInfo;
+//    }
+
     public JSONObject freeRepoPath(String repoId,String repoPath){
         JSONObject response=restTemplate.getForObject(codeServicePath + "/free?repo_id=" + repoId+"&path="+repoPath, JSONObject.class);
         if(response!=null&&response.getJSONObject("data").getString("status").equals("Successful")){
@@ -79,9 +88,24 @@ public class RestInterfaceManager {
         return restTemplate.getForObject(repoServicePath + "/" + repoId, JSONObject.class);
     }
 
+    public String getLanguage(String repoUuid) {
+        try {
+            ResponseBean<Map<String, String>> response = restTemplate.getForObject(codeServicePath + "?repo_id=" + repoUuid, ResponseBean.class);
+
+            if (response != null && response.getCode()!=200 &&
+            response.getData().get("language").isEmpty()){
+                return response.getData().get("language");
+            } else{
+                return "";
+            }
+        }catch (Exception e){
+            log.error("get language Exception！ ");
+        }
+        return "";
+    }
+
     public String getRepoPath1(String repoId) {
         JSONObject jsonObject = restTemplate.getForObject(codeServicePath + "?repo_id=" + repoId, JSONObject.class);
-
         return jsonObject.getJSONObject("data").getString("content");
     }
 

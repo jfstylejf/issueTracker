@@ -4,18 +4,12 @@ import cn.edu.fudan.common.component.BaseRepoRestManager;
 import cn.edu.fudan.common.domain.po.scan.RepoScan;
 import cn.edu.fudan.common.scan.CommonScanProcess;
 import cn.edu.fudan.common.scan.ToolScan;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.ArrayList;
+import cn.edu.fudan.dependservice.domain.RepoRestManager;
+import cn.edu.fudan.dependservice.mapper.GroupMapper;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.stereotype.Service;
 import java.util.List;
 
 /**
@@ -24,46 +18,61 @@ import java.util.List;
  * @author fancying
  * create: 2021-03-02 21:04
  **/
+@Slf4j
+@Service
 public class ScanServiceImpl extends CommonScanProcess {
+    ApplicationContext applicationContext;
+    RepoScan repoScan;
+
+    @Autowired
+    GroupMapper groupMapper;
+
+    @Autowired
+    public void setApplicationContext(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
+    }
 
     @Override
     protected ToolScan getToolScan(String tool) {
-        return new ToolScanImpl();
-//        return null;
+        //todo retur tool by tool name
+        return applicationContext.getBean(ToolScanImpl.class);
     }
 
     @Override
     protected List<String> getScannedCommitList(String repoUuid, String tool) {
         //need find in data base.
-
-
-        return null;
+        // tool is dependency
+        return  groupMapper.getScannedCommitList(repoUuid);
     }
 
     @Override
     protected String getLastedScannedCommit(String repoUuid, String tool) {
-        return null;
+        return groupMapper.getLastedScannedCommit(repoUuid);
+//                null;
     }
 
     @Override
     protected String[] getToolsByRepo(String repoUuid) {
-        return new String[]{"dependency"};
+        return new String[]{"ToolScanImpl"};
 //        return new String[0];
     }
 
     @Override
     protected void insertRepoScan(RepoScan repoScan) {
+        this.repoScan=repoScan;
 
     }
 
     @Override
+    @Autowired
     public <T extends BaseRepoRestManager> void setBaseRepoRestManager(T restInterfaceManager) {
-
+        this.baseRepoRestManager = applicationContext.getBean(RepoRestManager.class);
     }
 
     @Override
     public void updateRepoScan(RepoScan scanInfo) {
         //update if the scan success
+        this.repoScan=scanInfo;
 
 
     }
@@ -88,46 +97,4 @@ public class ScanServiceImpl extends CommonScanProcess {
     public RepoScan getRepoScanStatus(String repoUuid) {
         return null;
     }
-//    public  List getExcel() throws FileNotFoundException, IOException {
-//        File excelFile = new File("D:\\allIdea\\IssueTracker-test\\depend-service\\src\\main\\resources\\c.xlsx");
-//        XSSFWorkbook wb = new XSSFWorkbook(new FileInputStream(excelFile));
-//        XSSFSheet sheet = wb.getSheetAt(0);
-//        List<List<String>> listAll = new ArrayList<List<String>>();
-//        for (Row row : sheet) {
-//            List<String> list = new ArrayList<String>();
-//            for (Cell cell : row) {
-//                switch (cell.getCellType()) {
-//                    case Cell.CELL_TYPE_STRING://字符串
-//                        String  categoryName = cell.getRichStringCellValue().getString();
-//                        list.add(categoryName);
-//                        System.out.print(" ");
-//                        break;
-//                    case Cell.CELL_TYPE_NUMERIC://数值与日期
-//                        String axis = Double.toString(cell.getNumericCellValue());
-//                        list.add(axis);
-//                        System.out.print(" ");
-//                        break;
-//                    default:
-//                }
-//            }
-//            listAll.add(list);
-//            System.out.println();
-//        }
-//        System.out.println(listAll);
-//        System.out.println(listAll.size());
-//        return listAll;
-//    }
-
-    public static void main(String[] args) {
-        ScanServiceImpl s=new ScanServiceImpl();
-        System.out.println("hhhh");
-        try {
-            s.getExcel();
-
-
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-    }
-
 }

@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.io.IOException;
 
 /**
  * @author zyh
@@ -19,7 +20,7 @@ public class ScanTask {
     private ScanOperation scanOperation;
 
 
-    private void scan(ScanOperation scanOperation, String repoId, String commitId, String type, String repoPath) throws RuntimeException{
+    private void scan(ScanOperation scanOperation, String repoId, String commitId, String type, String repoPath) throws RuntimeException, IOException {
         //没有共享资源，不需要锁
         //判断当前repoId, commitId, type是否扫描过
         if (scanOperation.isScanned(repoId,commitId,type)) {
@@ -51,7 +52,7 @@ public class ScanTask {
         log.info("{} -> scan update complete", Thread.currentThread().getName());
     }
 
-    public void runSynchronously(String repoId, String commitId, String category, String repoPath) throws RuntimeException{
+    public void runSynchronously(String repoId, String commitId, String category, String repoPath) throws RuntimeException, IOException {
         scan(scanOperation, repoId, commitId, category, repoPath);
     }
 

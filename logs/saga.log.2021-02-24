@@ -1,0 +1,125 @@
+ INFO [main] 2021-02-24 16:52:42,680 (Pipeline.java:117): process argument 'dataset=C:\Users\86189\Desktop\clone\IssueTracker-Master'
+ INFO [main] 2021-02-24 16:52:42,723 (Pipeline.java:117): process argument 'language=java'
+ INFO [main] 2021-02-24 16:52:42,724 (Pipeline.java:117): process argument 'extensions=java'
+ INFO [main] 2021-02-24 16:52:42,724 (Pipeline.java:117): process argument 'granularity=method'
+ INFO [main] 2021-02-24 16:52:42,727 (Pipeline.java:117): process argument 'exe=executable/executable_cpu_win10.exe'
+ INFO [main] 2021-02-24 16:52:42,727 (Pipeline.java:117): process argument 'threshold=0.7'
+ INFO [main] 2021-02-24 16:52:42,731 (Pipeline.java:52): loading file list...
+ INFO [main] 2021-02-24 16:52:43,005 (Pipeline.java:73): 452 files have been loaded
+ INFO [main] 2021-02-24 16:52:43,005 (Pipeline.java:80): loading state...
+ INFO [main] 2021-02-24 16:52:43,011 (Tokenizer.java:69): ==========================================
+ INFO [main] 2021-02-24 16:52:43,011 (Tokenizer.java:70):                  tokenize                 
+ INFO [main] 2021-02-24 16:52:43,011 (Tokenizer.java:71): ==========================================
+ INFO [main] 2021-02-24 16:52:43,037 (Tokenizer.java:110): 1%
+ INFO [main] 2021-02-24 16:52:43,040 (Tokenizer.java:110): 2%
+ INFO [main] 2021-02-24 16:52:43,047 (Tokenizer.java:110): 3%
+ INFO [main] 2021-02-24 16:52:43,053 (Tokenizer.java:110): 4%
+ INFO [main] 2021-02-24 16:52:43,062 (Tokenizer.java:110): 5%
+ INFO [main] 2021-02-24 16:52:43,070 (Tokenizer.java:110): 6%
+ INFO [main] 2021-02-24 16:52:43,075 (Tokenizer.java:110): 7%
+ INFO [main] 2021-02-24 16:52:43,080 (Tokenizer.java:110): 8%
+ INFO [main] 2021-02-24 16:52:43,084 (Tokenizer.java:110): 9%
+ INFO [main] 2021-02-24 16:52:43,088 (Tokenizer.java:110): 10%
+ INFO [main] 2021-02-24 16:52:43,092 (Tokenizer.java:110): 11%
+ INFO [main] 2021-02-24 16:52:43,103 (Tokenizer.java:110): 12%
+ INFO [main] 2021-02-24 16:52:43,111 (Tokenizer.java:110): 13%
+ INFO [main] 2021-02-24 16:52:43,123 (Tokenizer.java:110): 14%
+ INFO [main] 2021-02-24 16:52:43,134 (Tokenizer.java:110): 15%
+ INFO [main] 2021-02-24 16:52:43,140 (Tokenizer.java:110): 16%
+ INFO [main] 2021-02-24 16:52:43,142 (Tokenizer.java:110): 17%
+ INFO [main] 2021-02-24 16:52:43,148 (Tokenizer.java:110): 18%
+ INFO [main] 2021-02-24 16:52:43,157 (Tokenizer.java:110): 19%
+ INFO [main] 2021-02-24 16:52:43,163 (Tokenizer.java:110): 20%
+ INFO [main] 2021-02-24 16:52:43,166 (Tokenizer.java:110): 21%
+ INFO [main] 2021-02-24 16:52:43,172 (Tokenizer.java:110): 22%
+ INFO [main] 2021-02-24 16:52:43,179 (Tokenizer.java:110): 23%
+ INFO [main] 2021-02-24 16:52:43,183 (Tokenizer.java:110): 24%
+ INFO [main] 2021-02-24 16:52:43,191 (Tokenizer.java:110): 25%
+ INFO [main] 2021-02-24 16:52:43,199 (Tokenizer.java:110): 26%
+ INFO [main] 2021-02-24 16:52:43,214 (Tokenizer.java:110): 27%
+ INFO [main] 2021-02-24 16:52:43,220 (Tokenizer.java:110): 28%
+ INFO [main] 2021-02-24 16:52:43,240 (Tokenizer.java:110): 29%
+ INFO [main] 2021-02-24 16:52:43,244 (Tokenizer.java:110): 30%
+ INFO [main] 2021-02-24 16:52:43,252 (Tokenizer.java:110): 31%
+ INFO [main] 2021-02-24 16:52:43,256 (Tokenizer.java:110): 32%
+ INFO [main] 2021-02-24 16:52:43,261 (Tokenizer.java:110): 33%
+ INFO [main] 2021-02-24 16:52:43,266 (Tokenizer.java:110): 34%
+ INFO [main] 2021-02-24 16:52:43,272 (Tokenizer.java:110): 35%
+ INFO [main] 2021-02-24 16:52:43,275 (Tokenizer.java:110): 36%
+ INFO [main] 2021-02-24 16:52:43,279 (Tokenizer.java:110): 37%
+ INFO [main] 2021-02-24 16:52:43,281 (Tokenizer.java:110): 38%
+ INFO [main] 2021-02-24 16:52:43,284 (Tokenizer.java:110): 39%
+ INFO [main] 2021-02-24 16:52:43,288 (Tokenizer.java:110): 40%
+ INFO [main] 2021-02-24 16:52:43,292 (Tokenizer.java:110): 41%
+ INFO [main] 2021-02-24 16:52:43,294 (Tokenizer.java:110): 42%
+ INFO [main] 2021-02-24 16:52:43,302 (Tokenizer.java:110): 43%
+ INFO [main] 2021-02-24 16:52:43,308 (Tokenizer.java:110): 44%
+ INFO [main] 2021-02-24 16:52:43,313 (Tokenizer.java:110): 45%
+ INFO [main] 2021-02-24 16:52:43,322 (Tokenizer.java:110): 46%
+ INFO [main] 2021-02-24 16:52:43,331 (Tokenizer.java:110): 47%
+ INFO [main] 2021-02-24 16:52:43,338 (Tokenizer.java:110): 48%
+ INFO [main] 2021-02-24 16:52:43,345 (Tokenizer.java:110): 49%
+ INFO [main] 2021-02-24 16:52:43,349 (Tokenizer.java:110): 50%
+ INFO [main] 2021-02-24 16:52:43,354 (Tokenizer.java:110): 51%
+ INFO [main] 2021-02-24 16:52:43,362 (Tokenizer.java:110): 52%
+ INFO [main] 2021-02-24 16:52:43,369 (Tokenizer.java:110): 53%
+ INFO [main] 2021-02-24 16:52:43,378 (Tokenizer.java:110): 54%
+ INFO [main] 2021-02-24 16:52:43,385 (Tokenizer.java:110): 55%
+ INFO [main] 2021-02-24 16:52:43,391 (Tokenizer.java:110): 56%
+ INFO [main] 2021-02-24 16:52:43,396 (Tokenizer.java:110): 57%
+ INFO [main] 2021-02-24 16:52:43,399 (Tokenizer.java:110): 58%
+ INFO [main] 2021-02-24 16:52:43,402 (Tokenizer.java:110): 59%
+ INFO [main] 2021-02-24 16:52:43,409 (Tokenizer.java:110): 60%
+ INFO [main] 2021-02-24 16:52:43,412 (Tokenizer.java:110): 61%
+ INFO [main] 2021-02-24 16:52:43,413 (Tokenizer.java:110): 62%
+ INFO [main] 2021-02-24 16:52:43,415 (Tokenizer.java:110): 63%
+ INFO [main] 2021-02-24 16:52:43,418 (Tokenizer.java:110): 64%
+ INFO [main] 2021-02-24 16:52:43,421 (Tokenizer.java:110): 65%
+ INFO [main] 2021-02-24 16:52:43,425 (Tokenizer.java:110): 66%
+ INFO [main] 2021-02-24 16:52:43,428 (Tokenizer.java:110): 67%
+ INFO [main] 2021-02-24 16:52:43,442 (Tokenizer.java:110): 68%
+ INFO [main] 2021-02-24 16:52:43,448 (Tokenizer.java:110): 69%
+ INFO [main] 2021-02-24 16:52:43,456 (Tokenizer.java:110): 70%
+ INFO [main] 2021-02-24 16:52:43,466 (Tokenizer.java:110): 71%
+ INFO [main] 2021-02-24 16:52:43,474 (Tokenizer.java:110): 72%
+ INFO [main] 2021-02-24 16:52:43,481 (Tokenizer.java:110): 73%
+ INFO [main] 2021-02-24 16:52:43,484 (Tokenizer.java:110): 74%
+ INFO [main] 2021-02-24 16:52:43,488 (Tokenizer.java:110): 75%
+ INFO [main] 2021-02-24 16:52:43,494 (Tokenizer.java:110): 76%
+ INFO [main] 2021-02-24 16:52:43,503 (Tokenizer.java:110): 77%
+ INFO [main] 2021-02-24 16:52:43,506 (Tokenizer.java:110): 78%
+ INFO [main] 2021-02-24 16:52:43,509 (Tokenizer.java:110): 79%
+ INFO [main] 2021-02-24 16:52:43,511 (Tokenizer.java:110): 80%
+ INFO [main] 2021-02-24 16:52:43,514 (Tokenizer.java:110): 81%
+ INFO [main] 2021-02-24 16:52:43,518 (Tokenizer.java:110): 82%
+ INFO [main] 2021-02-24 16:52:43,522 (Tokenizer.java:110): 83%
+ INFO [main] 2021-02-24 16:52:43,529 (Tokenizer.java:110): 84%
+ INFO [main] 2021-02-24 16:52:43,534 (Tokenizer.java:110): 85%
+ INFO [main] 2021-02-24 16:52:43,540 (Tokenizer.java:110): 86%
+ INFO [main] 2021-02-24 16:52:43,546 (Tokenizer.java:110): 87%
+ INFO [main] 2021-02-24 16:52:43,550 (Tokenizer.java:110): 88%
+ INFO [main] 2021-02-24 16:52:43,553 (Tokenizer.java:110): 89%
+ INFO [main] 2021-02-24 16:52:43,556 (Tokenizer.java:110): 90%
+ INFO [main] 2021-02-24 16:52:43,560 (Tokenizer.java:110): 91%
+ INFO [main] 2021-02-24 16:52:43,565 (Tokenizer.java:110): 92%
+ INFO [main] 2021-02-24 16:52:43,569 (Tokenizer.java:110): 93%
+ INFO [main] 2021-02-24 16:52:43,573 (Tokenizer.java:110): 94%
+ INFO [main] 2021-02-24 16:52:43,582 (Tokenizer.java:110): 95%
+ INFO [main] 2021-02-24 16:52:43,585 (Tokenizer.java:110): 96%
+ INFO [main] 2021-02-24 16:52:43,592 (Tokenizer.java:110): 97%
+ INFO [main] 2021-02-24 16:52:43,596 (Tokenizer.java:110): 98%
+ INFO [main] 2021-02-24 16:52:43,599 (Tokenizer.java:110): 99%
+ INFO [main] 2021-02-24 16:52:43,706 (Tokenizer.java:157): tokenIndexList: [-2147483647]
+ INFO [main] 2021-02-24 16:52:43,706 (Tokenizer.java:159): total token num is: 94296
+ INFO [main] 2021-02-24 16:52:43,706 (Tokenizer.java:160): total measure num is: 626
+ INFO [main] 2021-02-24 16:52:43,706 (Tokenizer.java:161): total line is: 39305
+ INFO [main] 2021-02-24 16:52:43,754 (SuffixArrayBuilder.java:23): ==========================================
+ INFO [main] 2021-02-24 16:52:43,755 (SuffixArrayBuilder.java:24):                   build                   
+ INFO [main] 2021-02-24 16:52:43,755 (SuffixArrayBuilder.java:25): ==========================================
+ INFO [main] 2021-02-24 16:52:43,757 (SuffixArrayBuilder.java:39): data trunk size:94296 0
+ INFO [main] 2021-02-24 16:52:43,758 (SuffixArrayBuilder.java:45): executable/executable_cpu_win10.exe 0 -1 -2147483647 0 1 1 20
+ INFO [main] 2021-02-24 16:52:44,964 (UnionFindParser.java:178): ==========================================
+ INFO [main] 2021-02-24 16:52:44,965 (UnionFindParser.java:179):                   parse                   
+ INFO [main] 2021-02-24 16:52:44,965 (UnionFindParser.java:180): ==========================================
+ INFO [main] 2021-02-24 16:52:45,009 (UnionFindParser.java:60): result group: 76
+ INFO [main] 2021-02-24 16:52:45,018 (Pipeline.java:187): total time cost: 0h 0m 2s

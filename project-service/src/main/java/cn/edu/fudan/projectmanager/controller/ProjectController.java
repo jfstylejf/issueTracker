@@ -206,14 +206,14 @@ public class ProjectController {
     @ApiOperation(value = "删除库", httpMethod = "DELETE")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "repo_uuid", value = "库的uuid", dataType = "String", required = false),
-            @ApiImplicitParam(name = "repo-Uuid", value = "sub库表的uuid", dataType = "String", required = false)
+            @ApiImplicitParam(name = "uuid", value = "sub库表的uuid", dataType = "String", required = false)
     })
     @DeleteMapping(value = {"/repo"})
     public ResponseBean<Object> deleteRepo(@RequestParam(value = "repo_uuid", required = false) String repoUuid,
-                                           @RequestParam(value = "repo-uuid", required = false) String repoUUID,
+                                           @RequestParam(value = "uuid", required = false) String uuid,
                                            HttpServletRequest request) {
         try {
-            projectControl.deleteRepo(request.getHeader(TOKEN), repoUuid, repoUUID);
+            projectControl.deleteRepo(request.getHeader(TOKEN), repoUuid, uuid);
             return new ResponseBean<>(200, "repo delete success!", null);
         } catch (Exception e) {
             e.printStackTrace();

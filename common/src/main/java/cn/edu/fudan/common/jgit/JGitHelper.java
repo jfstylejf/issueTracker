@@ -408,6 +408,7 @@ public class JGitHelper {
         } catch (IOException e) {
             log.error(e.getMessage());
         }
+//        log.info(" now git branch :"+git.branchRename().);
     }
 
     public String getRepoPath() {
@@ -423,6 +424,7 @@ public class JGitHelper {
             CheckoutCommand checkoutCommand = git.checkout();
             checkoutCommand.setName(commit).call();
         } catch (Exception e) {
+            log.info("before error commit=: "+ commit);
             log.error("JGitHelper checkout error:{} ", e.getMessage());
         }
     }
@@ -495,8 +497,10 @@ public class JGitHelper {
         //init scanCommitQueue
         scanCommitQueue.add(beginCommit);
         commitCheckMap.put(beginCommit, true);
+        log.info("before while:");
         //get the commitList
         while (scanCommitQueue.size() != commitMap.size()) {
+            log.info("in while ");
             for (Map.Entry<String, Set<String>> entry : commitMap.entrySet()) {
                 //if parent in commitMap but not in scanCommitQueue, should not add to queue.
                 boolean shouldAddToQueue = shouldAddToQueue(entry.getValue(), scanCommitQueue, commitMap);
@@ -508,7 +512,9 @@ public class JGitHelper {
                 }
             }
         }
+        log.info("end while:");
         scannedCommit.forEach(commit -> scanCommitQueue.removeIf(r -> r.equals(commit)));
+        log.info("end of  getScanCommitListByBranchAndBeginCommit");
         return scanCommitQueue;
     }
 
@@ -517,7 +523,7 @@ public class JGitHelper {
             RevCommit revCommit = revWalk.parseCommit(ObjectId.fromString(version));
             return revCommit.getCommitTime() * toMillisecond;
         } catch (Exception e) {
-            log.error(e.getMessage());
+            log.error("error in getLongCommitTime:"+e.getMessage());
             return 0L;
         }
     }
