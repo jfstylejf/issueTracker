@@ -788,4 +788,26 @@
             </if>
         </where>
     </select>
+
+
+    <select id="getLivingIssueTendency" parameterType="String" resultType="java.util.HashMap">
+        SELECT count(*) as num, projectId, projectName FROM issue i,
+        (SELECT a.project_name as projectName, a.id as projectId, b.repo_name as repoName, b.repo_uuid as repoUuid
+        FROM project a, sub_repository b WHERE a.project_name = b.project_name AND a.id = #{projectId}) as c
+        WHERE i.repo_id = c.repoUuid
+        AND <![CDATA[ start_commit_date <= #{until} ]]>
+        AND <![CDATA[ end_commit_date >= #{until} ]]>
+    </select>
+
+    <select id="getLivingIssueTendencyDetail" parameterType="String" resultType="java.util.HashMap">
+        SELECT display_id as displayId, i.uuid as issueUuid, type as type, issue_category as issueCategory,
+        repoName, branch, target_files as targetFiles, producer, start_commit_date as startCommitDate, priority
+        FROM issue i,
+        (SELECT a.project_name as projectName, a.id as projectId, b.repo_name as repoName, b.repo_uuid as repoUuid, branch
+        FROM project a, sub_repository b WHERE a.project_name = b.project_name AND a.id = #{projectId}) as c
+        WHERE i.repo_id = c.repoUuid
+        AND <![CDATA[ start_commit_date <= #{until} ]]>
+        AND <![CDATA[ end_commit_date >= #{until} ]]>
+    </select>
+
 </mapper>

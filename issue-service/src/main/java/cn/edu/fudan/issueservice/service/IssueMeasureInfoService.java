@@ -95,4 +95,15 @@ public interface IssueMeasureInfoService {
      */
     Object getSelfIntroducedLivingIssueCount(int page, int ps, String order, Boolean isAsc, Map<String, Object> query, Boolean isPagination, List<String> producerList);
 
+    /**
+     *
+     * @param since since
+     * @param until until
+     * @param projectIds 项目ids
+     * @param interval 时间粒度
+     * @param showDetail 是否展示细节
+     * @return 指定某些项目的留存缺陷数的趋势统计图数据
+     */
+    Object getLivingIssueTendency(String since, String until, String projectIds, String interval, String showDetail);
+
 }
