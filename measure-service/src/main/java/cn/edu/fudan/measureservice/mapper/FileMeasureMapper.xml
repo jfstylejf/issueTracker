@@ -79,7 +79,7 @@
     </select>
 
     <insert id="insertFileMeasureList">
-        insert ignore into file_measure
+        insert ignore into issueTracker.file_measure
         (
         uuid,
         repo_id,
