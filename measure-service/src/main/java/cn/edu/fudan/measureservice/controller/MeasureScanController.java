@@ -1,5 +1,6 @@
 package cn.edu.fudan.measureservice.controller;
 
+import cn.edu.fudan.measureservice.core.process.JsCodeAnalyzer;
 import cn.edu.fudan.measureservice.domain.ResponseBean;
 import cn.edu.fudan.measureservice.domain.dto.RepoResourceDTO;
 import cn.edu.fudan.measureservice.domain.dto.ScanDTO;
@@ -12,9 +13,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -29,6 +27,7 @@ public class MeasureScanController {
 
 
     private MeasureScanService measureScanService;
+
 
     @ApiOperation(value = "接收请求开始扫描 servicePath + toolName + \"/scan\", jsonObject, JSONObject.class 接收scan服务的请求进行扫描", httpMethod = "PUT")
     @ApiImplicitParams({
@@ -45,10 +44,7 @@ public class MeasureScanController {
         String beginCommit = scanDTO.getBeginCommit();
         // TODO 调用 tool scan 流程
         try {
-            // 调用javancss工具进行扫描 目前measure服务只有这个扫描工具
-            if (toolName.equals("javancss")){
-                measureScanService.scan(RepoResourceDTO.builder().repoUuid(repoUuid).build(), branch, beginCommit, toolName);
-            }
+            measureScanService.scan(RepoResourceDTO.builder().repoUuid(repoUuid).build(), branch, beginCommit, toolName);
             return ResponseBean.builder().code(200).build();
         }catch (Exception e) {
             log.error("measure scan failed! message is {}", e.getMessage());
@@ -78,6 +74,7 @@ public class MeasureScanController {
         }
     }
 
+
     @ApiOperation(value = "删除扫描状态", httpMethod = "DELETE")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "repo_uuid", value = "参与库", dataType = "String",required = true,defaultValue = "3ecf804e-0ad6-11eb-bb79-5b7ba969027e"),
@@ -99,6 +96,5 @@ public class MeasureScanController {
     public void setMeasureScanService(MeasureScanService measureScanService) {
         this.measureScanService = measureScanService;
     }
-
 
 }

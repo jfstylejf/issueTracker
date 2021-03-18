@@ -1,6 +1,7 @@
 package cn.edu.fudan.measureservice.domain;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -11,6 +12,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class OObject {
 
     private String path;
@@ -25,15 +27,4 @@ public class OObject {
     private int ccn;
     private int totalLines;
 
-
-//    public OObject(String name, int ncss, int functions, int classes, int javaDocs, int javaDocsLines, int singleCommentLines, int implementationCommentLines) {
-//        this.name = name;
-//        this.ncss = ncss;
-//        this.functions = functions;
-//        this.classes = classes;
-//        this.javaDocs = javaDocs;
-//        this.javaDocsLines = javaDocsLines;
-//        this.singleCommentLines = singleCommentLines;
-//        this.implementationCommentLines = implementationCommentLines;
-//    }
 }

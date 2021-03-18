@@ -31,6 +31,8 @@ public class IssueMeasurementController {
 
     private RestInterfaceManager restInterfaceManager;
 
+    private static final String TRUE = "true";
+    private static final String FALSE = "false";
     private static final String SUCCESS = "success";
     private static final String FAILED = "failed ";
     private static final String TOKEN = "token";
@@ -40,6 +42,8 @@ public class IssueMeasurementController {
     private static final String DEVELOPER = "developer";
     private static final String TIME_FORMAT_ERROR = "time format error";
     private static final String TIME_ERROR_MESSAGE = "The input time format error,should be yyyy-MM-dd.";
+    private static final String PARAMETER_IS_EMPTY = "parameter is empty";
+    private static final String NO_SUCH_PROJECT = "no such project";
 
     @ApiOperation(value = "获取issueTypeCounts", notes = "@return List<Map.Entry<String, JSONObject>>\n[\n" +
             "        {\n" +
@@ -303,6 +307,38 @@ public class IssueMeasurementController {
             return new ResponseBean<>(500, FAILED + e.getMessage(), null);
         }
     }
+
+
+    /**
+     * 留存静态缺陷趋势图
+     */
+    @ApiOperation(value = "留存静态缺陷趋势图", httpMethod = "GET", notes = "@return Map{\"code\": String, \"msg\": String, \"data\": List<Map>}")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "since", value = "起始时间(yyyy-MM-dd)", required = true, dataType = "String", defaultValue = "1990-01-01"),
+            @ApiImplicitParam(name = "until", value = "截止时间(yyyy-MM-dd)", required = true, dataType = "String", defaultValue = "1990-01-01"),
+            @ApiImplicitParam(name = "projectIds", value = "项目id", dataType = "String"),
+            @ApiImplicitParam(name = "interval", value = "间隔类型", dataType = "String", defaultValue = "week"),
+            @ApiImplicitParam(name = "showDetail", value = "是否展示detail", dataType = "String", defaultValue = "false")
+    })
+    @GetMapping(value = {"/codewisdom/issue/living-issue-tendency"})
+    public ResponseBean<Object> getCcnMethodNum(@RequestParam(value = "since") String since,
+                                                                   @RequestParam(value = "until") String until,
+                                                                   @RequestParam(value = "projectIds", required = false) String projectIds,
+                                                                   @RequestParam(value = "interval", required = false, defaultValue = "week") String interval,
+                                                                   @RequestParam(value = "showDetail", required = false, defaultValue = "false") String showDetail) {
+        try {
+            if (since.isEmpty() || until.isEmpty()) {
+                return new ResponseBean<>(412, PARAMETER_IS_EMPTY, null);
+            }
+            if(TIME_FORMAT_ERROR.equals(DateTimeUtil.timeFormatIsLegal(since, false)) || TIME_FORMAT_ERROR.equals(DateTimeUtil.timeFormatIsLegal(until, false))){
+                return new ResponseBean<>(400, TIME_ERROR_MESSAGE, null);
+            }
+            return new ResponseBean<>(200, SUCCESS, issueMeasureInfoService.getLivingIssueTendency(since, until, projectIds, interval, showDetail));
+        } catch (Exception e) {
+            return new ResponseBean<>(401, FAILED + e.getMessage(), null);
+        }
+    }
+
 
 
     @Autowired
