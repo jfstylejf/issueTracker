@@ -7,6 +7,7 @@ import cn.edu.fudan.dependservice.domain.Group;
 import cn.edu.fudan.dependservice.domain.RelationShip;
 import cn.edu.fudan.dependservice.mapper.GroupMapper;
 import cn.edu.fudan.dependservice.mapper.RelationshipMapper;
+import cn.edu.fudan.dependservice.utill.WriteUtill;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,25 +63,25 @@ public class ToolScanImpl implements ToolScan {
         log.info("sh start time:" + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
         long startTime = System.currentTimeMillis();
         boolean continuedetect = true;
-        log.info("resultFile: " + resultFile);
+        log.info("wait for sh result");
 
         while (continuedetect) {
+            if((System.currentTimeMillis()-startTime)/1000 >600){
+                log.error("wait for sh result time too long");
+                return false;
+            }
             try {
                 Thread.sleep(3000);
             } catch (Exception e) {
-                log.error("error in sleep");
+                log.error("exception ms:"+e.getMessage());
+                return false;
             }
             if (resultFileDetect()) {
                 break;
-            } else {
-                log.info("detect dir: " + resultFileDir);
-                log.info("detect sh result every 3 seconds ......");
             }
         }
         long endTime = System.currentTimeMillis();
         log.info("The total cost of waiting for the sh results -> {} second",(endTime-startTime)/1000);
-
-        log.info("sh end time:" + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
 
         Map<String, List> fileRes = null;
         ReadUtill readUtill = ReadUtill.builder().commitId(commit).repo_uuid(getScanData().getRepoUuid()).build();
@@ -93,7 +94,6 @@ public class ToolScanImpl implements ToolScan {
         }
 
         put2DataBase(fileRes);
-
         return true;
     }
 
@@ -122,6 +122,11 @@ public class ToolScanImpl implements ToolScan {
         this.setDependenceHome(applicationContext.getBean(ShHomeConfig.class).getDependenceHome());
         this.setShName(applicationContext.getBean(ShHomeConfig.class).getShName());
         this.setResultFileDir(applicationContext.getBean(ShHomeConfig.class).getResultFileDir());
+        //make config file
+        String configFile =this.resultFileDir+"source-project-conf.json";
+        log.info("configFile :"+configFile);
+        WriteUtill.writeProjecConf(configFile,this.getScanData().getRepoPath());
+
 
     }
 
@@ -141,6 +146,15 @@ public class ToolScanImpl implements ToolScan {
         }
         // fortest to see what res now is
         file.delete();
+        // end Thread
+        ShThread2 shRunner = new ShThread2();
+        shRunner.setShName("tdepend2.sh");
+        shRunner.setDependenceHome(dependenceHome);
+        shRunner.setRepoPath(scanData.getRepoPath());
+        Thread shThread = new Thread(shRunner);
+        shThread.start();
+
+
     }
 
     @Override
@@ -149,6 +163,9 @@ public class ToolScanImpl implements ToolScan {
     }
 
     public void put2DataBase(Map<String, List> fileRes) {
+        log.info("group size: "+fileRes.get("group").size());
+        log.info("relation size: "+fileRes.get("relation").size());
+
         for (Object g : fileRes.get("group")) {
             addGroup((Group) g);
 

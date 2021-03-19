@@ -2,11 +2,12 @@ package cn.edu.fudan.dependservice.service.impl;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Data
-public class ShThread implements Runnable {
+public class ShThread2 implements Runnable {
 
     String reslutFile;
     String repoPath;
@@ -25,7 +26,7 @@ public class ShThread implements Runnable {
             Runtime rt = Runtime.getRuntime();
 
             String command = "sh " + dependenceHome + shName;
-            log.info("command -> {}", command);
+            log.info("command2 -> {}", command);
             Process process = rt.exec(command);
             boolean timeout = process.waitFor(300L, TimeUnit.SECONDS);
             if (!timeout) {
@@ -33,7 +34,7 @@ public class ShThread implements Runnable {
                 log.error("invoke tool timeout ! (300s)");
                 return false;
             }
-            log.info("end of sh");
+
             return process.exitValue() == 0;
         } catch (Exception e) {
             e.printStackTrace();

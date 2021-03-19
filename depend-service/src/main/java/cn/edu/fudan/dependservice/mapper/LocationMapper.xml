@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.edu.fudan.dependservice.mapper.LocationMapper">
+
+
+    <resultMap id="projectString" type="String">
+        <result property="projectName" column="project_name"/>
+    </resultMap>
+
+    <select id="getProjectName" parameterType="String" resultMap="projectString">
+        select project_name
+        from issueTracker.project
+        where id = #{projectId};
+    </select>
+
+    <resultMap id="repoList" type="cn.edu.fudan.dependservice.domain.RepoUuidsInfo">
+        <id property="repoUuid" column="repo_uuid"/>
+        <result property="repoName" column="repo_name"/>
+        <result property="language" column="language"/>
+        <result property="branch" column="branch"/>
+    </resultMap>
+    <select id="getRepoUuids" parameterType="String" resultMap="repoList">
+        select repo_uuid, repo_name, language, branch
+        from issueTracker.sub_repository
+        where project_name = #{projectName};
+    </select>
+
+    <resultMap id="projectIds" type="cn.edu.fudan.dependservice.domain.ProjectIdsInfo">
+        <id property="projectId" column="id"/>
+    </resultMap>
+
+    <select id="getAllProjectIds" resultMap="projectIds">
+        select id
+        from issueTracker.project;
+    </select>
+
+</mapper>
