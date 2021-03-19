@@ -8,6 +8,7 @@ import cn.edu.fudan.cloneservice.domain.clone.CloneScan;
 import cn.edu.fudan.cloneservice.domain.clone.CloneScanInitialInfo;
 import cn.edu.fudan.cloneservice.domain.clone.CloneScanResult;
 import cn.edu.fudan.cloneservice.util.ASTUtil;
+import cn.edu.fudan.codetracker.core.tree.JavaTree;
 import cn.edu.fudan.codetracker.core.tree.JsTree;
 import cn.edu.fudan.codetracker.core.tree.parser.JavaFileParser;
 import cn.edu.fudan.codetracker.core.tree.parser.JsFileParser;
@@ -24,7 +25,7 @@ import java.net.URL;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.fdse.SagaShell.cloneDetect;
+//import static com.fdse.SagaShell.cloneDetect;
 import static cn.edu.fudan.codetracker.core.tree.parser.JsFileParser.*;
 import static cn.edu.fudan.codetracker.core.tree.parser.JavaFileParser.*;
 
@@ -217,7 +218,7 @@ public class CPUCloneScanOperation extends ScanOperationAdapter {
                     "exe="+cloneHome+"executable/executable_cpu_"+system+"_snippet.exe",
                     "threshold=0.7"
             };
-            cloneDetect(configs);
+//            cloneDetect(configs);
             log.info("{} -> method scan complete -> {}", Thread.currentThread().getName());
             return true;
         } catch (Exception e) {
@@ -453,8 +454,10 @@ public class CPUCloneScanOperation extends ScanOperationAdapter {
 
     public static void main(String[] args) {
         JsFileParser.setBabelPath("E:\\Lab\\gitlab\\IssueTracker-Master\\clone-service\\src\\main\\resources\\node\\babelEsLint.js");
-        JsTree jsTree = new JsTree(Collections.singletonList("C:\\Users\\fancy\\Desktop\\testCode\\Measure.js"), "t" , "C:\\Users\\fancy\\Desktop\\testCode");
+//        JsTree jsTree = new JsTree(Collections.singletonList("C:\\Users\\fancy\\Desktop\\testCode\\Measure.js"), "t" , "C:\\Users\\fancy\\Desktop\\testCode");
 
-        System.out.printf(jsTree.toString());
+        JavaTree javaTree = new JavaTree(Collections.singletonList("D:\\gumtree\\javaDiff\\test\\AnnotationMapping.java"),
+                "t" , "D:\\gumtree\\javaDiff\\test");
+        System.out.printf(javaTree.toString());
     }
 }
