@@ -25,7 +25,7 @@ import java.net.URL;
 import java.util.*;
 import java.util.stream.Collectors;
 
-//import static com.fdse.SagaShell.cloneDetect;
+import static com.fdse.SagaShell.cloneDetect;
 import static cn.edu.fudan.codetracker.core.tree.parser.JsFileParser.*;
 import static cn.edu.fudan.codetracker.core.tree.parser.JavaFileParser.*;
 
@@ -218,7 +218,7 @@ public class CPUCloneScanOperation extends ScanOperationAdapter {
                     "exe="+cloneHome+"executable/executable_cpu_"+system+"_snippet.exe",
                     "threshold=0.7"
             };
-//            cloneDetect(configs);
+            cloneDetect(configs);
             log.info("{} -> method scan complete -> {}", Thread.currentThread().getName());
             return true;
         } catch (Exception e) {
