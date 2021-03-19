@@ -129,8 +129,20 @@ public class IssueDao {
         return issueMapper.getSelfIntroduceLivingIssueCount(query);
     }
 
-
     public int getIssueCountInRepos(List<String> repoUuids, String since, String until) {
         return issueMapper.getIssueCountInRepos(repoUuids, since, until);
     }
+
+    public Map<String, Object> getLivingIssueTendency(String until, String projectId, String showDetail) {
+        String date = until.split(" ")[0];
+        Map<String, Object> map = issueMapper.getLivingIssueTendency(until, projectId);
+        map.put("date", date);
+        if (showDetail.equals("true")) {
+            List<Map<String, Object>> detail = issueMapper.getLivingIssueTendencyDetail(until, projectId);
+            map.put("detail", detail);
+        }
+        return map;
+    }
+
+
 }

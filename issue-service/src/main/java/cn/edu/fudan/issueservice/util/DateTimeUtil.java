@@ -165,4 +165,30 @@ public class DateTimeUtil {
     private static void getFirstDayAndLastDayInWeek(List<String> dateList, List<String[]> periods) {
 
     }
+
+    public static String datePlus(String tempDate) {
+        Date date = null;
+        try {
+            date = (new SimpleDateFormat(DATE_FORMAT_WITH_DETAIL)).parse(tempDate);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        Calendar cal = Calendar.getInstance();
+        assert date != null;
+        cal.setTime(date);
+        cal.add(Calendar.DATE, 1);
+        date = cal.getTime();
+        tempDate = (new SimpleDateFormat(DATE_FORMAT_WITH_DETAIL)).format(date);
+        return tempDate;
+    }
+
+    public static String lastDayOfMonth(int year, int month) {
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.YEAR, year);
+        cal.set(Calendar.MONTH, month - 1);
+        int lastDay = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
+        cal.set(Calendar.DAY_OF_MONTH, lastDay);
+        SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT_WITH_DETAIL);
+        return sdf.format(cal.getTime());
+    }
 }

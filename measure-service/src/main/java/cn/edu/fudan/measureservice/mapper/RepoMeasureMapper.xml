@@ -87,7 +87,7 @@
     </resultMap>
 
     <insert id="insertOneRepoMeasure" >
-        insert into repo_measure
+        insert into issueTracker.repo_measure
             (
                uuid,
                files,

@@ -5,6 +5,7 @@ import cn.edu.fudan.measureservice.domain.Objects;
 import cn.edu.fudan.measureservice.domain.Package;
 import cn.edu.fudan.measureservice.util.DirExplorer;
 import cn.edu.fudan.measureservice.util.FileFilter;
+import cn.edu.fudan.measureservice.util.JavaFileFilter;
 import javancss.FunctionMetric;
 import javancss.Javancss;
 import javancss.PackageMetric;
@@ -28,10 +29,11 @@ public class JavaNcss {
      */
     public static Map<String, Integer> getFileCcn(String repoPath) {
         File projectDir = new File(repoPath);
+        FileFilter fileFilter = new JavaFileFilter();
         List<String> pathList = new ArrayList<>();
         Map<String, Integer> result = new LinkedHashMap<>(128);
         Map<String, String> relativePath = new LinkedHashMap<>(128);
-        new DirExplorer((level, path, file) -> !FileFilter.javaFilenameFilter(path),
+        new DirExplorer((level, path, file) -> !fileFilter.fileFilter(path),
                 (level, path, file) -> {
                     pathList.add(file.getAbsolutePath());
                     relativePath.put(file.getAbsolutePath(), path);
@@ -87,7 +89,8 @@ public class JavaNcss {
 
     public static Measure analyse(String repoPath) {
         List<File> files = new ArrayList<>();
-        new DirExplorer((level, path, file) -> !FileFilter.javaFilenameFilter(path),
+        FileFilter fileFilter = new JavaFileFilter();
+        new DirExplorer((level, path, file) -> !fileFilter.fileFilter(path),
                 (level, path, file) -> files.add(file)).explore(new File(repoPath));
 
         Javancss javancss = new Javancss(files);

@@ -1,5 +1,6 @@
 package cn.edu.fudan.measureservice.util;
 
+import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jgit.api.CheckoutCommand;
@@ -10,7 +11,6 @@ import org.eclipse.jgit.diff.*;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectReader;
 import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.lib.RepositoryBuilder;
 import org.eclipse.jgit.patch.FileHeader;
 import org.eclipse.jgit.patch.HunkHeader;
 import org.eclipse.jgit.revwalk.RevCommit;
@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -38,6 +39,7 @@ import static cn.edu.fudan.measureservice.util.DateTimeUtil.timeTotimeStamp;
  **/
 @SuppressWarnings("Duplicates")
 @Slf4j
+@Data
 public class JGitHelper {
 
     private static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().contains("win");
@@ -54,12 +56,7 @@ public class JGitHelper {
     /**
      * repoPath 加上了 .git 目录
      */
-    public JGitHelper(String repoPath,String projectName) {
-        if("区块链".equals(projectName)) {
-            Flag = true;
-        }else {
-            Flag = false;
-        }
+    public JGitHelper(String repoPath) {
         String gitDir =  IS_WINDOWS ? repoPath + "\\.git" : repoPath + "/.git";
         FileRepositoryBuilder builder = new FileRepositoryBuilder();
         try {
@@ -86,22 +83,39 @@ public class JGitHelper {
         }
     }
 
-    public String getAuthorName(String commit) {
-        String authorName = null;
+    /**
+     * 获取这次 commit 的开发者姓名
+     * @param
+     * @return
+     */
+    public String getAuthorName(RevCommit revCommit) {
         try {
-            RevCommit revCommit = revWalk.parseCommit(ObjectId.fromString(commit));
-            authorName = revCommit.getAuthorIdent().getName();
+            return revCommit.getAuthorIdent().getName();
         }catch (Exception e) {
             e.printStackTrace();
         }
-        return authorName;
+        return null;
     }
 
-    public String getCommitTime(String commit) {
+    /**
+     * 获取这次 commit 开发者的邮件地址
+     * @param
+     * @return
+     */
+    public String getAuthorEmailAddress(RevCommit revCommit) {
+        try {
+            return revCommit.getAuthorIdent().getEmailAddress();
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    //fixme 时间类考虑 localDate
+    public String getCommitTime(RevCommit revCommit) {
         String time = null;
         final String format = "yyyy-MM-dd HH:mm:ss";
         try {
-            RevCommit revCommit = revWalk.parseCommit(ObjectId.fromString(commit));
             int t = revCommit.getCommitTime() ;
             long timestamp = Long.parseLong(String.valueOf(t)) * 1000;
             time = new SimpleDateFormat(format).format(new Date(timestamp));
@@ -226,20 +240,6 @@ public class JGitHelper {
         return 0;
     }
 
-    public String[] getCommitParents(String commit) {
-        try {
-            RevCommit revCommit = revWalk.parseCommit(ObjectId.fromString(commit));
-            RevCommit[] parentCommits = revCommit.getParents();
-            String[] result = new String[parentCommits.length];
-            for (int i = 0; i < parentCommits.length; i++) {
-                result[i] = parentCommits[i].getName();
-            }
-            return result;
-        }catch (Exception e) {
-            log.error(e.getMessage());
-        }
-        return null;
-    }
 
     private Map<String, List<DiffEntry>> getMappedFileList(String commit) {
         Map<String, List<DiffEntry>> result = new HashMap<>(8);
@@ -347,179 +347,12 @@ public class JGitHelper {
         return revCommit.getShortMessage();
     }
 
-    /**
-     *获取本次commit工作量行数数据（包括新增行数、删除行数、新增注释行、删除注释行、新增空白行、删除空白行）
-     */
-    public  Map<String, Integer> getLinesData(List<DiffEntry> diffEntryList) throws IOException{
-        Map<String,Integer> map = new HashMap<>();
-        int sumAddLines = 0;
-        int sumDelLines = 0;
-        int sumAddCommentLines = 0;
-        int sumDelCommentLines = 0;
-        int sumAddWhiteLines = 0;
-        int sumDelWhiteLines = 0;
-
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        DiffFormatter df = new DiffFormatter(out);
-
-        //如果加上这句，就是在比较的时候不计算空格，WS的意思是White Space
-        df.setDiffComparator(RawTextComparator.WS_IGNORE_ALL);
-        df.setRepository(repository);
-
-        //以下循环是针对每一个有变动的文件
-        for (DiffEntry entry : diffEntryList) {
-            if(!Flag) {
-                if (FileFilter.javaFilenameFilter(entry.getNewPath()) && FileFilter.javaFilenameFilter(entry.getOldPath())){
-                    continue;
-                }
-            }
-            df.format(entry);
-            String diffText = out.toString("UTF-8");
-
-//            String fullName = entry.getNewPath();
-//            System.out.println("正在匹配文件：" + fullName);//变更文件的路径
-//            System.out.println(diffText);
-            int addWhiteLines = 0;
-            int delWhiteLines = 0;
-            int addCommentLines = 0;
-            int delCommentLines = 0;
-            String[] diffLines = diffText.split("\n");
-            for (String line : diffLines){
-                //若是增加的行，则执行以下筛选语句
-                if (line.startsWith("+") && ! line.startsWith("+++")){
-                    //去掉开头的"+"
-                    line = line.substring(1);
-                    //去掉头尾的空白符
-                    line = line.trim();
-                    if (line.matches("^[\\s]*$")){//匹配空白行
-                        addWhiteLines++;
-                    }else if(line.startsWith("//") || line.startsWith("/*")  || line.startsWith("*") || line.endsWith("*/")){//匹配注释行
-                        addCommentLines++;
-                    }
-                }
-                //若是删除的行，则执行以下筛选语句
-                if (line.startsWith("-") && ! line.startsWith("---")){
-                    //去掉开头的"-"
-                    line = line.substring(1);
-                    //去掉头尾的空白符
-                    line = line.trim();
-                    if (line.matches("^[\\s]*$")){//匹配空白行
-                        delWhiteLines++;
-                    }else if(line.startsWith("//") || line.startsWith("/*")  || line.startsWith("*") || line.endsWith("*/")){//匹配注释行
-                        delCommentLines++;
-                    }
-                }
-            }
-
-            //对单个文件中的注释行数进行累加，计算到总的注释行当中去
-            sumAddCommentLines = sumAddCommentLines + addCommentLines;
-            sumDelCommentLines = sumDelCommentLines + delCommentLines;
-            sumAddWhiteLines += addWhiteLines;
-            sumDelWhiteLines += delWhiteLines;
-
-            // 获取文件差异位置，从而统计差异的行数，如增加行数，减少行数
-            FileHeader fileHeader = df.toFileHeader(entry);
-            List<HunkHeader> hunks = (List<HunkHeader>) fileHeader.getHunks();
-            int addSize = 0;
-            int subSize = 0;
-            for(HunkHeader hunkHeader:hunks){
-                EditList editList = hunkHeader.toEditList();
-                for(Edit edit : editList){
-                    subSize += edit.getEndA()-edit.getBeginA();
-                    addSize += edit.getEndB()-edit.getBeginB();
-                }
-            }
-            sumAddLines = sumAddLines + addSize - addCommentLines - addWhiteLines;
-            sumDelLines = sumDelLines + subSize - delCommentLines - delWhiteLines;
-            out.reset();
-        }
-        map.put("addLines", sumAddLines);
-        map.put("delLines", sumDelLines);
-        map.put("addCommentLines", sumAddCommentLines);
-        map.put("delCommentLines", sumDelCommentLines);
-        map.put("addWhiteLines", sumAddWhiteLines);
-        map.put("delWhiteLines", sumDelWhiteLines);
-        return map;
-    }
-
-    /**
-     * 获取本次commit每个文件的工作量行数数据（包括新增行数、删除行数、新增注释行、删除注释行、新增空白行、删除空白行）
-     */
-    public List<Map<String,Object>> getFileLinesData(String commitId) throws IOException{
-        List<DiffEntry> diffEntryList = getDiffEntry(commitId);
-        List<Map<String,Object>> result = new ArrayList<>();
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        DiffFormatter df = new DiffFormatter(out);
-        //如果加上这句，就是在比较的时候不计算空格，WS的意思是White Space
-        df.setDiffComparator(RawTextComparator.WS_IGNORE_ALL);
-        df.setRepository(repository);
-
-        //以下循环是针对每一个有变动的文件
-        for (DiffEntry entry : diffEntryList) {
-            Map<String,Object> map = new HashMap<>();
-            df.format(entry);
-            String diffText = out.toString("UTF-8");
-            String fullName = entry.getNewPath();
-            map.put("filePath",fullName);
-            int addWhiteLines = 0;
-            int delWhiteLines = 0;
-            int addCommentLines = 0;
-            int delCommentLines = 0;
-            String[] diffLines = diffText.split("\n");
-            for (String line : diffLines){
-                //若是增加的行，则执行以下筛选语句
-                if (line.startsWith("+") && ! line.startsWith("+++")){
-                    //去掉开头的"+"
-                    line = line.substring(1);
-                    //去掉头尾的空白符
-                    line = line.trim();
-                    if (line.matches("^[\\s]*$")){//匹配空白行
-                        addWhiteLines++;
-                    }else if(line.startsWith("//") || line.startsWith("/*")  || line.startsWith("*") || line.endsWith("*/")){//匹配注释行
-                        addCommentLines++;
-                    }
-                }
-                //若是删除的行，则执行以下筛选语句
-                if (line.startsWith("-") && ! line.startsWith("---")){
-                    //去掉开头的"-"
-                    line = line.substring(1);
-                    //去掉头尾的空白符
-                    line = line.trim();
-                    if (line.matches("^[\\s]*$")){//匹配空白行
-                        delWhiteLines++;
-                    }else if(line.startsWith("//") || line.startsWith("/*")  || line.startsWith("*") || line.endsWith("*/")){//匹配注释行
-                        delCommentLines++;
-                    }
-                }
-            }
-
-            // 获取文件差异位置，从而统计差异的行数，如增加行数，减少行数
-            FileHeader fileHeader = df.toFileHeader(entry);
-            List<HunkHeader> hunks = (List<HunkHeader>) fileHeader.getHunks();
-            int addSize = 0;
-            int subSize = 0;
-            for(HunkHeader hunkHeader:hunks){
-                EditList editList = hunkHeader.toEditList();
-                for(Edit edit : editList){
-                    subSize += edit.getEndA()-edit.getBeginA();
-                    addSize += edit.getEndB()-edit.getBeginB();
-                }
-            }
-            int addLines = addSize - addCommentLines - addWhiteLines;
-            int delLines = subSize - delCommentLines - delWhiteLines;
-            map.put("addLines",addLines);
-            map.put("delLines",delLines);
-            result.add(map);
-            out.reset();
-        }
-
-        return result;
-    }
 
     @SneakyThrows
     public List<DiffEntry> getConflictDiffEntryList (String commit) {
         RevCommit currCommit = revWalk.parseCommit(ObjectId.fromString(commit));
         RevCommit[] parentCommits = currCommit.getParents();
+        //todo 未处理 rebase 的情况
         if (parentCommits.length != 2) {
             return new ArrayList<>();
         }
@@ -536,7 +369,7 @@ public class JGitHelper {
         // oldPath 相同
         for (DiffEntry diffEntry1 : parent1) {
             for (DiffEntry diffEntry2 :parent2) {
-                // todo 暂未考虑重命名的情况 或者无需考虑重命名的情况
+                // fixme 暂未考虑重命名的情况 或者无需考虑重命名的情况
                 //  如 p1 a=a1  p2 a=>a2 是否冲突待验证
                 boolean isSame = diffEntry1.getOldPath().equals(diffEntry2.getOldPath()) &&
                         diffEntry1.getNewPath().equals(diffEntry2.getNewPath());
@@ -593,19 +426,10 @@ public class JGitHelper {
 
 
     /**
-     * @return 通过JGit获取一次commit中开发者的新增行数，删除行数，新增注释行数，删除注释行数
+     * 根据 commitId 获取变更文件信息
+     * @param commitId 当前 commit 节点
+     * @return  List<DiffEntry> 修改文件列表
      */
-    @SneakyThrows
-    public Map<String, Integer> getLinesData(String commitId){
-        RevCommit revCommit = getRevCommit(commitId);
-        RevCommit[] parentCommits = revCommit.getParents();
-        if (parentCommits.length == 0) {
-            return null;
-        }
-        List<DiffEntry> diffEntries = parentCommits.length == 1 ? getDiffEntry(parentCommits[0], revCommit) : getConflictDiffEntryList(commitId);
-        return getLinesData(diffEntries);
-    }
-
     public List<DiffEntry> getDiffEntry(String commitId) {
         RevCommit revCommit = getRevCommit(commitId);
         RevCommit[] parentCommits = revCommit.getParents();
@@ -620,13 +444,7 @@ public class JGitHelper {
      * 通过jgit获取修改文件的路径名 list
      */
     @SneakyThrows
-    public Map<DiffEntry.ChangeType, List<String>> getDiffFilePathList(String commitId){
-        RevCommit revCommit = getRevCommit(commitId);
-        RevCommit[] parentCommits = revCommit.getParents();
-        if (parentCommits.length == 0) {
-            return new HashMap<>(0);
-        }
-        List<DiffEntry> diffEntries = parentCommits.length == 1 ? getDiffEntry(parentCommits[0], revCommit) : getConflictDiffEntryList(commitId);
+    public Map<DiffEntry.ChangeType, List<String>> getDiffFilePathList(List<DiffEntry> diffEntries){
         if (diffEntries == null){
             return new HashMap<>(0);
         }
@@ -642,7 +460,6 @@ public class JGitHelper {
         // todo 暂时没考虑rename的情况
         for (DiffEntry entry : diffEntries) {
             List<String> pathList = result.get(entry.getChangeType());
-            entry.getChangeType();
             df.format(entry);
             if (entry.getChangeType().equals(DiffEntry.ChangeType.DELETE) && entry.getOldPath() != null) {
                 pathList.add(entry.getOldPath());
@@ -651,7 +468,6 @@ public class JGitHelper {
             if (entry.getNewPath() != null) {
                 pathList.add(entry.getNewPath());
             }
-
         }
         return result;
     }
@@ -662,29 +478,7 @@ public class JGitHelper {
 
 
     public static void main(String[] args) throws ParseException {
-        String repoPath = "D:\\Project\\FDSELab\\开源项目\\IssueTracker-Master";
-        String commitId = "f6b81325edc2c26fa54b62fc63188e35ecec8620";
-        JGitHelper jGitHelper = new JGitHelper(repoPath,null);
-        Map<String, Integer> map = jGitHelper.getLinesData(commitId);
-        System.out.println("addLines :"+map.get("addLines"));
-        System.out.println("delLines :"+map.get("delLines"));
-        System.out.println("addCommentLines :"+map.get("addCommentLines"));
-        System.out.println("delCommentLines :"+map.get("delCommentLines"));
-        System.out.println("addWhiteLines :"+map.get("addWhiteLines"));
-        System.out.println("delWhiteLines :"+map.get("delWhiteLines"));
 
-        Map<DiffEntry.ChangeType, List<String>> filePaths = jGitHelper.getDiffFilePathList(commitId);
-        int changedFiles = 0;
-        for (List<String> changedFilePathList : filePaths.values()){
-            if (changedFilePathList != null) {
-                for (String s : changedFilePathList) {
-                    if (! FileFilter.javaFilenameFilter(s)){
-                        changedFiles++;
-                    }
-                }
-            }
-        }
-        System.out.println(changedFiles);
     }
 
 }

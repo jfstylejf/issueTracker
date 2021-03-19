@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>common</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.1</version>
 
     <name>common</name>
     <description>code wisdom common dependency</description>
@@ -13,7 +13,7 @@
     <parent>
         <groupId>cn.edu.fudan</groupId>
         <artifactId>issueTracker</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>1.0.1</version>
     </parent>
 
     <dependencies>
