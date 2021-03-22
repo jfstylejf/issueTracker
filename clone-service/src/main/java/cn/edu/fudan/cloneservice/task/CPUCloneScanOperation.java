@@ -8,6 +8,8 @@ import cn.edu.fudan.cloneservice.domain.clone.CloneScan;
 import cn.edu.fudan.cloneservice.domain.clone.CloneScanInitialInfo;
 import cn.edu.fudan.cloneservice.domain.clone.CloneScanResult;
 import cn.edu.fudan.cloneservice.util.ASTUtil;
+import cn.edu.fudan.codetracker.core.tree.JavaTree;
+import cn.edu.fudan.codetracker.core.tree.JsTree;
 import cn.edu.fudan.codetracker.core.tree.parser.JavaFileParser;
 import cn.edu.fudan.codetracker.core.tree.parser.JsFileParser;
 import cn.edu.fudan.codetracker.domain.projectinfo.BaseNode;
@@ -19,7 +21,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.*;
+import java.net.URL;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.fdse.SagaShell.cloneDetect;
 import static cn.edu.fudan.codetracker.core.tree.parser.JsFileParser.*;
@@ -446,5 +450,14 @@ public class CPUCloneScanOperation extends ScanOperationAdapter {
             }
         }
         return locInfos;
+    }
+
+    public static void main(String[] args) {
+        JsFileParser.setBabelPath("E:\\Lab\\gitlab\\IssueTracker-Master\\clone-service\\src\\main\\resources\\node\\babelEsLint.js");
+//        JsTree jsTree = new JsTree(Collections.singletonList("C:\\Users\\fancy\\Desktop\\testCode\\Measure.js"), "t" , "C:\\Users\\fancy\\Desktop\\testCode");
+
+        JavaTree javaTree = new JavaTree(Collections.singletonList("D:\\gumtree\\javaDiff\\test\\AnnotationMapping.java"),
+                "t" , "D:\\gumtree\\javaDiff\\test");
+        System.out.printf(javaTree.toString());
     }
 }

@@ -15,10 +15,13 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.sun.org.apache.xpath.internal.operations.Bool;
 import lombok.extern.slf4j.Slf4j;
+import org.omg.CosNaming.NamingContextExtPackage.StringNameHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -35,10 +38,12 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
 
     private IssueDao issueDao;
 
+    private ProjectDao projectDao;
+
     private RestInterfaceManager restInterfaceManager;
 
     private final static String REPO_LIST = "repoList", DEVELOPER = "developer", QUANTITY = "quantity",  DEVELOPER_NAME = "developerName",
-            ADD = "add", SOLVE = "solve", ISSUE_COUNT = "issueCount", LOC ="loc", LIVING_ISSUE_COUNT = "livingIssueCount";
+            ADD = "add", SOLVE = "solve", ISSUE_COUNT = "issueCount", LOC ="loc", LIVING_ISSUE_COUNT = "livingIssueCount", DATE_FORMAT = "yyyy-MM-dd";
 
     @Override
     public List<Map.Entry<String, JSONObject>> getNotSolvedIssueCountByToolAndRepoUuid(List<String> repoUuids, String tool, String order, String commitUuid) {
@@ -254,6 +259,78 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
         return setterPagedGrid(result, page);
     }
 
+    @Override
+    public Object getLivingIssueTendency(String beginDate, String endDate, String projectIds, String interval, String showDetail) {
+        List<Map<String, Object>> result = new ArrayList<>();
+        String time1 = " 00:00:00";
+        String time2 = " 24:00:00";
+        beginDate = beginDate + time1;
+        endDate = endDate + time2;
+        if (StringUtils.isEmpty(projectIds)) {
+            projectIds = projectDao.getAllProjectIds();
+        }
+        for (String projectId : projectIds.split(",")) {
+            if (projectId.length() != 0) {
+                String tempDateBegin = beginDate.split(" ")[0] + time1;
+                String tempDateEnd;
+                switch (interval) {
+                    case "day":
+                        tempDateEnd = beginDate.split(" ")[0] + time2;
+                        while (tempDateBegin.compareTo(endDate) < 1) {
+                            result.add(issueDao.getLivingIssueTendency(tempDateEnd, projectId, showDetail));
+                            tempDateBegin = DateTimeUtil.datePlus(tempDateBegin.split(" ")[0]) + time1;
+                            tempDateEnd = tempDateBegin.split(" ")[0] + time2;
+                        }
+                        break;
+                    case "month":
+                        while (tempDateBegin.compareTo(endDate) < 1) {
+                            tempDateEnd = tempDateBegin;
+                            int year = Integer.parseInt(tempDateEnd.split(" ")[0].split("-")[0]);
+                            int month = Integer.parseInt(tempDateEnd.split(" ")[0].split("-")[1]);
+                            tempDateEnd = DateTimeUtil.lastDayOfMonth(year, month) + time2;
+                            result.add(issueDao.getLivingIssueTendency(tempDateEnd, projectId, showDetail));
+                            tempDateBegin = DateTimeUtil.datePlus(tempDateEnd).split(" ")[0] + time1;
+                        }
+                        break;
+                    case "year":
+                        while (tempDateBegin.compareTo(endDate) < 1) {
+                            tempDateEnd = tempDateBegin;
+                            int year = Integer.parseInt(tempDateEnd.split(" ")[0].split("-")[0]);
+                            tempDateEnd = DateTimeUtil.lastDayOfMonth(year, 12) + time2;
+                            result.add(issueDao.getLivingIssueTendency(tempDateEnd, projectId, showDetail));
+                            tempDateBegin = DateTimeUtil.datePlus(tempDateEnd).split(" ")[0] + time1;
+                        }
+                        break;
+                    default:
+                        while (tempDateBegin.compareTo(endDate) < 1) {
+                            tempDateEnd = tempDateBegin;
+                            try {
+                                SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
+                                Calendar cal = Calendar.getInstance();
+                                Date time = sdf.parse(tempDateEnd.split(" ")[0]);
+                                cal.setTime(time);
+                                int dayWeek = cal.get(Calendar.DAY_OF_WEEK);
+                                if (1 == dayWeek) {
+                                    cal.add(Calendar.DAY_OF_MONTH, -1);
+                                }
+                                cal.setFirstDayOfWeek(Calendar.MONDAY);
+                                int day = cal.get(Calendar.DAY_OF_WEEK);
+                                cal.add(Calendar.DATE, cal.getFirstDayOfWeek() - day);
+                                cal.add(Calendar.DATE, 6);
+                                tempDateEnd = sdf.format(cal.getTime()) + time2;
+                            } catch (ParseException e) {
+                                e.printStackTrace();
+                            }
+                            result.add(issueDao.getLivingIssueTendency(tempDateEnd, projectId, showDetail));
+                            tempDateBegin = DateTimeUtil.datePlus(tempDateEnd).split(" ")[0] + time1;
+                        }
+                        break;
+                }
+            }
+        }
+        return result;
+    }
+
     private PagedGridResult setterPagedGrid(List<?> list, Integer page) {
         PageInfo<?> pageList = new PageInfo<>(list);
         PagedGridResult grid = new PagedGridResult();
@@ -300,6 +377,11 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
     @Autowired
     public void setIssueDao(IssueDao issueDao) {
         this.issueDao = issueDao;
+    }
+
+    @Autowired
+    public void setProjectDao(ProjectDao projectDao) {
+        this.projectDao = projectDao;
     }
 
     @Autowired
