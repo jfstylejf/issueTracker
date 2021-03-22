@@ -3,7 +3,6 @@ package cn.edu.fudan.common.scan;
 import cn.edu.fudan.common.component.BaseRepoRestManager;
 import cn.edu.fudan.common.domain.ScanInfo;
 import cn.edu.fudan.common.domain.po.scan.RepoScan;
-import cn.edu.fudan.common.jgit.JGitHelper;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
@@ -137,7 +136,7 @@ public abstract class CommonScanProcess implements CommonScanService {
             }
             String firstCommit = toScanCommitList.get(0);
             repoScan.setTotalCommitCount(toScanCommitList.size());
-            repoScan.setStart_commit(firstCommit);
+            repoScan.setStartCommit(firstCommit);
 
             log.info("commit size : {}" , toScanCommitList.size());
             insertRepoScan(repoScan);
