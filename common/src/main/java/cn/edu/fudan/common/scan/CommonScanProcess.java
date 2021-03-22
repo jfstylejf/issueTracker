@@ -27,10 +27,10 @@ public abstract class CommonScanProcess implements CommonScanService {
      **/
     private final ConcurrentHashMap<String, Boolean> scanStatusMap = new ConcurrentHashMap<>();
     protected BaseRepoRestManager baseRepoRestManager;
-    private final Short lock = 1;
+    private static final Short LOCK = 1;
 
     /**
-     *  设置同步状态 处理接口请求 判断扫描是否需要更新
+     * 设置同步状态 处理接口请求 判断扫描是否需要更新
      **/
     public void scan(String repoUuid, String branch, String beginCommit) {
 
@@ -49,7 +49,7 @@ public abstract class CommonScanProcess implements CommonScanService {
             }
 
             String key = generateKey(repoUuid, tool);
-            synchronized(this.lock) {
+            synchronized (LOCK) {
                 // 正在扫描接收到了请求
                 if (scanStatusMap.containsKey(key)) {
                     scanStatusMap.put(key, true);
@@ -76,7 +76,7 @@ public abstract class CommonScanProcess implements CommonScanService {
             log.error("{} : not in cn.edu.fudan.common.scan scanStatusMap", repoUuid);
             return;
         }
-        synchronized(this.lock) {
+        synchronized (this.LOCK) {
             boolean newUpdate = scanStatusMap.get(key);
             if (!newUpdate) {
                 scanStatusMap.remove(key);
@@ -96,22 +96,17 @@ public abstract class CommonScanProcess implements CommonScanService {
 
         ToolScan specificTool = getToolScan(tool);
         // 获取repo所在路径
-        // baseRepoRestManager =null
-        log.info("repoUuid: "+repoUuid);
-//        String repoPath = baseRepoRestManager.getCodeServiceRepo(repoUuid);
-        String repoPath ="/home/fdse/codeWisdom/repository/repo/github/metersphere/metersphere-master_duplicate_fdse-9";
-        // repoPath  /home/fdse/codeWisdom/repository/repo/github/metersphere/metersphere-master_duplicate_fdse-11
-        // /home/fdse/codeWisdom/repository/repo/github/metersphere/metersphere-master_duplicate_fdse-10
-//        repoPath = "not null";
+        log.info("repoUuid: " + repoUuid);
+        String repoPath = this.useLocalRepoPath() ? this.getLocalRepoPath() : baseRepoRestManager.getCodeServiceRepo(repoUuid);
         if (repoPath == null) {
             log.error("{} : can't get repoPath", repoUuid);
             return;
         }
 
         List<String> scannedCommitList = getScannedCommitList(repoUuid, tool);
-        log.info("scannedCommitList.size():"+scannedCommitList.size());
+        log.info("scannedCommitList.size():" + scannedCommitList.size());
         boolean initialScan = scannedCommitList.size() == 0;
-        int  scannedCommitCount = 0;
+        int scannedCommitCount = 0;
         RepoScan repoScan = RepoScan.builder()
                 .repoUuid(repoUuid)
                 .branch(branch)
@@ -126,22 +121,18 @@ public abstract class CommonScanProcess implements CommonScanService {
             if (beginCommit == null || "".equals(beginCommit)) {
                 beginCommit = getLastedScannedCommit(repoUuid, tool);
             }
-//            List<String> toScanCommitList = new JGitHelper(repoPath).getScanCommitListByBranchAndBeginCommit(branch, beginCommit, scannedCommitList);
-            List<String> toScanCommitList = new ArrayList<>();
-            toScanCommitList.add("46bff0e2942aa83087e4a5023dff0ebda236e120");
-            toScanCommitList.add("9b2b7e7f63482e5e29cafbceac7146b56c8faf7f");
-
-            if (toScanCommitList.size() == 0) {
+            List<String> toScanCommitList = new JGitHelper(repoPath).getScanCommitListByBranchAndBeginCommit(branch, beginCommit, scannedCommitList);
+            if (toScanCommitList.isEmpty()) {
                 return;
             }
             String firstCommit = toScanCommitList.get(0);
             repoScan.setTotalCommitCount(toScanCommitList.size());
             repoScan.setStartCommit(firstCommit);
 
-            log.info("commit size : {}" , toScanCommitList.size());
+            log.info("commit size : {}", toScanCommitList.size());
             insertRepoScan(repoScan);
             boolean success = false;
-            specificTool.loadData(repoUuid, branch, repoPath, initialScan,toScanCommitList);
+            specificTool.loadData(repoUuid, branch, repoPath, initialScan, toScanCommitList);
             specificTool.prepareForScan();
 
             for (String commit : toScanCommitList) {
@@ -151,8 +142,8 @@ public abstract class CommonScanProcess implements CommonScanService {
                 specificTool.cleanUpForOneScan(commit);
                 scannedCommitCount++;
 
-                if(curThread.isInterrupted()){
-                    synchronized (lock) {
+                if (curThread.isInterrupted()) {
+                    synchronized (this.LOCK) {
                         scanStatusMap.remove(threadName);
                     }
                     log.warn("thread:{} stopped", threadName);
@@ -161,7 +152,7 @@ public abstract class CommonScanProcess implements CommonScanService {
             }
             specificTool.cleanUpForScan();
 
-            repoScan.setStatus(success ? ScanInfo.Status.COMPLETE.getStatus(): ScanInfo.Status.FAILED.getStatus());
+            repoScan.setStatus(success ? ScanInfo.Status.COMPLETE.getStatus() : ScanInfo.Status.FAILED.getStatus());
             repoScan.setEndScanTime(new Date());
             repoScan.setScannedCommitCount(scannedCommitCount);
             updateRepoScan(repoScan);
@@ -188,7 +179,7 @@ public abstract class CommonScanProcess implements CommonScanService {
     protected abstract String getLastedScannedCommit(String repoUuid, String tool);
 
     /**
-     *  根据uuid 和 代码库的地址决定需要调用的工具列表
+     * 根据uuid 和 代码库的地址决定需要调用的工具列表
      **/
     protected abstract String[] getToolsByRepo(String repoUuid);
 
@@ -197,8 +188,17 @@ public abstract class CommonScanProcess implements CommonScanService {
      **/
     protected abstract void insertRepoScan(RepoScan repoScan);
 
+    /**
+     * 是否使用本地repoPath
+     **/
+    protected abstract Boolean useLocalRepoPath();
+
+    /**
+     * 获取本地repoPath
+     **/
+    protected abstract String getLocalRepoPath();
+
     @Autowired
-//    public abstract  void setBaseRepoRestManager(<T extends BaseRepoRestManager> restInterfaceManager);
     public abstract <T extends BaseRepoRestManager> void setBaseRepoRestManager(T restInterfaceManager);
 
     @Override
@@ -206,19 +206,19 @@ public abstract class CommonScanProcess implements CommonScanService {
         Assert.notNull(repoUuid, "repoUuid is null");
         Assert.notNull(toolName, "toolName is null");
 
-        String threadName = generateKey(repoUuid,toolName);
+        String threadName = generateKey(repoUuid, toolName);
         ThreadGroup currentGroup = Thread.currentThread().getThreadGroup();
         int activeCount = currentGroup.activeCount();
         Thread[] lstThreads = new Thread[activeCount];
         currentGroup.enumerate(lstThreads);
-        for (int i = 0; i < activeCount; i++){
-            if(threadName.equals (lstThreads[i].getName())){
+        for (int i = 0; i < activeCount; i++) {
+            if (threadName.equals(lstThreads[i].getName())) {
                 lstThreads[i].interrupt();
                 return true;
             }
         }
 
-        return  false;
+        return false;
     }
 
     @Override
@@ -227,8 +227,8 @@ public abstract class CommonScanProcess implements CommonScanService {
 
         int keyCount;
         Set<String> targetKeys;
-        synchronized (lock) {
-            Set<String> keys =  scanStatusMap.keySet();
+        synchronized (LOCK) {
+            Set<String> keys = scanStatusMap.keySet();
             targetKeys = keys.stream().filter(key -> key.contains(repoUuid)).collect(Collectors.toSet());
             keyCount = targetKeys.size();
         }
@@ -237,7 +237,7 @@ public abstract class CommonScanProcess implements CommonScanService {
         int activeCount = currentGroup.activeCount();
         Thread[] lstThreads = new Thread[activeCount];
         currentGroup.enumerate(lstThreads);
-        for (int i = 0; i < activeCount; i++){
+        for (int i = 0; i < activeCount; i++) {
             if (targetKeys.contains(lstThreads[i].getName())) {
                 lstThreads[i].interrupt();
                 keyCount--;

@@ -161,14 +161,13 @@ public class ToolInvoker {
         try{
             if(repoMeasureMapper.sameMeasureOfOneCommit(scanCommitInfoDto.getRepoUuid(),scanCommitInfoDto.getCommitId())==0) {
                 repoMeasureMapper.insertOneRepoMeasure(repoMeasure);
-                return true;
             }
         } catch (Exception e) {
             log.error("Inserting data to DB repo_measure table failed：");
             e.printStackTrace();
+            return false;
         }
-
-        return false;
+        return true;
     }
 
     /**
@@ -188,6 +187,9 @@ public class ToolInvoker {
 
         List<DiffInfo> diffInfos = getDiffTextInfo(diffEntries);
         for (DiffInfo diffInfo : diffInfos) {
+            if (!filePaths.contains(diffInfo.getFilePath())) {
+                continue;
+            }
             int ccn = 0;
             int totalLine = 0;
             String filePath = diffInfo.getFilePath();
@@ -208,10 +210,24 @@ public class ToolInvoker {
             fileMeasureList.add(fileMeasure);
         }
 
-        jGitHelper.checkout(jGitHelper.getSingleParent(scanCommitInfoDto.getCommitId()));
+        String preCommit = jGitHelper.getSingleParent(scanCommitInfoDto.getCommitId());
+        RevCommit revCommit = jGitHelper.getRevCommit(preCommit);
+        String preCommitTime = jGitHelper.getCommitTime(revCommit);
+        String preAuthorName = jGitHelper.getAuthorName(revCommit);
+        String preMailAddress = jGitHelper.getAuthorEmailAddress(revCommit);
+        jGitHelper.checkout(preCommit);
         for (FileMeasure f : fileMeasureList){
             String filePath = f.getFilePath();
-            int preCcn = getPreFileCcn(scanCommitInfoDto,filePath);
+            ScanCommitInfoDto preScanCommitInfo = ScanCommitInfoDto.builder().commitId(preCommit)
+                    .commitTime(preCommitTime)
+                    .branch(scanCommitInfoDto.getBranch())
+                    .developerName(preAuthorName)
+                    .mailAddress(preMailAddress)
+                    .repoPath(scanCommitInfoDto.getRepoPath())
+                    .toolName(scanCommitInfoDto.getToolName())
+                    .repoUuid(scanCommitInfoDto.getRepoUuid())
+                    .build();
+            int preCcn = getPreFileCcn(preScanCommitInfo,filePath);
             f.setDiffCcn(f.getCcn() - preCcn);
         }
 
@@ -235,10 +251,10 @@ public class ToolInvoker {
             return JavaNcss.getOneFileCcn(scanCommitInfoDto.getRepoPath()+'/'+filePath);
         }else if (ToolEnum.JSCodeAnalyzer.getType().equals(scanCommitInfoDto.getToolName())) {
             JsCodeAnalyzer jsCodeAnalyzer = new JsCodeAnalyzer();
-            jsCodeAnalyzer.setRepoPath(filePath);
+            jsCodeAnalyzer.setRepoPath(scanCommitInfoDto.getRepoPath());
             jsCodeAnalyzer.setBinHome(binHome);
             jsCodeAnalyzer.setScanCommitInfoDto(scanCommitInfoDto);
-            FileInfo preFileInfo = jsCodeAnalyzer.getFileInfo(filePath);
+            FileInfo preFileInfo = jsCodeAnalyzer.getPreFileInfo(filePath);
             return preFileInfo.getFileCcn();
         }else {
             return 0;

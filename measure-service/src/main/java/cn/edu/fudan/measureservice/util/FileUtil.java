@@ -1,6 +1,5 @@
 package cn.edu.fudan.measureservice.util;
 
-import java.io.File;
 
 /**
  * @author wjzho
@@ -11,17 +10,21 @@ public class FileUtil {
     private static final String WINDOWS_SEPARATOR = "\\\\";
     private static final String LINUX_SEPARATOR = "/";
     public static String pathJoint(String prefix, String postfix) {
-        return new StringBuilder().append(getExecutablePath(prefix)).append(postfix).toString();
+        return getExecutablePath(prefix) + postfix;
     }
 
     public static String getRelativePath(String repoPath, String source) {
         return source.replace(getExecutablePath(repoPath),"");
     }
 
+    public static String getAbsolutePath(String repoPath,String fileName) {
+        return getExecutablePath(repoPath) + fileName;
+    }
+
     public static String getExecutablePath(String repoPath) {
         String separator = IS_WINDOWS ? WINDOWS_SEPARATOR : LINUX_SEPARATOR;
         if (!repoPath.endsWith(separator)) {
-            return new StringBuilder().append(repoPath).append(separator).toString();
+            return repoPath + separator;
         }else {
             return repoPath;
         }

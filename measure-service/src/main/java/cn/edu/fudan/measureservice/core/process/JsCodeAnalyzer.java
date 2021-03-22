@@ -1,19 +1,18 @@
 package cn.edu.fudan.measureservice.core.process;
 
 import cn.edu.fudan.measureservice.domain.*;
+import cn.edu.fudan.measureservice.domain.Objects;
 import cn.edu.fudan.measureservice.domain.dto.FileInfo;
 import cn.edu.fudan.measureservice.domain.dto.MethodInfo;
 import cn.edu.fudan.measureservice.util.FileUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -25,19 +24,35 @@ public class JsCodeAnalyzer extends BaseAnalyzer{
     private static final String jsResultFileHome = "/home/fdse/codeWisdom/service/measure/log/JsResultLog";
     private static final String jsCcnLog = "jsCcn.log";
     private static final String jsLineLog = "jsLine.log";
+    public static final String jsScanLog = "jsScan.log";
     private static final String jsComplexity = "excuteJsComplexity.sh";
     private static final String jsLine = "excuteJsLine.sh";
+    public static final String jsScan = "excuteJsScan.sh";
 
-
-
+    @SneakyThrows
     @Override
     public boolean invoke() {
-        if(getJsCodeComplexity(repoPath) && getJsCodeLine(repoPath)) {
-            log.info("invoke tool success!\n");
-            return true;
+        /*if(!getJsScanResult()) {
+            log.error("scan {} failed\n",repoPath);
+            return false;
         }
-        return false;
+        JSONArray jsScanResult = readJsParseFile(FileUtil.pathJoint(jsResultFileHome,jsScanLog));
+        if(jsScanResult==null) {
+            log.error("read scan result failed\n");
+            return false;
+        }
+        List<String> fileList = JSONObject.parseArray(jsScanResult.toJSONString(),String.class);
+        if (jsScanResult.size()==0) {
+            log.warn("check the repo : {} , no js file here\n",repoPath);
+            return false;
+        }*/
+        if (!getJsCodeComplexity(repoPath) || !getJsCodeLine(repoPath)) {
+            log.error("read data failed\n");
+            return false;
+        }
+        return true;
     }
+
 
     @Override
     public boolean analyze() {
@@ -56,44 +71,49 @@ public class JsCodeAnalyzer extends BaseAnalyzer{
     }
 
 
-    public Boolean getJsCodeLine(String path){
+    public Boolean getJsScanResult() {
         try {
-            Runtime rt = Runtime.getRuntime();
-            String command = binHome + jsLine + " " + path;
-            log.info("command -> {}",command);
-            Process process = rt.exec(command);
-            boolean timeout = process.waitFor(200L, TimeUnit.SECONDS);
-            if (!timeout) {
-                process.destroy();
-                log.error("run jsComplexity script timeout ! (100s),file: {}", path);
-                return false;
-            }
-            if(process.exitValue() != 0){
+            return executeCommand(repoPath,jsScan);
+        }catch (Exception e) {
+            log.error("invoke jsScan failed!");
+        }
+        return true;
+    }
 
-            }
+    public Boolean getJsCodeLine(String filePath){
+        try {
+            return executeCommand(filePath,jsLine);
         }catch (Exception e) {
             log.error("invoke jsLine failed!");
         }
         return true;
     }
 
-    public Boolean getJsCodeComplexity(String path) {
-        try {
-            Runtime rt = Runtime.getRuntime();
-            String command = binHome + jsComplexity + " " + path;
-            log.info("command -> {}",command);
-            Process process = rt.exec(command);
-            boolean timeout = process.waitFor(200L, TimeUnit.SECONDS);
-            if (!timeout) {
-                process.destroy();
-                log.error("run jsComplexity script timeout ! (100s),file: {}", path);
-                return false;
-            }
-            if(process.exitValue() != 0){
 
-            }
+    public Boolean getJsCodeComplexity(String filePath) {
+        try {
+            return executeCommand(filePath,jsComplexity);
         }catch (Exception e) {
             log.error("invoke jsComplexity failed!");
+        }
+        return true;
+    }
+
+
+    @SneakyThrows
+    private boolean executeCommand(String path, String type){
+        Runtime rt = Runtime.getRuntime();
+        String command = binHome + type + " " + path;
+        log.info("command -> {}", command);
+        Process process = rt.exec(command);
+        boolean timeout = process.waitFor(200L, TimeUnit.SECONDS);
+        if (!timeout) {
+            process.destroy();
+            log.error("run {} script timeout ! (100s),file: {}",type, path);
+            return false;
+        }
+        if (process.exitValue() != 0) {
+
         }
         return true;
     }
@@ -108,12 +128,12 @@ public class JsCodeAnalyzer extends BaseAnalyzer{
             }
             return JSONArray.parseArray(stringBuilder.toString());
         } catch (IOException e) {
-            log.error("read jsComplexityResultFile : {} failed ", filePath);
+            log.error("read jsResultFile : {} failed ", filePath);
         }
         return null;
     }
 
-    private List<FileInfo> getJsFileInfo(JSONArray jsCcnResult,JSONArray jsLineResult) {
+    private List<FileInfo> getJsFileInfo(JSONArray jsCcnResult, JSONArray jsLineResult) {
         List<FileInfo> fileInfos = new ArrayList<>();
         Map<String,List<MethodInfo>> map = new HashMap<>();
         for (int i = 0; i < jsCcnResult.size(); i++) {
@@ -138,18 +158,19 @@ public class JsCodeAnalyzer extends BaseAnalyzer{
                 continue;
             }
             FileInfo fileInfo = FileInfo.builder()
-                                    .absolutePath(fileName)
-                                    .relativePath(FileUtil.getRelativePath(repoPath,fileName))
-                                    .codeLines(line.getIntValue("codeLine"))
-                                    .blankLines(line.getIntValue("blankLine"))
-                                    .totalLines(line.getIntValue("allLine"))
-                                    .methodInfoList(map.get(fileName))
-                                    .build();
+                    .absolutePath(fileName)
+                    .relativePath(FileUtil.getRelativePath(repoPath,fileName))
+                    .codeLines(line.getIntValue("codeLine"))
+                    .blankLines(line.getIntValue("blankLine"))
+                    .totalLines(line.getIntValue("allLine"))
+                    .methodInfoList(map.get(fileName))
+                    .build();
             fileInfo.calFileCcn();
             fileInfos.add(fileInfo);
 
         }
         return fileInfos;
+
     }
 
     private Measure dataTypeProcess(List<FileInfo> fileInfos) {
@@ -186,8 +207,9 @@ public class JsCodeAnalyzer extends BaseAnalyzer{
     }
 
 
-    public  FileInfo getFileInfo(String filePath) {
-        if(!getJsCodeComplexity(filePath)) {
+    public  FileInfo getPreFileInfo(String filePath) {
+        String absolutePath = FileUtil.getAbsolutePath(repoPath,filePath);
+        if(!getJsCodeComplexity(absolutePath)) {
             return null;
         }
         try {
@@ -208,8 +230,8 @@ public class JsCodeAnalyzer extends BaseAnalyzer{
                 );
             }
             FileInfo fileInfo = FileInfo.builder()
-                    .absolutePath(filePath)
-                    .relativePath(FileUtil.getRelativePath(repoPath,filePath))
+                    .absolutePath(absolutePath)
+                    .relativePath(filePath)
                     .methodInfoList(methodInfos)
                     .build();
             fileInfo.calFileCcn();
