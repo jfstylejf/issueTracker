@@ -75,7 +75,7 @@ public class MeasureScanServiceImpl implements MeasureScanService {
     @Async("taskExecutor")
     // todo 未考虑多线程节点重复扫描问题，后续加入BlockingQueue<ScanCommitInfo>
     // todo 用 ScanCommitInfo包装后三个参数
-    public void scan(RepoResourceDTO repoResource, String branch, String beginCommit, String toolName) {
+    public synchronized void scan(RepoResourceDTO repoResource, String branch, String beginCommit, String toolName) {
         String repoPath = repoResource.getRepoPath();
         String repoUuid = repoResource.getRepoUuid();
         if (StringUtils.isEmpty(repoPath)){

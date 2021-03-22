@@ -60,7 +60,7 @@
         <where>
             <trim prefixOverrides="and">
                 <if test="repoUuidList != null and repoUuidList.size > 0">
-                    and repo_id in
+                    and repo_uuid in
                     <foreach collection="repoUuidList" separator="," open="(" close=")" item="repoUuid">
                         #{repoUuid}
                     </foreach>
@@ -78,11 +78,11 @@
     </select>
 
     <select id="getDeveloperRepoInfoList" resultType="java.util.HashMap">
-        SELECT developer_unique_name,repo_id,SUBSTRING(min(commit_time),1,10) AS firstCommitDate FROM issueTracker.commit_view
+        SELECT developer_unique_name,repo_uuid,SUBSTRING(min(commit_time),1,10) AS firstCommitDate FROM issueTracker.commit_view
         <where>
             <trim prefixOverrides="and">
                 <if test="repoUuid != null and repoUuid !='' ">
-                    and repo_id = #{repoUuid}
+                    and repo_uuid = #{repoUuid}
                 </if>
 
                 <if test="since != null and since != '' ">
@@ -103,7 +103,7 @@
 
     <select id="getDeveloperRepoList" parameterType="String" resultType="String">
         SELECT
-        DISTINCT (repo_id)
+        DISTINCT (repo_uuid)
         FROM
         issueTracker.commit_view
         <where>
@@ -120,14 +120,14 @@
                     and <![CDATA[ commit_time <= #{until} ]]>
                 </if>
             </trim>
-            and repo_id in (SELECT distinct repo_uuid FROM sub_repository)
+            and repo_uuid in (SELECT distinct repo_uuid FROM sub_repository)
         </where>
 
     </select>
 
     <select id="getProjectInfo" resultType="java.util.HashMap">
         SELECT distinct(p.repo_uuid),project_name FROM issueTracker.sub_repository as p inner join issueTracker.commit_view as c
-        WHERE p.repo_uuid = c.repo_id
+        WHERE p.repo_uuid = c.repo_uuid
         AND c.developer_unique_name = #{developer}
     </select>
 
@@ -151,7 +151,7 @@
                 </if>
 
                 <if test="repoUuidList != null and repoUuidList.size >0 ">
-                    and repo_id in
+                    and repo_uuid in
                     <foreach collection="repoUuidList" separator="," open="(" close=")" item="repoUuid">
                         #{repoUuid}
                     </foreach>
@@ -180,7 +180,7 @@
             <trim prefixOverrides="and">
 
                 <if test="repoUuidList != null and repoUuidList.size >0 ">
-                    and repo_id in
+                    and repo_uuid in
                     <foreach collection="repoUuidList" separator="," open="(" close=")" item="repoUuid">
                         #{repoUuid}
                     </foreach>
@@ -215,7 +215,7 @@
                 </if>
 
                 <if test="repoUuidList != null and repoUuidList.size >0 ">
-                    and repo_id in
+                    and repo_uuid in
                     <foreach collection="repoUuidList" separator="," open="(" close=")" item="repoUuid">
                         #{repoUuid}
                     </foreach>
@@ -241,7 +241,7 @@
     <select id="getDeveloperRepoFirstCommitDate" resultType="String">
         SELECT commit_time AS firstCommitDate FROM issueTracker.commit_view
         WHERE developer_unique_name = #{developer}
-        AND repo_id = #{repoUuid}
+        AND repo_uuid = #{repoUuid}
         ORDER BY commit_time DESC
         LIMIT 1
     </select>
