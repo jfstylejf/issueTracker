@@ -141,10 +141,8 @@ public abstract class CommonScanProcess implements CommonScanService {
                 specificTool.prepareForOneScan(commit);
                 success = specificTool.scanOneCommit(commit);
                 specificTool.cleanUpForOneScan(commit);
-                scannedCommitCount++;
-                repoScan.setStatus(success ? ScanInfo.Status.COMPLETE.getStatus() : ScanInfo.Status.FAILED.getStatus());
-                repoScan.setEndScanTime(new Date());
-                repoScan.setScannedCommitCount(scannedCommitCount);
+                repoScan.setScannedCommitCount(++scannedCommitCount);
+                recordScannedCommit(commit, repoScan);
                 updateRepoScan(repoScan);
 
                 if (curThread.isInterrupted()) {
@@ -159,7 +157,6 @@ public abstract class CommonScanProcess implements CommonScanService {
 
             repoScan.setStatus(success ? ScanInfo.Status.COMPLETE.getStatus() : ScanInfo.Status.FAILED.getStatus());
             repoScan.setEndScanTime(new Date());
-            repoScan.setScannedCommitCount(scannedCommitCount);
             updateRepoScan(repoScan);
         } catch (Exception e) {
             e.printStackTrace();
@@ -177,6 +174,11 @@ public abstract class CommonScanProcess implements CommonScanService {
      * 根据repoUuid 和 tool 代码库的地址决定需要调用的工具列表
      **/
     protected abstract List<String> getScannedCommitList(String repoUuid, String tool);
+
+    /**
+     * 记录扫描过的commit信息
+     **/
+    protected abstract void recordScannedCommit(String commit, RepoScan repoScan);
 
     /**
      * 根据表中的记录得到最新扫描的commit id
