@@ -35,4 +35,19 @@
         from issueTracker.project;
     </select>
 
+    <resultMap id="relationship" type="cn.edu.fudan.dependservice.domain.RelationShip">
+<!--        <id property="repoUuid" column="repo_uuid"/>-->
+<!--        <id property="id" column="repo_uuid"/>-->
+        <result property="file" column="file"/>
+        <result property="depend_on" column="depend_on"/>
+<!--        <result property="branch" column="branch"/>-->
+    </resultMap>
+
+
+    <select id="getDependencyInfo" resultMap="relationship">
+        select file,depend_on
+        from dependency_detail
+        where repo_uuid =#{repoUuid};
+    </select>
+
 </mapper>

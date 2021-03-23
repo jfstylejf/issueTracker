@@ -57,13 +57,22 @@ public class DependencyServiceImpl implements DependencyService {
     public void setApplicationContext(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
     }
+    @Override
+    public List<DependencyInfo>  getDependencyNum(String beginDate, String endDate, String projectIds, String interval, String showDetail, String level){
+        List<DependencyInfo> res = new ArrayList<>();
 
-    public List<MethodOrFileNumInfo>  get(String beginDate, String endDate, String projectIds, String interval, String showDetail, String level){
-        List<MethodOrFileNumInfo> numInfo = new ArrayList<>();
-        String time1 = " 00:00:00";
-        String time2 = " 24:00:00";
+        if (projectIds==null||projectIds.isEmpty()) {
+            projectIds = statisticsDao.getAllProjectIds();
+        }
+        for (String projectId : projectIds.split(",")) {
+            if (projectId.length() != 0) {
+                //
+                res.add(statisticsDao.getDependencyNum(projectId,showDetail));
 
-        return null;
+            }
+        }
+//        res.add(statisticsDao.getDependencyNumbyRepo("2fa1a67e-3862-11eb-8dca-4dbb5f7a5f33","true"));
+        return res ;
 
     }
 
@@ -85,7 +94,7 @@ public class DependencyServiceImpl implements DependencyService {
                     case "day":
                         tempDateEnd = beginDate.split(" ")[0] + time2;
                         while (tempDateBegin.compareTo(endDate) < 1) {
-                            numInfo.add(statisticsDao.getDependencyNum(tempDateBegin, tempDateEnd, projectId, showDetail, level));
+                            numInfo.add(statisticsDao.getDependencyNum( projectId, showDetail));
                             tempDateBegin = datePlus(tempDateBegin.split(" ")[0]) + time1;
                             tempDateEnd = tempDateBegin.split(" ")[0] + time2;
                         }
@@ -96,7 +105,7 @@ public class DependencyServiceImpl implements DependencyService {
                             int year = Integer.parseInt(tempDateEnd.split(" ")[0].split("-")[0]);
                             int month = Integer.parseInt(tempDateEnd.split(" ")[0].split("-")[1]);
                             tempDateEnd = lastDayOfMonth(year, month) + time2;
-                            numInfo.add(statisticsDao.getDependencyNum(tempDateBegin, tempDateEnd, projectId, showDetail, level));
+                            numInfo.add(statisticsDao.getDependencyNum(projectId, showDetail));
 
                             tempDateBegin = datePlus(tempDateEnd).split(" ")[0] + time1;
                         }
@@ -106,7 +115,7 @@ public class DependencyServiceImpl implements DependencyService {
                             tempDateEnd = tempDateBegin;
                             int year = Integer.parseInt(tempDateEnd.split(" ")[0].split("-")[0]);
                             tempDateEnd = lastDayOfMonth(year, 12) + time2;
-                            numInfo.add(statisticsDao.getDependencyNum(tempDateBegin, tempDateEnd, projectId, showDetail, level));
+                            numInfo.add(statisticsDao.getDependencyNum(projectId, showDetail));
 
                             tempDateBegin = datePlus(tempDateEnd).split(" ")[0] + time1;
                         }
@@ -131,7 +140,7 @@ public class DependencyServiceImpl implements DependencyService {
                             } catch (ParseException e) {
                                 e.printStackTrace();
                             }
-                            numInfo.add(statisticsDao.getDependencyNum(tempDateBegin, tempDateEnd, projectId, showDetail, level));
+                            numInfo.add(statisticsDao.getDependencyNum(projectId, showDetail));
 
                             tempDateBegin = datePlus(tempDateEnd).split(" ")[0] + time1;
                         }

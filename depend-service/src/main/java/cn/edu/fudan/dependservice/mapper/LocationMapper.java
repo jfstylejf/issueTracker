@@ -1,7 +1,9 @@
 package cn.edu.fudan.dependservice.mapper;
 
 
+import cn.edu.fudan.dependservice.domain.DependencyInfo;
 import cn.edu.fudan.dependservice.domain.ProjectIdsInfo;
+import cn.edu.fudan.dependservice.domain.RelationShip;
 import cn.edu.fudan.dependservice.domain.RepoUuidsInfo;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
@@ -21,6 +23,7 @@ public interface LocationMapper {
 //    List<NodeDetail> getRawIssueCount(@Param("list") List<NodeDetail> list);
 
     String getProjectName(@Param("projectId") String projectId);
+    List<RelationShip> getDependencyInfo(@Param("repoUuid") String repoUuid);
 
     List<RepoUuidsInfo> getRepoUuids(@Param("projectName") String projectName);
 

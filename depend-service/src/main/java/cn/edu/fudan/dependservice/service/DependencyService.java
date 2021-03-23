@@ -6,6 +6,8 @@ import cn.edu.fudan.dependservice.domain.MethodOrFileNumInfo;
 import java.util.List;
 
 public interface DependencyService {
+
     List<DependencyInfo> getMethodOrFileNum(String beginDate, String endDate, String projectIds, String interval, String showDetail, String level);
+    List<DependencyInfo> getDependencyNum(String beginDate, String endDate, String projectIds, String interval, String showDetail, String level);
 
 }

@@ -1,27 +1,47 @@
-package cn.edu.fudan.common.scan;
+package cn.edu.fudan.dependservice.service;
 
 import cn.edu.fudan.common.component.BaseRepoRestManager;
 import cn.edu.fudan.common.domain.ScanInfo;
 import cn.edu.fudan.common.domain.po.scan.RepoScan;
 import cn.edu.fudan.common.jgit.JGitHelper;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import cn.edu.fudan.common.scan.CommonScanProcess;
+import cn.edu.fudan.common.scan.CommonScanService;
+import cn.edu.fudan.common.scan.ToolScan;
+import cn.edu.fudan.dependservice.domain.RepoRestManager;
+import cn.edu.fudan.dependservice.mapper.GroupMapper;
+import cn.edu.fudan.dependservice.service.impl.ToolScanImpl;
+import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
-
-@Getter
-@NoArgsConstructor
-public abstract class CommonScanProcess implements CommonScanService {
+@Data
+@Service
+public class TempProcess implements CommonScanService {
     private static final Logger log = LoggerFactory.getLogger(CommonScanProcess.class);
     private static final String KEY_DELIMITER = "-";
     private String repo_path;
+    RepoScan repoScan;
+
+    ApplicationContext applicationContext;
+
+    @Autowired
+    GroupMapper groupMapper;
+
+    @Autowired
+    public void setApplicationContext(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
+    }
+
 
     /**
      * key repoUuid
@@ -30,6 +50,14 @@ public abstract class CommonScanProcess implements CommonScanService {
     private final ConcurrentHashMap<String, Boolean> scanStatusMap = new ConcurrentHashMap<>();
     protected BaseRepoRestManager baseRepoRestManager;
     private final Short lock = 1;
+    protected ToolScan getToolScan(String tool) {
+        //todo retur tool by tool name
+        return applicationContext.getBean(ToolScanImpl.class);
+    }
+    protected String[] getToolsByRepo(String repoUuid) {
+        return new String[]{"ToolScanImpl"};
+//        return new String[0];
+    }
 
     /**
      *  设置同步状态 处理接口请求 判断扫描是否需要更新
@@ -89,8 +117,55 @@ public abstract class CommonScanProcess implements CommonScanService {
         beginScan(repoUuid, branch, null, tool);
         checkAfterScan(repoUuid, branch, tool);
     }
+    protected List<String> getScannedCommitList(String repoUuid, String tool) {
+        //need find in data base.
+        // tool is dependency
+        return  groupMapper.getScannedCommitList(repoUuid);
+    }
+    protected String getLastedScannedCommit(String repoUuid, String tool) {
+        List<String> scannedCommitList =getScannedCommitList(repoUuid,tool);
+        if(scannedCommitList.size()==0) return null;
+        String res=scannedCommitList.get(0);
+        JGitHelper jg =new JGitHelper(getRepo_path());
+        Date  resDate=jg.getCommitDateTime(res);
+        int num=0;
+        for(String commit:scannedCommitList){
+            Date thisDate=jg.getCommitDateTime(commit);
+            if(thisDate!=null) num++;
+            if(thisDate!=null&&thisDate.compareTo(resDate)>0){
+                res= commit;
+                resDate=thisDate;
+            }
+        }
+        log.info("num of data not null :"+num);
+        return res;
+    }
+    protected String getLastedCommit(List<String> toScanCommitList, String repo_path) {
+//        List<String> scannedCommitList =getScannedCommitList(repoUuid,tool);
+        if(toScanCommitList.size()==0) return null;
+        String res=toScanCommitList.get(0);
+        JGitHelper jg =new JGitHelper(getRepo_path());
+        Date  resDate=jg.getCommitDateTime(res);
+        int num=0;
+        for(String commit:toScanCommitList){
+            Date thisDate=jg.getCommitDateTime(commit);
+            if(thisDate!=null) num++;
+            if(thisDate!=null&&thisDate.compareTo(resDate)>0){
+                res= commit;
+                resDate=thisDate;
+            }
+        }
+        log.info("num of data not null :"+num);
+        return res;
+    }
 
-    @Async("taskExecutor")
+
+    protected void insertRepoScan(RepoScan repoScan) {
+        this.repoScan=repoScan;
+
+    }
+
+//    @Async("taskExecutor")
     void beginScan(String repoUuid, String branch, String beginCommit, String tool) {
         Thread curThread = Thread.currentThread();
         String threadName = generateKey(repoUuid, tool);
@@ -103,6 +178,7 @@ public abstract class CommonScanProcess implements CommonScanService {
             return;
         }
         List<String> scannedCommitList = getScannedCommitList(repoUuid, tool);
+        if(scannedCommitList.size()>=1) return;
         boolean initialScan = scannedCommitList.size() == 0;
         int  scannedCommitCount = 0;
         RepoScan repoScan = RepoScan.builder()
@@ -115,39 +191,41 @@ public abstract class CommonScanProcess implements CommonScanService {
                 .startScanTime(new Date())
                 .endScanTime(new Date())
                 .build();
-        //  todo repo_path is added by shaoxi ,delete it later
         this.repo_path=repoPath;
         try {
-            if (beginCommit == null || "".equals(beginCommit)) {
-                beginCommit = getLastedScannedCommit(repoUuid, tool);
-            }
-            List<String> toScanCommitList = new JGitHelper(repoPath).getScanCommitListByBranchAndBeginCommit(branch, beginCommit, scannedCommitList);
-
-            if (toScanCommitList.size() == 0) {
-                return;
-            }
-            String firstCommit = toScanCommitList.get(0);
-            repoScan.setTotalCommitCount(toScanCommitList.size());
-            repoScan.setStart_commit(firstCommit);
-
+            String toScanCommit = new JGitHelper(repoPath).getLatestCommitByBranch(branch);
+            log.info("toScanCommit:"+toScanCommit);
             insertRepoScan(repoScan);
             boolean success = false;
-            specificTool.loadData(repoUuid, branch, repoPath, initialScan,toScanCommitList);
+            specificTool.loadData(repoUuid, branch, repoPath, initialScan,null);
             specificTool.prepareForScan();
-
-            for (String commit : toScanCommitList) {
-                specificTool.prepareForOneScan(commit);
-                success = specificTool.scanOneCommit(commit);
-                specificTool.cleanUpForOneScan(commit);
-                scannedCommitCount++;
-                if(curThread.isInterrupted()){
-                    synchronized (lock) {
-                        scanStatusMap.remove(threadName);
-                    }
-                    log.warn("thread:{} stopped", threadName);
-                    break;
+            specificTool.prepareForOneScan(toScanCommit);
+            success = specificTool.scanOneCommit(toScanCommit);
+            specificTool.cleanUpForOneScan(toScanCommit);
+            scannedCommitCount++;
+            if(curThread.isInterrupted()){
+                synchronized (lock) {
+                    scanStatusMap.remove(threadName);
                 }
+                log.warn("thread:{} stopped", threadName);
             }
+
+//            for (String commit : toScanCommitList) {
+//                //
+//
+//                specificTool.prepareForOneScan(commit);
+//                success = specificTool.scanOneCommit(commit);
+//                specificTool.cleanUpForOneScan(commit);
+//                scannedCommitCount++;
+//                if(curThread.isInterrupted()){
+//                    synchronized (lock) {
+//                        scanStatusMap.remove(threadName);
+//                    }
+//                    log.warn("thread:{} stopped", threadName);
+//                    break;
+//                }
+//                break;
+//            }
             specificTool.cleanUpForScan();
             repoScan.setStatus(success ? ScanInfo.Status.COMPLETE.getStatus(): ScanInfo.Status.FAILED.getStatus());
             repoScan.setEndScanTime(new Date());
@@ -163,31 +241,12 @@ public abstract class CommonScanProcess implements CommonScanService {
 
     }
 
-    protected abstract ToolScan getToolScan(String tool);
-
-    /**
-     * 根据repoUuid 和 tool 代码库的地址决定需要调用的工具列表
-     **/
-    protected abstract List<String> getScannedCommitList(String repoUuid, String tool);
-
-    /**
-     * 根据表中的记录得到最新扫描的commit id
-     **/
-    protected abstract String getLastedScannedCommit(String repoUuid, String tool);
-
-    /**
-     *  根据uuid 和 代码库的地址决定需要调用的工具列表
-     **/
-    protected abstract String[] getToolsByRepo(String repoUuid);
-
-    /**
-     * 插入当前repo的 扫描信息
-     **/
-    protected abstract void insertRepoScan(RepoScan repoScan);
 
     @Autowired
 //    public abstract  void setBaseRepoRestManager(<T extends BaseRepoRestManager> restInterfaceManager);
-    public abstract <T extends BaseRepoRestManager> void setBaseRepoRestManager(T restInterfaceManager);
+    public  <T extends BaseRepoRestManager> void setBaseRepoRestManager(T restInterfaceManager){
+        this.baseRepoRestManager = applicationContext.getBean(RepoRestManager.class);
+    }
 
     @Override
     public boolean stopScan(String repoUuid, String toolName) {
@@ -207,6 +266,32 @@ public abstract class CommonScanProcess implements CommonScanService {
         }
 
         return  false;
+    }
+
+    @Override
+    public void deleteRepo(String repoUuid) {
+
+    }
+
+    @Override
+    public void deleteRepo(String repoUuid, String toolName) {
+
+    }
+
+    @Override
+    public RepoScan getRepoScanStatus(String repoUuid, String toolName) {
+        return null;
+    }
+
+    @Override
+    public RepoScan getRepoScanStatus(String repoUuid) {
+        return null;
+    }
+
+    @Override
+    public void updateRepoScan(RepoScan scanInfo) {
+
+
     }
 
     @Override
@@ -234,6 +319,5 @@ public abstract class CommonScanProcess implements CommonScanService {
 
         return keyCount == 0;
     }
-
 
 }

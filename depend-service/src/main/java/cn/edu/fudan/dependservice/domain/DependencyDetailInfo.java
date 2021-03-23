@@ -8,18 +8,18 @@ import java.io.Serializable;
 @Getter
 @Setter
 public class DependencyDetailInfo implements Serializable {
-    private String projectName;
-    private String repoName;
-    private String repoUuid;
-    private String branch;
     private String fileName;
+    private String filePath;
     private String metaFileUuid;
-    private String methodName;
-    private String metaMethodUuid;
-    private String ccn;
-    private String changeTimes;
 
     public DependencyDetailInfo() {
+
+    }
+    public DependencyDetailInfo(String fileName,String filePath,String metaFileUuid) {
+
+        this.fileName=fileName;
+        this.filePath=filePath;
+        this.metaFileUuid=metaFileUuid;
 
     }
 

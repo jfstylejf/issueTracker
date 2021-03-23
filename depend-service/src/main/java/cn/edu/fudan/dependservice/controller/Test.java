@@ -30,10 +30,10 @@ public class Test {
     //get repouuuid that should scan
     public String put2Database() {
 //        toolScan.scanOneCommit(null);
+        long scanStartTime =System.currentTimeMillis();
         testService.getAllRepoUuidThatNeedScan();
-
-
-        return "test ok";
+        long costTime =System.currentTimeMillis()-scanStartTime;
+        return "scan all repo ok\n"+costTime/1000 +"seconds";
         //
     }
 

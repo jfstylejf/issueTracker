@@ -5,6 +5,7 @@ import cn.edu.fudan.dependservice.domain.ProjectIdsInfo;
 import cn.edu.fudan.dependservice.domain.RepoUuidsInfo;
 import cn.edu.fudan.dependservice.mapper.GroupMapper;
 import cn.edu.fudan.dependservice.mapper.RepoMapper;
+import cn.edu.fudan.dependservice.service.TempProcess;
 import cn.edu.fudan.dependservice.service.TestService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,8 +29,11 @@ public class TestServiceImpl implements TestService {
 //    TempScanServiceImpl scanService;
 
 
+//    @Autowired
+//    ScanServiceImpl scanService;
+
     @Autowired
-    ScanServiceImpl scanService;
+    TempProcess tempProcess;
 
 
     @Override
@@ -42,14 +46,14 @@ public class TestServiceImpl implements TestService {
                 repoUuidsInfosThatNeedScan.add(repoUuidsInfo);
             }
         }
+        log.info("need scan size:"+repoUuidsInfosThatNeedScan.size());
+
         for(RepoUuidsInfo re:repoUuidsInfosThatNeedScan){
-            scanService.scan(re.getRepoUuid(),re.getBranch(),null);
+//            scanService.scan(re.getRepoUuid(),re.getBranch(),null);
+            tempProcess.scan(re.getRepoUuid(),re.getBranch(), null);
 
             //to do scan this repo
         }
-        log.info("need scan size:"+repoUuidsInfosThatNeedScan.size());
-
-
 
         return null;
     }

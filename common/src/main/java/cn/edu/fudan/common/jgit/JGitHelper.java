@@ -480,6 +480,35 @@ public class JGitHelper {
     }
 
     /**
+     * 获取该分支下最新的一次commit
+     *
+     * @param branch        branch
+     * @return commitid
+     * @author shaoxi
+     */
+    public String getLatestCommitByBranch(String branch){
+        checkout(branch);
+        String latestCommit=null;
+        int latest=0;
+        try {
+            Iterable<RevCommit> commits = git.log().call();
+            Iterator<RevCommit> iterator=commits.iterator();
+            while (iterator.hasNext()){
+                RevCommit oneCommt =iterator.next();
+                if(oneCommt.getCommitTime()>latest){
+                    latestCommit=oneCommt.getName();
+                    latest=oneCommt.getCommitTime();
+                }
+
+            }
+
+        } catch (GitAPIException e) {
+            log.error(e.getMessage());
+        }
+        return latestCommit;
+
+    }
+    /**
      * 根据策略获取扫描列表
      *
      * @param branch        branch
