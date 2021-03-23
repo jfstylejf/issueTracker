@@ -3,6 +3,7 @@ package cn.edu.fudan.common.scan;
 import cn.edu.fudan.common.component.BaseRepoRestManager;
 import cn.edu.fudan.common.domain.ScanInfo;
 import cn.edu.fudan.common.domain.po.scan.RepoScan;
+import cn.edu.fudan.common.jgit.JGitHelper;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
@@ -97,7 +98,7 @@ public abstract class CommonScanProcess implements CommonScanService {
         ToolScan specificTool = getToolScan(tool);
         // 获取repo所在路径
         log.info("repoUuid: " + repoUuid);
-        String repoPath = this.useLocalRepoPath() ? this.getLocalRepoPath() : baseRepoRestManager.getCodeServiceRepo(repoUuid);
+        String repoPath = Boolean.TRUE.equals(this.useLocalRepoPath()) ? this.getLocalRepoPath() : baseRepoRestManager.getCodeServiceRepo(repoUuid);
         if (repoPath == null) {
             log.error("{} : can't get repoPath", repoUuid);
             return;
@@ -105,7 +106,7 @@ public abstract class CommonScanProcess implements CommonScanService {
 
         List<String> scannedCommitList = getScannedCommitList(repoUuid, tool);
         log.info("scannedCommitList.size():" + scannedCommitList.size());
-        boolean initialScan = scannedCommitList.size() == 0;
+        boolean initialScan = scannedCommitList.isEmpty();
         int scannedCommitCount = 0;
         RepoScan repoScan = RepoScan.builder()
                 .repoUuid(repoUuid)
@@ -141,6 +142,10 @@ public abstract class CommonScanProcess implements CommonScanService {
                 success = specificTool.scanOneCommit(commit);
                 specificTool.cleanUpForOneScan(commit);
                 scannedCommitCount++;
+                repoScan.setStatus(success ? ScanInfo.Status.COMPLETE.getStatus() : ScanInfo.Status.FAILED.getStatus());
+                repoScan.setEndScanTime(new Date());
+                repoScan.setScannedCommitCount(scannedCommitCount);
+                updateRepoScan(repoScan);
 
                 if (curThread.isInterrupted()) {
                     synchronized (this.LOCK) {

@@ -578,9 +578,9 @@ public class JGitHelper {
 
                     CanonicalTreeParser parentTreeIter = new CanonicalTreeParser();
                     parentTreeIter.reset(reader, parentCommit.getTree().getId());
-//                    DiffFormatter diffFormatter = new DiffFormatter(DisabledOutputStream.INSTANCE);
-//                    diffFormatter.setRepository(git.getRepository());
-//                    List<DiffEntry> entries = diffFormatter.scan(currTreeIter, parentTreeIter);
+                    DiffFormatter diffFormatter = new DiffFormatter(DisabledOutputStream.INSTANCE);
+                    diffFormatter.setRepository(git.getRepository());
+                    List<DiffEntry> entries = diffFormatter.scan(currTreeIter, parentTreeIter);
                     result.put(parentCommit.getName(), entries);
                 }
             }
