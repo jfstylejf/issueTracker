@@ -256,4 +256,9 @@
         LIMIT 5000
     </delete>
 
+    <select id="getRepoLanguage" resultType="String">
+        SELECT language FROM issueTracker.sub_repository
+        WHERE repo_uuid = #{repoUuid}
+    </select>
+
 </mapper>

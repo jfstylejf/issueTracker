@@ -29,22 +29,22 @@ public class MeasureScanController {
     private MeasureScanService measureScanService;
 
 
-    @ApiOperation(value = "接收请求开始扫描 servicePath + toolName + \"/scan\", jsonObject, JSONObject.class 接收scan服务的请求进行扫描", httpMethod = "PUT")
+    @ApiOperation(value = "接收请求开始扫描 servicePath  + \"/scan\", jsonObject, JSONObject.class 接收scan服务的请求进行扫描", httpMethod = "PUT")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "scanDTO", value = "repoUuid branch beginCommit", dataType = "String",required = true),
     })
     /**
-     * description 接收请求开始扫描 servicePath + toolName + "/scan", jsonObject, JSONObject.class 接收scan服务的请求进行扫描
+     * description 接收请求开始扫描 servicePath  + "/scan", jsonObject, JSONObject.class 接收scan服务的请求进行扫描
      * @param jsonObject : repoUuid branch beginCommit
      */
-    @PostMapping(value = {"/measure/{toolName}"})
-    public ResponseBean scan(@RequestBody ScanDTO scanDTO, @PathVariable String toolName) {
+    @PostMapping(value = {"/measure/scan"})
+    public ResponseBean scan(@RequestBody ScanDTO scanDTO) {
         String repoUuid = scanDTO.getRepoUuid();
         String branch = scanDTO.getBranch();
         String beginCommit = scanDTO.getBeginCommit();
         // TODO 调用 tool scan 流程
         try {
-            measureScanService.scan(RepoResourceDTO.builder().repoUuid(repoUuid).build(), branch, beginCommit, toolName);
+            measureScanService.scan(RepoResourceDTO.builder().repoUuid(repoUuid).build(), branch, beginCommit);
             return ResponseBean.builder().code(200).build();
         }catch (Exception e) {
             log.error("measure scan failed! message is {}", e.getMessage());
@@ -57,15 +57,12 @@ public class MeasureScanController {
             @ApiImplicitParam(name = "repo_uuid", value = "参与库", dataType = "String",required = true,defaultValue = "3ecf804e-0ad6-11eb-bb79-5b7ba969027e"),
     })
     @SuppressWarnings("unchecked")
-    @GetMapping(value = {"/measure/{toolName}/scan-status"})
-    public ResponseBean<Map<String, Object>> getScanStatus(@RequestParam("repo_uuid") String repoUuid, @PathVariable String toolName) {
+    @GetMapping(value = {"/measure/scan-status"})
+    public ResponseBean<Map<String, Object>> getScanStatus(@RequestParam("repo_uuid") String repoUuid) {
 
         try {
             //目前measure服务只有这个扫描工具
-            Map<String, Object> result = null;
-            if ("javancss".equals(toolName)){
-                result = (Map<String, Object>) measureScanService.getScanStatus(repoUuid);
-            }
+            Map<String, Object> result = (Map<String, Object>) measureScanService.getScanStatus(repoUuid);
             return new ResponseBean<>(200,"success", result);
         }catch (Exception e) {
             e.printStackTrace();
