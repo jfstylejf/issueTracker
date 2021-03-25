@@ -3,6 +3,7 @@ package cn.edu.fudan.measureservice.service.impl;
 import cn.edu.fudan.measureservice.annotation.RepoResource;
 import cn.edu.fudan.measureservice.component.RestInterfaceManager;
 import cn.edu.fudan.measureservice.core.ToolInvoker;
+import cn.edu.fudan.measureservice.dao.ProjectDao;
 import cn.edu.fudan.measureservice.domain.core.MeasureScan;
 import cn.edu.fudan.measureservice.domain.dto.RepoResourceDTO;
 import cn.edu.fudan.measureservice.domain.dto.ScanCommitInfoDto;
@@ -36,7 +37,7 @@ public class MeasureScanServiceImpl implements MeasureScanService {
     private MeasureScanMapper measureScanMapper;
     private RestInterfaceManager restInterfaceManager;
     private ThreadLocal<JGitHelper> jGitHelperT = new ThreadLocal<>();
-
+    private ProjectDao projectDao;
     private static final String SCANNING = "scanning";
     private static final String SCANNED = "complete";
 
@@ -75,7 +76,7 @@ public class MeasureScanServiceImpl implements MeasureScanService {
     @Async("taskExecutor")
     // todo 未考虑多线程节点重复扫描问题，后续加入BlockingQueue<ScanCommitInfo>
     // todo 用 ScanCommitInfo包装后三个参数
-    public synchronized void scan(RepoResourceDTO repoResource, String branch, String beginCommit, String toolName) {
+    public synchronized void scan(RepoResourceDTO repoResource, String branch, String beginCommit) {
         String repoPath = repoResource.getRepoPath();
         String repoUuid = repoResource.getRepoUuid();
         if (StringUtils.isEmpty(repoPath)){
@@ -83,6 +84,7 @@ public class MeasureScanServiceImpl implements MeasureScanService {
             return;
         }
         try {
+            String toolName = projectDao.getToolName(repoUuid);
             //1. 判断beginCommit是否为空,为空则表示此次为update，不为空表示此次为第一次扫描
             // 若是update，则获取最近一次扫描的commit_id，作为本次扫描的起始点
             boolean isUpdate = false;
@@ -188,7 +190,10 @@ public class MeasureScanServiceImpl implements MeasureScanService {
         measureScanMapper.updateMeasureScan(measureScan);
     }
 
-
+    @Autowired
+    public void setProjectDao(ProjectDao projectDao) {
+        this.projectDao = projectDao;
+    }
 
     @Autowired
     public void setToolInvoker(ToolInvoker toolInvoker) {

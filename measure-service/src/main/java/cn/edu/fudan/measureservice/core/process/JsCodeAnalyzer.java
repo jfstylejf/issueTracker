@@ -153,21 +153,21 @@ public class JsCodeAnalyzer extends BaseAnalyzer{
         for (int i = 0; i < jsLineResult.size(); i++) {
             JSONObject line = (JSONObject) jsLineResult.get(i);
             String fileName = FileUtil.systemAvailablePath(line.getString("file"));
-            if(!map.containsKey(fileName)) {
-                //过滤掉一些是数据的js文件
-                continue;
-            }
             FileInfo fileInfo = FileInfo.builder()
                     .absolutePath(fileName)
                     .relativePath(FileUtil.getRelativePath(repoPath,fileName))
                     .codeLines(line.getIntValue("codeLine"))
                     .blankLines(line.getIntValue("blankLine"))
                     .totalLines(line.getIntValue("allLine"))
-                    .methodInfoList(map.get(fileName))
                     .build();
-            fileInfo.calFileCcn();
+            if(!map.containsKey(fileName)) {
+                fileInfo.setMethodInfoList(new ArrayList<>());
+                fileInfo.setFileCcn(0);
+            }else {
+                fileInfo.setMethodInfoList(map.get(fileName));
+                fileInfo.calFileCcn();
+            }
             fileInfos.add(fileInfo);
-
         }
         return fileInfos;
 

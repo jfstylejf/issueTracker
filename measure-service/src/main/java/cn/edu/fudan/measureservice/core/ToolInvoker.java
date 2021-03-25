@@ -107,8 +107,7 @@ public class ToolInvoker {
     private Boolean insertMeasureData(ScanCommitInfoDto scanCommitInfoDto,Measure measure) {
         List<DiffEntry> diffEntries = getFilteredFileDiff(scanCommitInfoDto.getCommitId(),scanCommitInfoDto.getToolName());
         List<String> diffFilePathList = getChangedFileList(diffEntries);
-        int changeFileNumber = diffFilePathList.size();
-        if (!saveRepoLevelMeasureData(measure,scanCommitInfoDto,diffEntries,changeFileNumber)) {
+        if (!saveRepoLevelMeasureData(measure,scanCommitInfoDto,diffEntries,diffEntries.size())) {
             return false;
         }
         return saveFileMeasureData(scanCommitInfoDto, measure.getObjects(), diffEntries, diffFilePathList);
@@ -136,6 +135,7 @@ public class ToolInvoker {
         if (parentCount == 1) {
             scanCommitInfoDto.setFirstParentCommitId(revCommit.getParent(0).getId().getName());
         }else if (parentCount ==2 ) {
+            scanCommitInfoDto.setFirstParentCommitId(revCommit.getParent(0).getId().getName());
             scanCommitInfoDto.setSecondParentCommitId(revCommit.getParent(1).getId().getName());
         }else {
             //todo rebase 情况做处理
@@ -156,6 +156,8 @@ public class ToolInvoker {
             repoMeasure.setAdd_comment_lines(totalDiffInfo.getAddCommentLines());
             repoMeasure.setDel_comment_lines(totalDiffInfo.getDelCommentLines());
             repoMeasure.setChanged_files(changedFileNumber);
+            repoMeasure.setFirst_parent_commit_id(scanCommitInfoDto.getFirstParentCommitId());
+            repoMeasure.setSecond_parent_commit_id(scanCommitInfoDto.getSecondParentCommitId());
         }
 
         try{

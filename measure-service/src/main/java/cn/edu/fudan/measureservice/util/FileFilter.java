@@ -22,6 +22,7 @@ public abstract class FileFilter {
      * @param fileText 文件代码行
      * @return
      */
+    // fixme 注释行匹配有误
     public static DiffInfo lineFilter(String[] fileText) {
         int addWhiteLines = 0;
         int addCommentLines = 0;

@@ -8,6 +8,7 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.diff.*;
+import org.eclipse.jgit.errors.IncorrectObjectTypeException;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectReader;
 import org.eclipse.jgit.lib.Repository;
@@ -382,7 +383,7 @@ public class JGitHelper {
         return result;
     }
 
-    @SneakyThrows
+   /* @SneakyThrows
     private List<DiffEntry> getDiffEntry(RevCommit parentCommit, RevCommit currCommit) {
         parentCommit = revWalk.parseCommit(ObjectId.fromString(parentCommit.getName()));
         TreeWalk tw = new TreeWalk(repository);
@@ -393,7 +394,30 @@ public class JGitHelper {
         rd.addAll(DiffEntry.scan(tw));
         rd.setRenameScore(100);
         return rd.compute();
+    }*/
+
+    private List<DiffEntry> getDiffEntry(RevCommit parentCommit, RevCommit currCommit) {
+        try (ObjectReader reader = repository.newObjectReader()){
+            // getParents 不涉及当前commit的实体 , 需要首先 parseCommit
+            parentCommit = revWalk.parseCommit(ObjectId.fromString(parentCommit.getName()));
+            ObjectId parentId = parentCommit.getTree().getId();
+            ObjectId currId = currCommit.getTree().getId();
+            CanonicalTreeParser oldTreeIter = new CanonicalTreeParser();
+            oldTreeIter.reset( reader, parentId );
+            CanonicalTreeParser newTreeIter = new CanonicalTreeParser();
+            newTreeIter.reset( reader, currId );
+            return git.diff()
+                    .setOldTree(oldTreeIter)
+                    .setNewTree(newTreeIter)
+                    .call();
+        } catch (GitAPIException | IOException e) {
+            log.error("parse diffEntry failed!\n");
+            e.printStackTrace();
+        }
+        return new ArrayList<>();
     }
+
+
 
     private boolean isParent2(RevCommit parent1, RevCommit parent2, RevCommit currCommit) {
         String author1 = parent1.getAuthorIdent().getName();
@@ -478,7 +502,11 @@ public class JGitHelper {
 
 
     public static void main(String[] args) throws ParseException {
-
+        String commitId = "895af16570bf8515b9b07f87950ca1b87af4f92a";
+        String repoPath = "C:\\Users\\wjzho\\Desktop\\web\\issue-tracker-web-dev_duplicate_fdse-0";
+        JGitHelper jGitHelper = new JGitHelper(repoPath);
+        List<DiffEntry> entries = jGitHelper.getDiffEntry(commitId);
+        System.out.println(entries);
     }
 
 }

@@ -17,9 +17,8 @@ public interface MeasureScanService {
      * @param repoResource 代码库信息
      * @param branch 分支
      * @param beginCommit 开始扫描的commit
-     * @param toolName 工具名称
      */
-    void scan(RepoResourceDTO repoResource, String branch, String beginCommit, String toolName);
+    void scan(RepoResourceDTO repoResource, String branch, String beginCommit);
 
     /**
      * 删除一个项目的所有度量信息
