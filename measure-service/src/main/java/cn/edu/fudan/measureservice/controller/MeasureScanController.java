@@ -37,8 +37,8 @@ public class MeasureScanController {
      * description 接收请求开始扫描 servicePath  + "/scan", jsonObject, JSONObject.class 接收scan服务的请求进行扫描
      * @param jsonObject : repoUuid branch beginCommit
      */
-    @PostMapping(value = {"/measure/scan"})
-    public ResponseBean scan(@RequestBody ScanDTO scanDTO) {
+    @PostMapping(value = {"/measure/{toolName}"})
+    public ResponseBean scan(@RequestBody ScanDTO scanDTO,@PathVariable String toolName) {
         String repoUuid = scanDTO.getRepoUuid();
         String branch = scanDTO.getBranch();
         String beginCommit = scanDTO.getBeginCommit();
