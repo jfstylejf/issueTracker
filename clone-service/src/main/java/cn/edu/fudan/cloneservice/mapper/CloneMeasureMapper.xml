@@ -69,7 +69,7 @@
         FROM issueTracker.commit_view
         <where>
             <trim prefixOverrides="and">
-                repo_id = #{repositoryId}
+                repo_uuid = #{repositoryId}
                 <if test="start != null and start != '' ">
                     and <![CDATA[ commit_time >= #{start} ]]>
                 </if>

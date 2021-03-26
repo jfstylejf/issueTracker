@@ -61,15 +61,15 @@ public class ScanServiceImpl implements ScanService {
     }
 
     @Override
-//    @Async("taskExecutor")
+    @Async("taskExecutor")
     public void cloneScan(String repoUuid, String startCommitId, String branch) throws IOException, GitAPIException {
-//        synchronized (lock) {
+        synchronized (lock) {
         if (scanStatus.keySet().contains(repoUuid)) {
             scanStatus.put(repoUuid, true);
             return;
         }
         scanStatus.putIfAbsent(repoUuid, false);
-//        }
+        }
         log.info("1");
         prepareForScan(repoUuid, branch, startCommitId);
     }
@@ -136,7 +136,7 @@ public class ScanServiceImpl implements ScanService {
 
     private void executeLastCommit(String uuid, String repoUuid, List<String> commitList, String repoPath) throws IOException {
         String latestCommitId = commitList.get(commitList.size() - 1);
-        scanTask.runSynchronously(repoUuid, latestCommitId, "method", repoPath);
+        scanTask.runSynchronously(repoUuid, latestCommitId, "snippet", repoPath);
 
         CloneRepo cloneRepo = initCloneRepo(repoUuid);
         cloneRepo.setUuid(uuid);

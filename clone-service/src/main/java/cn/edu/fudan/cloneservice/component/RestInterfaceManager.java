@@ -88,22 +88,6 @@ public class RestInterfaceManager {
         return restTemplate.getForObject(repoServicePath + "/" + repoId, JSONObject.class);
     }
 
-    public String getLanguage(String repoUuid) {
-        try {
-            ResponseBean<Map<String, String>> response = restTemplate.getForObject(codeServicePath + "?repo_id=" + repoUuid, ResponseBean.class);
-
-            if (response != null && response.getCode()!=200 &&
-            response.getData().get("language").isEmpty()){
-                return response.getData().get("language");
-            } else{
-                return "";
-            }
-        }catch (Exception e){
-            log.error("get language Exception！ ");
-        }
-        return "";
-    }
-
     public String getRepoPath1(String repoId) {
         JSONObject jsonObject = restTemplate.getForObject(codeServicePath + "?repo_id=" + repoId, JSONObject.class);
         return jsonObject.getJSONObject("data").getString("content");
@@ -121,6 +105,5 @@ public class RestInterfaceManager {
         }
         return addLines;
     }
-
 
 }
