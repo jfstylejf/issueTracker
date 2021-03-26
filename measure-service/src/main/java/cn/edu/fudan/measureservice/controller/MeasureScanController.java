@@ -42,6 +42,7 @@ public class MeasureScanController {
         String repoUuid = scanDTO.getRepoUuid();
         String branch = scanDTO.getBranch();
         String beginCommit = scanDTO.getBeginCommit();
+
         // TODO 调用 tool scan 流程
         try {
             measureScanService.scan(RepoResourceDTO.builder().repoUuid(repoUuid).build(), branch, beginCommit);
