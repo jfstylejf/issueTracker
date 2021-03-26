@@ -191,6 +191,23 @@ public class ProjectQueryController {
         }
     }
 
+    @ApiOperation(value = "根据url获取库信息", notes = "@return List <SubRepository>", httpMethod = "GET")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "url", value = "repo的url", dataType = "String", required = true)
+    })
+    @GetMapping(value = "/repo/url")
+    public ResponseBean<SubRepository> getRepoInfoByUrl(@RequestParam("url") String Url) throws Exception {
+        SubRepository repoInfo = projectControl.getRepoInfoByUrl(Url);
+        if(repoInfo == null){
+            return new ResponseBean<>(412, "url not exist!", null);
+        }
+        try {
+            return new ResponseBean<>(200, "get info success", repoInfo);
+        } catch (Exception e) {
+            return new ResponseBean<>(401, "get info failed :" + e.getMessage(), null);
+        }
+    }
+
 
     @Autowired
     public void setAccountRepository(AccountRepositoryService accountRepository) {
