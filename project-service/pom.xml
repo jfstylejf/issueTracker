@@ -7,12 +7,13 @@
     <parent>
         <groupId>cn.edu.fudan</groupId>
         <artifactId>issueTracker</artifactId>
-        <version>1.0</version>
+
+        <version>1.0.1</version>
     </parent>
 
     <!--parent的pom中指定了GroupID,子模块就不要-->
     <artifactId>project-service</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.1</version>
     <packaging>jar</packaging>
 
     <name>project-service</name>

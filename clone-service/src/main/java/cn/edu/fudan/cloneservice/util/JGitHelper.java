@@ -9,8 +9,7 @@ import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.RenameDetector;
-import org.eclipse.jgit.lib.ObjectId;
-import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.lib.*;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
@@ -367,36 +366,4 @@ public class JGitHelper implements Closeable {
         rd.setRenameScore(100);
         return rd.compute();
     }
-
-
-    public static void main(String[] args) {
-        //gitCheckout("E:\\Lab\\project\\IssueTracker-Master", "f8263335ef380d93d6bb93b2876484e325116ac2");
-        //String repoPath = "E:\\Lab\\iec-wepm-develop";
-//        String repoPath = "E:\\Lab\\project\\IssueTracker-Master-pre";
-        String repoPath = "/Users/tangyuan/Documents/Git/IssueTracker-Master";
-//        String commitId = "6d51c089986c9c7f8766d31a95a20254ecbdbc46";
-        JGitHelper jGitHelper = new JGitHelper(repoPath);
-//        Map<String, List<DiffEntry>> map = jGitHelper.getMappedFileList(commitId);
-//        List<DiffEntry> map = null;
-//        try {
-//            RevCommit currCommit = jGitHelper.revWalk.parseCommit(ObjectId.fromString("6d51c089986c9c7f8766d31a95a20254ecbdbc46"));
-//            RevCommit preCommit = jGitHelper.revWalk.parseCommit(ObjectId.fromString("e43a8c19634265f5ff057183c54e8f13e132fd05"));
-//            map = jGitHelper.getDiffEntry(preCommit,currCommit);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-
-//        jGitHelper.getCommitListByBranchAndDuration("zhonghui20191012", "2019.10.12-2019.12.30");
-//        String s[] = jGitHelper.getCommitParents(commitId);
-//        int m = jGitHelper.mergeJudgment(commitId);
-        Map<String, List<DiffEntry>> map = jGitHelper.getConflictDiffEntryList("68b7d8b35aae683964b3ebbe215bd91391659b1a");
-        List<String> list = jGitHelper.getCommitListByBranchAndBeginCommit("zhonghui20191012","68b7d8b35aae683964b3ebbe215bd91391659b1a",true);
-        System.out.println(list);
-//        String t = jGitHelper.getCommitTime("f61e34233aa536cf5e698b502099e12d1caf77e4");
-//        for (String s : jGitHelper.getCommitListByBranchAndDuration("zhonghui20191012", "2019.10.12-2019.12.16")) {
-//            System.out.println(s);
-//            jGitHelper.checkout(s);
-//        }
-    }
-
 }

@@ -3,6 +3,7 @@ package cn.edu.fudan.issueservice.mapper;
 import cn.edu.fudan.issueservice.domain.dbo.Issue;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.ibatis.annotations.Param;
+import org.apache.kafka.common.protocol.types.Field;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -245,4 +246,18 @@ public interface IssueMapper {
      * @return issue count
      */
     int getIssueCountInRepos(@Param("repoUuids") List<String> repoUuids, String since, String until);
+
+    /**
+     * @param until until
+     * @param projectId projectId
+     * @return 获取趋势图数据
+     */
+    Map<String, Object> getLivingIssueTendency(@Param("until") String until, @Param("projectId") String projectId);
+
+    /**
+     * @param until until
+     * @param projectId projectId
+     * @return 获取趋势图数据
+     */
+    List<Map<String, Object>> getLivingIssueTendencyDetail(@Param("until") String until, @Param("projectId") String projectId);
 }

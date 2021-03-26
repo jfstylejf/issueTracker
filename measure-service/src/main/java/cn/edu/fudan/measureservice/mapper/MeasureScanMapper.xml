@@ -18,7 +18,7 @@
     </resultMap>
 
     <insert id="insertOneMeasureScan" parameterType="MeasureScan">
-        insert into measure_scan
+        insert into issueTracker.measure_scan
             (
                uuid,
                repo_id,
@@ -49,7 +49,7 @@
     </insert>
 
     <update id="updateMeasureScan" parameterType="MeasureScan">
-        update measure_scan
+        update issueTracker.measure_scan
         <trim prefix="set" suffixOverrides=",">
             <if test="totalCommitCount != null">
                 total_commit_count=#{totalCommitCount},
@@ -83,7 +83,7 @@
             start_scan_time AS startScanTime,
             end_scan_time AS endScanTime
         FROM
-            measure_scan
+            issueTracker.measure_scan
         WHERE
             repo_id = #{repo_id}
         ORDER BY start_scan_time DESC

@@ -3,7 +3,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>clone-service</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.1</version>
     <packaging>jar</packaging>
 
     <name>clone-service</name>
@@ -12,29 +12,60 @@
     <parent>
         <artifactId>issueTracker</artifactId>
         <groupId>cn.edu.fudan</groupId>
-        <version>1.0</version>
+
+        <version>1.0.1</version>
     </parent>
 
 
     <dependencies>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-classic</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-logging</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-swagger2</artifactId>
+            <version>2.7.0</version>
+        </dependency>
+        <dependency>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-swagger-ui</artifactId>
+            <version>2.7.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tomcat.embed</groupId>
+            <artifactId>tomcat-embed-jasper</artifactId>
+        </dependency>
+        <!-- 打war包用 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-tomcat</artifactId>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <scope>runtime</scope>
         </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-redis</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-        </dependency>
-
 <!--        <dependency>-->
 <!--            <groupId>org.springframework.kafka</groupId>-->
 <!--            <artifactId>spring-kafka</artifactId>-->
@@ -48,6 +79,12 @@
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>druid-spring-boot-starter</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-logging</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!--fastjson-->
         <dependency>
@@ -61,6 +98,13 @@
             <artifactId>dom4j</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>cloneManager-v2.0</groupId>
+            <artifactId>cloneManager-v2.0</artifactId>
+            <version>1.0.0</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/CloneManager-v2.0.jar</systemPath>
+        </dependency>
 <!--        <dependency>-->
 <!--            <groupId>org.eclipse.jdt</groupId>-->
 <!--            <artifactId>org.eclipse.jdt.core</artifactId>-->
@@ -114,41 +158,65 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjrt</artifactId>
             <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger2</artifactId>
-            <version>2.9.2</version>
-        </dependency>
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger-ui</artifactId>
-            <version>2.9.2</version>
         </dependency>
         <dependency>
             <groupId>com.github.xiaoymin</groupId>
             <artifactId>swagger-bootstrap-ui</artifactId>
             <version>1.6</version>
+        </dependency>
+
+        <dependency>
+            <groupId>cn.edu.fudan</groupId>
+            <artifactId>code-tracker</artifactId>
+            <version>1.0.1</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/code-tracker-1.0.1.jar</systemPath>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.json</groupId>
+                    <artifactId>android-json</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.github.javaparser</groupId>
+                    <artifactId>javaparser-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.github.javaparser</groupId>
+                    <artifactId>javaparser-symbol-solver-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.github.javaparser</groupId>
+                    <artifactId>javaparser-symbol-solver-model</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.github.javaparser</groupId>
+                    <artifactId>javaparser-symbol-solver-logic</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.github.javaparser</groupId>
+                    <artifactId>javaparser-parent</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.javaparser</groupId>
+            <artifactId>javaparser-symbol-solver-core</artifactId>
+            <version>3.16.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.codehaus.javancss</groupId>
+            <artifactId>javancss</artifactId>
+            <version>33.54</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
         </dependency>
 
 
@@ -175,6 +243,13 @@
                 </includes>
             </resource>
             <resource>
+                <directory>lib</directory>
+                <targetPath>/BOOT-INF/lib/</targetPath>
+                <includes>
+                    <include>**/*.jar</include>
+                </includes>
+            </resource>
+            <resource>
                 <directory>src/main/java</directory>
                 <includes>
                     <include>**/*.lua</include>
@@ -190,6 +265,7 @@
                     <jvmArguments>
                         -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005
                     </jvmArguments>
+                    <includeSystemScope>true</includeSystemScope>
                 </configuration>
                 <executions>
                     <execution>

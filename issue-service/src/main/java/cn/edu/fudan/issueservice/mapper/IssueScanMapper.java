@@ -70,6 +70,6 @@ public interface IssueScanMapper {
      * @param repoUuid  repoUuid
      * @return 扫描起始commit
      */
-    @Select("select start_commit from scan where repo_id = #{repoUuid}")
+    @Select("select startCommit from scan where repo_id = #{repoUuid}")
     String getStartCommitByRepoUuid(String repoUuid);
 }

@@ -430,6 +430,10 @@ public class ProjectControlServiceImpl implements ProjectControlService {
         }
     }
 
+    @Override
+    public SubRepository getRepoInfoByUrl(String Url) {
+        return subRepositoryDao.getSubRepoByUrl(Url);
+    }
 
     /**
      * setter

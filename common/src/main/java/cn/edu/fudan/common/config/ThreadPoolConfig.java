@@ -1,5 +1,6 @@
 package cn.edu.fudan.common.config;
 
+import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.annotation.AsyncConfigurer;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -13,6 +14,7 @@ import java.util.concurrent.ThreadPoolExecutor;
  * @author fancying
  * create: 2020-12-08 14:31
  **/
+@Configuration
 public class ThreadPoolConfig{
 
 

@@ -5,12 +5,13 @@
     <parent>
         <artifactId>issueTracker</artifactId>
         <groupId>cn.edu.fudan</groupId>
-        <version>1.0</version>
+
+        <version>1.0.1</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>depend-service</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.1</version>
     <name>depend-service</name>
     <description>Dependency Analysis</description>
 
@@ -91,7 +92,11 @@
         <dependency>
             <groupId>cn.edu.fudan</groupId>
             <artifactId>common</artifactId>
-            <version>1.0</version>
+
+            <version>1.0.1</version>
+<!--            <scope>compile</scope>-->
+<!--            <scope>system</scope>-->
+<!--            <systemPath>${project.basedir}/lib/common-1.0-SNAPSHOT.jar</systemPath>-->
         </dependency>
         <dependency>
             <groupId>org.apache.poi</groupId>

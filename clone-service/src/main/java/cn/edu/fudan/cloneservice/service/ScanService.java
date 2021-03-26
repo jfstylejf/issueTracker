@@ -1,6 +1,9 @@
 package cn.edu.fudan.cloneservice.service;
 
 import cn.edu.fudan.cloneservice.domain.clone.CloneRepo;
+import org.eclipse.jgit.api.errors.GitAPIException;
+
+import java.io.IOException;
 
 /**
  * @author zyh
@@ -14,7 +17,7 @@ public interface ScanService {
      * @param repoId repo id
      * @param beginCommit 初始 commit id
      */
-    void cloneScan(String repoId, String beginCommit, String branch);
+    void cloneScan(String repoId, String beginCommit, String branch) throws IOException, GitAPIException;
 
     /**
      * 删除对应repo id所属的所有clone信息

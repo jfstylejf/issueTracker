@@ -58,7 +58,7 @@ public interface SubRepositoryMapper {
      * @param repoUuid uuid
      * @return date
      */
-    @Select("select max(commit_time) from commit_view where repo_id = #{repo_id} ;")
+    @Select("select max(commit_time) from commit_view where repo_uuid = #{repo_id} ;")
     Date getLatestCommitTime(@Param("repo_id") String repoUuid);
 
 

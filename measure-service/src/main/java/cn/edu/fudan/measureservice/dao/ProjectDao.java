@@ -6,6 +6,7 @@ import cn.edu.fudan.measureservice.domain.dto.DeveloperRepoInfo;
 import cn.edu.fudan.measureservice.domain.dto.Query;
 import cn.edu.fudan.measureservice.domain.dto.RepoInfo;
 import cn.edu.fudan.measureservice.domain.dto.UserInfoDTO;
+import cn.edu.fudan.measureservice.domain.enums.ToolEnum;
 import cn.edu.fudan.measureservice.mapper.MeasureMapper;
 import cn.edu.fudan.measureservice.mapper.ProjectMapper;
 import lombok.Getter;
@@ -33,6 +34,8 @@ public class ProjectDao {
     private MeasureMapper measureMapper;
 
     private static final String split = ",";
+    private static final String JAVA = "Java";
+    private static final String JAVASCRIPT = "JavaScript";
 
     private static Map<String,RepoInfo> repoInfoMap = new HashMap<>(50);
 
@@ -41,6 +44,7 @@ public class ProjectDao {
     private static Map<String, UserInfoDTO> userInfos = new ConcurrentHashMap<>(32);
 
     private static Map<String,Map<String,List<String>>> visibleProjectInfos = new ConcurrentHashMap<>(32);
+
 
 
     /**
@@ -403,6 +407,28 @@ public class ProjectDao {
 
     public Map<String,List<RepoInfo>> getProjectInfo() {
         return projectInfo;
+    }
+
+    /**
+     * 根据 repoUuid 获取扫描工具名
+     * @param repoUuid 查询库
+     * @return String {@link ToolEnum}
+     */
+    public String getToolName(String repoUuid) {
+        try {
+            String language = projectMapper.getRepoLanguage(repoUuid);
+            if (language.equals(JAVA)) {
+                return ToolEnum.JavaCodeAnalyzer.getType();
+            }else if(language.equals(JAVASCRIPT)) {
+                return ToolEnum.JSCodeAnalyzer.getType();
+            }else {
+                return null;
+            }
+        }catch (Exception e) {
+            e.printStackTrace();
+            log.error("query baseDate failed!\n");
+        }
+        return null;
     }
 
 

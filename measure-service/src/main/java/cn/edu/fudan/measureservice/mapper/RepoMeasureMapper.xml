@@ -87,7 +87,7 @@
     </resultMap>
 
     <insert id="insertOneRepoMeasure" >
-        insert into repo_measure
+        insert into issueTracker.repo_measure
             (
                uuid,
                files,
@@ -145,7 +145,7 @@
     </insert>
 
     <select id="sameMeasureOfOneCommit" resultType="int">
-        select count(*) from repo_measure where repo_id = #{repo_id} and commit_id = #{commit_id}
+        select count(*) from issueTracker.repo_measure where repo_id = #{repo_id} and commit_id = #{commit_id}
     </select>
 
     <select id="getRepoMeasureByCommit" resultMap="repoMeasure">
@@ -194,7 +194,7 @@
     <select id="getCommitCountsByDuration" resultType="int">
         select
              COUNT(*) as commit_counts
-        from commit_view
+        from issueTracker.commit_view
         <where>
             <trim prefixOverrides="and">
                 <if test="developer_name != null and developer_name != '' ">
@@ -202,7 +202,7 @@
                 </if>
 
                 <if test="repo_id != null and repo_id != '' ">
-                    and repo_id = #{repo_id}
+                    and repo_uuid = #{repo_id}
                 </if>
 
                 <if test="since != null and since != '' ">
@@ -218,7 +218,7 @@
 
 
     <select id="getDeveloperValidCommitCount" resultType="int">
-        SELECT count(*) FROM commit_view
+        SELECT count(*) FROM issueTracker.commit_view
         <where>
             <trim prefixOverrides="and">
                 <if test="developer_name != null and developer_name != '' ">
@@ -226,7 +226,7 @@
                 </if>
 
                 <if test="repoUuid != null and repoUuid != '' ">
-                    and repo_id = #{repoUuid}
+                    and repo_uuid = #{repoUuid}
                 </if>
 
                 <if test="since != null and since != '' ">
@@ -385,13 +385,13 @@
 
     <select id="getDeveloperDutyTypeListByrepoUuid" parameterType="String" resultType="java.util.HashMap">
         SELECT DISTINCT a.account_name as accountName , a.account_status
-        FROM account as a
+        FROM issueTracker.account as a
         WHERE
         a.account_name IN
-        (SELECT DISTINCT developer_unique_name FROM commit_view
+        (SELECT DISTINCT developer_unique_name FROM issueTracker.commit_view
         <where>
             <if test="repoUuidList != null and repoUuidList.size > 0">
-               and repo_id in
+               and repo_uuid in
                 <foreach collection="repoUuidList" separator="," open="(" close=")" item="repo_id">
                     #{repo_id}
                 </foreach>
@@ -451,7 +451,7 @@
 
     <select id="getRepoListByDeveloper" parameterType="String" resultType="String">
         SELECT
-            DISTINCT (repo_id)
+            DISTINCT (repo_uuid)
         FROM
             issueTracker.commit_view
         <where>
@@ -468,17 +468,17 @@
                     and <![CDATA[ commit_time <= #{until} ]]>
                 </if>
             </trim>
-            and repo_id in (SELECT distinct repo_uuid FROM sub_repository)
+            and repo_uuid in (SELECT distinct repo_uuid FROM sub_repository)
         </where>
 
     </select>
 
     <select id="getFirstCommitDateByCondition" resultType="String">
-        select commit_time from commit_view
+        select commit_time from issueTracker.commit_view
         <where>
             <trim prefixOverrides="and">
                 <if test="repoUuidList != null and repoUuidList.size > 0">
-                    and repo_id in
+                    and repo_uuid in
                     <foreach collection="repoUuidList" separator="," open="(" close=")" item="repo_id">
                         #{repo_id}
                     </foreach>
@@ -512,9 +512,9 @@
 
     <select id="getCommitMsgByCondition" parameterType="String" resultType="java.util.HashMap">
         SELECT
-        developer_unique_name,repo_id,commit_id,commit_time,message
+        developer_unique_name,repo_uuid,commit_id,commit_time,message
         FROM
-        commit_view
+        issueTracker.commit_view
         <where>
             <trim prefixOverrides="and">
                 <if test="developer_name != null and developer_name != '' ">
@@ -522,7 +522,7 @@
                 </if>
 
                 <if test="repo_id != null and repo_id != '' ">
-                    and repo_id = #{repo_id}
+                    and repo_uuid = #{repo_id}
                 </if>
 
                 <if test="since != null and since != '' ">

@@ -17,7 +17,7 @@
         (
         uuid,
         start_commit,
-        repo_id,
+        repo_uuid,
         invoke_result
         )
         VALUES
@@ -31,7 +31,7 @@
 
 
     <delete id="deleteScanByRepoId" parameterType="String">
-        delete from scan where repo_id=#{repo_id}
+        delete from scan where repo_uuid=#{repo_id}
     </delete>
 
     <update id="updateOneScan" parameterType="Scan">
@@ -52,7 +52,7 @@
     </update>
 
     <select id="getScanByRepoId" parameterType="String" resultMap="scan">
-        select * from scan where repo_id = #{repo_id} ;
+        select * from scan where repo_uuid = #{repo_id} ;
     </select>
 
 </mapper>

@@ -72,7 +72,12 @@ public class KafkaAutoScanImpl implements MessageListeningService {
             if(defaultScanInterval != 0){
                 month = defaultScanInterval;
             }
-            startCommit = commitFilter.filter (RepoResourceDTO.builder().repoId(repoId).build(), repoId, branch, month);
+            String language = project.getString("language");
+            if (language.equals("Java")) {
+                startCommit = commitFilter.filter (RepoResourceDTO.builder().repoId(repoId).build(), repoId, branch, month);
+            } else {
+                startCommit = commitFilter.filterWithoutAggregationCommit(RepoResourceDTO.builder().repoId(repoId).build(), repoId, branch, month);
+            }
         }
         if (! isUpdate && startCommit == null) {
             log.error("there is none available commit，repo id：{}", repoId);

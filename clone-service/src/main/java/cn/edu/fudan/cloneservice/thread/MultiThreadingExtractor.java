@@ -14,6 +14,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -110,7 +111,7 @@ public class MultiThreadingExtractor {
 
     }
 
-    public void extract(String repoId, String startCommitId){
+    public void extract(String repoId, String startCommitId) throws IOException {
 
         scanCount = new AtomicInteger(0);
 
@@ -153,7 +154,7 @@ public class MultiThreadingExtractor {
 
     }
 
-    private void extractCommitIds(String repoId, String startCommitId, String cloneRepoUuid) {
+    private void extractCommitIds(String repoId, String startCommitId, String cloneRepoUuid) throws IOException {
 
         String repoPath = null;
         List<String> commitList = new ArrayList<>();
@@ -210,7 +211,11 @@ public class MultiThreadingExtractor {
                 }
                 scanThreadPool.submit(()-> {
                     logger.info("{}-> start scan", Thread.currentThread().getName());
-                    scanTask.runSynchronously(repoId,commitId, "snippet", null);
+                    try {
+                        scanTask.runSynchronously(repoId,commitId, "snippet", null);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                     measureQueue.offer(commitId);
                 });
 

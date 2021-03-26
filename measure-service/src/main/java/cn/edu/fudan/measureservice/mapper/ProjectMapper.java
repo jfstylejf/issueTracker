@@ -138,4 +138,11 @@ public interface ProjectMapper {
      * @return
      */
     List<DeveloperLevel> getDeveloperLevelList(@Param("developerList") List<String> developerList);
+
+    /**
+     * 获取该库的主要语言
+     * @param repoUuid 查询库
+     * @return String language
+     */
+    String getRepoLanguage(@Param("repoUuid")String repoUuid);
 }
