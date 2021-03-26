@@ -172,7 +172,12 @@ public class TempProcess implements CommonScanService {
         curThread.setName(threadName);
 
         ToolScan specificTool = getToolScan(tool);
-        String repoPath = baseRepoRestManager.getCodeServiceRepo(repoUuid);
+        String repoPath= null;
+        try {
+            repoPath = baseRepoRestManager.getCodeServiceRepo(repoUuid);
+        }catch (Exception e){
+            log.info("Exception: "+ e.getMessage());
+        }
         if (repoPath == null) {
             log.error("{} : can't get repoPath", repoUuid);
             return;

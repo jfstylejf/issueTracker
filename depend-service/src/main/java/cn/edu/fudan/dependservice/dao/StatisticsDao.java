@@ -1,6 +1,7 @@
 package cn.edu.fudan.dependservice.dao;
 
 
+import cn.edu.fudan.dependservice.codetrackermapper.FileMapperInCT;
 import cn.edu.fudan.dependservice.constants.PublicConstants;
 import cn.edu.fudan.dependservice.domain.*;
 import cn.edu.fudan.dependservice.mapper.LocationMapper;
@@ -22,11 +23,14 @@ import java.util.*;
 @Repository
 public class StatisticsDao implements PublicConstants {
     private LocationMapper locationMapper;
+    private FileMapperInCT fileMapperInCT;
     private static final String RESPONSE_TOTAL = "total";
 
     @CacheEvict(value = {"methodList", "fileList", "focusFileNum", "methodDetail"}, allEntries = true, beforeInvocation = true)
-    public void clearCache() {
 
+    @Autowired
+    public void fileMapperInCT(FileMapperInCT fileMapperInCT) {
+        this.fileMapperInCT = fileMapperInCT;
     }
 
 
@@ -43,34 +47,12 @@ public class StatisticsDao implements PublicConstants {
             List<RepoUuidsInfo> repoInfo = locationMapper.getRepoUuids(projectName);
             for (RepoUuidsInfo re : repoInfo) {
                 res.add(re);
-                log.info(re.toString());
             }
-//
-
         }
-        log.info("getallRepoUuid.size:" + res.size());
         return res;
 
     }
 
-
-    public DependencyInfo tempgetDependencyNum(String projectId, String showDetail) {
-        String projectName = locationMapper.getProjectName(projectId);
-        List<RepoUuidsInfo> repoInfo = locationMapper.getRepoUuids(projectName);
-//        log.info(repoInfo.get(0).getRepoUuid()); one project have to repouuid
-        log.info("repoInfo.size():" + repoInfo.size());
-
-        List<String> repoList = new ArrayList<>();
-        for (RepoUuidsInfo repo : repoInfo) {
-            log.info(repo.getRepoUuid());
-            repoList.add(repo.getRepoUuid());
-        }
-
-        // get repp 's
-
-
-        return null;
-    }
     public DependencyInfo getDependencyNumbyRepo(String repouuid, String showDetail) {
 
 
@@ -79,27 +61,44 @@ public class StatisticsDao implements PublicConstants {
 
             relationShips.addAll(locationMapper.getDependencyInfo(repouuid));
 
-        log.info("relationShip.size()" + relationShips.size());
         DependencyInfo res =getDependencyInfoFromRelationShips(relationShips, showDetail);
         return res;
 
 
     }
 
-    public DependencyInfo getDependencyNum(String projectId, String showDetail) {
+//    public DependencyInfo getDependencyNum(String projectId, String showDetail) {
+//        String projectName = locationMapper.getProjectName(projectId);
+//        List<RepoUuidsInfo> repoInfo = locationMapper.getRepoUuids(projectName);
+////        log.info(repoInfo.get(0).getRepoUuid()); one project have to repouuid
+//        log.info("repoInfo.size():" + repoInfo.size());
+//        List<String> repoList = new ArrayList<>();
+//        List<RelationShip> relationShips = new ArrayList<>();
+//        for (RepoUuidsInfo repo : repoInfo) {
+//            relationShips.addAll(locationMapper.getDependencyInfo(repo.getRepoUuid()));
+//        }
+//        log.info("relationShip.size()" + relationShips.size());
+//        DependencyInfo res=getDependencyInfoFromRelationShips(relationShips, showDetail);
+//        res.setProjectId(projectId);
+//        res.setProjectName(projectName);
+//        return res;
+//        // get repp 's
+//
+//
+//    }
+    public DependencyInfo getDependencyNum(String beginDate, String endDate,String projectId, String showDetail) {
         String projectName = locationMapper.getProjectName(projectId);
         List<RepoUuidsInfo> repoInfo = locationMapper.getRepoUuids(projectName);
 //        log.info(repoInfo.get(0).getRepoUuid()); one project have to repouuid
-        log.info("repoInfo.size():" + repoInfo.size());
         List<String> repoList = new ArrayList<>();
         List<RelationShip> relationShips = new ArrayList<>();
         for (RepoUuidsInfo repo : repoInfo) {
             relationShips.addAll(locationMapper.getDependencyInfo(repo.getRepoUuid()));
         }
-        log.info("relationShip.size()" + relationShips.size());
         DependencyInfo res=getDependencyInfoFromRelationShips(relationShips, showDetail);
         res.setProjectId(projectId);
         res.setProjectName(projectName);
+        res.setDate(endDate.split(" ")[0]);
         return res;
         // get repp 's
 
@@ -108,18 +107,20 @@ public class StatisticsDao implements PublicConstants {
 
     public DependencyInfo getDependencyInfoFromRelationShips(List<RelationShip> relationShips, String showDetail) {
         DependencyInfo res = new DependencyInfo();
-        List<String> files = new ArrayList<>();
+        List<File> files = new ArrayList<>();
 
         for (RelationShip r : relationShips) {
-            if (!files.contains(r.getFile())) files.add(r.getFile());
-            if (!files.contains(r.getDepend_on())) files.add(r.getDepend_on());
+            File source= new File(r.getFile(),r.getRepo_uuid(),r.getCommit_id());
+            File target= new File(r.getDepend_on(),r.getRepo_uuid(),r.getCommit_id());
+            if (!files.contains(source)) files.add(source);
+            if (!files.contains(target)) files.add(target);
         }
         res.setNum(files.size());
         if (showDetail.equals("true")) {
             List<DependencyDetailInfo> detail=new ArrayList<>();
-            for(String file:files){
+            for(File file:files){
                 //todo get metafile and filename
-                detail.add(new DependencyDetailInfo(getFileNameByFilePath(file),file,getMetaFileUuidByFilePath(file)));
+                detail.add(new DependencyDetailInfo(getFileNameByFilePath(file),file.getFileName(),getMetaFileUuidByFilePath(file)));
             }
             res.setDetail(detail);
 
@@ -131,13 +132,20 @@ public class StatisticsDao implements PublicConstants {
 
     }
 
-    private String getMetaFileUuidByFilePath(String filePath) {
-        return null;
+    private String getMetaFileUuidByFilePath(File file) {
+        String filePathforSQL=file.getFileName().split("/",3)[2];
+
+        log.info(filePathforSQL);
+        log.info(file.getCommitId());
+        log.info(file.getRepoUUid());
+        return fileMapperInCT.getMetaFileUUid(filePathforSQL,file.getRepoUUid(),file.getCommitId());
+//        return fileMapperInCT.getLastedScannedCommit(filePathforSQL,file.getRepoUUid(),file.getCommitId());
+//        return filePathforSQL;
 
     }
 
-    private String getFileNameByFilePath(String filePath) {
-        String[] strings=filePath.split("/");
+    private String getFileNameByFilePath(File file) {
+        String[] strings=file.getFileName().split("/");
 
         return strings[strings.length-1];
     }

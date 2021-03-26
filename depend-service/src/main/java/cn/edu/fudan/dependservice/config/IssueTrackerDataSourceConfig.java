@@ -20,22 +20,21 @@ import javax.sql.DataSource;
  * @author Song Rui
  */
 @Configuration
-@MapperScan(basePackages = "cn.edu.fudan.dependservice.codetrackermapper", sqlSessionTemplateRef = "codeTrackerSqlSessionTemplate")
-public class CodeTrackerDataSourceConfig {
+@MapperScan(basePackages = "cn.edu.fudan.dependservice.mapper", sqlSessionTemplateRef = "issueTrackerSqlSessionTemplate")
+public class IssueTrackerDataSourceConfig {
 
-    @Value("${spring.datasource.code-tracker.url}")
+    @Value("${spring.datasource.issue-tracker.url}")
     private String url;
 
-    @Value("${spring.datasource.code-tracker.driver-class-name}")
+    @Value("${spring.datasource.issue-tracker.driver-class-name}")
     private String driverClassName;
-    @Value("${spring.datasource.code-tracker.username}")
+    @Value("${spring.datasource.issue-tracker.username}")
     private String username;
-    @Value("${spring.datasource.code-tracker.password}")
+    @Value("${spring.datasource.issue-tracker.password}")
     private String password;
 
-    @Bean(name = "codeTrackerDataSource")
-    @ConfigurationProperties(prefix = "spring.datasource.code-tracker")
-    @Primary
+    @Bean(name = "issueTrackerDataSource")
+    @ConfigurationProperties(prefix = "spring.datasource.issue-tracker")
     public DataSource dataSource() {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
         dataSource.setDriverClassName(driverClassName);
@@ -45,25 +44,24 @@ public class CodeTrackerDataSourceConfig {
         return dataSource;
     }
 
-    @Bean(name = "codeTrackerSqlSessionFactory")
-    @Primary
-    public SqlSessionFactory sessionFactory(@Qualifier("codeTrackerDataSource") DataSource dataSource) throws Exception {
+    @Bean(name = "issueTrackerSqlSessionFactory")
+    public SqlSessionFactory sessionFactory(@Qualifier("issueTrackerDataSource") DataSource dataSource) throws Exception {
         SqlSessionFactoryBean factoryBean = new SqlSessionFactoryBean();
         factoryBean.setDataSource(dataSource);
         factoryBean.setMapperLocations(
-                new PathMatchingResourcePatternResolver().getResources("classpath:cn/edu/fudan/dependservice/codetrackermapper/*.xml"));
+                new PathMatchingResourcePatternResolver().getResources("classpath:cn/edu/fudan/dependservice/mapper/*.xml"));
         return factoryBean.getObject();
     }
 
-    @Bean(name = "codeTrackerTransactionManager")
+    @Bean(name = "issueTrackerTransactionManager")
     @Primary
-    public DataSourceTransactionManager codeTrackerTransactionManager(@Qualifier("codeTrackerDataSource") DataSource dataSource) {
+    public DataSourceTransactionManager codeTrackerTransactionManager(@Qualifier("issueTrackerDataSource") DataSource dataSource) {
         return new DataSourceTransactionManager(dataSource);
     }
 
-    @Bean(name = "codeTrackerSqlSessionTemplate")
-    @Primary
-    public SqlSessionTemplate sessionTemplate(@Qualifier("codeTrackerSqlSessionFactory") SqlSessionFactory sessionFactory) {
+    @Bean(name = "issueTrackerSqlSessionTemplate")
+    public SqlSessionTemplate sessionTemplate(
+            @Qualifier("issueTrackerSqlSessionFactory") SqlSessionFactory sessionFactory) {
         return new SqlSessionTemplate(sessionFactory);
     }
 

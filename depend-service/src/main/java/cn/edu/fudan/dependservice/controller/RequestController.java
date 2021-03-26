@@ -18,6 +18,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
+@CrossOrigin
 public class RequestController {
     private static final String PARAMETER_IS_EMPTY = "parameter is empty";
     private static final String NO_SUCH_PROJECT = "no such project";
@@ -39,13 +40,13 @@ public class RequestController {
             @ApiImplicitParam(name = "showDetail", value = "是否展示detail", dataType = "String", defaultValue = "false")
     })
     @GetMapping(value = {"/dependency"})
+    @CrossOrigin
     public ResponseBean<List<DependencyInfo>> getCcnMethodNum(@RequestParam(value = "since") String beginDate,
                                                               @RequestParam(value = "until") String endDate,
                                                               @RequestParam(value = "projectIds", required = false) String projectIds,
                                                               @RequestParam(value = "interval", required = false) String interval,
                                                               @RequestParam(value = "showDetail", required = false) String showDetail) {
-        log.info("star one request");
-        try {
+//        try {
             if (beginDate.isEmpty() || endDate.isEmpty()) {
                 return new ResponseBean<>(412, PARAMETER_IS_EMPTY, null);
             }
@@ -56,15 +57,16 @@ public class RequestController {
                 showDetail = "false";
             }
             List<String> dates = DateHandler.handleParamDate(beginDate, endDate);
-            List<DependencyInfo> data = dependencyService.getDependencyNum(dates.get(0), dates.get(1), projectIds, interval, showDetail, "method");
+//            List<DependencyInfo> data = dependencyService.getDependencyNum(dates.get(0), dates.get(1), projectIds, interval, showDetail, "method");
+            List<DependencyInfo> data = dependencyService.getDependencyNumWithDate(dates.get(0), dates.get(1), projectIds, interval, showDetail, "method");
 
-//            if (data.get(0).getProjectName() == null) {
-//                return new ResponseBean<>(412, NO_SUCH_PROJECT, null);
-//            }
+            if (data.get(0).getProjectName() == null) {
+                return new ResponseBean<>(412, NO_SUCH_PROJECT, null);
+            }
             return new ResponseBean<>(200, RESPONSE_STATUS_SUCCESS, data);
-        } catch (Exception e) {
-            return new ResponseBean<>(401, e.getMessage(), null);
-        }
+//        } catch (Exception e) {
+//            return new ResponseBean<>(401, e.getMessage(), null);
+//        }
 
     }
 

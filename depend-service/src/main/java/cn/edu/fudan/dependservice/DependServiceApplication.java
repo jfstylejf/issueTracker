@@ -15,8 +15,10 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
  * create: 2021-02-12 14:08
  **/
 @EnableSwagger2
-@SpringBootApplication
-@MapperScan("cn.edu.fudan.dependservice.mapper")
+//@SpringBootApplication
+@SpringBootApplication(exclude = { MybatisAutoConfiguration.class, DataSourceAutoConfiguration.class, DataSourceTransactionManagerAutoConfiguration.class  })
+
+//@MapperScan("cn.edu.fudan.dependservice.mapper")
 public class DependServiceApplication {
     public static void main(String[] args) {
         SpringApplication.run(DependServiceApplication.class, args);

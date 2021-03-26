@@ -36,7 +36,8 @@
     </select>
 
     <resultMap id="relationship" type="cn.edu.fudan.dependservice.domain.RelationShip">
-<!--        <id property="repoUuid" column="repo_uuid"/>-->
+        <id property="repo_uuid" column="repo_uuid"/>
+        <id property="commit_id" column="commit_id"/>
 <!--        <id property="id" column="repo_uuid"/>-->
         <result property="file" column="file"/>
         <result property="depend_on" column="depend_on"/>
@@ -45,7 +46,7 @@
 
 
     <select id="getDependencyInfo" resultMap="relationship">
-        select file,depend_on
+        select commit_id, repo_uuid, file,depend_on
         from dependency_detail
         where repo_uuid =#{repoUuid};
     </select>

@@ -31,12 +31,12 @@ public class TempScanServiceImpl  extends CommonScanProcess {
     public void updateRepoScan(RepoScan scanInfo) {
 
     }
-    public void tempScan(String repoUuid, String branch){
-        ToolScan specificTool = getToolScan("tool");
-        String repoPath = baseRepoRestManager.getCodeServiceRepo(repoUuid);
-
-
-    }
+//    public void tempScan(String repoUuid, String branch){
+//        ToolScan specificTool = getToolScan("tool");
+//        String repoPath = baseRepoRestManager.getCodeServiceRepo(repoUuid);
+//
+//
+//    }
 
 
 

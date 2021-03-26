@@ -129,6 +129,20 @@ public class ToolScanImpl implements ToolScan {
         String configFile = this.resultFileDir + "source-project-conf.json";
         log.info("configFile :" + configFile);
         WriteUtill.writeProjecConf(configFile, this.getScanData().getRepoPath());
+        // clean all
+        File dir = new File(resultFileDir);
+        if (!dir.isDirectory()) {
+            log.error("resultfileDir Wrong");
+            return ;
+        }
+
+        String[] files = dir.list();// 读取目录下的所有目录文件信息
+        for (int i = 0; i < files.length; i++) {// 循环，添加文件名或回调自身
+            File file = new File(dir, files[i]);
+            if (file.isFile() && file.getName().matches(".*\\.xlsx")) {// 如果文件
+               file.delete();
+            }
+        }
 
 
     }
@@ -139,29 +153,39 @@ public class ToolScanImpl implements ToolScan {
         String repoPath = this.getScanData().getRepoPath();
         JGitHelper jGitHelper = new JGitHelper(repoPath);
         jGitHelper.checkout(commit);
+
     }
 
     @Override
     public void cleanUpForOneScan(String commit) {
         try {
             File file = new File(resultFile);
-            if (!file.exists()) {// 判断是否存在目录
-                return;
+            if (file.exists()) {// 判断是否存在目录
+                file.delete();
             }
             // fortest to see what res now is
-            file.delete();
             // end Thread
         } catch (Exception e) {
             log.info("no  sh result");
             log.error(e.getMessage());
         } finally {
+            //
+
+        }
+        try {
             ShThread2 shRunner = new ShThread2();
             shRunner.setShName("tdepend2.sh");
             shRunner.setDependenceHome(dependenceHome);
             shRunner.setRepoPath(scanData.getRepoPath());
             Thread shThread = new Thread(shRunner);
             shThread.start();
+            shThread.join();
+            log.info("sh2 end ");
+
+        }catch (Exception e){
+            log.error("Exception:"+e.getMessage());
         }
+
 
 
     }
