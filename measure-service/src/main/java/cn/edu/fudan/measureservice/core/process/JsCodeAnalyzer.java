@@ -139,10 +139,11 @@ public class JsCodeAnalyzer extends BaseAnalyzer{
         for (int i = 0; i < jsCcnResult.size(); i++) {
             JSONObject method = (JSONObject) jsCcnResult.get(i);
             String fileName = FileUtil.systemAvailablePath(method.getString("fileName"));
-            if (!map.containsKey(fileName)) {
-                map.put(fileName,new ArrayList<>());
+            String relativeName = FileUtil.getRelativePath(repoPath,fileName);
+            if (!map.containsKey(relativeName)) {
+                map.put(relativeName,new ArrayList<>());
             }
-            map.get(fileName).add(MethodInfo.builder()
+            map.get(relativeName).add(MethodInfo.builder()
                     .methodName(method.getString("funcName"))
                     .absoluteFilePath(fileName)
                     .methodCcn(method.getIntValue("complexity"))
@@ -153,18 +154,19 @@ public class JsCodeAnalyzer extends BaseAnalyzer{
         for (int i = 0; i < jsLineResult.size(); i++) {
             JSONObject line = (JSONObject) jsLineResult.get(i);
             String fileName = FileUtil.systemAvailablePath(line.getString("file"));
+            String relativeName = FileUtil.getRelativePath(repoPath,fileName);
             FileInfo fileInfo = FileInfo.builder()
                     .absolutePath(fileName)
-                    .relativePath(FileUtil.getRelativePath(repoPath,fileName))
+                    .relativePath(relativeName)
                     .codeLines(line.getIntValue("codeLine"))
                     .blankLines(line.getIntValue("blankLine"))
                     .totalLines(line.getIntValue("allLine"))
                     .build();
-            if(!map.containsKey(fileName)) {
+            if(!map.containsKey(relativeName)) {
                 fileInfo.setMethodInfoList(new ArrayList<>());
                 fileInfo.setFileCcn(0);
             }else {
-                fileInfo.setMethodInfoList(map.get(fileName));
+                fileInfo.setMethodInfoList(map.get(relativeName));
                 fileInfo.calFileCcn();
             }
             fileInfos.add(fileInfo);
