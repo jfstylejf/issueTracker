@@ -2,6 +2,7 @@ package cn.edu.fudan.dependservice.service.impl;
 
 import cn.edu.fudan.common.component.BaseRepoRestManager;
 import cn.edu.fudan.common.domain.po.scan.RepoScan;
+import cn.edu.fudan.common.jgit.JGitHelper;
 import cn.edu.fudan.common.scan.CommonScanProcess;
 import cn.edu.fudan.common.scan.ToolScan;
 import cn.edu.fudan.dependservice.domain.RepoRestManager;
@@ -10,6 +11,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
+
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -47,8 +50,22 @@ public class ScanServiceImpl extends CommonScanProcess {
 
     @Override
     protected String getLastedScannedCommit(String repoUuid, String tool) {
-        return groupMapper.getLastedScannedCommit(repoUuid);
-//                null;
+        List<String> scannedCommitList =getScannedCommitList(repoUuid,tool);
+        if(scannedCommitList.size()==0) return null;
+        String res=scannedCommitList.get(0);
+        JGitHelper jg =new JGitHelper(getRepo_path());
+        Date  resDate=jg.getCommitDateTime(res);
+        int num=0;
+        for(String commit:scannedCommitList){
+            Date thisDate=jg.getCommitDateTime(commit);
+            if(thisDate!=null) num++;
+            if(thisDate!=null&&thisDate.compareTo(resDate)>0){
+                res= commit;
+                resDate=thisDate;
+            }
+        }
+        log.info("num of data not null :"+num);
+        return res;
     }
 
     @Override

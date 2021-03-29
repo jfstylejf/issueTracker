@@ -13,6 +13,7 @@
     <parent>
         <groupId>cn.edu.fudan</groupId>
         <artifactId>issueTracker</artifactId>
+
         <version>1.0.1</version>
     </parent>
 

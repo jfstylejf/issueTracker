@@ -367,6 +367,7 @@ import org.eclipse.jgit.util.io.DisabledOutputStream;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Stream;
@@ -374,7 +375,7 @@ import java.util.stream.Stream;
 /**
  * @description:
  * @author: fancying
- * @create: 2019-06-05 17:16
+ * @create: 2019-06-05 17:16:
  **/
 @SuppressWarnings("Duplicates")
 @Slf4j
@@ -440,9 +441,24 @@ public class JGitHelper {
         return authorName;
     }
 
-    @SneakyThrows
+//    @SneakyThrows
     public Date getCommitDateTime(String commit) {
-        return new SimpleDateFormat(format).parse(getCommitTime(commit));
+        Date res;
+        if(getCommitTime(commit)==null){
+            log.error("getCommitTime(commit)==null");
+            return null;
+        }else {
+            try {
+                res=new SimpleDateFormat(format).parse(getCommitTime(commit));
+
+            }
+            catch (ParseException e) {
+                res=null;
+                log.error("ParseException:"+e.getMessage());
+            }
+
+        }
+        return res;
     }
 
     public String getCommitTime(String commit) {
@@ -457,11 +473,41 @@ public class JGitHelper {
             calendar.add(Calendar.HOUR_OF_DAY, -8);
             time = new java.text.SimpleDateFormat(format).format(calendar.getTime());
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("error in revWalk.parseCommit(ObjectId.fromString(commit)):");
+            log.error(e.getMessage());
         }
         return time;
     }
 
+    /**
+     * 获取该分支下最新的一次commit
+     *
+     * @param branch        branch
+     * @return commitid
+     * @author shaoxi
+     */
+    public String getLatestCommitByBranch(String branch){
+        checkout(branch);
+        String latestCommit=null;
+        int latest=0;
+        try {
+            Iterable<RevCommit> commits = git.log().call();
+            Iterator<RevCommit> iterator=commits.iterator();
+            while (iterator.hasNext()){
+                RevCommit oneCommt =iterator.next();
+                if(oneCommt.getCommitTime()>latest){
+                    latestCommit=oneCommt.getName();
+                    latest=oneCommt.getCommitTime();
+                }
+
+            }
+
+        } catch (GitAPIException e) {
+            log.error(e.getMessage());
+        }
+        return latestCommit;
+
+    }
     /**
      * 根据策略获取扫描列表
      *
@@ -497,10 +543,8 @@ public class JGitHelper {
         //init scanCommitQueue
         scanCommitQueue.add(beginCommit);
         commitCheckMap.put(beginCommit, true);
-        log.info("before while:");
         //get the commitList
         while (scanCommitQueue.size() != commitMap.size()) {
-            log.info("in while ");
             for (Map.Entry<String, Set<String>> entry : commitMap.entrySet()) {
                 //if parent in commitMap but not in scanCommitQueue, should not add to queue.
                 boolean shouldAddToQueue = shouldAddToQueue(entry.getValue(), scanCommitQueue, commitMap);
@@ -512,9 +556,7 @@ public class JGitHelper {
                 }
             }
         }
-        log.info("end while:");
         scannedCommit.forEach(commit -> scanCommitQueue.removeIf(r -> r.equals(commit)));
-        log.info("end of  getScanCommitListByBranchAndBeginCommit");
         return scanCommitQueue;
     }
 

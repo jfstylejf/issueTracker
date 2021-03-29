@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 public abstract class CommonScanProcess implements CommonScanService {
     private static final Logger log = LoggerFactory.getLogger(CommonScanProcess.class);
     private static final String KEY_DELIMITER = "-";
+    private String repo_path;
 
     /**
      * key repoUuid
@@ -96,6 +97,7 @@ public abstract class CommonScanProcess implements CommonScanService {
         curThread.setName(threadName);
 
         ToolScan specificTool = getToolScan(tool);
+
         // 获取repo所在路径
         log.info("repoUuid: " + repoUuid);
         String repoPath = Boolean.TRUE.equals(this.useLocalRepoPath()) ? this.getLocalRepoPath() : baseRepoRestManager.getCodeServiceRepo(repoUuid);
@@ -103,8 +105,8 @@ public abstract class CommonScanProcess implements CommonScanService {
             log.error("{} : can't get repoPath", repoUuid);
             return;
         }
-
         List<String> scannedCommitList = getScannedCommitList(repoUuid, tool);
+
         log.info("scannedCommitList.size():" + scannedCommitList.size());
         boolean initialScan = scannedCommitList.isEmpty();
         int scannedCommitCount = 0;
@@ -118,11 +120,14 @@ public abstract class CommonScanProcess implements CommonScanService {
                 .startScanTime(new Date())
                 .endScanTime(new Date())
                 .build();
+        //  todo repo_path is added by shaoxi ,delete it later
+        this.repo_path=repoPath;
         try {
             if (beginCommit == null || "".equals(beginCommit)) {
                 beginCommit = getLastedScannedCommit(repoUuid, tool);
             }
             List<String> toScanCommitList = new JGitHelper(repoPath).getScanCommitListByBranchAndBeginCommit(branch, beginCommit, scannedCommitList);
+
             if (toScanCommitList.isEmpty()) {
                 return;
             }
@@ -131,20 +136,19 @@ public abstract class CommonScanProcess implements CommonScanService {
             repoScan.setStartCommit(firstCommit);
 
             log.info("commit size : {}", toScanCommitList.size());
+
             insertRepoScan(repoScan);
             boolean success = false;
             specificTool.loadData(repoUuid, branch, repoPath, initialScan, toScanCommitList);
             specificTool.prepareForScan();
 
             for (String commit : toScanCommitList) {
-                log.info("now commit id:" + commit);
                 specificTool.prepareForOneScan(commit);
                 success = specificTool.scanOneCommit(commit);
                 specificTool.cleanUpForOneScan(commit);
                 repoScan.setScannedCommitCount(++scannedCommitCount);
                 recordScannedCommit(commit, repoScan);
                 updateRepoScan(repoScan);
-
                 if (curThread.isInterrupted()) {
                     synchronized (this.LOCK) {
                         scanStatusMap.remove(threadName);
@@ -154,6 +158,7 @@ public abstract class CommonScanProcess implements CommonScanService {
                 }
             }
             specificTool.cleanUpForScan();
+
 
             repoScan.setStatus(success ? ScanInfo.Status.COMPLETE.getStatus() : ScanInfo.Status.FAILED.getStatus());
             repoScan.setEndScanTime(new Date());

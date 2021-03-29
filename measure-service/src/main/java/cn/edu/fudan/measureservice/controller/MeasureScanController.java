@@ -42,6 +42,7 @@ public class MeasureScanController {
         String repoUuid = scanDTO.getRepoUuid();
         String branch = scanDTO.getBranch();
         String beginCommit = scanDTO.getBeginCommit();
+
         // TODO 调用 tool scan 流程
         try {
             measureScanService.scan(RepoResourceDTO.builder().repoUuid(repoUuid).build(), branch, beginCommit);
@@ -57,8 +58,8 @@ public class MeasureScanController {
             @ApiImplicitParam(name = "repo_uuid", value = "参与库", dataType = "String",required = true,defaultValue = "3ecf804e-0ad6-11eb-bb79-5b7ba969027e"),
     })
     @SuppressWarnings("unchecked")
-    @GetMapping(value = {"/measure/scan-status"})
-    public ResponseBean<Map<String, Object>> getScanStatus(@RequestParam("repo_uuid") String repoUuid) {
+    @GetMapping(value = {"/measure/{toolName}/scan-status"})
+    public ResponseBean<Map<String, Object>> getScanStatus(@RequestParam("repo_uuid") String repoUuid,@PathVariable("toolName") String toolName) {
 
         try {
             //目前measure服务只有这个扫描工具

@@ -23,7 +23,8 @@ public class ShThread implements Runnable {
     public boolean runSh() {
         try {
             Runtime rt = Runtime.getRuntime();
-            String command = "sh " + dependenceHome + shName + " " + repoPath;
+
+            String command = "sh " + dependenceHome + shName;
             log.info("command -> {}", command);
             Process process = rt.exec(command);
             boolean timeout = process.waitFor(300L, TimeUnit.SECONDS);
@@ -32,6 +33,7 @@ public class ShThread implements Runnable {
                 log.error("invoke tool timeout ! (300s)");
                 return false;
             }
+            log.info("end of sh");
             return process.exitValue() == 0;
         } catch (Exception e) {
             e.printStackTrace();

@@ -7,6 +7,7 @@ import cn.edu.fudan.dependservice.domain.Group;
 import cn.edu.fudan.dependservice.domain.RelationShip;
 import cn.edu.fudan.dependservice.mapper.GroupMapper;
 import cn.edu.fudan.dependservice.mapper.RelationshipMapper;
+import cn.edu.fudan.dependservice.utill.WriteUtill;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,25 +63,25 @@ public class ToolScanImpl implements ToolScan {
         log.info("sh start time:" + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
         long startTime = System.currentTimeMillis();
         boolean continuedetect = true;
-        log.info("resultFile: " + resultFile);
+        log.info("wait for sh result");
 
         while (continuedetect) {
+            if ((System.currentTimeMillis() - startTime) / 1000 > 600) {
+                log.error("wait for sh result time too long");
+                return false;
+            }
             try {
                 Thread.sleep(3000);
             } catch (Exception e) {
-                log.error("error in sleep");
+                log.error("exception ms:" + e.getMessage());
+                return false;
             }
             if (resultFileDetect()) {
                 break;
-            } else {
-                log.info("detect dir: " + resultFileDir);
-                log.info("detect sh result every 3 seconds ......");
             }
         }
         long endTime = System.currentTimeMillis();
-        log.info("The total cost of waiting for the sh results -> {} second",(endTime-startTime)/1000);
-
-        log.info("sh end time:" + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
+        log.info("The total cost of waiting for the sh results -> {} second", (endTime - startTime) / 1000);
 
         Map<String, List> fileRes = null;
         ReadUtill readUtill = ReadUtill.builder().commitId(commit).repo_uuid(getScanData().getRepoUuid()).build();
@@ -91,8 +92,10 @@ public class ToolScanImpl implements ToolScan {
             log.error("deal result file error");
             return false;
         }
+        if (fileRes.size() > 0) {
+            put2DataBase(fileRes);
 
-        put2DataBase(fileRes);
+        }
 
         return true;
     }
@@ -122,6 +125,25 @@ public class ToolScanImpl implements ToolScan {
         this.setDependenceHome(applicationContext.getBean(ShHomeConfig.class).getDependenceHome());
         this.setShName(applicationContext.getBean(ShHomeConfig.class).getShName());
         this.setResultFileDir(applicationContext.getBean(ShHomeConfig.class).getResultFileDir());
+        //make config file
+        String configFile = this.resultFileDir + "source-project-conf.json";
+        log.info("configFile :" + configFile);
+        WriteUtill.writeProjecConf(configFile, this.getScanData().getRepoPath());
+        // clean all
+        File dir = new File(resultFileDir);
+        if (!dir.isDirectory()) {
+            log.error("resultfileDir Wrong");
+            return ;
+        }
+
+        String[] files = dir.list();// 读取目录下的所有目录文件信息
+        for (int i = 0; i < files.length; i++) {// 循环，添加文件名或回调自身
+            File file = new File(dir, files[i]);
+            if (file.isFile() && file.getName().matches(".*\\.xlsx")) {// 如果文件
+               file.delete();
+            }
+        }
+
 
     }
 
@@ -131,17 +153,43 @@ public class ToolScanImpl implements ToolScan {
         String repoPath = this.getScanData().getRepoPath();
         JGitHelper jGitHelper = new JGitHelper(repoPath);
         jGitHelper.checkout(commit);
+
     }
 
     @Override
     public void cleanUpForOneScan(String commit) {
-        File file = new File(resultFile);
-        if (!file.exists()) {// 判断是否存在目录
-            return;
+        try {
+            File file = new File(resultFile);
+            if (file.exists()) {// 判断是否存在目录
+                file.delete();
+            }
+            // fortest to see what res now is
+            // end Thread
+        } catch (Exception e) {
+            log.info("no  sh result");
+            log.error(e.getMessage());
+        } finally {
+            //
+
         }
-        // fortest to see what res now is
-        file.delete();
+        try {
+            ShThread2 shRunner = new ShThread2();
+            shRunner.setShName("tdepend2.sh");
+            shRunner.setDependenceHome(dependenceHome);
+            shRunner.setRepoPath(scanData.getRepoPath());
+            Thread shThread = new Thread(shRunner);
+            shThread.start();
+            shThread.join();
+            log.info("sh2 end ");
+
+        }catch (Exception e){
+            log.error("Exception:"+e.getMessage());
+        }
+
+
+
     }
+
 
     @Override
     public void cleanUpForScan() {
@@ -149,13 +197,21 @@ public class ToolScanImpl implements ToolScan {
     }
 
     public void put2DataBase(Map<String, List> fileRes) {
-        for (Object g : fileRes.get("group")) {
-            addGroup((Group) g);
+
+        if (fileRes.containsKey("group")) {
+            for (Object g : fileRes.get("group")) {
+                addGroup((Group) g);
+
+            }
 
         }
-        for (Object g : fileRes.get("relation")) {
-            addRelation((RelationShip) g);
+        if (fileRes.containsKey("relation")) {
+            for (Object g : fileRes.get("relation")) {
+                addRelation((RelationShip) g);
+            }
+
         }
+
 
     }
 
