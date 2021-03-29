@@ -15,6 +15,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.tomcat.jni.Time;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -52,9 +53,12 @@ public class KafkaAutoScanImpl implements MessageListeningService {
         log.info("received message from topic -> {} : {}", message.topic(), msg);
         CommitMessage commitMessage = JSONObject.parseObject(msg, CommitMessage.class);
         String repoId = commitMessage.getRepoId();
+        log.info("repoId is :" + repoId);
         String branch = commitMessage.getBranch();
         boolean isUpdate = true;
         JSONObject project = restInvoker.getProjectsOfRepo(repoId);
+        log.info("project is :");
+        log.info(project.toJSONString());
         if(project == null || project.isEmpty ()){
             log.error("repo : [{}] info is null", repoId);
             return;
@@ -72,7 +76,8 @@ public class KafkaAutoScanImpl implements MessageListeningService {
             if(defaultScanInterval != 0){
                 month = defaultScanInterval;
             }
-            String language = project.getString("language");
+            String language = project.getJSONObject("data").getString("language");
+            log.info("language is :" + language);
             if (language.equals("Java")) {
                 startCommit = commitFilter.filter (RepoResourceDTO.builder().repoId(repoId).build(), repoId, branch, month);
             } else {
@@ -135,6 +140,5 @@ public class KafkaAutoScanImpl implements MessageListeningService {
     public void setCommitFilter(FirstScanCommitFilterStrategy commitFilter) {
         this.commitFilter = commitFilter;
     }
-
 
 }
