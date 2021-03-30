@@ -910,6 +910,11 @@ public class MeasureDeveloperService {
         return developerCommitStandardList;
     }
 
+    public Object getProjectCommitStandardInfo(List<String> projectList,String since,String until,String interval,boolean showDetail) {
+
+        return null;
+    }
+
 
     @Autowired
     public void setMeasureDeveloperServiceImpl(MeasureDeveloperService measureDeveloperServiceImpl) {

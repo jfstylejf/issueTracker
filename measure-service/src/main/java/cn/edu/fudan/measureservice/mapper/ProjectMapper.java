@@ -145,4 +145,11 @@ public interface ProjectMapper {
      * @return String language
      */
     String getRepoLanguage(@Param("repoUuid")String repoUuid);
+
+    /**
+     * 根据 projectId 获取项目名称
+     * @param projectIdList 查询 projectId 列表
+     * @return
+     */
+    List<Map<String,Object>> getProjectNameById(List<String> projectIdList);
 }

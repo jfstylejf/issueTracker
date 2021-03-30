@@ -284,6 +284,30 @@ public class MeasureDeveloperController {
         }
     }
 
+    @GetMapping("measure/commit-standard/trend-chart")
+    @CrossOrigin
+    public ResponseBean<Object> getCommitStandardTrendChart(@RequestParam(required = false, defaultValue = "") String projectIds,
+                                                            @RequestParam(required = false, defaultValue = "") String since,
+                                                            @RequestParam(required = false, defaultValue = "") String until,
+                                                            @RequestParam(required = false, defaultValue = "week") String interval,
+                                                            @RequestParam(required = false, defaultValue = "false") boolean showDetail,
+                                                            HttpServletRequest request) {
+        try {
+            until = timeProcess(until);
+            String token = request.getHeader("token");
+            Map<String,Integer> queryProjectList = projectDao.getProjectNameById(projectIds);
+            List<String> visibleProjectList = projectDao.getVisibleProjectByToken(token);
+            List<String> checkedProjectList = projectDao.mergeBetweenProject(new ArrayList<>(queryProjectList.keySet()),visibleProjectList);
+
+
+            return null;
+        }catch (Exception e) {
+            e.getMessage();
+        }
+        return null;
+    }
+
+
     @ApiOperation(value = "返回用户画像页面得代码行数数据，包括所有项目和单个项目的 To codeTracker", notes = "@return Map<String,Object>", httpMethod = "GET")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "developer", value = "开发人员姓名", dataType = "String",defaultValue = "yuping"),
