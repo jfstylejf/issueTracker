@@ -56,6 +56,11 @@ public class TempScanServiceImpl  extends CommonScanProcess {
     }
 
     @Override
+    protected void recordScannedCommit(String commit, RepoScan repoScan) {
+
+    }
+
+    @Override
     protected String getLastedScannedCommit(String repoUuid, String tool) {
         return null;
     }
@@ -68,6 +73,16 @@ public class TempScanServiceImpl  extends CommonScanProcess {
     @Override
     protected void insertRepoScan(RepoScan repoScan) {
 
+    }
+
+    @Override
+    protected Boolean useLocalRepoPath() {
+        return null;
+    }
+
+    @Override
+    protected String getLocalRepoPath() {
+        return null;
     }
 
 

@@ -41,7 +41,7 @@ public class RequestController {
     })
     @GetMapping(value = {"/dependency"})
     @CrossOrigin
-    public ResponseBean<List<DependencyInfo>> getCcnMethodNum(@RequestParam(value = "since") String beginDate,
+    public ResponseBean<List<DependencyInfo>> getCycleNum(@RequestParam(value = "since") String beginDate,
                                                               @RequestParam(value = "until") String endDate,
                                                               @RequestParam(value = "projectIds", required = false) String projectIds,
                                                               @RequestParam(value = "interval", required = false) String interval,
