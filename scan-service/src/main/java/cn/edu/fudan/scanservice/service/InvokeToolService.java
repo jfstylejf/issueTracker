@@ -6,8 +6,11 @@ import cn.edu.fudan.scanservice.dao.ToolDao;
 import cn.edu.fudan.scanservice.domain.dbo.Scan;
 import cn.edu.fudan.scanservice.domain.dbo.Tool;
 import cn.edu.fudan.scanservice.mapper.ToolMapper;
+import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.tomcat.jni.Time;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -34,7 +37,7 @@ public class InvokeToolService {
         final int enabled = 1;
         Map<Integer,String> preToolInvokeMap = new HashMap<> ();
 
-        //第一步 先获取当前repo 之前的调用情况
+        // 第一步 先获取当前repo 之前的调用情况
         Scan preScan = scanDao.getScanByRepoId (repoId);
         if(startCommit == null && preScan == null){
             log.error (" repo id --> {} ,invoke tools error, cause startCommit is null and has not been scanned!", repoId);
@@ -52,7 +55,17 @@ public class InvokeToolService {
             }
         }
 
-        //第二步根据之前的调用结果，采取相应的调用方式
+        // todo 后续基础服务能够正常判断language时，要把这个sleep去掉
+        try {
+            log.info("开始睡眠2分钟，请至数据库中手动修改刚刚添加repo的language...");
+            Thread.sleep(120000);
+            log.info("下面开始进行各个工具的扫描请求!");
+        // 第二步根据之前的调用结果，采取相应的调用方式
+        }catch (Exception e) {
+            log.error("time sleep error");
+            log.error(e.getMessage());
+        }
+
         Map<String, String> currentToolInvokeMap = new HashMap<> ();
         List<Tool> toolList = toolDao.getAllTools();
         for (Tool tool : toolList) {

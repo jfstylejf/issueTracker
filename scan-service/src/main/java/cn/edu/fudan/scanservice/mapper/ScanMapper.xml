@@ -7,7 +7,7 @@
     <resultMap id="scan" type="Scan">
         <id property="uuid" column="uuid"/>
         <result property="startCommit" column="start_commit"/>
-        <result property="repoId" column="repo_id"/>
+        <result property="repoId" column="repo_uuid"/>
         <result property="invokeResult" column="invoke_result"/>
     </resultMap>
 

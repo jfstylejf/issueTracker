@@ -122,4 +122,11 @@ public interface ProjectControlService {
      */
     void updateRecycleStatus(String token, Integer recycled, String repoUuid) throws Exception;
 
+    /**
+     * 根据URL获取repo信息
+     *
+     * @param Url   库的URL
+     * @throws Exception e
+     */
+    SubRepository getRepoInfoByUrl(String Url);
 }

@@ -40,25 +40,33 @@ public class ReadUtill {
         Map<String, List> res = new HashMap<>();
         String excelPath = filePath;
         //String encoding = "GBK";
-        File excel = new File(excelPath);
+        try{
+            File excel = new File(excelPath);
 
-        String[] split = excel.getName().split("\\.");  //.是特殊字符，需要转义！！！！！
-        Workbook wb;
-        //根据文件后缀（xls/xlsx）进行判断
-        if ("xls".equals(split[1])) {
-            FileInputStream fis = new FileInputStream(excel);   //文件流对象
-            wb = new HSSFWorkbook(fis);
-        } else {
-            wb = new XSSFWorkbook(excel);
+            String[] split = excel.getName().split("\\.");  //.是特殊字符，需要转义！！！！！
+            Workbook wb;
+            //根据文件后缀（xls/xlsx）进行判断
+            if ("xls".equals(split[1])) {
+                FileInputStream fis = new FileInputStream(excel);   //文件流对象
+                wb = new HSSFWorkbook(fis);
+            } else {
+                wb = new XSSFWorkbook(excel);
+            }
+
+            //开始解析
+            Sheet sheet = wb.getSheetAt(0);     //读取sheet 0
+            Sheet sheet2 = wb.getSheetAt(1);     //读取sheet 0
+            List group = getGroups(sheet);
+            List relation = getRelationShips(sheet2);
+            res.put("group", group);
+            res.put("relation", relation);
+
+        }catch (Exception e){
+            log.info("Exception:"+e.getMessage());
+        }finally {
+
         }
 
-        //开始解析
-        Sheet sheet = wb.getSheetAt(0);     //读取sheet 0
-        Sheet sheet2 = wb.getSheetAt(1);     //读取sheet 0
-        List group = getGroups(sheet);
-        List relation = getRelationShips(sheet2);
-        res.put("group", group);
-        res.put("relation", relation);
         return res;
     }
 

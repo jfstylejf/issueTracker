@@ -37,6 +37,7 @@ public class ScanInfoServiceImpl implements ScanInfoService {
 
     @Override
     public Object getAllScanStatus(String repoId) {
+        log.info("getAllScanStatus : repoId is " + repoId);
         String overAllStatus = ScanStatusEnum.COMPLETE.getType () ;
         List<ScanStatus> toolScanStatuses = new ArrayList<> ();
         Scan scan = scanDao.getScanByRepoId (repoId) ;

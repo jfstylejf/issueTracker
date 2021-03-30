@@ -9,6 +9,7 @@
     <packaging>pom</packaging><!--父模块打包类型必须为pom-->
     <version>1.0.1</version>
 
+
     <name>issueTracker</name>
     <description>IssueTracker Parent</description>
 

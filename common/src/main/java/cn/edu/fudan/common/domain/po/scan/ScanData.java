@@ -1,4 +1,4 @@
-package cn.edu.fudan.common.domain.ScanData;
+package cn.edu.fudan.common.domain.po.scan;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -21,4 +21,10 @@ public class ScanData {
     String repoPath;
     boolean initialScan;
     List<String> toScanCommitList;
+
+    /**
+     *  过程扫描信息
+     **/
+    RepoScan repoScan;
+    Integer scannedCommitCount;
 }

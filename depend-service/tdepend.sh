@@ -6,34 +6,33 @@
 echo "start of one sh" >./l.log
 detectPath='/home/fdse/codeWisdom/service/dependence-analysis'
 
-neo4jHome=/home/fdse/codeWisdom/service/dependence-analysis/
+neo4jHome=/home/fdse/codeWisdom/service/dependence-analysis/neo4j-community-4.2.3/bin
 javaHome=/home/fdse/user/Component/sonar/sonarJava/jdk-11.0.4/bin/
-repoPath=$1
 logFile=/home/fdse/codeWisdom/service/dependence-analysis/l.log
-echo "var 0 =$0" >>$logFile
-echo "var 1 =$1" >>$logFile
-echo "repoPath=$repoPath" >>$logFile
-#cd detect
-pwdres=`pwd`
-echo "pwd : $pwdres" >>$logFile
 
-res=`./neo4j-community-4.2.3/bin/neo4j stop`
-echo " stop neo4j res:  $res" >> $logFile
+res=`${neo4jHome}/neo4j stop`
+#res=`./neo4j-community-4.2.3/bin/neo4j stop`
+
 
 
 
 cd  deHome0303
-#res1=`${javaHome}java -jar multi-dependency-1.5.0.jar -a ./application-kingsley.yml &`
 res1=`${javaHome}java -jar multi-dependency-1.5.0.jar -a ./application-kingsley.yml && echo first step ok`
 echo "first step ok" >> $logFile
-echo "res1= $res1"  >> $ logFile
+echo "first step ok"
+
 
 cd ..
 res2=`./neo4j-community-4.2.3/bin/neo4j start `
-echo "start neo4j ok  $res2" >> $logFile
+echo "start neo4j ok " >> $logFile
+echo "start neo4j ok "
 sleep 10
 cd deHome0303
+# delete &
 ${javaHome}java -jar -Dspring.config.location=application-kingsley.yml  multi-dependency-1.5.0.jar -m &
+echo $! > pid.txt
+echo "step2 ok"
+
 #echo  "run succsee" >> $logFile
 #cd ..
 #./neo4j-community-4.2.3/bin/neo4j stop

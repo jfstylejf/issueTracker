@@ -6,11 +6,11 @@
 <mapper namespace="cn.edu.fudan.dependservice.mapper.RelationshipMapper">
 
     <select id="getAllRelationships" resultType="cn.edu.fudan.dependservice.domain.RelationShip">
-    select repo_uuid,group_id,file,depend_on,depend_details from dependecyDetail
+    select repo_uuid,group_id,file,depend_on,depend_details from dependency_detail
     </select>
 
     <insert id="add">
-        insert into dependecyDetail(commit_id,repo_uuid,group_id,file,depend_on,depend_details)
+        insert into dependency_detail(commit_id,repo_uuid,group_id,file,depend_on,depend_details)
         values(#{commit_id},#{repo_uuid},#{group_id},#{file},#{depend_on},#{depend_details})
     </insert>
 
