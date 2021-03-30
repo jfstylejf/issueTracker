@@ -44,6 +44,8 @@ public class RestInterfaceManager {
 
     @Value("${issue.service.path}")
     private String issueServicePath;
+    @Value("${dependency.service.path}")
+    private String dependencyServicePath;
 
     private RestTemplate restTemplate;
 
