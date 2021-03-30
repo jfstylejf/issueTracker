@@ -21,3 +21,8 @@ FROM
 		LEFT JOIN `account_author` ON ((
 			`commit`.`developer` = `account_author`.`account_gitname` 
 	)))
+
+
+-- 3.tool表加入dependency工具
+INSERT INTO issueTracker.tool (tool_type,tool_name,is_enabled,is_installed)
+VALUES ("dependency","dependency",1,1);
