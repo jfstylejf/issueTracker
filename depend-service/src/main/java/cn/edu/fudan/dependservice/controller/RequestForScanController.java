@@ -4,6 +4,7 @@ import cn.edu.fudan.dependservice.domain.DependencyInfo;
 import cn.edu.fudan.dependservice.domain.ResponseBean;
 import cn.edu.fudan.dependservice.domain.ScanStatus;
 import cn.edu.fudan.dependservice.service.DependencyService;
+import cn.edu.fudan.dependservice.service.TempProcess;
 import cn.edu.fudan.dependservice.utill.DateHandler;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -19,6 +20,9 @@ public class RequestForScanController {
     private DependencyService dependencyService;
 
     @Autowired
+    TempProcess tempProcess;
+
+    @Autowired
     public void setDependencyService(DependencyService dependencyService) {
         this.dependencyService = dependencyService;
     }
@@ -31,15 +35,22 @@ public class RequestForScanController {
 //            @ApiImplicitParam(name = "showDetail", value = "是否展示detail", dataType = "String", defaultValue = "false")
 //    })
     @PostMapping(value = {"dependency/dependency"})
-    public ResponseBean<String> startScan(@RequestParam(value = "repoUuid") String repoUuid,
-                                                              @RequestParam(value = "beginCommit") String beginCommit,
+    public ResponseBean<String> startScan(@RequestParam(value = "repo_uuid") String repoUuid,
+                                                              @RequestParam(value = "begin_commit") String beginCommit,
                                                               @RequestParam(value = "branch", required = false) String branch) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                tempProcess.scan(repoUuid,beginCommit,branch);
+
+            }
+        }).start();
         return new ResponseBean<>(200,"successs",null);
 
 
     }
-    @PostMapping(value = {"dependency/dependency/scan-status"})
-    public ResponseBean<ScanStatus> getScanStatus(@RequestParam(value = "repoUuid") String repoUuid) {
+    @GetMapping(value = {"dependency/dependency/scan-status"})
+    public ResponseBean<ScanStatus> getScanStatus(@RequestParam(value = "repo_uuid") String repoUuid) {
         ScanStatus ss= new ScanStatus();
         ss.setScanTime("1");
         ss.setStatus("complete");
