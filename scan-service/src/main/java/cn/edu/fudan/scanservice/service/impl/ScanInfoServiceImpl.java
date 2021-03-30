@@ -63,7 +63,7 @@ public class ScanInfoServiceImpl implements ScanInfoService {
                 scanStatus.setToolName (tool.getToolName ());
                 toolScanStatuses.add (scanStatus);
 
-                // 工具在上次扫描中调用失败
+                // 工具在上次扫描中调用失败或者当时没有调用这个工具
                 if(((Integer)Scan.INVOKE_FAILED).equals(toolInvokeResult)){
                     scanStatus.setStatus (ScanStatusEnum.INVOKE_FAILED.getType ());
                     overAllStatus = ScanStatusEnum.INVOKE_FAILED.getType ();
