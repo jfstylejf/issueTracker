@@ -1,0 +1,28 @@
+
+-- 1.修改scan表repo_id 字段名 改为repo_uuid
+alter table issueTracker.scan CHANGE repo_id repo_uuid VARCHAR(36);
+
+-- 2.修改commit_view repo_id --> repo_uuid
+-- 以下为commit_view定义语句
+SELECT
+	`commit`.`uuid` AS `uuid`,
+	`commit`.`commit_id` AS `commit_id`,
+	`commit`.`message` AS `message`,
+	`commit`.`developer` AS `developer`,
+	`commit`.`commit_time` AS `commit_time`,
+	`commit`.`repo_id` AS `repo_uuid`,
+	`commit`.`developer_email` AS `developer_email`,
+	`commit`.`self_index` AS `self_index`,
+	`commit`.`parent_commit` AS `parent_commit`,
+	`account_author`.`account_name` AS `developer_unique_name` 
+FROM
+	(
+		`commit`
+		LEFT JOIN `account_author` ON ((
+			`commit`.`developer` = `account_author`.`account_gitname` 
+	)))
+
+
+-- 3.tool表加入dependency工具
+INSERT INTO issueTracker.tool (tool_type,tool_name,is_enabled,is_installed)
+VALUES ("dependency","dependency",1,1);
