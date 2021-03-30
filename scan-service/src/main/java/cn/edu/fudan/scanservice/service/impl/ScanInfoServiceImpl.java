@@ -159,7 +159,7 @@ public class ScanInfoServiceImpl implements ScanInfoService {
         Map<Integer,Integer> toolInvokeMap = scan.analyzeInvokeResult ();
 
         JSONObject projectInfo = restInterfaceManager.getProjectsOfRepo(repoId);
-        String branch = projectInfo.getString("branch");
+        String branch = projectInfo.getJSONObject("data").getString("branch");
         boolean status = restInterfaceManager.invokeTools(tool.getToolType(), tool.getToolName(), repoId, branch, beginCommit);
         // 更新工具调用结果的状态
         if (status) {
