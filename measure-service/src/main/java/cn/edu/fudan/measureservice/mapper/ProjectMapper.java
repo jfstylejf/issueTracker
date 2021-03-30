@@ -32,6 +32,15 @@ public interface ProjectMapper {
      */
     List<Map<String,String>> getDeveloperRepoInfoList(@Param("repoUuid") String repoUuid,@Param("since")String since, @Param("until")String until);
 
+    /**
+     * 返回单个开发者在参与库/项目中的第一次提交时间
+     * @param repoUuid 查询库
+     * @param since 查询起止时间
+     * @param until 查询结束时间
+     * @param developer 查询开发者
+     * @return
+     */
+    Map<String,String> getDeveloperFirstCommitDate(@Param("repoUuid") String repoUuid, @Param("since") String since, @Param("until") String until, @Param("developer") String developer);
 
 
     /**
@@ -117,14 +126,6 @@ public interface ProjectMapper {
      * @return List<String> projectList
      */
     List<String> getProjectByAccountId(@Param("account_uuid") String userUuid);
-
-    /**
-     * 获取开发者第一次在查询库中的提交时间
-     * @param repoUuid 查询库
-     * @param developer 查询开发者
-     * @return String firstCommitDate
-     */
-    String getDeveloperRepoFirstCommitDate(@Param("repoUuid") String repoUuid,@Param("developer") String developer);
 
     /**
      * 开发者星级数据入库
