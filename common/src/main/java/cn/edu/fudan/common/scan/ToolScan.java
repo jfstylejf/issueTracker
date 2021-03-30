@@ -1,6 +1,7 @@
 package cn.edu.fudan.common.scan;
 
-import cn.edu.fudan.common.domain.ScanData.ScanData;
+import cn.edu.fudan.common.domain.po.scan.RepoScan;
+import cn.edu.fudan.common.domain.po.scan.ScanData;
 
 import java.util.List;
 
@@ -19,12 +20,14 @@ public interface ToolScan {
     boolean scanOneCommit(String commit);
 
 
-    default void loadData(String repoUuid, String branch, String repoPath, boolean initialScan, List<String> toScanCommitList){
+    default void loadData(String repoUuid, String branch, String repoPath, boolean initialScan, List<String> toScanCommitList, RepoScan repoScan, Integer scannedCommitCount){
         scanData.setBranch(branch);
         scanData.setRepoPath(repoPath);
         scanData.setRepoUuid(repoUuid);
         scanData.setToScanCommitList(toScanCommitList);
         scanData.setInitialScan(initialScan);
+        scanData.setRepoScan(repoScan);
+        scanData.setScannedCommitCount(scannedCommitCount);
     }
 
     default ScanData getScanData() {
