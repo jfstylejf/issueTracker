@@ -117,7 +117,13 @@ public class JavaNcss {
             javaDocs += f.javadocs;
             functions.add(new Function(f.name, f.ncss, f.ccn, f.javadocs));
         }
-        FunctionAverage functionAverage = new FunctionAverage(ncss/size, ccn/size, javaDocs/size);
+        FunctionAverage functionAverage;
+        if(size == 0) {
+            functionAverage = new FunctionAverage(0,0,0);
+        }
+        else {
+            functionAverage = new FunctionAverage(ncss/size, ccn/size, javaDocs/size);
+        }
         return new Functions(functions, functionAverage);
     }
 

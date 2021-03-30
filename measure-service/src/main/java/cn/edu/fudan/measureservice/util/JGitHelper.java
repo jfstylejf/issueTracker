@@ -469,9 +469,6 @@ public class JGitHelper {
      */
     @SneakyThrows
     public Map<DiffEntry.ChangeType, List<String>> getDiffFilePathList(List<DiffEntry> diffEntries){
-        if (diffEntries == null){
-            return new HashMap<>(0);
-        }
         Map<DiffEntry.ChangeType, List<String>> result = new HashMap<>(8);
         for (DiffEntry.ChangeType c : DiffEntry.ChangeType.values()) {
             result.put(c, new ArrayList<>(8));

@@ -17,16 +17,17 @@ import java.util.List;
 @Slf4j
 @Service
 public class TempScanServiceImpl  extends CommonScanProcess {
-    ApplicationContext applicationContext;
+
     RepoScan repoScan;
 
     @Autowired
     GroupMapper groupMapper;
 
     @Autowired
-    public void setApplicationContext(ApplicationContext applicationContext) {
-        this.applicationContext = applicationContext;
+    public TempScanServiceImpl(ApplicationContext applicationContext) {
+        super(applicationContext);
     }
+
     @Override
     public void updateRepoScan(RepoScan scanInfo) {
 
@@ -68,12 +69,6 @@ public class TempScanServiceImpl  extends CommonScanProcess {
     @Override
     protected void insertRepoScan(RepoScan repoScan) {
 
-    }
-
-
-    @Autowired
-    public <T extends BaseRepoRestManager> void setBaseRepoRestManager(T restInterfaceManager) {
-        this.baseRepoRestManager = applicationContext.getBean(RepoRestManager.class);
     }
 
     @Override

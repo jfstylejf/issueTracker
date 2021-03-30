@@ -24,11 +24,16 @@ import java.util.List;
 @Slf4j
 @Service
 public class ScanServiceImpl extends CommonScanProcess {
-    ApplicationContext applicationContext;
+
     RepoScan repoScan;
 
     @Autowired
     GroupMapper groupMapper;
+
+    @Autowired
+    public ScanServiceImpl(ApplicationContext applicationContext) {
+        super(applicationContext);
+    }
 
     @Autowired
     public void setApplicationContext(ApplicationContext applicationContext) {
@@ -68,6 +73,11 @@ public class ScanServiceImpl extends CommonScanProcess {
         return res;
     }
 
+    // fixme @author：fancying  @shaoxi 这里返回一个空的暂时用于测试
+    private String getRepo_path() {
+        return null;
+    }
+
     @Override
     protected String[] getToolsByRepo(String repoUuid) {
         return new String[]{"ToolScanImpl"};
@@ -78,12 +88,6 @@ public class ScanServiceImpl extends CommonScanProcess {
     protected void insertRepoScan(RepoScan repoScan) {
         this.repoScan=repoScan;
 
-    }
-
-    @Override
-    @Autowired
-    public <T extends BaseRepoRestManager> void setBaseRepoRestManager(T restInterfaceManager) {
-        this.baseRepoRestManager = applicationContext.getBean(RepoRestManager.class);
     }
 
     @Override
