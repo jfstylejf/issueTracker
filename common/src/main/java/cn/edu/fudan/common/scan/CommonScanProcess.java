@@ -149,6 +149,7 @@ public abstract class CommonScanProcess implements CommonScanService {
 
             specificTool.prepareForScan();
             for (String commit : toScanCommitList) {
+                log.info("begin scan {}", commit);
                 specificTool.prepareForOneScan(commit);
                 success = specificTool.scanOneCommit(commit);
                 specificTool.cleanUpForOneScan(commit);
