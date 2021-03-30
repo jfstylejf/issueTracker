@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.util.Assert;
 
@@ -17,11 +18,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Getter
-@NoArgsConstructor
+//@NoArgsConstructor
 public abstract class CommonScanProcess implements CommonScanService {
     private static final Logger log = LoggerFactory.getLogger(CommonScanProcess.class);
     private static final String KEY_DELIMITER = "-";
-    private String repo_path;
 
     /**
      * key repoUuid
@@ -29,7 +29,13 @@ public abstract class CommonScanProcess implements CommonScanService {
      **/
     private final ConcurrentHashMap<String, Boolean> scanStatusMap = new ConcurrentHashMap<>();
     protected BaseRepoRestManager baseRepoRestManager;
+    protected ApplicationContext applicationContext;
     private static final Short LOCK = 1;
+
+    public CommonScanProcess(ApplicationContext applicationContext){
+        this.applicationContext = applicationContext;
+        baseRepoRestManager = applicationContext.getBean(BaseRepoRestManager.class);
+    }
 
     /**
      * 设置同步状态 处理接口请求 判断扫描是否需要更新
@@ -78,7 +84,7 @@ public abstract class CommonScanProcess implements CommonScanService {
             log.error("{} : not in cn.edu.fudan.common.scan scanStatusMap", repoUuid);
             return;
         }
-        synchronized (this.LOCK) {
+        synchronized (LOCK) {
             boolean newUpdate = scanStatusMap.get(key);
             if (!newUpdate) {
                 scanStatusMap.remove(key);
@@ -100,7 +106,7 @@ public abstract class CommonScanProcess implements CommonScanService {
 
         // 获取repo所在路径
         log.info("repoUuid: " + repoUuid);
-        String repoPath = Boolean.TRUE.equals(this.useLocalRepoPath()) ? this.getLocalRepoPath() : baseRepoRestManager.getCodeServiceRepo(repoUuid);
+        String repoPath = baseRepoRestManager.getCodeServiceRepo(repoUuid);
         if (repoPath == null) {
             log.error("{} : can't get repoPath", repoUuid);
             return;
@@ -109,7 +115,7 @@ public abstract class CommonScanProcess implements CommonScanService {
 
         log.info("scannedCommitList.size():" + scannedCommitList.size());
         boolean initialScan = scannedCommitList.isEmpty();
-        int scannedCommitCount = 0;
+        Integer scannedCommitCount = 0;
         RepoScan repoScan = RepoScan.builder()
                 .repoUuid(repoUuid)
                 .branch(branch)
@@ -120,8 +126,6 @@ public abstract class CommonScanProcess implements CommonScanService {
                 .startScanTime(new Date())
                 .endScanTime(new Date())
                 .build();
-        //  todo repo_path is added by shaoxi ,delete it later
-        this.repo_path=repoPath;
         try {
             if (beginCommit == null || "".equals(beginCommit)) {
                 beginCommit = getLastedScannedCommit(repoUuid, tool);
@@ -139,23 +143,23 @@ public abstract class CommonScanProcess implements CommonScanService {
 
             insertRepoScan(repoScan);
             boolean success = false;
-            specificTool.loadData(repoUuid, branch, repoPath, initialScan, toScanCommitList);
-            specificTool.prepareForScan();
 
+            // loadData 用于传输扫描的信息
+            specificTool.loadData(repoUuid, branch, repoPath, initialScan, toScanCommitList, repoScan, scannedCommitCount);
+
+            specificTool.prepareForScan();
             for (String commit : toScanCommitList) {
                 specificTool.prepareForOneScan(commit);
                 success = specificTool.scanOneCommit(commit);
                 specificTool.cleanUpForOneScan(commit);
-                repoScan.setScannedCommitCount(++scannedCommitCount);
-                recordScannedCommit(commit, repoScan);
-                updateRepoScan(repoScan);
                 if (curThread.isInterrupted()) {
-                    synchronized (this.LOCK) {
+                    synchronized (LOCK) {
                         scanStatusMap.remove(threadName);
                     }
                     log.warn("thread:{} stopped", threadName);
                     break;
                 }
+                scannedCommitCount = scannedCommitCount + 1  ;
             }
             specificTool.cleanUpForScan();
 
@@ -180,10 +184,10 @@ public abstract class CommonScanProcess implements CommonScanService {
      **/
     protected abstract List<String> getScannedCommitList(String repoUuid, String tool);
 
-    /**
-     * 记录扫描过的commit信息
-     **/
-    protected abstract void recordScannedCommit(String commit, RepoScan repoScan);
+//    /**
+//     * 记录扫描过的commit信息
+//     **/
+//    protected abstract void recordScannedCommit(String commit, RepoScan repoScan);
 
     /**
      * 根据表中的记录得到最新扫描的commit id
@@ -200,18 +204,7 @@ public abstract class CommonScanProcess implements CommonScanService {
      **/
     protected abstract void insertRepoScan(RepoScan repoScan);
 
-    /**
-     * 是否使用本地repoPath
-     **/
-    protected abstract Boolean useLocalRepoPath();
-
-    /**
-     * 获取本地repoPath
-     **/
-    protected abstract String getLocalRepoPath();
-
-    @Autowired
-    public abstract <T extends BaseRepoRestManager> void setBaseRepoRestManager(T restInterfaceManager);
+//    public abstract <T extends BaseRepoRestManager> void setBaseRepoRestManager(T restInterfaceManager);
 
     @Override
     public boolean stopScan(String repoUuid, String toolName) {

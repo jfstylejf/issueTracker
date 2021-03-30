@@ -202,7 +202,7 @@ public class TempProcess implements CommonScanService {
             log.info("toScanCommit:"+toScanCommit);
             insertRepoScan(repoScan);
             boolean success = false;
-            specificTool.loadData(repoUuid, branch, repoPath, initialScan,null);
+            specificTool.loadData(repoUuid, branch, repoPath, initialScan,null, repoScan, scannedCommitCount);
             specificTool.prepareForScan();
             specificTool.prepareForOneScan(toScanCommit);
             success = specificTool.scanOneCommit(toScanCommit);
@@ -247,11 +247,6 @@ public class TempProcess implements CommonScanService {
     }
 
 
-    @Autowired
-//    public abstract  void setBaseRepoRestManager(<T extends BaseRepoRestManager> restInterfaceManager);
-    public  <T extends BaseRepoRestManager> void setBaseRepoRestManager(T restInterfaceManager){
-        this.baseRepoRestManager = applicationContext.getBean(RepoRestManager.class);
-    }
 
     @Override
     public boolean stopScan(String repoUuid, String toolName) {
