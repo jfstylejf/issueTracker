@@ -23,9 +23,10 @@ public class JsFileFilter extends FileFilter{
         String str = strs[strs.length-1];
         return  !str.toLowerCase().endsWith(".js") ||
                 str.startsWith(".") ||
-                filePath.contains("test");
-
+                filePath.contains(".test.js") ||
+                filePath.contains(".tests.js") ||
+                filePath.contains("/test/") ||
+                filePath.contains("/tests/");
     }
-
 
 }

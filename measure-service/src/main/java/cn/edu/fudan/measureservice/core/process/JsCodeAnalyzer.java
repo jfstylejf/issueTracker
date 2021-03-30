@@ -4,6 +4,8 @@ import cn.edu.fudan.measureservice.domain.*;
 import cn.edu.fudan.measureservice.domain.Objects;
 import cn.edu.fudan.measureservice.domain.dto.FileInfo;
 import cn.edu.fudan.measureservice.domain.dto.MethodInfo;
+import cn.edu.fudan.measureservice.domain.dto.TextInfo;
+import cn.edu.fudan.measureservice.util.FileFilter;
 import cn.edu.fudan.measureservice.util.FileUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -155,12 +157,15 @@ public class JsCodeAnalyzer extends BaseAnalyzer{
             JSONObject line = (JSONObject) jsLineResult.get(i);
             String fileName = FileUtil.systemAvailablePath(line.getString("file"));
             String relativeName = FileUtil.getRelativePath(repoPath,fileName);
+            String rawFileText = line.getString("fileContent");
+            String[] fileTexts = rawFileText.split("\n");
+            TextInfo textInfo = FileFilter.textFilter(fileTexts);
             FileInfo fileInfo = FileInfo.builder()
                     .absolutePath(fileName)
                     .relativePath(relativeName)
-                    .codeLines(line.getIntValue("codeLine"))
-                    .blankLines(line.getIntValue("blankLine"))
-                    .totalLines(line.getIntValue("allLine"))
+                    .codeLines(textInfo.getCodeLines())
+                    .blankLines(textInfo.getBlankLines())
+                    .totalLines(textInfo.getTotalLines())
                     .build();
             if(!map.containsKey(relativeName)) {
                 fileInfo.setMethodInfoList(new ArrayList<>());
@@ -194,16 +199,20 @@ public class JsCodeAnalyzer extends BaseAnalyzer{
                     .ccn(fileInfo.getFileCcn())
                     .functions(fileInfo.getMethodInfoList().size())
                     .path(fileInfo.getRelativePath())
-                    // fixme totalLines 是代码行还是包括空白行
+                     // 这边拿的总行数，最后入库数据需要剪掉空白+注释
                     .totalLines(fileInfo.getCodeLines())
                     .build());
         }
         Total total = Total.builder()
                 .files(fileInfos.size())
                 .functions(totalFunctions).build();
+        double functionAverageCcn = totalFunctions == 0 ? 0 : totalCcn*1.0/totalFunctions;
+        FunctionAverage functionAverage = FunctionAverage.builder()
+                .ccn(functionAverageCcn).build();
+
         return Measure.builder()
                 .total(total)
-                .functions(Functions.builder().functions(functions).functionAverage(FunctionAverage.builder().ccn(totalCcn*1.0/totalFunctions).build()).build())
+                .functions(Functions.builder().functions(functions).functionAverage(functionAverage).build())
                 .objects(Objects.builder().objects(objects).build())
                 .build();
     }
