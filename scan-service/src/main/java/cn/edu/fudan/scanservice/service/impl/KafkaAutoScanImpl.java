@@ -53,16 +53,16 @@ public class KafkaAutoScanImpl implements MessageListeningService {
         log.info("received message from topic -> {} : {}", message.topic(), msg);
         CommitMessage commitMessage = JSONObject.parseObject(msg, CommitMessage.class);
         String repoId = commitMessage.getRepoId();
-        log.info("repoId is :" + repoId);
+        log.debug("repoId is :" + repoId);
         String branch = commitMessage.getBranch();
         boolean isUpdate = true;
         JSONObject project = restInvoker.getProjectsOfRepo(repoId);
-        log.info("project is :");
-        log.info(project.toJSONString());
         if(project == null || project.isEmpty ()){
             log.error("repo : [{}] info is null", repoId);
             return;
         }
+        log.debug("project is :");
+        log.debug(project.toJSONString());
 
         //判断如果不是更新，该项目是否已经扫描过
         Scan preScan = scanDao.getScanByRepoId (repoId);
@@ -77,7 +77,7 @@ public class KafkaAutoScanImpl implements MessageListeningService {
                 month = defaultScanInterval;
             }
             String language = project.getJSONObject("data").getString("language");
-            log.info("language is :" + language);
+            log.debug("language is :" + language);
             if (language.equals("Java")) {
                 startCommit = commitFilter.filter (RepoResourceDTO.builder().repoId(repoId).build(), repoId, branch, month);
             } else {

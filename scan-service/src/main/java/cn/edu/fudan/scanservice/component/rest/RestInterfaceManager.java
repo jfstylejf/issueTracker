@@ -246,10 +246,10 @@ public class RestInterfaceManager {
         jsonObject.put("repoUuid",repoId);
         jsonObject.put("branch",branch);
         jsonObject.put("beginCommit",beginCommit);
-        log.info("params: " + jsonObject.toJSONString());
+        log.debug("params: " + jsonObject.toJSONString());
         // toolName 和 toolType 都来自于 Tool表
         String servicePath = getServicePathByToolType(toolType) + "/" + toolType + "/" + toolName;
-        log.info("servicePath is :" + servicePath);
+        log.debug("servicePath is :" + servicePath);
         try {
             JSONObject requestResult = restTemplate.postForObject(servicePath, jsonObject, JSONObject.class);
             if(requestResult != null){
