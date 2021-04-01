@@ -49,4 +49,16 @@ public interface ProjectMapper {
      * @return projectId
      */
     Integer getProjectIdByNameP(String projectName);
+
+    /**
+     * 删除项目
+     * @param projectName 项目名
+     */
+    void deleteProjectByName(String projectName);
+
+    /**
+     * 获取项目包含的repo
+     * @param projectName 项目名
+     */
+    List<String> getRepoByProjectName(String projectName);
 }
