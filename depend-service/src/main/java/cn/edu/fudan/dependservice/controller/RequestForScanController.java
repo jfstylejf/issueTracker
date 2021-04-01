@@ -2,6 +2,7 @@ package cn.edu.fudan.dependservice.controller;
 
 import cn.edu.fudan.dependservice.domain.DependencyInfo;
 import cn.edu.fudan.dependservice.domain.ResponseBean;
+import cn.edu.fudan.dependservice.domain.ScanBody;
 import cn.edu.fudan.dependservice.domain.ScanStatus;
 import cn.edu.fudan.dependservice.service.DependencyService;
 import cn.edu.fudan.dependservice.service.TempProcess;
@@ -35,13 +36,11 @@ public class RequestForScanController {
 //            @ApiImplicitParam(name = "showDetail", value = "是否展示detail", dataType = "String", defaultValue = "false")
 //    })
     @PostMapping(value = {"dependency/dependency"})
-    public ResponseBean<String> startScan(@RequestParam(value = "repo_uuid") String repoUuid,
-                                                              @RequestParam(value = "begin_commit") String beginCommit,
-                                                              @RequestParam(value = "branch", required = false) String branch) {
+    public ResponseBean<String> startScan(@RequestBody ScanBody scanBody) {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                tempProcess.scan(repoUuid,beginCommit,branch);
+                tempProcess.scan(scanBody.getRepo_uuid(),scanBody.getBranch(),scanBody.getBegin_commit());
 
             }
         }).start();
@@ -52,10 +51,10 @@ public class RequestForScanController {
     @GetMapping(value = {"dependency/dependency/scan-status"})
     public ResponseBean<ScanStatus> getScanStatus(@RequestParam(value = "repo_uuid") String repoUuid) {
         ScanStatus ss= new ScanStatus();
-        ss.setScanTime("1");
+        ss.setScanTime("40");
         ss.setStatus("complete");
-        ss.setStartScanTime("2021-02-31 00:00:00");
-        ss.setEndScanTime("2021-02-32 00:00:00");
+        ss.setStartScanTime("2021-02-27 00:00:00");
+        ss.setEndScanTime("2021-02-27 00:00:40");
         return new ResponseBean<>(200,"successs",ss);
     }
 
