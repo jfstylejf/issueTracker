@@ -21,4 +21,7 @@ public class ScanData {
     String repoPath;
     boolean initialScan;
     List<String> toScanCommitList;
+
+    RepoScan repoScan;
+    Integer scannedCommitCount;
 }
