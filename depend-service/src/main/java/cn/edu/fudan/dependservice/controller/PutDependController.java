@@ -29,6 +29,7 @@ public class PutDependController {
 
     @Autowired
     CommonScanProcess scanService;
+
     @RequestMapping(value = {"/scanOneRepo"}, method = RequestMethod.GET)
     //String repoPath
     public ResponseBean<String> scanOneRepo(@RequestParam(name = "repouuid") String repouuid,
