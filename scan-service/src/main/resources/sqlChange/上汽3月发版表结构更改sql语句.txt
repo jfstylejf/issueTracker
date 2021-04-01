@@ -25,4 +25,4 @@ FROM
 
 -- 3.tool表加入dependency工具
 INSERT INTO issueTracker.tool (tool_type,tool_name,is_enabled,is_installed)
-VALUES ("dependency","dependency",1,1);
+VALUES ("dependency","dependency",0,1);
