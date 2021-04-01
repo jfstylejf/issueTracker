@@ -10,6 +10,7 @@ import cn.edu.fudan.dependservice.mapper.GroupMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -47,11 +48,17 @@ public class ScanServiceImpl extends CommonScanProcess {
     }
 
     @Override
+//    @Async
     protected List<String> getScannedCommitList(String repoUuid, String tool) {
         //need find in data base.
         // tool is dependency
         return  groupMapper.getScannedCommitList(repoUuid);
     }
+
+//    @Override
+//    protected void recordScannedCommit(String commit, RepoScan repoScan) {
+//
+//    }
 
     @Override
     protected String getLastedScannedCommit(String repoUuid, String tool) {
@@ -91,6 +98,7 @@ public class ScanServiceImpl extends CommonScanProcess {
     }
 
     @Override
+
     public void updateRepoScan(RepoScan scanInfo) {
         //update if the scan success
         this.repoScan=scanInfo;

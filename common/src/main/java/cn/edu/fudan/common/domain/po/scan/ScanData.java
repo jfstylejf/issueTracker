@@ -22,9 +22,6 @@ public class ScanData {
     boolean initialScan;
     List<String> toScanCommitList;
 
-    /**
-     *  过程扫描信息
-     **/
     RepoScan repoScan;
     Integer scannedCommitCount;
 }

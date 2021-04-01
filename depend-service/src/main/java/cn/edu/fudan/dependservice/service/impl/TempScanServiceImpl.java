@@ -56,6 +56,11 @@ public class TempScanServiceImpl  extends CommonScanProcess {
         return null;
     }
 
+//    @Override
+//    protected void recordScannedCommit(String commit, RepoScan repoScan) {
+//
+//    }
+
     @Override
     protected String getLastedScannedCommit(String repoUuid, String tool) {
         return null;
@@ -71,6 +76,25 @@ public class TempScanServiceImpl  extends CommonScanProcess {
 
     }
 
+//<<<<<<< HEAD
+//    @Override
+//    protected Boolean useLocalRepoPath() {
+//        return null;
+//    }
+//
+//    @Override
+//    protected String getLocalRepoPath() {
+//        return null;
+//    }
+//
+//
+//    @Autowired
+//    public <T extends BaseRepoRestManager> void setBaseRepoRestManager(T restInterfaceManager) {
+//        this.baseRepoRestManager = applicationContext.getBean(RepoRestManager.class);
+//    }
+//
+//=======
+//>>>>>>> 0da12cb5b973016676be03a9cd7f8ad9342a5f51
     @Override
     public boolean stopScan(String repoUuid, String toolName) {
         return false;
