@@ -25,7 +25,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 @Data
-@Service
+//@Service
 public class TempProcess implements CommonScanService {
     private static final Logger log = LoggerFactory.getLogger(CommonScanProcess.class);
     private static final String KEY_DELIMITER = "-";
@@ -202,7 +202,7 @@ public class TempProcess implements CommonScanService {
             log.info("toScanCommit:"+toScanCommit);
             insertRepoScan(repoScan);
             boolean success = false;
-            specificTool.loadData(repoUuid, branch, repoPath, initialScan,null, repoScan, scannedCommitCount);
+//            specificTool.loadData(repoUuid, branch, repoPath, initialScan,null, repoScan, scannedCommitCount);
             specificTool.prepareForScan();
             specificTool.prepareForOneScan(toScanCommit);
             success = specificTool.scanOneCommit(toScanCommit);

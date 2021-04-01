@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.util.Assert;
 
 import java.util.*;
@@ -18,6 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Getter
+//@EnableAsync(proxyTargetClass=true)
 //@NoArgsConstructor
 public abstract class CommonScanProcess implements CommonScanService {
     private static final Logger log = LoggerFactory.getLogger(CommonScanProcess.class);

@@ -1,4 +1,5 @@
 package cn.edu.fudan.dependservice.controller;
+import cn.edu.fudan.common.scan.CommonScanProcess;
 import cn.edu.fudan.common.scan.CommonScanService;
 import cn.edu.fudan.common.scan.ToolScan;
 import cn.edu.fudan.dependservice.domain.DependencyInfo;
@@ -27,7 +28,7 @@ public class PutDependController {
     
 
     @Autowired
-    ScanServiceImpl scanService;
+    CommonScanProcess scanService;
     @RequestMapping(value = {"/scanOneRepo"}, method = RequestMethod.GET)
     //String repoPath
     public ResponseBean<String> scanOneRepo(@RequestParam(name = "repouuid") String repouuid,
