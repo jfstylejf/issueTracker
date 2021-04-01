@@ -20,7 +20,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 @EnableSwagger2
 @SpringBootApplication(exclude = { MybatisAutoConfiguration.class, DataSourceAutoConfiguration.class, DataSourceTransactionManagerAutoConfiguration.class  })
-@EnableAsync
+@EnableAsync(proxyTargetClass = true)
 public class DependServiceApplication {
     public static void main(String[] args) {
         SpringApplication.run(DependServiceApplication.class, args);
