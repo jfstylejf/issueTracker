@@ -9,5 +9,6 @@ public interface TestService {
 
 
     List<String> getAllRepoUuidThatNeedScan();
+    void scanAllRepo();
 }
 

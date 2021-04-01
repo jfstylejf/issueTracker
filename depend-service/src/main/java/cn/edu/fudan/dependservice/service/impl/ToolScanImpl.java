@@ -29,7 +29,7 @@ import java.util.Map;
 @Slf4j
 @Service
 @Data
-public class ToolScanImpl implements ToolScan {
+public class ToolScanImpl extends ToolScan {
     // where sh run
     String dependenceHome;
     String shName;

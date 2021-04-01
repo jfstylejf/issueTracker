@@ -18,13 +18,17 @@ public abstract class BaseRepoRestManager {
     public String getCodeServiceRepo(String repoId) {
         JSONObject data = (Optional.ofNullable(this.restTemplate.getForObject(this.codeServiceRepoPath + beginWithRepoParam + repoId, JSONObject.class)).orElse(new JSONObject())).getJSONObject("data");
         log.info(data.toJSONString());
-        String status = data.getString("status");
-        String content = data.getString("content");
-        if ("Successful".equals(status)) {
-            return content;
-        } else {
-            log.error(content);
+        if (data == null) {
             return null;
+        } else {
+            String status = data.getString("status");
+            String content = data.getString("content");
+            if ("Successful".equals(status)) {
+                return content;
+            } else {
+                log.error(content);
+                return null;
+            }
         }
     }
 
