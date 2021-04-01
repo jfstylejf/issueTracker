@@ -1,4 +1,4 @@
-package cn.edu.fudan.common.domain.ScanData;
+package cn.edu.fudan.common.domain.po.scan;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
