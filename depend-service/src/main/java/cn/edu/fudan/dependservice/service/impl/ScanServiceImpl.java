@@ -29,7 +29,7 @@ import static org.springframework.context.annotation.AdviceMode.ASPECTJ;
  **/
 @Slf4j
 @Service
-@EnableAsync(mode = ASPECTJ)
+//@EnableAsync(mode = ASPECTJ)
 public class ScanServiceImpl extends CommonScanProcess {
     List<RepoScan> repoScanList;
 

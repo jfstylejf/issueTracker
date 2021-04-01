@@ -38,8 +38,13 @@ public class TestServiceImpl implements TestService {
 //    @Autowired
 //    TempProcess tempProcess;
 
-    @Autowired
+//    @Autowired
     CommonScanProcess scanService;
+    void setScanService(@Autowired CommonScanProcess commonScanProcess){
+        this.scanService=commonScanProcess;
+
+
+    }
 
 
     @Override

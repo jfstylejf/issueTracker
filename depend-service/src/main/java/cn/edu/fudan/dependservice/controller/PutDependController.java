@@ -27,15 +27,24 @@ public class PutDependController {
     ToolScan toolScan;
     
 
-    @Autowired
+//    @Autowired
+//    CommonScanProcess scanService;
+
     CommonScanProcess scanService;
+    @Autowired
+    void setScanService(CommonScanProcess commonScanProcess){
+        this.scanService=commonScanProcess;
+
+    }
     @RequestMapping(value = {"/scanOneRepo"}, method = RequestMethod.GET)
     //String repoPath
-    public ResponseBean<String> scanOneRepo(@RequestParam(name = "repouuid") String repouuid,
-                                            @RequestParam(name = "commitid") String commmitid,
+    public ResponseBean<String> scanOneRepo(@RequestParam(name = "repo_uuid") String repouuid,
+                                            @RequestParam(name = "commit_id") String commmitid,
                                             @RequestParam(name = "branch") String branch
 
                               ) {
+//        this.setScanService();
+        scanService.scan(repouuid,commmitid,branch);
 
 //        toolScan.scanOneCommit(null);
         try{
