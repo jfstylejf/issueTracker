@@ -58,7 +58,7 @@ public interface SubRepositoryMapper {
      * @param repoUuid uuid
      * @return date
      */
-    @Select("select max(commit_time) from commit_view where repo_uuid = #{repo_id} ;")
+    @Select("select max(commit_time) from commit_view where repo_id = #{repo_id} ;")
     Date getLatestCommitTime(@Param("repo_id") String repoUuid);
 
 
@@ -143,7 +143,7 @@ public interface SubRepositoryMapper {
     /**
      * 通过表uuid删除库
      *
-     * @param RepoUUID    库uuid
+     * @param uuid    库uuid
      */
-    void deleteRepoByUuid(@Param("RepoUUID") String RepoUUID);
+    void deleteRepoByUuid(@Param("RepoUUID") String uuid);
 }

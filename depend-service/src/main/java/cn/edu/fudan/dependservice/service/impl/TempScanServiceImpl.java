@@ -17,16 +17,17 @@ import java.util.List;
 @Slf4j
 @Service
 public class TempScanServiceImpl  extends CommonScanProcess {
-    ApplicationContext applicationContext;
+
     RepoScan repoScan;
 
     @Autowired
     GroupMapper groupMapper;
 
     @Autowired
-    public void setApplicationContext(ApplicationContext applicationContext) {
-        this.applicationContext = applicationContext;
+    public TempScanServiceImpl(ApplicationContext applicationContext) {
+        super(applicationContext);
     }
+
     @Override
     public void updateRepoScan(RepoScan scanInfo) {
 
@@ -55,10 +56,10 @@ public class TempScanServiceImpl  extends CommonScanProcess {
         return null;
     }
 
-    @Override
-    protected void recordScannedCommit(String commit, RepoScan repoScan) {
-
-    }
+//    @Override
+//    protected void recordScannedCommit(String commit, RepoScan repoScan) {
+//
+//    }
 
     @Override
     protected String getLastedScannedCommit(String repoUuid, String tool) {
@@ -75,22 +76,25 @@ public class TempScanServiceImpl  extends CommonScanProcess {
 
     }
 
-    @Override
-    protected Boolean useLocalRepoPath() {
-        return null;
-    }
-
-    @Override
-    protected String getLocalRepoPath() {
-        return null;
-    }
-
-
-    @Autowired
-    public <T extends BaseRepoRestManager> void setBaseRepoRestManager(T restInterfaceManager) {
-        this.baseRepoRestManager = applicationContext.getBean(RepoRestManager.class);
-    }
-
+//<<<<<<< HEAD
+//    @Override
+//    protected Boolean useLocalRepoPath() {
+//        return null;
+//    }
+//
+//    @Override
+//    protected String getLocalRepoPath() {
+//        return null;
+//    }
+//
+//
+//    @Autowired
+//    public <T extends BaseRepoRestManager> void setBaseRepoRestManager(T restInterfaceManager) {
+//        this.baseRepoRestManager = applicationContext.getBean(RepoRestManager.class);
+//    }
+//
+//=======
+//>>>>>>> 0da12cb5b973016676be03a9cd7f8ad9342a5f51
     @Override
     public boolean stopScan(String repoUuid, String toolName) {
         return false;

@@ -310,7 +310,7 @@ public class ToolInvoker {
             df.format(entry);
             String diffText = out.toString("UTF-8");
             String[] diffLines = diffText.split("\n");
-            DiffInfo diffInfo = FileFilter.lineFilter(diffLines);
+            DiffInfo diffInfo = FileFilter.diffLineFilter(diffLines);
             String filePath = entry.getNewPath();
 
             // 获取文件差异位置，从而统计差异的行数，如增加行数，减少行数
@@ -346,6 +346,10 @@ public class ToolInvoker {
     private List<DiffEntry> getFilteredFileDiff(String commitId, String toolName) {
         List<DiffEntry> filteredDiffEntries = new ArrayList<>();
         List<DiffEntry> diffEntries = jGitHelper.getDiffEntry(commitId);
+        // 若是第一个 commit 返回空列表
+        if (diffEntries == null) {
+            return new ArrayList<>();
+        }
         FileFilter fileFilter = getSpecificFilter(toolName);
         if (fileFilter == null) {
             return diffEntries;
@@ -364,6 +368,9 @@ public class ToolInvoker {
      * @return
      */
     private List<String> getChangedFileList(List<DiffEntry> diffEntries) {
+        if(diffEntries.size() == 0) {
+            return new ArrayList<>();
+        }
         //得到变更文件list
         Map<DiffEntry.ChangeType, List<String>> diffFilePathList = jGitHelper.getDiffFilePathList(diffEntries);
 

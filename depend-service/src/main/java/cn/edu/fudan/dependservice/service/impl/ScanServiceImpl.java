@@ -25,11 +25,16 @@ import java.util.List;
 @Slf4j
 @Service
 public class ScanServiceImpl extends CommonScanProcess {
-    ApplicationContext applicationContext;
+
     RepoScan repoScan;
 
     @Autowired
     GroupMapper groupMapper;
+
+    @Autowired
+    public ScanServiceImpl(ApplicationContext applicationContext) {
+        super(applicationContext);
+    }
 
     @Autowired
     public void setApplicationContext(ApplicationContext applicationContext) {
@@ -50,10 +55,10 @@ public class ScanServiceImpl extends CommonScanProcess {
         return  groupMapper.getScannedCommitList(repoUuid);
     }
 
-    @Override
-    protected void recordScannedCommit(String commit, RepoScan repoScan) {
-
-    }
+//    @Override
+//    protected void recordScannedCommit(String commit, RepoScan repoScan) {
+//
+//    }
 
     @Override
     protected String getLastedScannedCommit(String repoUuid, String tool) {
@@ -75,6 +80,11 @@ public class ScanServiceImpl extends CommonScanProcess {
         return res;
     }
 
+    // fixme @author：fancying  @shaoxi 这里返回一个空的暂时用于测试
+    private String getRepo_path() {
+        return null;
+    }
+
     @Override
     protected String[] getToolsByRepo(String repoUuid) {
         return new String[]{"ToolScanImpl"};
@@ -88,22 +98,25 @@ public class ScanServiceImpl extends CommonScanProcess {
     }
 
     @Override
-    protected Boolean useLocalRepoPath() {
-        return null;
-    }
-
-    @Override
-    protected String getLocalRepoPath() {
-        return null;
-    }
-
-    @Override
-    @Autowired
-    public <T extends BaseRepoRestManager> void setBaseRepoRestManager(T restInterfaceManager) {
-        this.baseRepoRestManager = applicationContext.getBean(RepoRestManager.class);
-    }
-
-    @Override
+//<<<<<<< HEAD
+//    protected Boolean useLocalRepoPath() {
+//        return null;
+//    }
+//
+//    @Override
+//    protected String getLocalRepoPath() {
+//        return null;
+//    }
+//
+//    @Override
+//    @Autowired
+//    public <T extends BaseRepoRestManager> void setBaseRepoRestManager(T restInterfaceManager) {
+//        this.baseRepoRestManager = applicationContext.getBean(RepoRestManager.class);
+//    }
+//
+//    @Override
+//=======
+//>>>>>>> 0da12cb5b973016676be03a9cd7f8ad9342a5f51
     public void updateRepoScan(RepoScan scanInfo) {
         //update if the scan success
         this.repoScan=scanInfo;

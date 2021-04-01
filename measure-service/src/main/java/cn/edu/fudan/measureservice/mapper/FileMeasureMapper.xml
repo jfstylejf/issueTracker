@@ -73,7 +73,7 @@
         SELECT
             file_path, commit_id, ccn, diff_ccn, add_lines, del_lines
         FROM
-            file_measure
+            issueTracker.file_measure
         WHERE
             commit_id = #{commit_id}
     </select>

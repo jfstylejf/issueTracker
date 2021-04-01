@@ -4,6 +4,8 @@ import cn.edu.fudan.measureservice.domain.*;
 import cn.edu.fudan.measureservice.domain.Objects;
 import cn.edu.fudan.measureservice.domain.dto.FileInfo;
 import cn.edu.fudan.measureservice.domain.dto.MethodInfo;
+import cn.edu.fudan.measureservice.domain.dto.TextInfo;
+import cn.edu.fudan.measureservice.util.FileFilter;
 import cn.edu.fudan.measureservice.util.FileUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -139,10 +141,11 @@ public class JsCodeAnalyzer extends BaseAnalyzer{
         for (int i = 0; i < jsCcnResult.size(); i++) {
             JSONObject method = (JSONObject) jsCcnResult.get(i);
             String fileName = FileUtil.systemAvailablePath(method.getString("fileName"));
-            if (!map.containsKey(fileName)) {
-                map.put(fileName,new ArrayList<>());
+            String relativeName = FileUtil.getRelativePath(repoPath,fileName);
+            if (!map.containsKey(relativeName)) {
+                map.put(relativeName,new ArrayList<>());
             }
-            map.get(fileName).add(MethodInfo.builder()
+            map.get(relativeName).add(MethodInfo.builder()
                     .methodName(method.getString("funcName"))
                     .absoluteFilePath(fileName)
                     .methodCcn(method.getIntValue("complexity"))
@@ -153,18 +156,22 @@ public class JsCodeAnalyzer extends BaseAnalyzer{
         for (int i = 0; i < jsLineResult.size(); i++) {
             JSONObject line = (JSONObject) jsLineResult.get(i);
             String fileName = FileUtil.systemAvailablePath(line.getString("file"));
+            String relativeName = FileUtil.getRelativePath(repoPath,fileName);
+            String rawFileText = line.getString("fileContent");
+            String[] fileTexts = rawFileText.split("\n");
+            TextInfo textInfo = FileFilter.textFilter(fileTexts);
             FileInfo fileInfo = FileInfo.builder()
                     .absolutePath(fileName)
-                    .relativePath(FileUtil.getRelativePath(repoPath,fileName))
-                    .codeLines(line.getIntValue("codeLine"))
-                    .blankLines(line.getIntValue("blankLine"))
-                    .totalLines(line.getIntValue("allLine"))
+                    .relativePath(relativeName)
+                    .codeLines(textInfo.getCodeLines())
+                    .blankLines(textInfo.getBlankLines())
+                    .totalLines(textInfo.getTotalLines())
                     .build();
-            if(!map.containsKey(fileName)) {
+            if(!map.containsKey(relativeName)) {
                 fileInfo.setMethodInfoList(new ArrayList<>());
                 fileInfo.setFileCcn(0);
             }else {
-                fileInfo.setMethodInfoList(map.get(fileName));
+                fileInfo.setMethodInfoList(map.get(relativeName));
                 fileInfo.calFileCcn();
             }
             fileInfos.add(fileInfo);
@@ -192,16 +199,20 @@ public class JsCodeAnalyzer extends BaseAnalyzer{
                     .ccn(fileInfo.getFileCcn())
                     .functions(fileInfo.getMethodInfoList().size())
                     .path(fileInfo.getRelativePath())
-                    // fixme totalLines 是代码行还是包括空白行
+                     // 这边拿的总行数，最后入库数据需要剪掉空白+注释
                     .totalLines(fileInfo.getCodeLines())
                     .build());
         }
         Total total = Total.builder()
                 .files(fileInfos.size())
                 .functions(totalFunctions).build();
+        double functionAverageCcn = totalFunctions == 0 ? 0 : totalCcn*1.0/totalFunctions;
+        FunctionAverage functionAverage = FunctionAverage.builder()
+                .ccn(functionAverageCcn).build();
+
         return Measure.builder()
                 .total(total)
-                .functions(Functions.builder().functions(functions).functionAverage(FunctionAverage.builder().ccn(totalCcn*1.0/totalFunctions).build()).build())
+                .functions(Functions.builder().functions(functions).functionAverage(functionAverage).build())
                 .objects(Objects.builder().objects(objects).build())
                 .build();
     }

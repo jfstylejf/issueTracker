@@ -6,8 +6,11 @@ import cn.edu.fudan.scanservice.dao.ToolDao;
 import cn.edu.fudan.scanservice.domain.dbo.Scan;
 import cn.edu.fudan.scanservice.domain.dbo.Tool;
 import cn.edu.fudan.scanservice.mapper.ToolMapper;
+import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.tomcat.jni.Time;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -34,7 +37,7 @@ public class InvokeToolService {
         final int enabled = 1;
         Map<Integer,String> preToolInvokeMap = new HashMap<> ();
 
-        //第一步 先获取当前repo 之前的调用情况
+        // 第一步 先获取当前repo 之前的调用情况
         Scan preScan = scanDao.getScanByRepoId (repoId);
         if(startCommit == null && preScan == null){
             log.error (" repo id --> {} ,invoke tools error, cause startCommit is null and has not been scanned!", repoId);
@@ -52,7 +55,6 @@ public class InvokeToolService {
             }
         }
 
-        //第二步根据之前的调用结果，采取相应的调用方式
         Map<String, String> currentToolInvokeMap = new HashMap<> ();
         List<Tool> toolList = toolDao.getAllTools();
         for (Tool tool : toolList) {

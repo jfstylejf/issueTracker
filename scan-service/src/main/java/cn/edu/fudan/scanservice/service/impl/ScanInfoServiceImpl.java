@@ -37,6 +37,7 @@ public class ScanInfoServiceImpl implements ScanInfoService {
 
     @Override
     public Object getAllScanStatus(String repoId) {
+        log.info("getAllScanStatus : repoId is " + repoId);
         String overAllStatus = ScanStatusEnum.COMPLETE.getType () ;
         List<ScanStatus> toolScanStatuses = new ArrayList<> ();
         Scan scan = scanDao.getScanByRepoId (repoId) ;
@@ -62,12 +63,12 @@ public class ScanInfoServiceImpl implements ScanInfoService {
                 scanStatus.setToolName (tool.getToolName ());
                 toolScanStatuses.add (scanStatus);
 
-                // 工具在上次扫描中调用失败
+                // 工具在上次扫描中调用失败或者当时没有调用这个工具
                 if(((Integer)Scan.INVOKE_FAILED).equals(toolInvokeResult)){
                     scanStatus.setStatus (ScanStatusEnum.INVOKE_FAILED.getType ());
                     overAllStatus = ScanStatusEnum.INVOKE_FAILED.getType ();
                     // 再次调用该工具进行扫描
-                    reScan(scan, tool);
+//                    reScan(scan, tool);
                     continue;
                 }
                 //3. 调用成功 获取各个服务的扫描状态
@@ -78,7 +79,7 @@ public class ScanInfoServiceImpl implements ScanInfoService {
                     scanStatus.setStatus (ScanStatusEnum.WAITING_FOR_SCAN.getType ());
                     overAllStatus = judgeOverStatus(overAllStatus, ScanStatusEnum.WAITING_FOR_SCAN);
                     // 再次调用该工具进行扫描
-                    reScan(scan, tool);
+//                    reScan(scan, tool);
                     continue;
                 }
 
@@ -158,7 +159,7 @@ public class ScanInfoServiceImpl implements ScanInfoService {
         Map<Integer,Integer> toolInvokeMap = scan.analyzeInvokeResult ();
 
         JSONObject projectInfo = restInterfaceManager.getProjectsOfRepo(repoId);
-        String branch = projectInfo.getString("branch");
+        String branch = projectInfo.getJSONObject("data").getString("branch");
         boolean status = restInterfaceManager.invokeTools(tool.getToolType(), tool.getToolName(), repoId, branch, beginCommit);
         // 更新工具调用结果的状态
         if (status) {
