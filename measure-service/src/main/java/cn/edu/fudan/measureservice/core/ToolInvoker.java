@@ -111,6 +111,7 @@ public class ToolInvoker {
             return false;
         }
         return saveFileMeasureData(scanCommitInfoDto, measure.getObjects(), diffEntries, diffFilePathList);
+
     }
 
     /**
