@@ -48,7 +48,15 @@
     <select id="getDependencyInfo" resultMap="relationship">
         select commit_id, repo_uuid, file,depend_on
         from dependency_detail
-        where repo_uuid =#{repoUuid};
+        where repo_uuid =#{repoUuid}
     </select>
+<!--    todo  Optimizing Query Statements-->
+<!--    <select id="getDependencyInfo" resultMap="relationship">-->
+<!--        select commit_id, repo_uuid, file,depend_on-->
+<!--        from dependency_detail-->
+<!--        where repo_uuid =#{repoUuid}-->
+<!--         and-->
+<!--        commit_id =( select max(commit_id) from dependency_detail);-->
+<!--    </select>-->
 
 </mapper>

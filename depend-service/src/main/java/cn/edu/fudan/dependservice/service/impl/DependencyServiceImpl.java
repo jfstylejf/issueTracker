@@ -8,6 +8,7 @@ import cn.edu.fudan.dependservice.constants.PublicConstants;
 import cn.edu.fudan.dependservice.dao.StatisticsDao;
 import cn.edu.fudan.dependservice.domain.DependencyInfo;
 import cn.edu.fudan.dependservice.domain.MethodOrFileNumInfo;
+import cn.edu.fudan.dependservice.domain.RelationshipView;
 import cn.edu.fudan.dependservice.domain.RepoRestManager;
 import cn.edu.fudan.dependservice.mapper.FileMapper;
 import cn.edu.fudan.dependservice.mapper.GroupMapper;
@@ -152,6 +153,13 @@ public class DependencyServiceImpl implements DependencyService {
         return numInfo;
 
     }
+
+    @Override
+    public List<RelationshipView> getRe(String ps, String page, String asc, String order) {
+
+        return null;
+    }
+
     public String datePlus(String tempDate) {
         Date date = null;
         try {

@@ -9,11 +9,17 @@ import cn.edu.fudan.dependservice.domain.RepoRestManager;
 import cn.edu.fudan.dependservice.mapper.GroupMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.ApplicationContext;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import static org.springframework.context.annotation.AdviceMode.ASPECTJ;
 
 /**
  * description: 依赖分析流程
@@ -23,9 +29,15 @@ import java.util.List;
  **/
 @Slf4j
 @Service
+//@EnableAsync(mode = ASPECTJ)
 public class ScanServiceImpl extends CommonScanProcess {
+    List<RepoScan> repoScanList;
 
     RepoScan repoScan;
+    @Autowired
+    public void setRepoScanList() {
+        this.repoScanList=new ArrayList<>();
+    }
 
     @Autowired
     GroupMapper groupMapper;
@@ -47,11 +59,17 @@ public class ScanServiceImpl extends CommonScanProcess {
     }
 
     @Override
+//    @Async
     protected List<String> getScannedCommitList(String repoUuid, String tool) {
         //need find in data base.
         // tool is dependency
         return  groupMapper.getScannedCommitList(repoUuid);
     }
+
+//    @Override
+//    protected void recordScannedCommit(String commit, RepoScan repoScan) {
+//
+//    }
 
     @Override
     protected String getLastedScannedCommit(String repoUuid, String tool) {
@@ -91,6 +109,7 @@ public class ScanServiceImpl extends CommonScanProcess {
     }
 
     @Override
+
     public void updateRepoScan(RepoScan scanInfo) {
         //update if the scan success
         this.repoScan=scanInfo;

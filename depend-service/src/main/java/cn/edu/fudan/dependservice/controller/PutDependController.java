@@ -1,6 +1,10 @@
 package cn.edu.fudan.dependservice.controller;
+import cn.edu.fudan.common.scan.CommonScanProcess;
 import cn.edu.fudan.common.scan.CommonScanService;
 import cn.edu.fudan.common.scan.ToolScan;
+import cn.edu.fudan.dependservice.domain.DependencyInfo;
+import cn.edu.fudan.dependservice.domain.ResponseBean;
+import cn.edu.fudan.dependservice.domain.Return;
 import cn.edu.fudan.dependservice.service.impl.ScanServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -9,18 +13,45 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 public class PutDependController {
 
 //    @Autowired
     private ApplicationContext applicationContext;
+    private static final String RESPONSE_STATUS_SUCCESS = "success";
+    private static final String RESPONSE_STATUS_Fail = "fail";
 
     @Autowired
     ToolScan toolScan;
     
 
     @Autowired
-    ScanServiceImpl scanService;
+    CommonScanProcess scanService;
+
+    @RequestMapping(value = {"/scanOneRepo"}, method = RequestMethod.GET)
+    //String repoPath
+    public ResponseBean<String> scanOneRepo(@RequestParam(name = "repouuid") String repouuid,
+                                            @RequestParam(name = "commitid") String commmitid,
+                                            @RequestParam(name = "branch") String branch
+
+                              ) {
+
+//        toolScan.scanOneCommit(null);
+        try{
+            return new ResponseBean<>(200, RESPONSE_STATUS_SUCCESS,"start scan!");
+//            scanService.scan(repouuid,branch,commmitid);
+        }catch (Exception e){
+             return new ResponseBean<>(500, RESPONSE_STATUS_Fail, "scan fail!");
+
+        }
+
+
+
+//        return "run ok";
+        //
+    }
 
 
     @RequestMapping(value = {"/putDepend"}, method = RequestMethod.GET)

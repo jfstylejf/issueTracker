@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Slf4j
-@Service
+//@Service
 public class TempScanServiceImpl  extends CommonScanProcess {
 
     RepoScan repoScan;
@@ -55,6 +55,11 @@ public class TempScanServiceImpl  extends CommonScanProcess {
     protected List<String> getScannedCommitList(String repoUuid, String tool) {
         return null;
     }
+
+//    @Override
+//    protected void recordScannedCommit(String commit, RepoScan repoScan) {
+//
+//    }
 
     @Override
     protected String getLastedScannedCommit(String repoUuid, String tool) {

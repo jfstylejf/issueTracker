@@ -1,5 +1,8 @@
 package cn.edu.fudan.dependservice.service.impl;
 
+import cn.edu.fudan.common.domain.po.scan.RepoScan;
+import cn.edu.fudan.common.scan.CommonScanProcess;
+import cn.edu.fudan.common.scan.CommonScanService;
 import cn.edu.fudan.dependservice.dao.StatisticsDao;
 import cn.edu.fudan.dependservice.domain.ProjectIdsInfo;
 import cn.edu.fudan.dependservice.domain.RepoUuidsInfo;
@@ -32,8 +35,11 @@ public class TestServiceImpl implements TestService {
 //    @Autowired
 //    ScanServiceImpl scanService;
 
+//    @Autowired
+//    TempProcess tempProcess;
+
     @Autowired
-    TempProcess tempProcess;
+    CommonScanProcess scanService;
 
 
     @Override
@@ -50,11 +56,27 @@ public class TestServiceImpl implements TestService {
 
         for(RepoUuidsInfo re:repoUuidsInfosThatNeedScan){
 //            scanService.scan(re.getRepoUuid(),re.getBranch(),null);
-            tempProcess.scan(re.getRepoUuid(),re.getBranch(), null);
+//            tempProcess.scan(re.getRepoUuid(),re.getBranch(), null);
+            scanService.scan(re.getRepoUuid(),re.getBranch(),null);
 
             //to do scan this repo
         }
 
         return null;
+    }
+    public RepoScan getScanStatus(String repouuid){
+        //
+        return null;
+
+    }
+    public RepoScan StartOneScan(String repouuid,String branch,String startCommitId){
+        scanService.scan(repouuid,branch,startCommitId);
+        return null;
+
+    }
+
+    public void scanAllRepo() {
+
+
     }
 }

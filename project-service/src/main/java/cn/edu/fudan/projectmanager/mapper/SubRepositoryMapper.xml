@@ -160,7 +160,7 @@
             <if test="account_uuid != null">
                 a.uuid = #{account_uuid}
                 AND a.account_name = c.developer
-                and c.repo_id = s.repo_uuid;
+                and c.repo_uuid = s.repo_uuid;
             </if>
         </where>
     </select>
