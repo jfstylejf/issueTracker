@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 
 /**
  * todo matchedIssueId matchedRawIssueId  可以删除 被 rawIssue 和 issue 取代
+ *
  * @author fancying
  */
 @Data
@@ -49,7 +50,7 @@ public class RawIssueMatchResult {
 
     public static RawIssueMatchResult newInstance(RawIssue rawIssue, double matchDegree) {
         RawIssueMatchResult result = new RawIssueMatchResult();
-        result.setMatchedIssueId(rawIssue.getIssue_id());
+        result.setMatchedIssueId(rawIssue.getIssueId());
         result.setIssue(rawIssue.getIssue());
         result.setRawIssue(rawIssue);
         result.setMatchedRawIssueId(rawIssue.getUuid());

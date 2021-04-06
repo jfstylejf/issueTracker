@@ -12,42 +12,42 @@ import java.util.List;
  */
 @Data
 public class PagedGridResult {
-	/**
-	 * page:页
-	 * total:总页数
-	 * records:总记录数
-	 * rows:每行显示内容
-	 */
-	private int page;
+    /**
+     * page:页
+     * total:总页数
+     * records:总记录数
+     * rows:每行显示内容
+     */
+    private int page;
 
-	private int total;
+    private int total;
 
-	private long records;
+    private long records;
 
-	private List<?> rows;
+    private List<?> rows;
 
-	public static void handlePageHelper(int page, int ps, String order, Boolean isAsc){
-		if (StringUtils.isEmpty(order)) {
-			PageHelper.startPage(page, ps);
-		} else {
-			String orderBy = order;
-			if (isAsc != null && isAsc){
-				orderBy = order + ' ' + "asc";
-			}
-			if (isAsc != null && !isAsc){
-				orderBy = order + ' ' + "desc";
-			}
-			PageHelper.startPage(page, ps, orderBy);
-		}
-	}
+    public static void handlePageHelper(int page, int ps, String order, Boolean isAsc) {
+        if (StringUtils.isEmpty(order)) {
+            PageHelper.startPage(page, ps);
+        } else {
+            String orderBy = order;
+            if (isAsc != null && isAsc) {
+                orderBy = order + ' ' + "asc";
+            }
+            if (isAsc != null && !isAsc) {
+                orderBy = order + ' ' + "desc";
+            }
+            PageHelper.startPage(page, ps, orderBy);
+        }
+    }
 
-	public static PagedGridResult setterPagedGrid(List<?> list, Integer page) {
-		PageInfo<?> pageList = new PageInfo<>(list);
-		PagedGridResult grid = new PagedGridResult();
-		grid.setPage(page);
-		grid.setRows(list);
-		grid.setTotal(pageList.getPages());
-		grid.setRecords(pageList.getTotal());
-		return grid;
-	}
+    public static PagedGridResult setterPagedGrid(List<?> list, Integer page) {
+        PageInfo<?> pageList = new PageInfo<>(list);
+        PagedGridResult grid = new PagedGridResult();
+        grid.setPage(page);
+        grid.setRows(list);
+        grid.setTotal(pageList.getPages());
+        grid.setRecords(pageList.getTotal());
+        return grid;
+    }
 }

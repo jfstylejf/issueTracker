@@ -10,6 +10,6 @@ import lombok.NoArgsConstructor;
 public class FileInfo {
 
     private String fileName;
-    private int code_lines;
+    private int codeLines;
 
 }

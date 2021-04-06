@@ -12,6 +12,7 @@ public interface IssueTypeMapper {
 
     /**
      * 获取issueType
+     *
      * @param type type
      * @return issueType
      */

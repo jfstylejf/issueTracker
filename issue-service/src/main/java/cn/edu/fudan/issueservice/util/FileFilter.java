@@ -1,7 +1,5 @@
 package cn.edu.fudan.issueservice.util;
 
-import java.util.regex.Pattern;
-
 /**
  * description:
  *
@@ -14,18 +12,17 @@ public final class FileFilter {
      */
     private static final String JPMS = "module-info.java";
 
-    private static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().contains("win");
     /**
      * true: 过滤
      * false： 不过滤
      */
-    public  static boolean javaFilenameFilter(String path) {
+    public static boolean javaFilenameFilter(String path) {
         if (path == null || path.isEmpty()) {
             return true;
         }
         String[] strs = path.split("/");
-        String str = strs[strs.length-1];
-        return  !str.toLowerCase().endsWith(".java") ||
+        String str = strs[strs.length - 1];
+        return !str.toLowerCase().endsWith(".java") ||
                 path.toLowerCase().contains("/test/") ||
                 path.toLowerCase().contains("/.mvn/") ||
                 str.toLowerCase().endsWith("test.java") ||
@@ -35,11 +32,24 @@ public final class FileFilter {
                 path.contains(JPMS);
     }
 
-    public static boolean jsFileFilter(String filePath) {
-        return IS_WINDOWS ? Pattern.matches(".*\\\\(build|dist)\\\\.*", filePath) : Pattern.matches(".*/(build|dist)/.*", filePath);
-    }
+    public static boolean jsFileFilter(String path) {
+        String[] strs = path.split("/");
+        String str = strs[strs.length-1].toLowerCase();
+        return  !str.endsWith(".js") ||
+                path.toLowerCase().contains("/test/") ||
+                path.toLowerCase().contains("/.mvn/") ||
+                path.toLowerCase().contains("lib/") ||
+                path.toLowerCase().contains("node_modules/") ||
+                path.toLowerCase().contains("target/") ||
+                path.toLowerCase().contains("build/") ||
+                path.toLowerCase().contains("dist/") ||
+                str.endsWith("test.java") ||
+                str.endsWith("tests.java") ||
+                str.startsWith("test") ||
+                str.endsWith("enum.java") ||
+                str.endsWith("test.js") ||
+                str.endsWith("tests.js") ||
+                str.startsWith(".");
 
-    public static void main(String[] args) {
-        System.out.println(jsFileFilter("C:\\home\\fdse\\static\\js\\main.2c207907.js"));
     }
 }

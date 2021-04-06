@@ -23,19 +23,19 @@ public class ResourceFreeWithExceptionAspect {
     }
 
     // 定义执行操作
-    @Around ("repoSourceManager()") //around 与 下面参数名around对应
-    public void controlRepoSource(ProceedingJoinPoint point) throws Throwable{
-        log.info ("ANNOTATION 调用类：" + point.getSignature().getDeclaringTypeName());
-        log.info ("ANNOTATION 调用类名" + point.getSignature().getDeclaringType().getSimpleName());
+    @Around("repoSourceManager()") //around 与 下面参数名around对应
+    public void controlRepoSource(ProceedingJoinPoint point) throws Throwable {
+        log.info("ANNOTATION 调用类：" + point.getSignature().getDeclaringTypeName());
+        log.info("ANNOTATION 调用类名" + point.getSignature().getDeclaringType().getSimpleName());
         for (Object o : point.getArgs()) {
             if (o instanceof RepoResourceDTO) {
-                RepoResourceDTO repoResourceDTO = (RepoResourceDTO)o;
-                String repoPath = restInvoker.getRepoPath (repoResourceDTO.getRepoId());
-                repoResourceDTO.setRepoPath (repoPath);
+                RepoResourceDTO repoResourceDTO = (RepoResourceDTO) o;
+                String repoPath = restInvoker.getRepoPath(repoResourceDTO.getRepoId());
+                repoResourceDTO.setRepoPath(repoPath);
                 log.info("get repo:{}, path:{}", repoResourceDTO.getRepoId(), repoResourceDTO.getRepoPath());
-                try{
+                try {
                     point.proceed();
-                }finally {
+                } finally {
                     log.info("free repo:{}, path:{}", repoResourceDTO.getRepoId(), repoResourceDTO.getRepoPath());
                     restInvoker.freeRepoPath(repoResourceDTO.getRepoId(), repoResourceDTO.getRepoPath());
                 }

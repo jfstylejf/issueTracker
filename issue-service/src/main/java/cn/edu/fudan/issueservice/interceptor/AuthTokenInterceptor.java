@@ -2,7 +2,6 @@ package cn.edu.fudan.issueservice.interceptor;
 
 import cn.edu.fudan.issueservice.component.RestInterfaceManager;
 import cn.edu.fudan.issueservice.domain.enums.ToolEnum;
-import cn.edu.fudan.issueservice.exception.AuthException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -44,17 +43,17 @@ public class AuthTokenInterceptor implements HandlerInterceptor {
         }
 
 
-        String url = httpServletRequest.getRequestURI ();
+        String url = httpServletRequest.getRequestURI();
         boolean requestSwitch = false;
-        for(ToolEnum toolEnum : ToolEnum.values ()){
-            String toolName = toolEnum.getType ();
-            if(url.matches ("^/issue/" + toolName +".*")){
+        for (ToolEnum toolEnum : ToolEnum.values()) {
+            String toolName = toolEnum.getType();
+            if (url.matches("^/issue/" + toolName + ".*")) {
                 requestSwitch = true;
                 break;
             }
         }
 
-        if(requestSwitch){
+        if (requestSwitch) {
             return true;
         }
 

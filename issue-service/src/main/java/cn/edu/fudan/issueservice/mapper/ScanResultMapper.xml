@@ -5,33 +5,31 @@
 
     <insert id="addOneScanResult" parameterType="ScanResult">
         insert into scan_result
-           (
-              category,
-              repo_id,
-              scan_date,
-              commit_id,
-              commit_date,
-              developer,
-              new_count,
-              eliminated_count,
-              remaining_count
-           )
-        values
-           (
-              #{category},
-              #{repo_id},
-              #{scan_date},
-              #{commit_id},
-              #{commit_date},
-              #{developer},
-              #{new_count},
-              #{eliminated_count},
-              #{remaining_count}
-           )
+        (category,
+         repo_uuid,
+         scan_date,
+         commit_id,
+         commit_date,
+         developer,
+         new_count,
+         eliminated_count,
+         remaining_count)
+        values (#{category},
+                #{repoId},
+                #{scanDate},
+                #{commitId},
+                #{commitDate},
+                #{developer},
+                #{newCount},
+                #{eliminatedCount},
+                #{remainingCount})
     </insert>
 
-    <delete id="deleteScanResultsByRepoIdAndCategory" >
-        delete from scan_result where repo_id = #{repo_id} and category = #{category}
+    <delete id="deleteScanResultsByRepoIdAndCategory">
+        delete
+        from scan_result
+        where repo_uuid = #{repo_uuid}
+          and category = #{category}
     </delete>
 
     <select id="getRepoIssueCounts" parameterType="String" resultType="java.util.HashMap">
@@ -39,17 +37,18 @@
         `commit_date` AS date,
         SUM( new_count ) AS newIssueCount,
         SUM( eliminated_count ) AS eliminatedIssueCount,
-        SUBSTRING_INDEX( GROUP_CONCAT( `remaining_count` ORDER BY `id` DESC SEPARATOR '||' ), '||', 1 )remainingIssueCount
+        SUBSTRING_INDEX( GROUP_CONCAT( `remaining_count` ORDER BY `id` DESC SEPARATOR '||' ), '||', 1
+        )remainingIssueCount
         FROM
         scan_result
         where DATE(commit_date) BETWEEN #{since} AND #{until}
         <if test="repoUuids != null and repoUuids.size > 0">
-            AND repo_id IN
+            AND repo_uuid IN
             <foreach collection="repoUuids" separator="," open="(" close=")" item="repoUuid">
                 #{repoUuid}
             </foreach>
         </if>
-        <if test="developer != null and developer != ''" >
+        <if test="developer != null and developer != ''">
             and developer = #{developer}
         </if>
         <if test="category != null">
@@ -62,7 +61,7 @@
         SELECT commit_date FROM scan_result
         <where>
             <if test="repoUuids != null and repoUuids.size > 0">
-                repo_id IN
+                repo_uuid IN
                 <foreach collection="repoUuids" separator="," open="(" close=")" item="repoUuid">
                     #{repoUuid}
                 </foreach>

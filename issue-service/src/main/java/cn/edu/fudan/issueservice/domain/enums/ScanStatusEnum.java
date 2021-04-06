@@ -6,7 +6,6 @@ import lombok.Getter;
 /**
  * @author Beethoven
  */
-
 @Getter
 @AllArgsConstructor
 public enum ScanStatusEnum {
