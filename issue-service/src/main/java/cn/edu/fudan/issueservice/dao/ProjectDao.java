@@ -1,13 +1,14 @@
 package cn.edu.fudan.issueservice.dao;
 
-import cn.edu.fudan.issueservice.domain.dbo.Commit;
 import cn.edu.fudan.issueservice.mapper.ProjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import java.util.LinkedList;
 import java.util.List;
 
+/**
+ * @author beethoven
+ */
 @Repository
 public class ProjectDao {
 

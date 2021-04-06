@@ -24,8 +24,8 @@ public class IssueDaoTest extends IssueServiceApplicationTests {
         Date currentDate = new Date();
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         String currentTime = df.format(currentDate);
-        issueMapper.updateIssueManualStatus(null,null,"Default","\"@Deprecated\" code should not be used","sonarqube", currentTime);
-        System.out.println(1+1);
+        issueMapper.updateIssueManualStatus(null, null, "Default", "\"@Deprecated\" code should not be used", "sonarqube", currentTime);
+        System.out.println(1 + 1);
     }
 
 }

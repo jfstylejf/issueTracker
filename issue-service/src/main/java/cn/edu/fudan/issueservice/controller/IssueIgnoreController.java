@@ -31,33 +31,23 @@ public class IssueIgnoreController {
             @ApiImplicitParam(name = "tool", value = "工具名", dataType = "String", required = true, allowableValues = "sonarqube"),
     })
     @PutMapping(value = "issue/ignore/{tool}")
-    public ResponseBean<String> ignoreIssues(@PathVariable("tool")String tool, @RequestBody List<IgnoreRecord> ignoreRecords){
-        if(ignoreRecords.isEmpty()){
+    public ResponseBean<String> ignoreIssues(@PathVariable("tool") String tool, @RequestBody List<IgnoreRecord> ignoreRecords) {
+        if (ignoreRecords.isEmpty()) {
             return new ResponseBean<>(200, SUCCESS, null);
         }
-        try{
-            for(IgnoreRecord ignoreRecord : ignoreRecords) {
-                if(!IgnoreTypeEnum.statusInEnum(ignoreRecord.getTag())){
+        try {
+            for (IgnoreRecord ignoreRecord : ignoreRecords) {
+                if (!IgnoreTypeEnum.isStatusRight(ignoreRecord.getTag())) {
                     return new ResponseBean<>(400, "issue tag error!", null);
+                }
+                if (!ignoreRecord.getTool().equals(tool)) {
+                    return new ResponseBean<>(400, FAILED, "tool in url path or tool in record error!");
                 }
                 ignoreRecord.setUuid(UUID.randomUUID().toString());
                 ignoreRecord.setIgnoreTime(ignoreRecord.getIgnoreTime());
             }
             return new ResponseBean<>(200, SUCCESS, issueIgnoreService.insertIssueIgnoreRecords(ignoreRecords));
-        }catch (Exception e){
-            e.printStackTrace();
-            return new ResponseBean<>(500, FAILED + e.getMessage(), null);
-        }
-    }
-
-    @DeleteMapping("issue/ignore/{tool}")
-    public ResponseBean<String> deleteIssueIgnoreRecord(@PathVariable("tool")String tool,
-                                                        @RequestParam("issue_uuid")String issueUuid,
-                                                        @RequestParam("ignore_uuid")String ignoreUuid){
-        try{
-            issueIgnoreService.deleteIssueIgnoreRecord(tool, issueUuid, ignoreUuid);
-            return new ResponseBean<>(200, SUCCESS, "delete issue ignore record success");
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             return new ResponseBean<>(500, FAILED + e.getMessage(), null);
         }

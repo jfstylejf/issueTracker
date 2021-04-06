@@ -36,7 +36,7 @@ public class ResourceAspect {
     public void releaseRepoRelease(JoinPoint joinPoint) {
         for (Object o : joinPoint.getArgs()) {
             if (o instanceof RepoResourceDTO) {
-                RepoResourceDTO repoResourceDTO = (RepoResourceDTO)o;
+                RepoResourceDTO repoResourceDTO = (RepoResourceDTO) o;
                 log.info("free repo:{}, path:{}", repoResourceDTO.getRepoId(), repoResourceDTO.getRepoPath());
                 restInvoker.freeRepoPath(repoResourceDTO.getRepoId(), repoResourceDTO.getRepoPath());
                 return;

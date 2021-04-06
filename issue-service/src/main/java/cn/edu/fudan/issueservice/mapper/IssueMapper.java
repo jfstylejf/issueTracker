@@ -3,13 +3,14 @@ package cn.edu.fudan.issueservice.mapper;
 import cn.edu.fudan.issueservice.domain.dbo.Issue;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.ibatis.annotations.Param;
-import org.apache.kafka.common.protocol.types.Field;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Map;
 
-
+/**
+ * @author beethoven
+ */
 @Repository
 public interface IssueMapper {
 
@@ -26,28 +27,20 @@ public interface IssueMapper {
      * @param repoId get issue repo id
      * @param tool   get issue tool
      */
-    void deleteIssueByRepoIdAndTool(@Param("repo_id") String repoId, @Param("tool") String tool);
+    void deleteIssueByRepoIdAndTool(@Param("repo_uuid") String repoId, @Param("tool") String tool);
 
     /**
      * batch update issue
      *
-     * @param list get issue list
+     * @param issue issue
      */
-    void batchUpdateIssue(List<Issue> list);
-
-    /**
-     * get issue by id
-     *
-     * @param uuid get issue uuid
-     * @return Issue
-     */
-    Issue getIssueByID(String uuid);
+    void batchUpdateIssue(@Param("issueInfo") Issue issue);
 
     /**
      * 返回开发者参与并且有引入过issue的项目的repoUuid
      *
      * @param developer 开发者
-     * @return 返回开发者参与并且有引入过issue的项目的repo_id
+     * @return 返回开发者参与并且有引入过issue的项目的repo_uuid
      */
     List<String> getRepoWithIssues(@Param("developer") String developer);
 
@@ -76,15 +69,6 @@ public interface IssueMapper {
      */
     void updateOneIssueStatus(@Param("uuid") String issueId, @Param("status") String status, @Param("manual_status") String manualStatus);
 
-
-    /**
-     * get max issue display id
-     *
-     * @param repoId get issue repo id
-     * @return Integer
-     */
-    Integer getMaxIssueDisplayId(@Param("repo_id") String repoId);
-
     /**
      * get not solved issue all list by category and repo id
      *
@@ -93,16 +77,6 @@ public interface IssueMapper {
      * @return List<Issue>
      */
     List<Issue> getNotSolvedIssueAllListByToolAndRepoId(@Param("repoUuids") List<String> repoUuids, @Param("tool") String tool);
-
-    /**
-     * 获取指定repocategory的issue列表且status不等于statusLis中任何一个。
-     *
-     * @param repoId     repoUuid
-     * @param tool       tool
-     * @param statusList statusList
-     * @return 获取指定repocategory的issue列表且status不等于statusLis中任何一个
-     */
-    List<Issue> getIssueByRepoIdAndToolAndStatusList(@Param("repo_id") String repoId, @Param("tool") String tool, @Param("status_list") List<String> statusList);
 
     /**
      * 获取指定缺陷id列表的缺陷集
@@ -121,28 +95,12 @@ public interface IssueMapper {
     int getIssueFilterListCount(Map<String, Object> query);
 
     /**
-     * 根据条件筛选issue
-     *
-     * @param query 条件
-     * @return issue列表
-     */
-    List<Map<String, Object>> getIssueFilterList(Map<String, Object> query);
-
-    /**
      * 返回解决issues数量
      *
      * @param query 条件
      * @return 返回解决issues数量
      */
     int getSolvedIssueFilterListCount(Map<String, Object> query);
-
-    /**
-     * 返回解决issues列表
-     *
-     * @param query 条件
-     * @return 返回解决issues列表
-     */
-    List<Map<String, Object>> getSolvedIssueFilterList(Map<String, Object> query);
 
     /**
      * update issue manual status
@@ -230,6 +188,14 @@ public interface IssueMapper {
     List<String> getIssueIntroducers(@Param("repoUuids") List<String> repoUuids);
 
     /**
+     * get remaining issue count
+     *
+     * @param repoUuid repoUuid
+     * @return issue count
+     */
+    int getRemainingIssueCount(String repoUuid);
+
+    /**
      * 获取自己引入未解决的issue 数量
      *
      * @param query condition
@@ -238,26 +204,71 @@ public interface IssueMapper {
     List<JSONObject> getSelfIntroduceLivingIssueCount(Map<String, Object> query);
 
     /**
-     * issue count
+     * get developer introduced issues
      *
-     * @param repoUuids repoUuids
-     * @param since since
-     * @param until until
-     * @return issue count
+     * @param developer developer
+     * @return issues
      */
-    int getIssueCountInRepos(@Param("repoUuids") List<String> repoUuids, String since, String until);
+    List<Issue> getIssueCountByIntroducerAndTool(String developer);
 
     /**
-     * @param until until
+     * get issue filter info
+     *
+     * @param query query
+     * @return issue filter info
+     */
+    List<Map<String, Object>> getIssuesOverview(Map<String, Object> query);
+
+    /**
+     * get issue count
+     *
+     * @param query query
+     * @return issue count group by type
+     */
+    List<Map<String, Object>> getIssueCountByCategoryAndType(Map<String, Object> query);
+
+    /**
+     * 获取趋势图数据
+     *
+     * @param until     until
      * @param projectId projectId
      * @return 获取趋势图数据
      */
     Map<String, Object> getLivingIssueTendency(@Param("until") String until, @Param("projectId") String projectId);
 
     /**
-     * @param until until
+     * 获取趋势图数据
+     *
+     * @param until     until
      * @param projectId projectId
      * @return 获取趋势图数据
      */
     List<Map<String, Object>> getLivingIssueTendencyDetail(@Param("until") String until, @Param("projectId") String projectId);
+
+
+    /**
+     * 根据条件筛选issue
+     *
+     * @param query 条件
+     * @return issue列表
+     */
+    List<Map<String, Object>> getIssueFilterList(Map<String, Object> query);
+
+    /**
+     * 返回解决issues列表
+     *
+     * @param query 条件
+     * @return 返回解决issues列表
+     */
+    List<Map<String, Object>> getSolvedIssueFilterList(Map<String, Object> query);
+
+    /**
+     * issues int file
+     *
+     * @param preFiles files
+     * @param repoId   repo uuid
+     * @param toolName tool
+     * @return issues
+     */
+    List<String> getIssuesByFilesToolAndRepo(@Param("preFiles") List<String> preFiles, String repoId, String toolName);
 }

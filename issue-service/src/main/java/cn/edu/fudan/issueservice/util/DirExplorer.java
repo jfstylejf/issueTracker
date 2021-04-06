@@ -9,6 +9,7 @@ import java.util.Objects;
 
 /**
  * description: 遍历得到所有的文件
+ *
  * @author fancying
  * create: 2019-05-24 11:52
  **/
@@ -57,7 +58,7 @@ public class DirExplorer {
             if (filter.filter(level, path, file)) {
                 fileHandler.handle(level, path, file);
             }
-            if(file.listFiles() != null){
+            if (file.listFiles() != null) {
                 for (File child : Objects.requireNonNull(file.listFiles())) {
                     exploreDir(level + 1, path + "/" + child.getName(), child);
                 }
@@ -66,15 +67,15 @@ public class DirExplorer {
     }
 
     public static void deleteRedundantTarget(String repoPath) {
-        new DirExplorer ((level, path, file) ->
+        new DirExplorer((level, path, file) ->
         {
-            if(file.getAbsolutePath().endsWith(TARGET_STR)){
+            if (file.getAbsolutePath().endsWith(TARGET_STR)) {
                 String filePath = file.getAbsolutePath();
-                String pomPath = filePath.substring (0, filePath.indexOf (TARGET_STR))  + "pom.xml";
-                String srcPath = filePath.substring (0, filePath.indexOf (TARGET_STR))  + "src";
-                File pomFile = new File (pomPath);
-                File srcFile = new File (srcPath);
-                return !pomFile.exists () || !srcFile.exists ();
+                String pomPath = filePath.substring(0, filePath.indexOf(TARGET_STR)) + "pom.xml";
+                String srcPath = filePath.substring(0, filePath.indexOf(TARGET_STR)) + "src";
+                File pomFile = new File(pomPath);
+                File srcFile = new File(srcPath);
+                return !pomFile.exists() || !srcFile.exists();
             }
             return false;
         },
@@ -96,7 +97,7 @@ public class DirExplorer {
             try {
                 Files.delete(needToDeleteFiles[i].toPath());
             } catch (IOException e) {
-                System.out.println ("Delete temp directory or file failed." + e.getMessage());
+                System.out.println("Delete temp directory or file failed." + e.getMessage());
             }
         }
     }

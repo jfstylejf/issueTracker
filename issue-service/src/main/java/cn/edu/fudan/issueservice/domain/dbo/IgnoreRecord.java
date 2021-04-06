@@ -22,8 +22,10 @@ public class IgnoreRecord {
     private String branch;
     private String ignoreTime;
     private String rawIssue;
-    private String commmitUuid;
+    private String commitUuid;
     private String issueUuid;
     private String tag;
     private String message;
+    private String filePath;
+    private int isUsed;
 }

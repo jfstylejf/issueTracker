@@ -14,8 +14,8 @@ import lombok.Data;
 @Builder
 @AllArgsConstructor
 public class RepoResourceDTO {
-    String repoId ;
-    String repoPath ;
+    String repoId;
+    String repoPath;
 
     public RepoResourceDTO() {
         repoId = "";
