@@ -48,4 +48,18 @@
         </where>
     </select>
 
+    <delete id="deleteProjectByName" parameterType="String">
+        delete from project
+        <where>
+            project_name = #{projectName} ;
+        </where>
+    </delete>
+
+    <select id="getRepoByProjectName" resultType="String">
+        select repo_uuid from sub_repository
+        <where>
+            project_name = #{projectName}
+        </where>
+    </select>
+
 </mapper>

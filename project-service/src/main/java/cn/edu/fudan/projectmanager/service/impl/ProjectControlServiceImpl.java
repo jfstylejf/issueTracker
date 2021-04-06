@@ -303,8 +303,18 @@ public class ProjectControlServiceImpl implements ProjectControlService {
     }
 
     @Override
-    public void deleteProject(String token, String projectName) throws Exception {
-
+    public boolean deleteProject(String token, String projectName) throws Exception {
+        UserInfoDTO userInfoDTO = getUserInfoByToken(token);
+        // 0 表示超级管理员 只有超级管理员能操作
+        if (userInfoDTO.getRight() != 0) {
+            throw new RunTimeException("this user has no right to delete repo!");
+        }
+        List<String> ProjectRepo = projectDao.getProjectRepo(projectName);
+        if(ProjectRepo.size() != 0){
+            return false;
+        }
+        projectDao.deleteProject(projectName);
+        return true;
     }
 
     @Override

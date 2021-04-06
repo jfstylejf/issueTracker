@@ -9,12 +9,17 @@ import cn.edu.fudan.dependservice.domain.RepoRestManager;
 import cn.edu.fudan.dependservice.mapper.GroupMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import static org.springframework.context.annotation.AdviceMode.ASPECTJ;
 
 /**
  * description: 依赖分析流程
@@ -24,9 +29,15 @@ import java.util.List;
  **/
 @Slf4j
 @Service
+//@EnableAsync(mode = ASPECTJ)
 public class ScanServiceImpl extends CommonScanProcess {
+    List<RepoScan> repoScanList;
 
     RepoScan repoScan;
+    @Autowired
+    public void setRepoScanList() {
+        this.repoScanList=new ArrayList<>();
+    }
 
     @Autowired
     GroupMapper groupMapper;
