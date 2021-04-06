@@ -5,7 +5,7 @@
 
     <resultMap id="issueRepo" type="IssueRepo">
         <id property="uuid" column="uuid"/>
-        <result property="repoId" column="repo_id"/>
+        <result property="repoId" column="repo_uuid"/>
         <result property="branch" column="branch"/>
         <result property="tool" column="tool"/>
         <result property="startCommit" column="start_commit"/>
@@ -23,7 +23,7 @@
         insert into issue_repo
         (
             uuid,
-            repo_id,
+            repo_uuid,
             branch,
             tool,
             start_commit,
@@ -85,7 +85,7 @@
     <delete id="deleteIssueRepoByCondition" parameterType="String">
         delete from issue_repo
         <where>
-            repo_id=#{repo_id}
+            repo_uuid=#{repo_id}
             <if test="tool != null and tool != ''">
                 and tool=#{tool}
             </if>
@@ -99,7 +99,7 @@
     <select id="getIssueRepoByCondition" parameterType="String" resultMap="issueRepo">
         select * from issue_repo
         <where>
-            repo_id = #{repo_id}
+            repo_uuid = #{repo_id}
             <if test="tool != null and tool != ''">
                 and tool = #{tool}
             </if>
@@ -113,7 +113,7 @@
         SELECT total_commit_count, scanned_commit_count FROM issue_repo
         <trim prefix="where" prefixOverrides="and">
             <if test="repoUuid != null and repoUuid != ''">
-                and repo_id = #{repoUuid}
+                and repo_uuid = #{repoUuid}
             </if>
             <if test="tool != null and tool != ''">
                 and tool = #{tool}
@@ -126,7 +126,7 @@
         <where>
             nature = 'main'
             <if test="repoUuid != null and repoUuid != ''">
-                and repo_id = #{repoUuid}
+                and repo_uuid = #{repoUuid}
             </if>
             <if test="tool != null and tool != ''">
                 and tool = #{tool}
