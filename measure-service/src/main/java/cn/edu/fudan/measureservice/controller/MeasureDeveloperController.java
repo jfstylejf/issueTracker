@@ -290,7 +290,7 @@ public class MeasureDeveloperController {
                                                             @RequestParam(required = false, defaultValue = "") String since,
                                                             @RequestParam(required = false, defaultValue = "") String until,
                                                             @RequestParam(required = false, defaultValue = "week") String interval,
-                                                            @RequestParam(required = false, defaultValue = "false") boolean showDetail,
+                                                            @RequestParam(value = "show_detail",required = false, defaultValue = "false") boolean showDetail,
                                                             HttpServletRequest request) {
         try {
             until = timeProcess(until);

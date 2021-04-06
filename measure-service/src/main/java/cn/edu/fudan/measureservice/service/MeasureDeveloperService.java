@@ -17,6 +17,7 @@ import cn.edu.fudan.measureservice.portrait2.Contribution;
 import cn.edu.fudan.measureservice.util.DateTimeUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jgit.util.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -910,10 +911,37 @@ public class MeasureDeveloperService {
         return developerCommitStandardList;
     }
 
-    public Object getProjectCommitStandardInfo(List<String> projectList,String since,String until,String interval,boolean showDetail) {
+    /**
+     * 按照项目对开发者提交数信息聚合
+     * @param projectList 查询项目列表
+     * @param since 查询起始时间
+     * @param until 查询截止时间
+     * @param interval 聚合间隔
+     * @param showDetail 是否展示明细
+     * @return
+     */
+    @SneakyThrows
+    public Object getCommitStandardTrendChartIntegratedByProject(List<String> projectList,String since,String until,String token,String interval,boolean showDetail) {
+
+        for (String projectName : projectList) {
+            List<String> repoUuidList = new ArrayList<>();
+            synchronized (this) {
+
+                List<RepoInfo> repoInfoList = projectDao.getProjectInvolvedRepoInfo(projectName,token);
+                for (RepoInfo repoInfo : repoInfoList) {
+                    repoUuidList.add(repoInfo.getRepoUuid());
+                }
+                Query query = new Query(token,since,until,null,repoUuidList);
+                List<DeveloperCommitStandard> developerCommitStandardList = getCommitStandard(query,null);
+
+            }
+
+        }
 
         return null;
     }
+
+    private
 
 
     @Autowired

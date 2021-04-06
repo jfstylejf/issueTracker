@@ -192,7 +192,7 @@ public class ProjectDao {
      * @param token 查询密钥
      * @return List<RepoInfo>
      */
-    private List<RepoInfo> getProjectInvolvedRepoInfo(String projectName,String token) {
+    public List<RepoInfo> getProjectInvolvedRepoInfo(String projectName,String token) {
         Objects.requireNonNull(projectName,"projectName should not be null when get developerInvolvedRepoList by projectName");
         if(!projectInfo.containsKey(projectName)) {
             if(!insertProjectInfo(token)){

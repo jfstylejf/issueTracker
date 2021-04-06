@@ -18,7 +18,8 @@ public class DateTimeUtil {
     private static DateTimeFormatter Y_M_D_H_M_S_formatter = new DateTimeFormatterBuilder()
             .appendValue(ChronoField.YEAR)
             .appendLiteral("-")
-            .appendValue(ChronoField.MONTH_OF_YEAR, 2)//第二个参数是宽度，比如2月份，如果宽度定为2，那么格式化后就是02
+            //第二个参数是宽度，比如2月份，如果宽度定为2，那么格式化后就是02
+            .appendValue(ChronoField.MONTH_OF_YEAR, 2)
             .appendLiteral("-")
             .appendValue(ChronoField.DAY_OF_MONTH, 2)
             .appendLiteral(" ")
@@ -32,7 +33,8 @@ public class DateTimeUtil {
     public static DateTimeFormatter Y_M_D_formatter = new DateTimeFormatterBuilder()
             .appendValue(ChronoField.YEAR)
             .appendLiteral("-")
-            .appendValue(ChronoField.MONTH_OF_YEAR, 2)//第二个参数是宽度，比如2月份，如果宽度定为2，那么格式化后就是02
+            //第二个参数是宽度，比如2月份，如果宽度定为2，那么格式化后就是02
+            .appendValue(ChronoField.MONTH_OF_YEAR, 2)
             .appendLiteral("-")
             .appendValue(ChronoField.DAY_OF_MONTH, 2)
             .toFormatter();
@@ -40,7 +42,8 @@ public class DateTimeUtil {
     public static DateTimeFormatter Y_M_formatter = new DateTimeFormatterBuilder()
             .appendValue(ChronoField.YEAR)
             .appendLiteral("-")
-            .appendValue(ChronoField.MONTH_OF_YEAR, 2)//第二个参数是宽度，比如2月份，如果宽度定为2，那么格式化后就是02
+            //第二个参数是宽度，比如2月份，如果宽度定为2，那么格式化后就是02
+            .appendValue(ChronoField.MONTH_OF_YEAR, 2)
             .toFormatter();
 
     public static LocalDate parse(String dateStr){
