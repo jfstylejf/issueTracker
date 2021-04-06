@@ -7,8 +7,8 @@ public enum LanguageEnum {
     /**
      * 扫描支持的语言
      */
-    Java("java"),
-    JavaScript("javascript");
+    JAVA("Java"),
+    JAVA_SCRIPT("JavaScript");
 
     private final String name;
 

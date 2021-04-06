@@ -1,524 +1,409 @@
 package cn.edu.fudan.issueservice.core.process;
 
-import cn.edu.fudan.issueservice.core.strategy.MatchStrategy;
-import cn.edu.fudan.issueservice.dao.IssueDao;
-import cn.edu.fudan.issueservice.dao.IssueScanDao;
-import cn.edu.fudan.issueservice.dao.RawIssueDao;
-import cn.edu.fudan.issueservice.domain.dbo.Issue;
-import cn.edu.fudan.issueservice.domain.dbo.IssueScan;
-import cn.edu.fudan.issueservice.domain.dbo.RawIssue;
+import cn.edu.fudan.issueservice.core.analyzer.BaseAnalyzer;
+import cn.edu.fudan.issueservice.core.analyzer.EsLintBaseAnalyzer;
+import cn.edu.fudan.issueservice.core.analyzer.SonarQubeBaseAnalyzer;
+import cn.edu.fudan.issueservice.dao.*;
+import cn.edu.fudan.issueservice.domain.dbo.*;
 import cn.edu.fudan.issueservice.domain.dto.MatcherCommitInfo;
-import cn.edu.fudan.issueservice.domain.dto.RawIssueMatchResult;
+import cn.edu.fudan.issueservice.domain.enums.IssueStatusEnum;
+import cn.edu.fudan.issueservice.domain.enums.JavaScriptIssuePriorityEnum;
+import cn.edu.fudan.issueservice.domain.enums.RawIssueStatus;
 import cn.edu.fudan.issueservice.domain.enums.ScanStatusEnum;
-import cn.edu.fudan.issueservice.util.JGitHelper;
-import cn.edu.fudan.issueservice.util.SearchUtil;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import lombok.Data;
+import cn.edu.fudan.issueservice.util.*;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import lombok.Getter;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * description:
- *
  * @author fancying
  * create: 2020-05-20 16:56
  **/
 @Slf4j
+@Setter
+@Component
+@NoArgsConstructor
 public class IssueMatcher {
 
-    //TODO 关于RawIssue的status 状态更改还没做
+    private final ThreadLocal<List<String>> parentCommitsThreadLocal = new ThreadLocal<>();
 
-    private IssueScanDao issueScanDao;
-    private RawIssueDao rawIssueDao;
-    private IssueDao issueDao;
-    private MatchStrategy matchStrategy;
+    /**
+     * fixme dao与匹配策略后续可以改成静态的 不需要每次 new 的时候注入
+     **/
+    private static IssueScanDao issueScanDao;
+    private static RawIssueDao rawIssueDao;
+    private static IssueDao issueDao;
+    private static IssueTypeDao issueTypeDao;
+    private static LocationDao locationDao;
+    private JGitHelper jGitHelper;
+    private String curCommit;
+    private BaseAnalyzer analyzer;
 
-    public IssueMatcher(IssueDao issueDao, RawIssueDao rawIssueDao, IssueScanDao issueScanDao, MatchStrategy matchStrategy){
-        this.issueDao = issueDao;
-        this.rawIssueDao = rawIssueDao;
-        this.issueScanDao = issueScanDao;
-        this.matchStrategy = matchStrategy;
-    }
+    /**
+     * des: @key parentCommitId   @value 与curCommit 映射后
+     * 有 RawIssueMatchInfo 的需要入库
+     * 入库 solved情况
+     * matchInfoResult RawIssue 中不空都需要入库
+     **/
+    @Getter
+    private Map<String, List<RawIssue>> parentRawIssuesResult = new HashMap<>(4);
 
-    private List<RawIssue> currentRawIssuesResult;
-    private Map<String, List<RawIssue>> parentRawIssuesResult;
-    private List<String> bestMappedPreRawIssueIds = new ArrayList<> ();
+    /**
+     * 需要在rawIssue location matchInfoResult
+     * rawIssue中新增的是 1 所有matchInfo中status都为 change 的情况 2 rawIssue 有改变的情况 （ {@link RawIssue#isNotChange}  为 false）
+     * 【todo 目前只要文件变了就算rawIssue变了】
+     * matchInfoResult RawIssue 中不空都需要入库 【入库 add change mergeSolved 情况】
+     **/
+    @Getter
+    private List<RawIssue> curAllRawIssues;
 
+    /**
+     * des: @key issue uuid   @value issue 存放 mapped issue
+     * <p>
+     * 用于更新issue表
+     **/
+    @Getter
+    private Map<String, Issue> mappedIssues;
 
-    public List<RawIssue> getCurrentRawIssuesResult() {
-        return currentRawIssuesResult;
-    }
+    /**
+     * des: @key issue uuid   @value issue 存放新增的issue列表
+     * 需要在issue 表新增记录
+     **/
+    @Getter
+    private Map<String, Issue> newIssues = new HashMap<>(0);
 
-    public Map<String, List<RawIssue>> getParentRawIssuesResult() {
-        return parentRawIssuesResult;
-    }
+    /**
+     * des: @key issue uuid   @value issue 存放新增的issue列表
+     * 需要在issue 表 更新记录
+     **/
+    @Getter
+    private Map<String, Issue> solvedIssue;
 
-    public void emptyMatchResult(){
-        currentRawIssuesResult = null;
-        parentRawIssuesResult = null;
-        bestMappedPreRawIssueIds = new ArrayList<> ();
-    }
-
-    public boolean matchProcess(String repoId, String commitId, JGitHelper jGitHelper, String toolName, List<RawIssue> analyzeRawIssues){
-        try{
-
-            //判断当前commit是否是第一个扫描的commit
-            List<String> parentCommits =  getPreScanSuccessfullyCommit(repoId,commitId,jGitHelper,toolName);
-
-            //todo 测试bug，测试过后删除
-            for(String parentCommit : parentCommits){
-                log.info ( "{} --> pre scan success commit --> {} ", commitId, parentCommit);
+    public boolean matchProcess(String repoUuid, String curCommit, JGitHelper jGitHelper, String toolName, List<RawIssue> currentAllRawIssues) {
+        this.curAllRawIssues = currentAllRawIssues;
+        this.jGitHelper = jGitHelper;
+        this.curCommit = curCommit;
+        parentCommitsThreadLocal.remove();
+        solvedIssue = new HashMap<>(currentAllRawIssues.size() >> 2);
+        mappedIssues = new HashMap<>(currentAllRawIssues.size() << 1);
+        try {
+            jGitHelper.checkout(curCommit);
+            // 获取curCommit的所有 在之前的扫描过程中成功扫描过的 祖先commit 不一定是直接的parents
+            List<String> parentCommits = getPreScanSuccessfullyCommit(repoUuid, curCommit, jGitHelper, toolName);
+            parentCommitsThreadLocal.set(parentCommits);
+            parentCommits.forEach(c -> log.debug("{} --> pre scan success commit --> {} ", curCommit, c));
+            if (currentAllRawIssues.isEmpty()) {
+                log.warn("all issues were solved or raw issue insert error , commit id -->  {}", curCommit);
             }
 
-            if(parentCommits.isEmpty ()){
-                //如果当前的commit没有任何parent commit扫描过，则认为该commit是第一次扫描
-                firstMatch(analyzeRawIssues);
+            Map<String, List<RawIssue>> curRawIssuesMatchResult = new HashMap<>(4);
+            // 只有一个parent 进行normal match
+            if (parentCommits.size() == 1) {
+                normalMatch(repoUuid, toolName, parentCommits.get(0), curRawIssuesMatchResult);
+            } else if (parentCommits.isEmpty()) {
+                // 第一次匹配 会产生新的issue 以及 rawIssue 以及对应的关系
+                // todo 如果前面扫描过了 可以拿前面扫描过的diff来做匹配
+                log.info("start first matching  ...");
+                curAllRawIssues.forEach(currentAllRawIssue -> currentAllRawIssue.setStatus(RawIssueStatus.ADD.getType()));
+                newIssues = curAllRawIssues.stream().map(this::generateOneIssue).collect(Collectors.toMap(Issue::getUuid, Function.identity()));
                 return true;
+            } else {
+                mergeMatch(repoUuid, toolName, parentCommits, curRawIssuesMatchResult);
             }
-
-            if(parentCommits.size () == 1){
-                normalMatch(repoId, toolName, commitId, parentCommits.get (0), analyzeRawIssues);
-                return true;
-            }
-
-            mergeMatch(repoId, toolName, commitId, parentCommits, analyzeRawIssues);
+            // 全部匹配完成后设置 rawIssues 的匹配信息
+            sumUpRawIssueMappedInfo(curRawIssuesMatchResult);
             return true;
-        }catch(Exception e){
-            e.printStackTrace ();
+        } catch (Exception e) {
+            e.printStackTrace();
             return false;
         }
 
     }
 
+    /**
+     * 根据rawIssue产生新的issue 并为rawIssue设置匹配信息
+     **/
+    private Issue generateOneIssue(RawIssue rawIssue) {
+        Issue issue = Issue.valueOf(rawIssue);
+        IssueType issueType = issueTypeDao.getIssueTypeByTypeName(rawIssue.getType());
+        //fixme js and java category should in issue_type table
+        issue.setIssueCategory(issueType == null ? JavaScriptIssuePriorityEnum.getPriorityByRank(rawIssue.getPriority()) : issueType.getCategory());
+        // TODO: 2021/1/7 产生一些issue之后再次设置状态 @何越
 
-    private void firstMatch(List<RawIssue> analyzeRawIssues){
+        rawIssue.setIssue(issue);
+        rawIssue.setIssueId(issue.getUuid());
+        rawIssue.getMatchInfos().clear();
+        rawIssue.getMatchInfos().add(rawIssue.generateRawIssueMatchInfo(null));
+        return issue;
+    }
 
-        log.info ("start first matching  ...");
-        List<RawIssue> rawIssues = analyzeRawIssues;
-        currentRawIssuesResult = new ArrayList<> ();
-        for(RawIssue rawIssue : rawIssues){
-            rawIssue.setMapped (false);
-            rawIssue.setMatchResultDTOIndex (-1);
-        }
-        currentRawIssuesResult = rawIssues;
+    private void sumUpRawIssueMappedInfo(Map<String, List<RawIssue>> curRawIssuesMatchResult) {
+        // 新产生的issue以及没有进行过匹配的rawIssue  关系表只存一份关系 其中parentCommitId 为匹配最近的commit
+        // 1： 进行过匹配且有过匹配上  rawIssue uuid @key 匹配上的rawIssue的uuid  @value 对应的issue uuid
+        Map<String, String> mappedRawIssues = curAllRawIssues.stream()
+                .filter(RawIssue::isOnceMapped)
+                .collect(Collectors.toMap(RawIssue::getUuid, RawIssue::getIssueId));
+        Set<String> mapAndMappedRawIssuesUuid = mappedRawIssues.keySet();
+        // 2 ：进行过匹配且没匹配上的 rawIssue(用于产生新issue) @key uuid   （而且不输入没改变过的文件）
+        Map<String, RawIssue> mapNotMappedRawIssues = curRawIssuesMatchResult.values().stream()
+                .flatMap(Collection::stream)
+                .filter(rawIssue -> !mapAndMappedRawIssuesUuid.contains(rawIssue.getUuid()) && !rawIssue.isNotChange())
+                .collect(Collectors.toMap(RawIssue::getUuid, Function.identity(), (existing, replacement) -> existing));
+
+        newIssues = mapNotMappedRawIssues.values()
+                .stream()
+                .map(this::generateOneIssue)
+                .collect(Collectors.toMap(Issue::getUuid, Function.identity()));
+
+        mapNotMappedRawIssues.values().forEach(rawIssue -> {
+            List<RawIssueMatchInfo> rawIssueMatchInfos = rawIssue.getMatchInfos();
+            rawIssueMatchInfos.clear();
+            List<String> parentCommits = parentCommitsThreadLocal.get();
+            parentCommits.forEach(c -> {
+                RawIssueMatchInfo rawIssueMatchInfo = rawIssue.generateRawIssueMatchInfo(c);
+                rawIssueMatchInfo.setStatus(RawIssueStatus.ADD.getType());
+                rawIssueMatchInfos.add(rawIssueMatchInfo);
+            });
+        });
+
+        // 3： 没有进行过匹配的rawIssue 不做记录
 
     }
 
+    private void normalMatch(String repoId, String toolName, String preCommit, Map<String, List<RawIssue>> curRawIssuesMatchResult) {
+        log.info("start  matching commit id --> {} ...", curCommit);
+        //  根据preCommitId以及commitId得到两个commit文件之间的diff
+        //  根据修改的文件来获取需要匹配的raw Issue key add delete change value
+        //  add : ,a delete: a,   change a,a   英文逗号 ， 区分 add delete change
+        //根据preCommitId以及commitId得到两个commit处理rename后的文件之间的diff
+        Map<String, String> preFileToCurFile = new HashMap<>(8);
+        Map<String, String> curFileToPreFile = new HashMap<>(8);
+        List<String> diffFiles = jGitHelper.getDiffFilePair(preCommit, curCommit, preFileToCurFile, curFileToPreFile);
+        String delimiter = ",";
+        List<String> preFiles = diffFiles.stream().filter(d -> !d.startsWith(delimiter)).map(f -> Arrays.asList(f.split(delimiter)).get(0)).collect(Collectors.toList());
+        List<String> curFiles = diffFiles.stream().filter(d -> !d.endsWith(delimiter)).map(f -> Arrays.asList(f.split(delimiter)).get(1)).collect(Collectors.toList());
+        curFiles = curFiles.stream().filter(file -> analyzer instanceof SonarQubeBaseAnalyzer ? !FileFilter.javaFilenameFilter(file) : !FileFilter.jsFileFilter(file)).collect(Collectors.toList());
+        preFiles = preFiles.stream().filter(file -> analyzer instanceof SonarQubeBaseAnalyzer ? !FileFilter.javaFilenameFilter(file) : !FileFilter.jsFileFilter(file)).collect(Collectors.toList());
 
-    private void normalMatch(String repoId, String toolName, String commitId, String preCommitId, List<RawIssue> currentRawIssues){
-        currentRawIssuesResult = new ArrayList<> ();
-        parentRawIssuesResult = new HashMap<> (64);
-        log.info ("start  matching commit id --> {} ...", commitId);
-        List<RawIssue> preRawIssues = rawIssueDao.getRawIssueByCommitIDAndTool(repoId, toolName, preCommitId);
+        // pre commit中变化部分存在的所有rawIssues
+        List<String> issueUuids = issueDao.getIssuesByFilesToolAndRepo(preFiles, repoId, toolName);
+        List<RawIssue> preRawIssues = rawIssueDao.getLastVersionRawIssues(issueUuids);
+        // 由于这里二进制流是对preRawIssues的引用,对preRawIssuesMap set locations等于set preRawIssues locations
+        Map<String, List<RawIssue>> preRawIssuesMap = preRawIssues.stream().collect(Collectors.groupingBy(RawIssue::getUuid));
+        preRawIssuesMap.forEach((key, value) ->
+                value.forEach(preRawIssue -> preRawIssue.setLocations(locationDao.getLocations(key))));
+        List<String> finalCurFiles = curFiles;
+        List<RawIssue> curRawIssues = curAllRawIssues.stream().filter(r -> finalCurFiles.contains(r.getFileName())).collect(Collectors.toList());
 
-        Map<String, List<RawIssue>> preMap = new HashMap<>(64);
-        Map<String,  List<RawIssue>> curMap = new HashMap<>(64);
+        // 对其余的rawIssue设置一个默认匹配上的标记
+        curAllRawIssues.stream().filter(r -> !curRawIssues.contains(r)).forEach(rawIssue -> rawIssue.setNotChange(true));
 
-        for(RawIssue rawIssue : preRawIssues){
-            List<RawIssue> rawIssueList = preMap.getOrDefault(rawIssue.getFile_name(), new ArrayList<>());
-            rawIssueList.add(rawIssue);
-            preMap.put(rawIssue.getFile_name(),rawIssueList);
+        // 匹配两个rawIssue集合（parent的rawIssue集合，当前的rawIssue集合）
+//        log.info("cur all rawIssues:" + JSON.toJSONString(curAllRawIssues));
+//        log.info("pre rawIssues:" + JSON.toJSONString(preRawIssues));
+//        log.info("cur rawIssues:" + JSON.toJSONString(curRawIssues));
+        mapRawIssues(preRawIssues, curRawIssues, jGitHelper.getRepoPath(), preFileToCurFile, curFileToPreFile);
+
+        // 归总结果集 更新issue 的 end_commit 以及 status
+        List<String> oldIssuesUuid = preRawIssues.stream().map(RawIssue::getIssueId).collect(Collectors.toList());
+        Map<String, Issue> oldIssuesMap = issueDao.getIssuesByUuid(oldIssuesUuid).stream()
+                .collect(Collectors.toMap(Issue::getUuid, Function.identity()));
+
+        // 记录curRawIssues的匹配状态
+        curRawIssues.stream()
+                .filter(rawIssue -> rawIssue.getMatchInfos().isEmpty())
+                .forEach(curRawIssue -> curRawIssue.getMatchInfos().add(curRawIssue.generateRawIssueMatchInfo(preCommit)));
+        unifyOldIssueStatus(preRawIssues, preCommit, oldIssuesMap);
+
+        // 清空curRawIssues的匹配状态
+        curRawIssues.stream().filter(RawIssue::isMapped).forEach(curRawIssue -> curRawIssue.setOnceMapped(true));
+        curRawIssues.stream().filter(RawIssue::isMapped).forEach(RawIssue::resetMappedInfo);
+        for (RawIssue preRawIssue : preRawIssues) {
+            if (!preRawIssue.isMapped()) {
+                List<RawIssueMatchInfo> rawIssueMatchInfos = preRawIssue.getMatchInfos();
+                RawIssueMatchInfo matchInfo = RawIssueMatchInfo.builder()
+                        .uuid(UUID.randomUUID().toString())
+                        .curRawIssueUuid(null)
+                        .curCommitId(curCommit)
+                        .preCommitId(preCommit)
+                        .preRawIssueUuid(preRawIssue.getUuid())
+                        .status(preRawIssue.getStatus()).build();
+                rawIssueMatchInfos.add(matchInfo);
+            }
         }
 
-        for(RawIssue rawIssue : currentRawIssues){
-            List<RawIssue> rawIssueList = curMap.getOrDefault(rawIssue.getFile_name(), new ArrayList<>());
-            rawIssueList.add(rawIssue);
-            curMap.put(rawIssue.getFile_name(),rawIssueList);
-        }
-
-        //匹配两个rawIssue集合（parent的rawIssue集合，当前的rawIssue集合）
-        mappingTwoRawIssueList(preRawIssues, currentRawIssues);
-        parentRawIssuesResult.put (preCommitId, preRawIssues);
-        currentRawIssuesResult = currentRawIssues;
+        parentRawIssuesResult.put(preCommit, preRawIssues);
+        curRawIssuesMatchResult.put(preCommit, curRawIssues);
     }
 
+    // solved rawIssue 存储一下matchInfo
+    private void unifyOldIssueStatus(List<RawIssue> preRawIssues, String preCommit, Map<String, Issue> oldIssuesMap) {
+        Date curCommitDate = DateTimeUtil.localToUtc(jGitHelper.getCommitTime(curCommit));
+        Date preCommitDate = DateTimeUtil.localToUtc(jGitHelper.getCommitTime(preCommit));
 
-    private void mergeMatch(String repoId, String toolName, String commitId, List<String> parentCommits, List<RawIssue> currentRawIssues){
-        log.info ("start merge matching commit id --> {} ...", commitId);
+        for (RawIssue preRawIssue : preRawIssues) {
+            Issue issue = oldIssuesMap.get(preRawIssue.getIssueId());
+            if (issue == null) {
+                log.error("issue  uuid:[{}] get failed ", preRawIssue.getIssueId());
+                continue;
+            }
+            // 默认 没有匹配上的情况
+            String curStatus = IssueStatusEnum.SOLVED.getName();
+            String endCommit = preCommit;
+            Date endCommitDate = preCommitDate;
 
-        if (currentRawIssues == null || currentRawIssues.isEmpty()) {
-            log.info("all issues were solved or raw issue insert error , commit id -->  {}", commitId);
-        }
-
-        // key parentCommitId value parentRawIssues
-        Map<String, List<RawIssue>> matchPreRawIssueLists = new HashMap<> (4);
-
-        // key parentCommitId value [k parentRawIssueId v parentRawIssue ]
-        Map<String, Map<String, RawIssue>> matchPreRawIssueMaps = new HashMap<> (4);
-
-        // key curRawIssueId value 匹配上的 preRawIssue
-        Map<String,List<RawIssueMappingSort>> currentRawIssueMatchedPreRawIssues = new HashMap<> ();
-
-        //用于全匹配的issue列表 parentCommits 包含的所有 issue
-        List<Issue>  allIssues = new ArrayList<>();
-
-
-        for (String parentCommit : parentCommits) {
-            List<RawIssue> parentRawIssues = rawIssueDao.getRawIssueByCommitIDAndTool(repoId, toolName, parentCommit);
-            if (parentRawIssues.size() == 0) {
+            // 匹配上
+            if (preRawIssue.isMapped()) {
+                // 匹配上了要看是否之前匹配上过其他的issue——id 是的话 将该issue设置为solved，否则的话设置最新的commit
+                boolean notMatchOtherIssue = notMapOtherIssue(preRawIssue.getMappedRawIssue(), issue.getUuid());
+                if (notMatchOtherIssue) {
+                    curStatus = IssueStatusEnum.OPEN.getName();
+                    endCommit = curCommit;
+                    endCommitDate = curCommitDate;
+                } else {
+                    // fixme 匹配上了其他的issue id的话 有一个肯定是mergeSolved 一个是匹配上了 [先默认当前是mergeSolved]
+                    //  此时该rawIssue 算作没有匹配上
+                    preRawIssue.setMapped(false);
+                }
+            } else if (IssueStatusEnum.SOLVED.getName().equals(issue.getStatus())) {
+                // 没有匹配上 且以前就为solved
                 continue;
             }
 
-            //filterRawIssue这个方法会更新allIssues，把所有parent的不同的issue存到allIssues，并且返回当前parent里的与之前parent里的不重复的rawIssue列表，返回给parentRawIssues
-            parentRawIssues = filterRawIssue(parentRawIssues, allIssues);
-
-            // key 是 parent raw issue 的 uuid , value 是对应的 parent raw issue
-            Map<String, RawIssue> parentRawIssuesMap = new HashMap<>();
-            for (RawIssue rawIssue : parentRawIssues) {
-                parentRawIssuesMap.put(rawIssue.getUuid(), rawIssue);
+            boolean isCurCommitBeforePre = issue.getEndCommitDate() != null && endCommitDate.before(issue.getEndCommitDate());
+            String preStatus = issue.getStatus();
+            if (isCurCommitBeforePre) {
+                endCommit = issue.getEndCommit();
+                endCommitDate = issue.getEndCommitDate();
             }
-            matchPreRawIssueMaps.put(parentCommit, parentRawIssuesMap);
-            matchPreRawIssueLists.put(parentCommit, parentRawIssues);
 
+            issue.setEndCommit(endCommit);
+            issue.setEndCommitDate(endCommitDate);
+            issue.setStatus(curStatus);
 
-            mappingTwoRawIssueList(parentRawIssues, currentRawIssues);
+            if (IssueStatusEnum.SOLVED.getName().equals(curStatus)) {
+                solvedIssue.put(issue.getUuid(), issue);
+            } else {
+                mappedIssues.put(issue.getUuid(), issue);
+            }
+            if (isCurCommitBeforePre) {
+                issue.setStatus(preStatus);
+            }
+        }
+    }
 
-            for (RawIssue rawIssue : currentRawIssues) {
-                int index = rawIssue.getMatchResultDTOIndex();
+    private boolean notMapOtherIssue(RawIssue curRawIssue, String issueUuid) {
+        List<RawIssueMatchInfo> matchInfos = curRawIssue.getMatchInfos();
+        if (matchInfos == null || matchInfos.isEmpty()) {
+            return true;
+        }
+        for (RawIssueMatchInfo matchInfo : matchInfos) {
+            if (!matchInfo.getIssueUuid().equals(issueUuid)) {
+                matchInfo.setStatus(RawIssueStatus.MERGE_SOLVED.getType());
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // @review 存在 多分支的情况下匹配到不同的issueId  设置一个为merger solve
+    private void mergeMatch(String repoUuid, String toolName, List<String> parentCommits, Map<String, List<RawIssue>> curRawIssuesMatchResult) {
+        log.info("start merge matching commit id --> {} ...", curCommit);
+        // key parentCommitId value parentRawIssues
+        Map<String, List<RawIssue>> preRawIssuesMap = new LinkedHashMap<>(parentCommits.size() << 1);
+        // 得到所有待匹配的组合 两两按照normalMatch匹配
+        for (String parentCommit : parentCommits) {
+            normalMatch(repoUuid, toolName, parentCommit, curRawIssuesMatchResult);
+            preRawIssuesMap.put(parentCommit, parentRawIssuesResult.get(parentCommit));
+        }
+        parentRawIssuesResult = preRawIssuesMap;
+    }
+
+    private void mapRawIssues(List<RawIssue> preRawIssues, List<RawIssue> curRawIssues, String repoPath, Map<String, String> preFileToCurFile, Map<String, String> curFileToPreFile) {
+
+        preRenameHandle(preRawIssues, preFileToCurFile);
+
+        // key fileName
+        Map<String, List<RawIssue>> preRawIssueMap = preRawIssues.stream().collect(Collectors.groupingBy(RawIssue::getFileName));
+        Map<String, List<RawIssue>> curRawIssueMap = curRawIssues.stream().collect(Collectors.groupingBy(RawIssue::getFileName));
+
+        preRawIssueMap.entrySet().stream()
+                .filter(e -> curRawIssueMap.containsKey(e.getKey()))
+                .forEach(pre -> RawIssueMatcher.match(pre.getValue(), curRawIssueMap.get(pre.getKey()),
+                        analyzer instanceof EsLintBaseAnalyzer ? analyzer.getMethodsAndFieldsInFile().getOrDefault(repoPath + "/" + pre.getKey(), new HashSet<>()) :
+                                AstParserUtil.getAllMethodAndFieldName(repoPath + "/" + pre.getKey())));
+
+        cleanUpRenameHandle(preRawIssues, curFileToPreFile);
+    }
+
+    private void cleanUpRenameHandle(List<RawIssue> preRawIssues, Map<String, String> curFileToPreFile) {
+        preRawIssues.stream()
+                .filter(r -> curFileToPreFile.containsKey(r.getFileName()))
+                .forEach(rawIssue -> {
+                    rawIssue.getLocations().forEach(location -> location.setFilePath(curFileToPreFile.get(rawIssue.getFileName())));
+                    rawIssue.setFileName(curFileToPreFile.get(rawIssue.getFileName()));
+                });
+    }
+
+    private void preRenameHandle(List<RawIssue> preRawIssues, Map<String, String> preFileToCurFile) {
+        //pre file path and className change to cur
+        preRawIssues.stream()
+                .filter(r -> preFileToCurFile.containsKey(r.getFileName()))
+                .forEach(rawIssue -> {
+                    rawIssue.getLocations().forEach(location -> location.setFilePath(preFileToCurFile.get(rawIssue.getFileName())));
+                    rawIssue.setFileName(preFileToCurFile.get(rawIssue.getFileName()));
+                });
+    }
+
+    private List<String> getPreScanSuccessfullyCommit(String repoId, String commitId, JGitHelper jGitHelper, String tool) {
+
+        List<IssueScan> scanList = issueScanDao.getIssueScanByRepoIdAndStatusAndTool(repoId, null, tool);
+        if (scanList == null || scanList.isEmpty()) {
+            return new ArrayList<>(0);
+        }
+
+        String[] scannedCommitIds = scanList.stream().map(IssueScan::getCommitId).toArray(String[]::new);
+
+        List<MatcherCommitInfo> parentCommits = new ArrayList<>();
+        parentCommits.add(new MatcherCommitInfo(repoId, commitId, jGitHelper.getCommitTime(commitId)));
+
+        Set<String> scannedParents = new HashSet<>(8);
+        while (!parentCommits.isEmpty()) {
+            MatcherCommitInfo matcherCommitInfo = parentCommits.remove(0);
+            String[] parents = jGitHelper.getCommitParents(matcherCommitInfo.getCommitId());
+
+            for (String parent : parents) {
+                int index = SearchUtil.dichotomy(scannedCommitIds, parent);
                 if (index == -1) {
                     continue;
                 }
-                RawIssueMatchResult matchResultDTO = rawIssue.getRawIssueMatchResults().get(index);
 
-                RawIssueMappingSort rawIssueMappingSort = new RawIssueMappingSort();
-                rawIssueMappingSort.setCommitId(parentCommit);
-                rawIssueMappingSort.setRawIssueId(matchResultDTO.getMatchedRawIssueId());
-                rawIssueMappingSort.setMappingSort(matchResultDTO.getMatchingDegree());
-                rawIssueMappingSort.setMatchedIssueId(matchResultDTO.getMatchedIssueId());
-                rawIssueMappingSort.setBestMatch(matchResultDTO.isBestMatch());
-
-                List<RawIssueMappingSort> rawIssueMappingSorts = currentRawIssueMatchedPreRawIssues.get(rawIssue.getUuid());
-                if (rawIssueMappingSorts == null) {
-                    rawIssueMappingSorts = new ArrayList<>();
-                }
-                rawIssueMappingSorts.add(rawIssueMappingSort);
-                currentRawIssueMatchedPreRawIssues.put(rawIssue.getUuid(), rawIssueMappingSorts);
-
-            }
-
-            //把currentRawIssues的匹配状态全部初始化，准备与下一个parent 的rawIssue做匹配
-            for (RawIssue rawIssue : currentRawIssues) {
-                rawIssue.setRawIssueMatchResults(new ArrayList<>());
-                rawIssue.setMapped(false);
-                rawIssue.setMatchResultDTOIndex(-1);
-            }
-        }
-
-        for(RawIssue rawIssue : currentRawIssues){
-            List<RawIssueMappingSort> rawIssueMappingSorts = currentRawIssueMatchedPreRawIssues.get (rawIssue.getUuid ());
-            if(rawIssueMappingSorts == null){
-                continue;
-            }
-            String matchRawIssueId = null;
-            double maxScore = 0;
-            String matchedIssueId = null;
-            boolean isBestMatch = false;
-            String matchedCommitId = null;
-            for(RawIssueMappingSort rawIssueMappingSort : rawIssueMappingSorts){
-                if(rawIssueMappingSort.getMappingSort () > maxScore){
-                    maxScore = rawIssueMappingSort.getMappingSort ();
-
-                    if(matchRawIssueId != null){
-                        RawIssue preMatchedRawIssue = matchPreRawIssueMaps.get (matchedCommitId).get (matchRawIssueId);
-                        preMatchedRawIssue.setMapped (false);
-                        preMatchedRawIssue.setMatchResultDTOIndex (-1);
-                    }
-                    matchRawIssueId = rawIssueMappingSort.getRawIssueId ();
-                    matchedIssueId = rawIssueMappingSort.getMatchedIssueId ();
-                    isBestMatch = rawIssueMappingSort.isBestMatch ();
-                    matchedCommitId = rawIssueMappingSort.getCommitId ();
-
-                }else{
-                    //todo 当前面有多次编译失败时，报空指针异常
-                    Map<String, RawIssue> map =matchPreRawIssueMaps.get (rawIssueMappingSort.getCommitId ());
-                    if(map == null){
-                        log.error ("can not get pre commit raw issues, pre commit id ---> {} ,and matched raw issue --> {}" ,
-                                rawIssueMappingSort.getCommitId (),
-                                matchRawIssueId);
-                    }
-                    RawIssue preMatchedRawIssue = matchPreRawIssueMaps.get (rawIssueMappingSort.getCommitId ()).get (rawIssueMappingSort.getRawIssueId ());
-                    preMatchedRawIssue.setMapped (false);
-                    preMatchedRawIssue.setMatchResultDTOIndex (-1);
-                }
-            }
-
-            if (matchRawIssueId != null ) {
-                RawIssueMatchResult rawIssueMatchResult = new RawIssueMatchResult();
-                rawIssueMatchResult.setMatchedRawIssueId (matchRawIssueId);
-                rawIssueMatchResult.setMatchingDegree (maxScore);
-                rawIssueMatchResult.setMatchedIssueId (matchedIssueId);
-                rawIssueMatchResult.setBestMatch (isBestMatch);
-                rawIssue.getRawIssueMatchResults().add (rawIssueMatchResult);
-                rawIssue.setMapped (true);
-                rawIssue.setMatchResultDTOIndex (0);
-            }
-
-        }
-
-        parentRawIssuesResult = matchPreRawIssueLists ;
-        currentRawIssuesResult = currentRawIssues;
-    }
-
-
-    /**
-     * 更改中，比对两个raw issue列表
-     * @param preRawIssues parent rawIssue list
-     * @param currentRawIssues current rawIssue list
-     */
-    private void mappingTwoRawIssueList(List<RawIssue> preRawIssues,
-                                        List<RawIssue> currentRawIssues){
-        Map<String, List<RawIssue>> curRawIssueMap = classifyRawIssue(currentRawIssues);
-        Map<String, List<RawIssue>> preRawIssueMap = classifyRawIssue(preRawIssues);
-
-
-        //for循环中每一个entry就是一个key（fileName+issueType）+value（这个类别下的rawIssue集合）
-        for (Map.Entry<String, List<RawIssue>> entry : curRawIssueMap.entrySet()) {
-            //判断parent中是否有相同类别（fileName+issueType）的rawIssue集合
-            if (preRawIssueMap.containsKey(entry.getKey())) {
-                //如果有相同类别，则取出对应的rawIssue集合
-                List<RawIssue> preList = preRawIssueMap.get(entry.getKey());
-                for (RawIssue currentRawIssue : entry.getValue()) {
-                    //当前的每一个rawIssue，和preList匹配
-                    findSimilarRawIssues(currentRawIssue,preList);
-                }
-            }
-        }
-
-        for(RawIssue preRawIssue : preRawIssues){
-            List<RawIssueMatchResult> rawIssueMatchResults = preRawIssue.getRawIssueMatchResults().stream().sorted(Comparator.comparing(RawIssueMatchResult:: getMatchingDegree).reversed()).collect(Collectors.toList());
-            //为了debug 。应该不需要重新赋值。
-            preRawIssue.setRawIssueMatchResults(rawIssueMatchResults);
-        }
-
-        Map<String, RawIssue> preRawIssuesMap = new HashMap<> ();
-        Map<String, RawIssue> currentRawIssuesMap = new HashMap<> ();
-
-
-        for(RawIssue preRawIssue : preRawIssues){
-            preRawIssuesMap.put(preRawIssue.getUuid (),preRawIssue);
-            preRawIssue.setMatchResultDTOIndex (-1);
-        }
-
-        for(RawIssue currentRawIssue : currentRawIssues){
-            currentRawIssuesMap.put(currentRawIssue.getUuid (),currentRawIssue);
-            currentRawIssue.setMatchResultDTOIndex (-1);
-
-        }
-
-
-        for (RawIssue currentRawIssue : currentRawIssues) {
-            findBestMatching(preRawIssuesMap,currentRawIssuesMap,currentRawIssue);
-        }
-
-
-
-    }
-
-    private void findBestMatching(Map<String, RawIssue> preRawIssuesMap,
-                                  Map<String, RawIssue> currentRawIssuesMap,
-                                  RawIssue currentRawIssue){
-
-        List<RawIssueMatchResult> currentRawIssueMatchResults = currentRawIssue.getRawIssueMatchResults();
-        int size = currentRawIssueMatchResults.size ();
-        for(int i = 0 ; i < size ; i++ ){
-            String matchRawIssueId = currentRawIssueMatchResults.get (i).getMatchedRawIssueId ();
-
-            RawIssue preRawIssue = preRawIssuesMap.get (matchRawIssueId);
-            int index = preRawIssue.getMatchResultDTOIndex ();
-            int matchIndex = getIndexOfRawIssueMatchResultDtoByRawIssueId(preRawIssue,currentRawIssue.getUuid ());
-            //如果pre raw issue 列表没有匹配过，则为-1，则将当前raw issue 与之匹配
-            if(index == -1){
-                preRawIssue.setMatchResultDTOIndex (matchIndex);
-                preRawIssue.setMapped (true);
-                currentRawIssue.setMapped (true);
-                currentRawIssue.setMatchResultDTOIndex (i);
-                return;
-            }
-            ///如果pre raw issue 列表已经匹配过，但是此时的raw issue 匹配度更高，则进行替换
-            if(matchIndex < index){
-                preRawIssue.setMatchResultDTOIndex (matchIndex);
-                String lowMatchDegreeRawIssueId = preRawIssue.getRawIssueMatchResults().get (index).getMatchedRawIssueId ();
-                RawIssue lowMatchDegreeRawIssue = currentRawIssuesMap.get (lowMatchDegreeRawIssueId);
-                findBestMatching(preRawIssuesMap,currentRawIssuesMap,lowMatchDegreeRawIssue);
-                currentRawIssue.setMapped (true);
-                currentRawIssue.setMatchResultDTOIndex (i);
-                return;
-            }
-        }
-
-        currentRawIssue.setMatchResultDTOIndex (-1);
-        currentRawIssue.setMapped (false);
-
-    }
-
-
-    private void findSimilarRawIssues(RawIssue currentRawIssue, List<RawIssue> preList) {
-
-        boolean isFindBestMatch;
-        for (RawIssue rawIssue : preList) {
-            if(bestMappedPreRawIssueIds.contains (rawIssue.getUuid ())){
-                continue;
-            }
-
-            //对两个rawIssue进行匹配
-            isFindBestMatch = matchStrategy.match (currentRawIssue, rawIssue);
-            if(isFindBestMatch){
-                bestMappedPreRawIssueIds.add (rawIssue.getUuid ());
-                break;
-            }
-
-        }
-        List<RawIssueMatchResult> rawIssueMatchResults = currentRawIssue.getRawIssueMatchResults().stream().sorted(Comparator.comparing(RawIssueMatchResult:: getMatchingDegree).reversed()).collect(Collectors.toList());
-        //为了debug 。应该不需要重新赋值。
-        currentRawIssue.setRawIssueMatchResults(rawIssueMatchResults);
-
-    }
-
-    /**
-     * 筛选出不重复的raw issue 列表
-     * @return
-     */
-    private List<RawIssue> filterRawIssue(List<RawIssue> originalRawIssues, List<Issue> allIssues){
-        List<RawIssue>  rawIssueList = new ArrayList<>();
-        List<String> issueIds = new ArrayList<> ();
-
-        //key  issue id ，value 为 raw issue
-        Map<String, RawIssue> rawIssueMap= new HashMap<> ();
-
-        for(RawIssue rawIssue : originalRawIssues){
-            issueIds.add (rawIssue.getIssue_id ());
-            rawIssueMap.put (rawIssue.getIssue_id (),rawIssue);
-        }
-
-        List<Issue> originalIssues = issueDao.getIssuesByUuids(issueIds);
-
-        if(allIssues.isEmpty ()){
-            allIssues.addAll (originalIssues);
-            rawIssueList = originalRawIssues;
-        }else{
-            //key 为issue id ，value 为 issue
-            Map<String, Issue> issueMap= new HashMap<> ();
-
-            for(Issue issue : allIssues){
-                issueMap.put (issue.getUuid (), issue);
-            }
-
-
-            for(Issue originalIssue : originalIssues){
-                if(issueMap.get (originalIssue.getUuid ()) == null){
-                    allIssues.add (originalIssue);
-                    rawIssueList.add (rawIssueMap.get (originalIssue.getUuid ()));
-                }
-
-            }
-        }
-
-
-        return rawIssueList;
-
-    }
-
-
-    private Integer getIndexOfRawIssueMatchResultDtoByRawIssueId(RawIssue rawIssue , String rawIssueId){
-        Integer result = -1;
-        if(rawIssueId == null){
-            return result;
-        }
-        List<RawIssueMatchResult> rawIssueMatchResults = rawIssue.getRawIssueMatchResults();
-        int rawIssueMatchResultDTOSize = rawIssueMatchResults.size ();
-        for(int i = 0; i < rawIssueMatchResultDTOSize; i++){
-            if(rawIssueId.equals (rawIssueMatchResults.get (i).getMatchedRawIssueId ())){
-                result = i;
-                break;
-            }
-        }
-
-        return result;
-    }
-
-    /**
-     * 根据issue所在的文件名以及issue类型  对issue进行分类
-     * @param rawIssues rawIssues
-     * @return Map<String, List<RawIssue>> key:rawIssue.getFile_name () + "-" + rawIssue.getType () value:在该分类下的rawIssue列表
-     */
-    private Map<String, List<RawIssue>> classifyRawIssue(List<RawIssue> rawIssues) {
-        Map<String, List<RawIssue>> map = new HashMap<>(2);
-        for (RawIssue rawIssue : rawIssues) {
-            String key = rawIssue.getFile_name () + "-" + rawIssue.getType ();
-            if (map.containsKey(key)) {
-                map.get(key).add(rawIssue);
-            } else {
-                List<RawIssue> list = new ArrayList<>();
-                list.add(rawIssue);
-                map.put(key, list);
-            }
-        }
-        return map;
-    }
-
-
-
-    private List<String> getPreScanSuccessfullyCommit(String repoId, String commitId,JGitHelper jGitHelper, String tool){
-        List<String > scannedParents = new ArrayList<> ();
-
-        List<IssueScan> scanList = issueScanDao.getIssueScanByRepoIdAndStatusAndTool(repoId,null,tool);
-        if(scanList == null || scanList.isEmpty ()){
-            return scannedParents;
-        }
-        int scannedCommitListSize = scanList.size ();
-        String[] scannedCommitIds =  new String[scannedCommitListSize];
-
-        for(int i = 0 ; i < scannedCommitListSize ; i++){
-            scannedCommitIds[i] = scanList.get (i).getCommitId ();
-        }
-
-        List<MatcherCommitInfo> parentCommits = new ArrayList<> ();
-        MatcherCommitInfo commitInfoFirst = new MatcherCommitInfo ();
-        commitInfoFirst.setRepoId (repoId);
-        commitInfoFirst.setCommitId (commitId);
-        commitInfoFirst.setCommitTime (jGitHelper.getCommitTime (commitId));
-
-        parentCommits.add(commitInfoFirst);
-        while (!parentCommits.isEmpty()){
-            MatcherCommitInfo matcherCommitInfo = parentCommits.remove (0);
-            String[] parents = jGitHelper.getCommitParents(matcherCommitInfo.getCommitId ());
-            for(String parent : parents){
-                int index = SearchUtil.dichotomy (scannedCommitIds,parent);
-                if( index == -1){
+                if (ScanStatusEnum.DONE.getType().equals(scanList.get(index).getStatus())) {
+                    scannedParents.add(parent);
                     continue;
                 }
-
-                if(ScanStatusEnum.DONE.getType ().equals (scanList.get (index).getStatus ())){
-                    scannedParents.add(parent);
-                }else{
-                    MatcherCommitInfo commitInfoNew = new MatcherCommitInfo ();
-                    commitInfoNew.setRepoId (repoId);
-                    commitInfoNew.setCommitId (parent);
-                    commitInfoNew.setCommitTime (jGitHelper.getCommitTime (commitId));
-                    parentCommits.add(commitInfoNew);
-                    parentCommits = parentCommits.stream ().distinct ().sorted (Comparator.comparing (MatcherCommitInfo:: getCommitTime).reversed ()).collect(Collectors.toList());
-                }
-
+                parentCommits.add(new MatcherCommitInfo(repoId, parent, jGitHelper.getCommitTime(commitId)));
+                // parentCommits 根据时间由远及近排序 第一个是时间最小的
+                parentCommits = parentCommits.stream().distinct()
+                        .sorted(Comparator.comparing(MatcherCommitInfo::getCommitTime)).collect(Collectors.toList());
             }
         }
-        scannedParents = scannedParents.stream ().distinct ().collect (Collectors.toList ());
-        return scannedParents;
+        return new ArrayList<>(scannedParents);
     }
 
-
-
-    @Data
-    class RawIssueMappingSort {
-        private String rawIssueId;
-        private double mappingSort;
-        private String commitId;
-        private String matchedIssueId;
-        private boolean bestMatch;
+    @Autowired
+    public IssueMatcher(IssueScanDao issueScanDao, RawIssueDao rawIssueDao, IssueDao issueDao, IssueTypeDao issueTypeDao, LocationDao locationDao) {
+        IssueMatcher.issueScanDao = issueScanDao;
+        IssueMatcher.rawIssueDao = rawIssueDao;
+        IssueMatcher.issueDao = issueDao;
+        IssueMatcher.issueTypeDao = issueTypeDao;
+        IssueMatcher.locationDao = locationDao;
     }
 }

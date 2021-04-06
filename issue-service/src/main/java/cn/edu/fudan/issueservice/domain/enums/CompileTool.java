@@ -9,10 +9,11 @@ package cn.edu.fudan.issueservice.domain.enums;
 public enum CompileTool {
     /**
      * 编译工具的名字
+     *
      * @value 编译工具需要的文件名
      */
-    maven("pom.xml"),
-    gradle("build.gradle");
+    MAVEN("pom.xml"),
+    GRADLE("build.gradle");
 
     private final String compileFile;
 

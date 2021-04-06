@@ -1,8 +1,8 @@
 package cn.edu.fudan.issueservice.service;
 
-import com.alibaba.fastjson.JSONObject;
+import cn.edu.fudan.issueservice.domain.vo.IssueFilterInfoVO;
+import cn.edu.fudan.issueservice.domain.vo.IssueFilterSidebarVO;
 
-import java.text.ParseException;
 import java.util.List;
 import java.util.Map;
 
@@ -48,11 +48,11 @@ public interface IssueService {
     /**
      * 修改Issue的状态
      *
-     * @param issueUuid issueUuid
-     * @param status    状态
-     * @param token     token
+     * @param issueUuid    issueUuid
+     * @param status       状态
+     * @param manualStatus manualStatus
      */
-    void updateStatus(String issueUuid, String status, String token);
+    void updateStatus(String issueUuid, String status, String manualStatus);
 
     /**
      * 项目详情页面的issueCount每日数据
@@ -64,14 +64,6 @@ public interface IssueService {
      * @return 项目详情页面的issueCount每日数据
      */
     List<Map<String, Object>> getRepoIssueCounts(List<String> repoUuids, String since, String until, String tool);
-
-    /**
-     * 根据 工具名 获取该工具对缺陷的相应分类
-     *
-     * @param toolName 工具名
-     * @return 缺陷的相应分类
-     */
-    List<String> getIssueCategories(String toolName);
 
     /**
      * 获取缺陷严重程度列表
@@ -94,6 +86,23 @@ public interface IssueService {
      * @return issueIntroducers
      */
     List<String> getIssueIntroducers(List<String> repoUuids);
+
+    /**
+     * get issue filter info
+     *
+     * @param query query
+     * @param token token
+     * @return issue filter info
+     */
+    List<IssueFilterInfoVO> getIssuesOverview(Map<String, Object> query, String token);
+
+    /**
+     * get issue filter sidebar
+     *
+     * @param query query
+     * @return sidebar
+     */
+    List<IssueFilterSidebarVO> getIssuesFilterSidebar(Map<String, Object> query);
 
     /**
      * 返回issue总数
@@ -120,25 +129,4 @@ public interface IssueService {
      * @return IssueFilterListWithDetail
      */
     Map<String, Object> getIssueFilterListWithDetail(Map<String, Object> query, Map<String, Object> issueFilterList);
-
-    /**
-     * 缺陷排序
-     *
-     * @param query           条件
-     * @param issueFilterList 结果
-     * @return 缺陷排序
-     */
-    Map<String, Object> getIssueFilterListWithOrder(Map<String, Object> query, Map<String, Object> issueFilterList);
-
-    /**
-     * 返回项目总览缺陷数量图
-     *
-     * @param repoUuids repoUuids
-     * @param since since
-     * @param until until
-     * @param interval interval
-     * @return 项目总览缺陷数量
-     * @throws ParseException ParseException
-     */
-    List<JSONObject> getAllIssuesInProject(List<String> repoUuids, String since, String until, String interval) throws ParseException;
 }

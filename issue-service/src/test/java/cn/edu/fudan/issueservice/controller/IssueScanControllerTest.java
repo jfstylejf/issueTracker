@@ -17,6 +17,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import com.alibaba.fastjson.*;
+
 import java.util.Date;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -44,13 +45,13 @@ public class IssueScanControllerTest {
     @Test
     public void testGetScanStatus() throws Exception {
 
-        IssueRepo res = new IssueRepo("uuid","repoid","branch", "tool", "startCommit",
-                "endCommit", 1, 1, 1, "status","nature",new Date(), new Date());
+        IssueRepo res = new IssueRepo("uuid", "repoid", "branch", "tool", "startCommit",
+                "endCommit", 1, 1, 1, "status", "nature", new Date(), new Date());
         System.out.println(res.toString());
 
         // 使用 Mockito.when( 被mock对象.有返回值方法 ).thenReturn( 给定的返回值 ); 在执行到getScanStatus()方法时，会直接返回给定值
         // 使用Mockito.any...() 或 Mockito.any( XXX.class )方法来代替对应类型的参数
-        Mockito.when( issueScanService.getScanStatus(Mockito.anyString(),Mockito.anyString())).thenReturn(res);
+        Mockito.when(issueScanService.getScanStatus(Mockito.anyString(), Mockito.anyString())).thenReturn(res);
 
         // 利用mockMvc实例模拟用户的url访问，获取返回的字符串结果
         String result = mockMvc.perform(MockMvcRequestBuilders.get("/issue/sonar/scan-status").param("repo_uuid", "repoIdValue"))

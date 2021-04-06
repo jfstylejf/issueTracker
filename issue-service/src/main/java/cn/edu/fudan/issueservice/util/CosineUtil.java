@@ -12,58 +12,59 @@ public class CosineUtil {
 
     /**
      * 判断两段代码是否相似
-     * @param code1 代码段1
-     * @param code2 代码段2
+     *
+     * @param code1    代码段1
+     * @param code2    代码段2
      * @param tokenize 是否token化
      * @return threshold 相似阈值
      */
-    public static double isSimilarCode(String code1, String code2, boolean tokenize){
+    public static double isSimilarCode(String code1, String code2, boolean tokenize) {
         try {
             List<Object> tokens1 = lexer(code1, tokenize);
             List<Object> tokens2 = lexer(code2, tokenize);
             return cosineSimilarity(tokens1, tokens2);
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return 0;
     }
 
 
-
     /**
      * 计算token串的余弦相似度
+     *
      * @param tokensX tokensX
      * @param tokensY tokensY
      * @return token串的余弦相似度
      */
-    public static double cosineSimilarity(List<Object> tokensX, List<Object> tokensY){
+    public static double cosineSimilarity(List<Object> tokensX, List<Object> tokensY) {
         List<Object> allTokens = new ArrayList<>();
         allTokens.addAll(tokensX);
         allTokens.addAll(tokensY);
         Set<Object> tokenSet = new HashSet<>(allTokens);
         Map<Object, Integer> tokenMapX = new HashMap<>();
         Map<Object, Integer> tokenMapY = new HashMap<>();
-        for (Object b: tokensX) {
+        for (Object b : tokensX) {
             tokenMapX.put(b, tokenMapX.getOrDefault(b, 0) + 1);
         }
-        for (Object b: tokensY) {
+        for (Object b : tokensY) {
             tokenMapY.put(b, tokenMapY.getOrDefault(b, 0) + 1);
         }
         List<Integer> vecX = new ArrayList<>();
         List<Integer> vecY = new ArrayList<>();
-        for (Object b: tokenSet) {
+        for (Object b : tokenSet) {
             vecX.add(tokenMapX.getOrDefault(b, 0));
             vecY.add(tokenMapY.getOrDefault(b, 0));
         }
 
-        long x=0, y=0, xy=0;
-        for (int i=0; i<tokenSet.size(); i++) {
+        long x = 0, y = 0, xy = 0;
+        for (int i = 0; i < tokenSet.size(); i++) {
             xy += vecX.get(i) * vecY.get(i);
             x += vecX.get(i) * vecX.get(i);
             y += vecY.get(i) * vecY.get(i);
         }
-        double r = xy/(Math.sqrt(x) * Math.sqrt(y));
-        if (((Double)Double.NaN).equals(r)) {
+        double r = xy / (Math.sqrt(x) * Math.sqrt(y));
+        if (((Double) Double.NaN).equals(r)) {
             r = 1.00;
         }
         return r;
@@ -71,21 +72,22 @@ public class CosineUtil {
 
     /**
      * 代码token化方法
+     *
      * @param stat
      * @return
      */
-    public static List<Object> lexer(String stat, boolean tokenize){
+    public static List<Object> lexer(String stat, boolean tokenize) {
         int index = 0;
         List<Object> res = new ArrayList<>();
         String token = "";
-        while (index < stat.length()){
+        while (index < stat.length()) {
             char c = stat.charAt(index);
-            if (Character.isSpaceChar(c)){
+            if (Character.isSpaceChar(c)) {
                 index++;
                 continue;
             }
-            if (Character.isDigit(c)){
-                while (Character.isDigit(c)){
+            if (Character.isDigit(c)) {
+                while (Character.isDigit(c)) {
                     token += c;
                     if (++index >= stat.length()) {
                         break;
@@ -94,14 +96,14 @@ public class CosineUtil {
                 }
                 if (tokenize) {
                     res.add(str2hash(token));
-                }else{
+                } else {
                     res.add(token);
                 }
                 token = "";
                 continue;
             }
-            if (Character.isLetter(c) || c == '_'){
-                while (Character.isLetterOrDigit(c) || c == '_'){
+            if (Character.isLetter(c) || c == '_') {
+                while (Character.isLetterOrDigit(c) || c == '_') {
                     token += c;
                     if (++index >= stat.length()) {
                         break;
@@ -110,7 +112,7 @@ public class CosineUtil {
                 }
                 if (tokenize) {
                     res.add(str2hash(token));
-                }else{
+                } else {
                     res.add(token);
                 }
                 token = "";
@@ -124,6 +126,7 @@ public class CosineUtil {
 
     /**
      * 哈希函数，将字符串映射到[-128,-3]u[125,127]字节空间
+     *
      * @param str
      * @return
      */
@@ -144,18 +147,19 @@ public class CosineUtil {
 
     /**
      * * 处理注释
+     *
      * @param code
      * @return String
-     * */
+     */
     public static String removeComment(String code) {
-        return code.replaceAll( "//.*|(\"(?:\\\\[^\"]|\\\\\"|.)*?\")|(?s)/\\*.*?\\*/", "$1" );
+        return code.replaceAll("//.*|(\"(?:\\\\[^\"]|\\\\\"|.)*?\")|(?s)/\\*.*?\\*/", "$1");
     }
 
-    public static void main(String[] args){
-        double result = CosineUtil.isSimilarCode ("    }","    }",false);
-        System.out.println (result);
+    public static void main(String[] args) {
+        double result = CosineUtil.isSimilarCode("    }", "    }", false);
+        System.out.println(result);
 
         String a = "[p3c]Use ScheduledExecutorService instea";
-        System.out.println (a.matches ("^\\[p3c\\].*"));
+        System.out.println(a.matches("^\\[p3c\\].*"));
     }
 }

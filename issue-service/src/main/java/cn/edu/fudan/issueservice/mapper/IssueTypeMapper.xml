@@ -12,7 +12,9 @@
     </resultMap>
 
     <select id="getIssueTypeByTypeName" parameterType="String" resultMap="issueTypeWithoutDescription">
-        select uuid,type,specification_source,category,language from issue_type where type =#{type}
+        select uuid, type, specification_source, category, language
+        from issue_type
+        where type = #{type}
         limit 1
     </select>
 </mapper>

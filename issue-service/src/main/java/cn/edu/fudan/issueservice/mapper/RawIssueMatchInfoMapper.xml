@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.edu.fudan.issueservice.mapper.RawIssueMatchInfoMapper">
+    <insert id="insertRawIssueMatchInfoList" parameterType="List">
+        INSERT IGNORE INTO raw_issue_match_info
+        (
+        cur_rawIssue_uuid,
+        cur_commit_id,
+        pre_rawIssue_uuid,
+        pre_commit_id,
+        issue_uuid,
+        status
+        )
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.curRawIssueUuid},
+            #{item.curCommitId},
+            #{item.preRawIssueUuid},
+            #{item.preCommitId},
+            #{item.issueUuid},
+            #{item.status}
+            )
+        </foreach>
+    </insert>
+
+    <delete id="deleteRawIssueMatchInfo">
+        DELETE FROM raw_issue_match_info
+        WHERE cur_rawIssue_uuid IN
+        <foreach collection="partOfRawIssueIds" separator="," open="(" close=")" item="rawIssueUuid">
+            #{rawIssueUuid}
+        </foreach>
+        OR pre_rawIssue_uuid IN
+        <foreach collection="partOfRawIssueIds" separator="," open="(" close=")" item="rawIssueUuid">
+            #{rawIssueUuid}
+        </foreach>
+    </delete>
+
+    <select id="getIssueByPreCommits" resultType="String">
+        SELECT DISTINCT issue_uuid FROM raw_issue_match_info
+        <where>
+            <if test="preCommitParents != null and preCommitParents.size > 0">
+                cur_commit_id IN
+                <foreach collection="preCommitParents" separator="," open="(" close=")" item="preCommitParent">
+                    #{preCommitParent}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="getMatchInfoByIssueUuid" resultType="java.util.Map">
+        SELECT cur_rawIssue_uuid AS curRawIssueUuid, cur_commit_id AS curCommitId, status
+        FROM raw_issue_match_info
+        WHERE issue_uuid = #{issueUuid}
+    </select>
+</mapper>

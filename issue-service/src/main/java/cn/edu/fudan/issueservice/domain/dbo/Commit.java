@@ -18,8 +18,7 @@ import java.io.Serializable;
 public class Commit implements Serializable {
 
     String commitId;
-    // fixme
-    String commit_time;
+    String commitTime;
     String developer;
     String developerEmail;
     String message;

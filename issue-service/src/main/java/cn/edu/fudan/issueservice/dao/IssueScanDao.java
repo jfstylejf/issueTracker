@@ -8,7 +8,11 @@ import org.springframework.stereotype.Repository;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+/**
+ * @author beethoven
+ */
 @Repository
 public class IssueScanDao {
 
@@ -28,24 +32,13 @@ public class IssueScanDao {
     }
 
     public List<IssueScan> getIssueScanByRepoIdAndStatusAndTool(String repoId, List<String> status, String tool) {
-        if(status != null  && status.size () == 0){
-            return issueScanMapper.getIssueScanByRepoIdAndStatusAndTool(repoId, null, tool);
-        }
         return issueScanMapper.getIssueScanByRepoIdAndStatusAndTool(repoId, status, tool);
     }
 
-    public IssueScan getIssueScanByRepoIdAndCommitIdAndTool(String repoId, String commitId, String tool) {
-        List<IssueScan> issueScans = issueScanMapper.getIssueScanByRepoIdAndCommitIdAndTool(repoId, commitId, tool, null, null);
-        if(issueScans == null || issueScans.isEmpty ()){
-            return null;
-        }
-        return issueScans.get (0);
-    }
-
-    public List<IssueScan> getScannedCommitsByRepoIdAndTool(String repoId,  String tool, String since, String until) {
-        List<IssueScan> result = new ArrayList<> ();
-        List<IssueScan> issueScans = issueScanMapper.getIssueScanByRepoIdAndCommitIdAndTool(repoId, null, tool, null, null);
-        if(issueScans != null){
+    public List<IssueScan> getScannedCommitsByRepoIdAndTool(String repoId, String tool, String since, String until) {
+        List<IssueScan> result = new ArrayList<>();
+        List<IssueScan> issueScans = issueScanMapper.getIssueScanByRepoIdAndCommitIdAndTool(repoId, null, tool, since, until);
+        if (issueScans != null) {
             result = issueScans;
         }
         return result;
@@ -55,7 +48,7 @@ public class IssueScanDao {
         return issueScanMapper.getLatestIssueScanByRepoIdAndTool(repoId, tool);
     }
 
-    public HashSet<String> getScannedCommitList(String repoUuid, String tool) {
+    public Set<String> getScannedCommitList(String repoUuid, String tool) {
         return new HashSet<>(issueScanMapper.getScannedCommitList(repoUuid, tool));
     }
 

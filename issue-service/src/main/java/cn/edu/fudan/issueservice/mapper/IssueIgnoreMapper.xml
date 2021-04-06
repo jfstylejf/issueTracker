@@ -14,12 +14,14 @@
         repo_uuid,
         repo_name,
         branch,
+        file_path,
         ignore_time,
         issue_uuid,
         raw_issue,
         commit_uuid,
         tag,
-        message
+        message,
+        is_used
         )
         VALUES
         <foreach collection="list" item="item" index="index" separator=",">
@@ -33,13 +35,35 @@
             #{item.repoUuid},
             #{item.repoName},
             #{item.branch},
+            #{item.filePath},
             #{item.ignoreTime},
             #{item.issueUuid},
             #{item.rawIssue},
-            #{item.commmitUuid},
+            #{item.commitUuid},
             #{item.tag},
-            #{item.message}
+            #{item.message},
+            #{item.isUsed}
             )
         </foreach>
     </insert>
+
+    <update id="updateIssueIgnoreRecords">
+        UPDATE ignore_record
+        SET is_used = 1
+        WHERE uuid IN
+        <foreach collection="usedIgnoreRecordsUuid" separator="," open="(" close=")" item="item">
+            #{item}
+        </foreach>
+    </update>
+
+    <select id="getAllIgnoreRecord" resultType="java.util.HashMap">
+        SELECT uuid, type, file_path AS filePath, raw_issue AS rawIssue
+        FROM ignore_record
+        WHERE repo_name = #{repoUrl}
+        AND is_used = 0
+        AND commit_uuid IN
+        <foreach collection="preCommits" separator="," open="(" close=")" item="commit">
+            #{commit}
+        </foreach>
+    </select>
 </mapper>

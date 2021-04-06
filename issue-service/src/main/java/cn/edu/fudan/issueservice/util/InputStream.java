@@ -16,10 +16,14 @@ public abstract class InputStream extends java.io.InputStream {
         return new InputStream() {
             private volatile boolean closed;
 
-            private void ensureOpen() throws IOException { if (closed) throw new IOException("Stream closed"); }
+            private void ensureOpen() throws IOException {
+                if (closed) throw new IOException("Stream closed");
+            }
 
             @Override
-            public void close() throws IOException { closed = true; }
+            public void close() throws IOException {
+                closed = true;
+            }
 
 
             @Override
@@ -31,7 +35,7 @@ public abstract class InputStream extends java.io.InputStream {
             @Override
             public int read(byte[] b, int off, int len) throws IOException {
                 ensureOpen();
-                return len == 0 ? 0: -1;
+                return len == 0 ? 0 : -1;
             }
 
             public byte[] readAllBytes() throws IOException {
@@ -61,7 +65,7 @@ public abstract class InputStream extends java.io.InputStream {
             }
 
             @Override
-            public int available () throws IOException {
+            public int available() throws IOException {
                 ensureOpen();
                 return 0;
             }

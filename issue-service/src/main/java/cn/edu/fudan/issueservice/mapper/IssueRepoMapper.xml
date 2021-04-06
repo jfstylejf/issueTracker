@@ -5,7 +5,7 @@
 
     <resultMap id="issueRepo" type="IssueRepo">
         <id property="uuid" column="uuid"/>
-        <result property="repoId" column="repo_id"/>
+        <result property="repoId" column="repo_uuid"/>
         <result property="branch" column="branch"/>
         <result property="tool" column="tool"/>
         <result property="startCommit" column="start_commit"/>
@@ -21,60 +21,54 @@
 
     <insert id="insertOneIssueRepo" parameterType="IssueRepo">
         insert into issue_repo
-        (
-            uuid,
-            repo_id,
-            branch,
-            tool,
-            start_commit,
-            end_commit,
-            total_commit_count,
-            scanned_commit_count,
-            scan_time,
-            status,
-            nature,
-            start_scan_time,
-            end_scan_time
-        )
-        VALUES
-        (
-            #{uuid},
-            #{repoId},
-            #{branch},
-            #{tool},
-            #{startCommit},
-            #{endCommit},
-            #{totalCommitCount},
-            #{scannedCommitCount},
-            #{scanTime},
-            #{status},
-            #{nature},
-            #{startScanTime},
-            #{endScanTime}
-        )
-
+        (uuid,
+         repo_uuid,
+         branch,
+         tool,
+         start_commit,
+         end_commit,
+         total_commit_count,
+         scanned_commit_count,
+         scan_time,
+         status,
+         nature,
+         start_scan_time,
+         end_scan_time)
+        VALUES (#{uuid},
+                #{repoId},
+                #{branch},
+                #{tool},
+                #{startCommit},
+                #{endCommit},
+                #{totalCommitCount},
+                #{scannedCommitCount},
+                #{scanTime},
+                #{status},
+                #{nature},
+                #{startScanTime},
+                #{endScanTime})
     </insert>
 
     <update id="updateIssueRepo" parameterType="IssueRepo">
         update issue_repo
         <trim prefix="set" suffixOverrides=",">
             <if test="totalCommitCount != null and totalCommitCount != ''">
-                total_commit_count=#{totalCommitCount},
+                total_commit_count = #{totalCommitCount},
             </if>
             <if test="status != null and status != ''">
-                status=#{status},
+                status = #{status},
             </if>
             <if test="scannedCommitCount != null and scannedCommitCount != ''">
-                scanned_commit_count=#{scannedCommitCount},
+                scanned_commit_count = #{scannedCommitCount},
             </if>
             <if test="endCommit != null and endCommit != ''">
-                end_commit=#{endCommit},
+                end_commit = #{endCommit},
             </if>
             <if test="scanTime != null and scanTime != ''">
-                scan_time=#{scanTime},
+                scan_time = #{scanTime},
             </if>
             <if test="endScanTime != null">
-                end_scan_time=#{endScanTime},
+                end_scan_time = #{endScanTime},
             </if>
         </trim>
         <where>
@@ -83,23 +77,21 @@
     </update>
 
     <delete id="deleteIssueRepoByCondition" parameterType="String">
-        delete from issue_repo
-        <where>
-            repo_id=#{repo_id}
-            <if test="tool != null and tool != ''">
-                and tool=#{tool}
-            </if>
-            <if test="nature != null and nature != ''">
-                and nature=#{nature}
-            </if>
-        </where>
+        DELETE FROM issue_repo
+        WHERE repo_uuid = #{repo_uuid}
+        <if test="tool != null and tool != ''">
+            AND tool = #{tool}
+        </if>
+        <if test="nature != null and nature != ''">
+            AND nature = #{nature}
+        </if>
     </delete>
 
 
     <select id="getIssueRepoByCondition" parameterType="String" resultMap="issueRepo">
         select * from issue_repo
         <where>
-            repo_id = #{repo_id}
+            repo_uuid = #{repo_uuid}
             <if test="tool != null and tool != ''">
                 and tool = #{tool}
             </if>
@@ -113,7 +105,7 @@
         SELECT total_commit_count, scanned_commit_count FROM issue_repo
         <trim prefix="where" prefixOverrides="and">
             <if test="repoUuid != null and repoUuid != ''">
-                and repo_id = #{repoUuid}
+                and repo_uuid = #{repoUuid}
             </if>
             <if test="tool != null and tool != ''">
                 and tool = #{tool}
@@ -126,7 +118,7 @@
         <where>
             nature = 'main'
             <if test="repoUuid != null and repoUuid != ''">
-                and repo_id = #{repoUuid}
+                and repo_uuid = #{repoUuid}
             </if>
             <if test="tool != null and tool != ''">
                 and tool = #{tool}

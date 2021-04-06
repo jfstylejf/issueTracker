@@ -18,9 +18,9 @@ import java.util.List;
  **/
 public class DateTimeUtil {
 
-    private static final  String DATE_FORMAT_WITH_DETAIL = "yyyy-MM-dd HH:mm:ss";
+    private static final String DATE_FORMAT_WITH_DETAIL = "yyyy-MM-dd HH:mm:ss";
 
-    private static final  String DATE_FORMAT = "yyyy-MM-dd";
+    private static final String DATE_FORMAT = "yyyy-MM-dd";
 
     private static final DateTimeFormatter Y_M_D_H_M_S_FORMATTER = new DateTimeFormatterBuilder()
             .appendValue(ChronoField.YEAR)
@@ -48,16 +48,19 @@ public class DateTimeUtil {
         return dateTime.format(Y_M_D_H_M_S_FORMATTER);
     }
 
-    public static String format(Date date){
+    public static String format(Date date) {
+        if (date == null) {
+            return "";
+        }
         return new SimpleDateFormat(DATE_FORMAT_WITH_DETAIL).format(date);
     }
 
-    public static LocalDate stringToLocalDate(String date){
+    public static LocalDate stringToLocalDate(String date) {
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern(DATE_FORMAT);
         return LocalDate.parse(date, fmt);
     }
 
-    public static Date stringToDate(String date){
+    public static Date stringToDate(String date) {
         Date result = null;
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(DATE_FORMAT_WITH_DETAIL);
         try {
@@ -72,7 +75,7 @@ public class DateTimeUtil {
 
         SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT_WITH_DETAIL);
 
-        Date localDate= null;
+        Date localDate = null;
 
         try {
 
@@ -85,9 +88,9 @@ public class DateTimeUtil {
         }
 
         assert localDate != null;
-        long localTimeInMillis=localDate.getTime();
+        long localTimeInMillis = localDate.getTime();
 
-        Calendar calendar= Calendar.getInstance();
+        Calendar calendar = Calendar.getInstance();
 
         calendar.setTimeInMillis(localTimeInMillis);
 
@@ -98,72 +101,27 @@ public class DateTimeUtil {
 
         calendar.add(java.util.Calendar.MILLISECOND, -(zoneOffset + dstOffset));
 
-        return new Date(calendar.getTimeInMillis());
+        /** 取得的时间就是UTC标准时间 */
+
+        Date utcDate = new Date(calendar.getTimeInMillis());
+
+        return utcDate;
     }
 
-    public static String timeFormatIsLegal(String time, boolean isUntil){
-        if(time == null){
+    public static String timeFormatIsLegal(String time, boolean isUntil) {
+        if (time == null) {
             return null;
         }
 
-        if(!time.matches("([0-9]+)-([0-9]{2})-([0-9]{2})")){
+        if (!time.matches("([0-9]+)-([0-9]{2})-([0-9]{2})")) {
             return "time format error";
         }
 
-        if(isUntil){
+        if (isUntil) {
             time = DateTimeUtil.stringToLocalDate(time).plusDays(1).toString();
         }
 
         return time;
-    }
-
-    public static List<String[]> getPeriodsByInterval(String since, String until, String interval) throws ParseException {
-
-        List<String[]> periods = new ArrayList<>();
-
-        SimpleDateFormat format = new SimpleDateFormat(DATE_FORMAT);
-
-        Calendar calBegin = Calendar.getInstance();
-        calBegin.setTime(format.parse(since));
-        Calendar calEnd = Calendar.getInstance();
-        calEnd.setTime(format.parse(until));
-
-        List<String> dateList = new ArrayList<>();
-        while (format.parse(until).after(calBegin.getTime())) {
-            dateList.add(format.format(calBegin.getTime()));
-            calBegin.add(Calendar.DAY_OF_MONTH, 1);
-        }
-        dateList.add(format.format(calBegin.getTime()));
-
-        switch (interval){
-            case "day":
-                dateList.forEach(date -> periods.add(new String[]{date, date}));
-                break;
-            case "week":
-                getFirstDayAndLastDayInWeek(dateList, periods);
-                break;
-            case "month":
-                getFirstDayAndLastDayInMonth(dateList, periods);
-                break;
-            case "year":
-                getFirstDayAndLastDayInYear(dateList, periods);
-                break;
-            default:
-        }
-
-        return periods;
-    }
-
-    private static void getFirstDayAndLastDayInYear(List<String> dateList, List<String[]> periods) {
-
-    }
-
-    private static void getFirstDayAndLastDayInMonth(List<String> dateList, List<String[]> periods) {
-
-    }
-
-    private static void getFirstDayAndLastDayInWeek(List<String> dateList, List<String[]> periods) {
-
     }
 
     public static String datePlus(String tempDate) {
