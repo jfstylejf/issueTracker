@@ -389,9 +389,6 @@ public class ProjectControlServiceImpl implements ProjectControlService {
             if (subRepositoryDao.getSubRepoByRepoUuid(repoUuid) == null) {
                 return false;
             } else {
-                accountRepositoryDao.deleteRepoAR(accountUuid, repoUuid);
-                subRepositoryDao.deleteRepoSR(accountUuid, repoUuid);
-
                 boolean deleteCloneRepoSuccess = rest.deleteCloneRepo(repoUuid);
                 if (!deleteCloneRepoSuccess) {
                     log.error("clone repo delete failed!");
@@ -426,6 +423,9 @@ public class ProjectControlServiceImpl implements ProjectControlService {
                         || !deleteMeasureRepoSucess || !deleteScanRepoSucess) {
                     throw new RunTimeException("delete failed!");
                 }
+
+                accountRepositoryDao.deleteRepoAR(accountUuid, repoUuid);
+                subRepositoryDao.deleteRepoSR(accountUuid, repoUuid);
             }
         }
         return true;
