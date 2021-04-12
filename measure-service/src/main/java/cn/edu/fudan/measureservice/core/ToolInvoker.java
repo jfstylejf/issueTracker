@@ -18,10 +18,7 @@ import cn.edu.fudan.measureservice.domain.enums.ScanStatusEnum;
 import cn.edu.fudan.measureservice.domain.enums.ToolEnum;
 import cn.edu.fudan.measureservice.mapper.FileMeasureMapper;
 import cn.edu.fudan.measureservice.mapper.RepoMeasureMapper;
-import cn.edu.fudan.measureservice.util.FileFilter;
-import cn.edu.fudan.measureservice.util.JGitHelper;
-import cn.edu.fudan.measureservice.util.JavaFileFilter;
-import cn.edu.fudan.measureservice.util.JsFileFilter;
+import cn.edu.fudan.measureservice.util.*;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jgit.diff.*;
@@ -68,9 +65,9 @@ public class ToolInvoker {
             return ;
         }
         baseAnalyzer.setScanCommitInfoDto(scanCommitInfoDto);
-        baseAnalyzer.setBinHome(binHome);
-        baseAnalyzer.setLibHome(libHome);
-        baseAnalyzer.setRepoPath(scanCommitInfoDto.getRepoPath());
+        baseAnalyzer.setBinHome(FileUtil.systemAvailablePath(binHome));
+        baseAnalyzer.setLibHome(FileUtil.systemAvailablePath(libHome));
+        baseAnalyzer.setRepoPath(FileUtil.systemAvailablePath(scanCommitInfoDto.getRepoPath()));
         //2.开始扫描
         Boolean scanResult = executeScan(baseAnalyzer);
         if (!scanResult) {
@@ -425,5 +422,13 @@ public class ToolInvoker {
     @Autowired
     public void setFileMeasureMapper(FileMeasureMapper fileMeasureMapper) {
         this.fileMeasureMapper = fileMeasureMapper;
+    }
+
+    public JGitHelper getjGitHelper() {
+        return jGitHelper;
+    }
+
+    public void setjGitHelper(JGitHelper jGitHelper) {
+        this.jGitHelper = jGitHelper;
     }
 }

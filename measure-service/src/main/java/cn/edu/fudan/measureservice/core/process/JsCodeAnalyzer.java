@@ -333,11 +333,11 @@ public class JsCodeAnalyzer extends BaseAnalyzer{
     }
 
     public static void main(String[] args) {
-        String filePath = "C:\\Users\\wjzho\\Desktop\\js_test\\fortestjs-davidtest_duplicate_fdse-0";
+        String filePath = "C:\\\\Users\\\\wjzho\\\\Desktop\\\\js_test\\\\fortestjs-davidtest_duplicate_fdse-0";
         JsCodeAnalyzer baseAnalyzer = new JsCodeAnalyzer();
-        baseAnalyzer.setLibHome("C:\\Users\\wjzho\\Desktop\\js_test\\lib\\");
+        baseAnalyzer.setLibHome("C:\\\\Users\\\\wjzho\\\\Desktop\\\\js_test\\\\lib\\\\");
         baseAnalyzer.setRepoPath(filePath);
-        baseAnalyzer.setJsResultFileHome("C:\\Users\\wjzho\\Desktop\\js_test\\log");
+        baseAnalyzer.setJsResultFileHome("C:\\\\Users\\\\wjzho\\\\Desktop\\\\js_test\\\\log");
         try {
             if(!baseAnalyzer.invoke()) {
                 log.error("invoke wrong\n");
