@@ -13,7 +13,7 @@ import java.util.Map;
 @Repository
 public interface RepoMeasureMapper {
 
-    int sameMeasureOfOneCommit(@Param("repo_id")String repo_id,@Param("commit_id")String commit_id);
+    int sameRepoMeasureOfOneCommit(@Param("repo_id")String repo_id,@Param("commit_id")String commit_id);
 
     RepoMeasure getRepoMeasureByCommit(@Param("repo_id")String repo_id,@Param("commit_id")String commit_id);
 

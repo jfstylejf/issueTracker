@@ -107,7 +107,10 @@
             #{item.totalLine}
             )
         </foreach>
+        on duplicate key update
+        commit_id = #{item.commitId}
     </insert>
+
 
 
 </mapper>
