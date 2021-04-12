@@ -26,13 +26,13 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class JsCodeAnalyzer extends BaseAnalyzer{
 
-    private static final String jsResultFileHome = "/home/appuser/codeWisdom/service/measure/log/JsResultLog";
+    private String jsResultFileHome = FileUtil.systemAvailablePath("/home/fdse/codeWisdom/service/measure/log/JsResultLog");
     private static final String jsCcnLog = "jsCcn.log";
     private static final String jsLineLog = "jsLine.log";
     public static final String jsScanLog = "jsScan.log";
-    private static final String jsComplexity = "excuteJsComplexity.sh";
-    private static final String jsLine = "excuteJsLine.sh";
-    public static final String jsScan = "excuteJsScan.sh";
+    private static final String jsComplexity = FileUtil.systemAvailablePath("Js/tool/complexity.js");
+    private static final String jsLine = FileUtil.systemAvailablePath("Js/tool/line.js");
+    private static final String jsScan = "excuteJsScan.sh";
 
     @SneakyThrows
     @Override
@@ -108,7 +108,7 @@ public class JsCodeAnalyzer extends BaseAnalyzer{
     @SneakyThrows
     private  boolean executeCommand(String path, String type){
         Runtime rt = Runtime.getRuntime();
-        String command = binHome + type + " " + path;
+        String command = "node" + " " + libHome + type + " " + path + " " + jsResultFileHome;
         log.info("command -> {}", command);
         /*
             note :
@@ -324,9 +324,31 @@ public class JsCodeAnalyzer extends BaseAnalyzer{
         return null;
     }
 
+    public String getJsResultFileHome() {
+        return jsResultFileHome;
+    }
+
+    public void setJsResultFileHome(String jsResultFileHome) {
+        this.jsResultFileHome = jsResultFileHome;
+    }
 
     public static void main(String[] args) {
-
+        String filePath = "C:\\Users\\wjzho\\Desktop\\js_test\\fortestjs-davidtest_duplicate_fdse-0";
+        JsCodeAnalyzer baseAnalyzer = new JsCodeAnalyzer();
+        baseAnalyzer.setLibHome("C:\\Users\\wjzho\\Desktop\\js_test\\lib\\");
+        baseAnalyzer.setRepoPath(filePath);
+        baseAnalyzer.setJsResultFileHome("C:\\Users\\wjzho\\Desktop\\js_test\\log");
+        try {
+            if(!baseAnalyzer.invoke()) {
+                log.error("invoke wrong\n");
+            }
+            if(!baseAnalyzer.analyze()) {
+                log.error("analyze wrong\n");
+            }
+            System.out.println(baseAnalyzer.getAnalyzedResult());
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 

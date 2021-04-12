@@ -144,7 +144,7 @@
            )
     </insert>
 
-    <select id="sameMeasureOfOneCommit" resultType="int">
+    <select id="sameRepoMeasureOfOneCommit" resultType="int">
         select count(*) from issueTracker.repo_measure where repo_id = #{repo_id} and commit_id = #{commit_id}
     </select>
 
