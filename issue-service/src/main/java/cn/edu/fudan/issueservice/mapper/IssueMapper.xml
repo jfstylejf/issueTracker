@@ -723,9 +723,11 @@
               WHERE a.project_name = b.project_name
                 AND a.id = #{projectId}) as c
         WHERE i.repo_uuid = c.repoUuid
-          AND <![CDATA[ start_commit_date <= #{until} ]]>
-        AND <![CDATA[ end_commit_date >= #{until}
-        ]]>
+          AND (
+              (<![CDATA[ start_commit_date <= #{until} ]]> AND <![CDATA[ end_commit_date >= #{until} ]]>)
+              OR
+              (<![CDATA[ end_commit_date <= #{until} ]]> AND status = "Open")
+          )
     </select>
 
     <select id="getLivingIssueTendencyDetail" parameterType="String" resultType="java.util.HashMap">
@@ -750,9 +752,11 @@
               WHERE a.project_name = b.project_name
                 AND a.id = #{projectId}) as c
         WHERE i.repo_uuid = c.repoUuid
-          AND <![CDATA[ start_commit_date <= #{until} ]]>
-        AND <![CDATA[ end_commit_date >= #{until}
-        ]]>
+          AND (
+              (<![CDATA[ start_commit_date <= #{until} ]]> AND <![CDATA[ end_commit_date >= #{until} ]]>)
+              OR
+              (<![CDATA[ end_commit_date <= #{until} ]]> AND status = "Open")
+          )
     </select>
 
     <select id="getIssueFilterList" parameterType="Map" resultType="java.util.HashMap">
