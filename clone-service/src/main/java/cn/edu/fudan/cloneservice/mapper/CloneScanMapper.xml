@@ -36,7 +36,7 @@
     </insert>
 
     <delete id="deleteScanByRepoId" parameterType="String">
-        delete from clone_scan where repo_uuid=#{repo_id}
+        delete from clone_scan where repo_id=#{repo_id}
     </delete>
 
     <update id="updateOneScan" parameterType="cn.edu.fudan.cloneservice.domain.clone.CloneScan">

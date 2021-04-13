@@ -35,7 +35,7 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
     private final RestInterfaceManager restInterfaceManager;
     private final CloneMeasureDao cloneMeasureDao;
     private final CloneInfoDao cloneInfoDao;
-    private final CloneLocationDao cloneLocationDao;
+    protected CloneLocationDao cloneLocationDao;
     private final ForkJoinRecursiveTask forkJoinRecursiveTask;
     private final CloneMeasureMapper cloneMeasureMapper;
     @Autowired
@@ -234,6 +234,7 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
         int increasedLines;
         int currentCloneLines;
         Map<String, String> map;
+        //只有java和js
         CommitChange commitChange = JGitUtil.getNewlyIncreasedLines(repoPath, commitId);
         JGitUtil jGitHelper = new JGitUtil(repoPath);
         Date commitTime = new Date(jGitHelper.getLongCommitTime(commitId));

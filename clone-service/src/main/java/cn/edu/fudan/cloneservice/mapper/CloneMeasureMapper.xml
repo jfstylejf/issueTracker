@@ -14,7 +14,11 @@
     </resultMap>
 
     <select id="getCloneMeasure" resultMap="cloneMeasure">
-    select * from clone_measure where repo_id=#{repo_id} and commit_id=#{commit_id} limit 1
+    select * from issueTracker.clone_measure where repo_id=#{repo_id} and commit_id=#{commit_id} limit 1
+    </select>
+
+    <select id="getCloneMeasureTest" resultMap="cloneMeasure">
+    select * from issueTrackerTest.clone_measure where repo_id=#{repo_id} and commit_id=#{commit_id} limit 1
     </select>
 
     <select id="getCloneMeasures" resultMap="cloneMeasure">
@@ -48,6 +52,10 @@
 
     <delete id="deleteCloneMeasureByRepoId" parameterType="String">
         delete from clone_measure where repo_id=#{repo_id}
+    </delete>
+
+    <delete id="deleteCloneMeasureByRepoIdAndCommitId" parameterType="String">
+        delete from clone_measure where repo_id=#{repo_id} and commit_id=#{commit_id}
     </delete>
 
     <select id="getMeasureCountByCommitId" parameterType="String" resultType="Integer">

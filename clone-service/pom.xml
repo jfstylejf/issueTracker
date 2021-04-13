@@ -14,10 +14,7 @@
         <groupId>cn.edu.fudan</groupId>
         <version>1.0.1</version>
     </parent>
-
-
     <dependencies>
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -104,6 +101,23 @@
             <scope>system</scope>
             <systemPath>${project.basedir}/lib/CloneManager-v2.0.jar</systemPath>
         </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
 <!--        <dependency>-->
 <!--            <groupId>org.eclipse.jdt</groupId>-->
 <!--            <artifactId>org.eclipse.jdt.core</artifactId>-->
@@ -150,89 +164,7 @@
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <version>3.1.0</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.aspectj</groupId>
-            <artifactId>aspectjrt</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.github.xiaoymin</groupId>
-            <artifactId>swagger-bootstrap-ui</artifactId>
-            <version>1.6</version>
-        </dependency>
-
-        <dependency>
-            <groupId>cn.edu.fudan</groupId>
-            <artifactId>code-tracker</artifactId>
-            <version>1.0.1</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/code-tracker-1.0.1.jar</systemPath>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.json</groupId>
-                    <artifactId>android-json</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.github.javaparser</groupId>
-                    <artifactId>javaparser-core</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.github.javaparser</groupId>
-                    <artifactId>javaparser-symbol-solver-core</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.github.javaparser</groupId>
-                    <artifactId>javaparser-symbol-solver-model</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.github.javaparser</groupId>
-                    <artifactId>javaparser-symbol-solver-logic</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.github.javaparser</groupId>
-                    <artifactId>javaparser-parent</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>com.github.javaparser</groupId>
-            <artifactId>javaparser-symbol-solver-core</artifactId>
-            <version>3.16.1</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.codehaus.javancss</groupId>
-            <artifactId>javancss</artifactId>
-            <version>33.54</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-        </dependency>
-
-
     </dependencies>
-
-<!--    <dependencyManagement>-->
-<!--        <dependencies>-->
-<!--            <dependency>-->
-<!--                <groupId>org.springframework.cloud</groupId>-->
-<!--                <artifactId>spring-cloud-sleuth</artifactId>-->
-<!--                <version>2.0.0.RELEASE</version>-->
-<!--                <type>pom</type>-->
-<!--                <scope>import</scope>-->
-<!--            </dependency>-->
-<!--        </dependencies>-->
-<!--    </dependencyManagement>-->
-
     <build>
         <resources>
             <resource>

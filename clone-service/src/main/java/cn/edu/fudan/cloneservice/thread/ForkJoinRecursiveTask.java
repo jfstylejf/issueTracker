@@ -39,6 +39,7 @@ public class ForkJoinRecursiveTask {
 
         ForkJoinTask<CloneMeasure> future = forkJoinPool.submit(new CalculatedRecursiveTask(0, cloneLocations.size() - 1, repoId, commitId, repoPath, cloneLocations, cloneLocationMap, map));
         try {
+
             return future.get();
         } catch (Exception e) {
             log.error("ForkJoinTask get CloneMeasure error!");
@@ -96,7 +97,6 @@ public class ForkJoinRecursiveTask {
                     if(filePath.equals(cloneLocation.getFilePath())){
 
                         String[] lines = map.get(filePath).split(",");
-
                         for(int i = 0; i < lines.length; i++){
                             if(Integer.parseInt(lines[i]) >= startLine && Integer.parseInt(lines[i]) <= endLine){
                                 List<CloneLocation> list = cloneLocationMap.get(cloneLocation.getCategory());

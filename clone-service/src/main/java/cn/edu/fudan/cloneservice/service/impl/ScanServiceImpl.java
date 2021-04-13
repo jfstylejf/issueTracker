@@ -64,11 +64,11 @@ public class ScanServiceImpl implements ScanService {
     @Async("taskExecutor")
     public void cloneScan(String repoUuid, String startCommitId, String branch) throws IOException, GitAPIException {
         synchronized (lock) {
-        if (scanStatus.keySet().contains(repoUuid)) {
-            scanStatus.put(repoUuid, true);
-            return;
-        }
-        scanStatus.putIfAbsent(repoUuid, false);
+            if (scanStatus.keySet().contains(repoUuid)) {
+                scanStatus.put(repoUuid, true);
+                return;
+            }
+            scanStatus.putIfAbsent(repoUuid, false);
         }
         log.info("1");
         prepareForScan(repoUuid, branch, startCommitId);
@@ -92,9 +92,13 @@ public class ScanServiceImpl implements ScanService {
         checkAfterScan(repoUuid, branch);
     }
 
-    private void beginScan(String repoUuid, String branch, String beginCommit, boolean isUpdate) throws IOException, GitAPIException {
+    private void beginScan(String repoUuid, String branch, String beginCommit, boolean isUpdate) throws IOException {
         log.info("{} -> start clone scan", Thread.currentThread().getName());
+//        String repoPath = "C:\\Users\\86189\\Desktop\\cl\\fortestjs\\";
+//        String repoPath = "C:\\Users\\86189\\Desktop\\cl\\fortestjs-davidtest_duplicate_fdse-6\\";
+
         String repoPath = rest.getRepoPath(repoUuid);
+        log.info(repoUuid);
         if (repoPath == null) {
             log.error("{} : can't get repoPath", repoUuid);
             return;
@@ -105,28 +109,27 @@ public class ScanServiceImpl implements ScanService {
         List<String> commitList = jGitHelper.getCommitListByBranchAndBeginCommit(branch, beginCommit, isUpdate);
         int commitSize = commitList.size();
         int lastCommitIndex = commitSize - 1;
-        log.info("commit size : " +  commitSize);
+        log.info("commit size : " + commitSize);
 
         // 先执行粒度为method，仅需执行一次最近的commit
         String uuid = UUID.randomUUID().toString();
-        executeLastCommit(uuid, repoUuid, commitList, repoPath);
+
+//        executeLastCommit(uuid, repoUuid, commitList, repoPath);
         CloneRepo cloneRepo = new CloneRepo();
         cloneRepo.setUuid(uuid);
 
-        for (int i = 0; i < commitSize ;i++) {
+        for (int i = 0; i < commitSize; i++) {
             long start = System.currentTimeMillis();
             String commitId = commitList.get(i);
-            if (i != lastCommitIndex) {
-                jGitHelper.checkout(commitId);
-                scanTask.runSynchronously(repoUuid, commitId, "snippet", repoPath);
-                cloneMeasureService.insertCloneMeasure(repoUuid, commitId, repoPath);
-            }
+            jGitHelper.checkout(commitId);
+            scanTask.runSynchronously(repoUuid, commitId, "snippet", repoPath);
+            cloneMeasureService.insertCloneMeasure(repoUuid, commitId, repoPath);
             cloneRepo.setScannedCommitCount(i + 1);
             cloneRepo.setEndScanTime(new Date());
             cloneRepo.setStatus(ScanStatus.COMPLETE);
             long end = System.currentTimeMillis();
-            long cost = (end - start)/(1000);
-            cloneRepo.setScanTime((int)((end - start)/1000));
+            long cost = (end - start) / (1000);
+            cloneRepo.setScanTime((int) ((end - start) / 1000));
             cloneRepoDao.updateScan(cloneRepo);
             log.info("repo:{} -> took {} minutes to complete the clone scan and measure scan", repoUuid, cost);
         }
@@ -149,13 +152,13 @@ public class ScanServiceImpl implements ScanService {
     }
 
     private void checkAfterScan(String repoUuid, String branch) throws IOException, GitAPIException {
-        if (! scanStatus.keySet().contains(repoUuid)) {
+        if (!scanStatus.keySet().contains(repoUuid)) {
             log.error("{} : not in scan map", repoUuid);
             return;
         }
         //扫完再次判断是否有更新请求
         synchronized (lock) {
-            if (! scanStatus.get(repoUuid)) {
+            if (!scanStatus.get(repoUuid)) {
                 scanStatus.remove(repoUuid);
                 return;
             }
@@ -164,7 +167,7 @@ public class ScanServiceImpl implements ScanService {
         prepareForScan(repoUuid, branch, null);
     }
 
-    private CloneRepo initCloneRepo(String repoId){
+    private CloneRepo initCloneRepo(String repoId) {
         CloneRepo cloneRepo = new CloneRepo();
         cloneRepo.setRepoId(repoId);
         cloneRepo.setStatus(ScanStatus.SCANNING);
@@ -198,18 +201,22 @@ public class ScanServiceImpl implements ScanService {
     public void setCloneLocationDao(CloneLocationDao cloneLocationDao) {
         this.cloneLocationDao = cloneLocationDao;
     }
+
     @Autowired
     public void setCloneScanDao(CloneScanDao cloneScanDao) {
         this.cloneScanDao = cloneScanDao;
     }
+
     @Autowired
     public void setScanTask(ScanTask scanTask) {
         this.scanTask = scanTask;
     }
+
     @Autowired
     public void setCloneMeasureDao(CloneMeasureDao cloneMeasureDao) {
         this.cloneMeasureDao = cloneMeasureDao;
     }
+
     @Autowired
     public void setCloneMeasureService(CloneMeasureService cloneMeasureService) {
         this.cloneMeasureService = cloneMeasureService;

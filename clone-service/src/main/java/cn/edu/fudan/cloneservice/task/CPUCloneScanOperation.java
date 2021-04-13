@@ -9,26 +9,17 @@ import cn.edu.fudan.cloneservice.domain.clone.CloneScanInitialInfo;
 import cn.edu.fudan.cloneservice.domain.clone.CloneScanResult;
 import cn.edu.fudan.cloneservice.util.ASTUtil;
 import cn.edu.fudan.cloneservice.util.DeleteFileUtil;
-import cn.edu.fudan.codetracker.core.tree.JavaTree;
-import cn.edu.fudan.codetracker.core.tree.JsTree;
-import cn.edu.fudan.codetracker.core.tree.parser.JavaFileParser;
-import cn.edu.fudan.codetracker.core.tree.parser.JsFileParser;
-import cn.edu.fudan.codetracker.domain.projectinfo.BaseNode;
-import cn.edu.fudan.codetracker.domain.projectinfo.ClassNode;
-import cn.edu.fudan.codetracker.domain.projectinfo.MethodNode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.*;
-import java.net.URL;
 import java.util.*;
-import java.util.stream.Collectors;
+
 
 import static com.fdse.SagaShell.cloneDetect;
-import static cn.edu.fudan.codetracker.core.tree.parser.JsFileParser.*;
-import static cn.edu.fudan.codetracker.core.tree.parser.JavaFileParser.*;
+
 
 /**
  * @author zyh
@@ -109,95 +100,16 @@ public class CPUCloneScanOperation extends ScanOperationAdapter {
         return null;
     }
 
-//    @SuppressWarnings("unchecked")
-//    private boolean analyzeResultFile(String repoId, String repoPath, String commitId, String resultFilePath, String type) {
-//        SAXReader reader = new SAXReader();
-//        try {
-//            Document doc = reader.read(new File(resultFilePath));
-//            Element root = doc.getRootElement();
-//            Iterator<Element> iterator = root.elementIterator("group");
-//            List<CloneLocation> cloneLocationList = new ArrayList<>();
-
-//                Element group = iterator.next();
-//                String groupId = group.attributeValue("id");
-//                Iterator<Element> cloneInstances = group.elementIterator("cloneInstance");
-//                List<CloneLocation> tmpCloneLocationList = new ArrayList<>();
-//                //记录同一个clone组的snippet最小行数
-//                int min = Integer.MAX_VALUE;
-//                while (cloneInstances.hasNext()) {
-//                    Element cloneInstance = cloneInstances.next();
-//                    String filePath = cloneInstance.attributeValue("path");
-//                    String cloneLocationId = UUID.randomUUID().toString();
-//                    CloneLocation cloneLocation = new CloneLocation();
-//                    cloneLocation.setUuid(cloneLocationId);
-//                    cloneLocation.setRepoId(repoId);
-//                    cloneLocation.setCommitId(commitId);
-//                    cloneLocation.setCategory(groupId);
-//                    //截取filePath
-//                    cloneLocation.setFilePath(filePath.substring(repoPath.length() + 1));
-//                    //clone的方法起始行，结束行
-//                    String methodStartLine = cloneInstance.attributeValue("methodStartLine");
-//                    String methodEndLine = cloneInstance.attributeValue("methodEndLine");
-//                    String methodLines = methodStartLine + "," + methodEndLine;
-//                    cloneLocation.setMethodLines(methodLines);
-//                    //具体clone代码的其实行结束行
-//                    String fragStart = cloneInstance.attributeValue("fragStartLine");
-//                    String fragEnd = cloneInstance.attributeValue("fragEndLine");
-//                    String cloneLines = fragStart + "," + fragEnd;
-//                    cloneLocation.setCloneLines(cloneLines);
-//                    //method or snippet
-//                    cloneLocation.setType(type);
-//                    //类名 方法名
-//                    cloneLocation.setClassName(cloneInstance.attributeValue("className"));
-//                    cloneLocation.setMethodName(cloneInstance.attributeValue("methodName"));
-//                    ASTUtil.CodeLocation codeLocation = new ASTUtil().getCode(Integer.parseInt(methodStartLine),
-//                            Integer.parseInt(methodEndLine),
-//                            Integer.parseInt(fragStart),
-//                            Integer.parseInt(fragEnd),
-//                            filePath);
-//                    String code = codeLocation.getCode();
-//                    List<String> num = codeLocation.getNum();
-//                    //记录clone组内最小的片段行数
-//                    if (num.size() < min) {
-//                        min = num.size();
-//                    }
-//                    //具体代码
-//                    cloneLocation.setCode(code);
-//                    //去除空行和注释的行数
-//                    //修改录入的方式
-//                    cloneLocation.setNum(String.join(",", num));
-//                    //插入列表
-//                    tmpCloneLocationList.add(cloneLocation);
-//                }
-//                //大于所规定的最小片段行数才入库
-//                if (min >= minSnippetNum && !isIntersection(tmpCloneLocationList)) {
-//                    //过滤测试代码的clone检测
-//                    List<CloneLocation> cloneLocationList1 = wipeOffTest(tmpCloneLocationList);
-//                    if (cloneLocationList1 != null) {
-//                        cloneLocationList.addAll(tmpCloneLocationList);
-//                    }
-//                }
-//            }
-//            if (!cloneLocationList.isEmpty()) {
-//                cloneLocationDao.insertCloneLocations(cloneLocationList);
-//            }
-//            return true;
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return false;
-//        }
-//    }
-
     //to do:调用外部可执行文件仍然占据大量cpu算力、且有并发问题，可以把可执行文件的源码直接集成吗？
     private boolean invokeCloneTool(String repoPath, String granularity, String languagePara) {
         try {
             DeleteFileUtil.deleteDirectory(cloneHome + "result");
-            DeleteFileUtil.deleteDirectory("tokenData");
+            DeleteFileUtil.deleteDirectory(cloneHome + "tokenData");
             String language = languagePara.toLowerCase();
             if("javascript".equalsIgnoreCase(languagePara)) {
                 language = "js";
             }
-            String exe = IS_WINDOWS?cloneHome + "executable/executable_cpu_win10_snippet.exe":cloneHome + "executable/executable_cpu_linux_snippet";
+            String exe = IS_WINDOWS? "executable/executable_cpu_win10_snippet.exe":"executable/executable_cpu_linux_snippet";
             String[] configs = new String[]{
                     "dataset=" + repoPath,
                     "language=" + language,
@@ -216,9 +128,9 @@ public class CPUCloneScanOperation extends ScanOperationAdapter {
     }
 
 
-    private boolean analyzeResultFile(String repoId, String repoPath, String commitId, String type, String language) throws IOException {
+    protected boolean analyzeResultFile(String repoId, String repoPath, String commitId, String type, String resultFilePath) throws IOException {
         try {
-            BufferedReader resultReader = new BufferedReader(new FileReader(cloneResultFileHome + "type12_" + type + "_result.csv"));
+            BufferedReader resultReader = new BufferedReader(new FileReader(resultFilePath));
             Map<String, List<Result>> groups = getResultFromFile(resultReader);
             if (groups.isEmpty()) return false;
             for (Map.Entry<String, List<Result>> entry : groups.entrySet()) {
@@ -245,22 +157,22 @@ public class CPUCloneScanOperation extends ScanOperationAdapter {
                     cloneLocation.setCloneLines(cloneLines);
                     //method or snippet
                     cloneLocation.setType(type);
-                    //类名 方法名
-                    List<LocationInfo> classLocationInfos = getClassList(filePath, language);
-                    List<LocationInfo> methodLocationInfos = getMethodList(filePath, language);
+//                    //类名 方法名
+//                    List<LocationInfo> classLocationInfos = getClassList(filePath, language);
+//                    List<LocationInfo> methodLocationInfos = getMethodList(filePath, language);
 
-                    if(classLocationInfos.isEmpty()) {
-                        cloneLocation.setClassName(result.getRepoPath().substring(result.getRepoPath().lastIndexOf("/")+1, result.getRepoPath().lastIndexOf(".")));
-                    }
-                    else{
-                        List<String> classAndMethods = getClassAndMethod(cloneLines, classLocationInfos, methodLocationInfos);
-                        if(classAndMethods.size()!=0){
-                            cloneLocation.setClassName(classAndMethods.get(0));
-                            if(classAndMethods.size()>1) {
-                                cloneLocation.setMethodName(classAndMethods.get(1));
-                            }
-                        }
-                    }
+//                    if(classLocationInfos.isEmpty()) {
+//                        cloneLocation.setClassName(result.getRepoPath().substring(result.getRepoPath().lastIndexOf("/")+1, result.getRepoPath().lastIndexOf(".")));
+//                    }
+//                    else{
+//                        List<String> classAndMethods = getClassAndMethod(cloneLines, classLocationInfos, methodLocationInfos);
+//                        if(classAndMethods.size()!=0){
+//                            cloneLocation.setClassName(classAndMethods.get(0));
+//                            if(classAndMethods.size()>1) {
+//                                cloneLocation.setMethodName(classAndMethods.get(1));
+//                            }
+//                        }
+//                    }
 
                     String[] methodLoc = result.getMethodLoc().split(",");
                     String[] snippetLoc = result.getSnippetLoc().split(",");
@@ -340,7 +252,8 @@ public class CPUCloneScanOperation extends ScanOperationAdapter {
                 log.info("{} -> start to analyze resultFile......", Thread.currentThread().getName());
                 //只有片段级的入库
                 if (SNIPPET.equals(type)) {
-                    if (!analyzeResultFile(repoId, repoPath, commitId, type, language)) {
+                    String resultFilePath = cloneResultFileHome + "type12_" + type + "_result.csv";
+                    if (!analyzeResultFile(repoId, repoPath, commitId, type, resultFilePath)) {
                         log.error("{} -> Result File Analyze Failed!", Thread.currentThread().getName());
                         return new CloneScanResult(repoId, commitId, type, "failed", "analyze failed");
                     }
@@ -353,85 +266,85 @@ public class CPUCloneScanOperation extends ScanOperationAdapter {
             return null;
         }
     }
-
-    public List<String> getClassAndMethod(String cloneLines, List<LocationInfo> classLocationInfos, List<LocationInfo> methodLocationInfos){
-        List<String> result = new ArrayList<>();
-        List<String> cloneInfo = new ArrayList<>(Arrays.asList(cloneLines.split(",")));
-        int beginLine = Integer.parseInt(cloneInfo.get(0));
-        int endLine = Integer.parseInt(cloneInfo.get(1));
-        if(methodLocationInfos.isEmpty()) return result;
-        for(LocationInfo classLocationInfo: classLocationInfos){
-            if(beginLine >= classLocationInfo.getBeginLine() && endLine <= classLocationInfo.getEndLine()){
-                result.add(classLocationInfo.getClassName());
-            }
-        }
-        for(LocationInfo methodLocationInfo: methodLocationInfos){
-            if(beginLine >= methodLocationInfo.getBeginLine() && endLine <= methodLocationInfo.getEndLine()){
-                result.add(methodLocationInfo.getMethodName());
-            }
-        }
-        return result;
-    }
-
-    public List<LocationInfo> getClassList(String filePath, String language){
-        List<LocationInfo> result = new ArrayList<>();
-        if("java".equals(language)){
-            List<String> filePathList = new ArrayList<>();
-            filePathList.add(filePath);
-            JavaTree javaTree = new JavaTree(filePathList, "t", filePath.substring(0,filePath.lastIndexOf("/")));
-            List<ClassNode> classInfos = javaTree.getClassInfos();
-            if(classInfos.isEmpty()) return result;
-            for(ClassNode classInfo: classInfos){
-                LocationInfo loc = new LocationInfo(classInfo.getBeginLine(), classInfo.getEndLine(), classInfo.getClassName(), null);
-                result.add(loc);
-            }
-            return result;
-        }else if("js".equals(language.toLowerCase())||"javascript".equals(language.toLowerCase())){
-            JsFileParser.setBabelPath(cloneHome + "babelEsLint.js");
-            List<String> filePathList = new ArrayList<>();
-            filePathList.add(filePath);
-            JsTree jsTree = new JsTree(filePathList, "t", filePath.substring(0,filePath.lastIndexOf("/")));
-            List<ClassNode> classInfos = jsTree.getClassInfos();
-            if(classInfos.isEmpty()) return result;
-            for(ClassNode classInfo: classInfos){
-                LocationInfo loc = new LocationInfo(classInfo.getBeginLine(), classInfo.getEndLine(), classInfo.getClassName(), null);
-                result.add(loc);
-            }
-            return result;
-        }else{
-            log.error("don't support language"+language);
-            return result;
-        }
-    }
-
-    public List<LocationInfo> getMethodList(String filePath, String language){
-        List<LocationInfo> result = new ArrayList<>();
-        if("java".equals(language)){
-            List<String> filePathList = new ArrayList<>();
-            filePathList.add(filePath);
-            JavaTree javaTree = new JavaTree(filePathList, "t", filePath.substring(0,filePath.lastIndexOf("/")));
-            List<MethodNode> methodInfos = javaTree.getMethodInfos();
-            if(methodInfos.isEmpty()) return result;
-            for(MethodNode methodInfo: methodInfos){
-                LocationInfo loc = new LocationInfo(methodInfo.getBeginLine(), methodInfo.getEndLine(), null, methodInfo.getSignature());
-                result.add(loc);
-            }
-            return result;
-        }else if("js".equals(language.toLowerCase())||"javascript".equals(language.toLowerCase())){
-            JsFileParser.setBabelPath(cloneHome + "babelEsLint.js");
-            List<String> filePathList = new ArrayList<>();
-            filePathList.add(filePath);
-            JsTree jsTree = new JsTree(filePathList, "t", filePath.substring(0,filePath.lastIndexOf("/")));
-            List<MethodNode> methodInfos = jsTree.getMethodInfos();
-            if(methodInfos.isEmpty()) return result;
-            for(MethodNode methodInfo: methodInfos){
-                LocationInfo loc = new LocationInfo(methodInfo.getBeginLine(), methodInfo.getEndLine(), null, methodInfo.getSignature());
-                result.add(loc);
-            }
-            return result;
-        }else{
-            log.error("don't support language"+language);
-            return result;
-        }
-    }
+//
+//    public List<String> getClassAndMethod(String cloneLines, List<LocationInfo> classLocationInfos, List<LocationInfo> methodLocationInfos){
+//        List<String> result = new ArrayList<>();
+//        List<String> cloneInfo = new ArrayList<>(Arrays.asList(cloneLines.split(",")));
+//        int beginLine = Integer.parseInt(cloneInfo.get(0));
+//        int endLine = Integer.parseInt(cloneInfo.get(1));
+//        if(methodLocationInfos.isEmpty()) return result;
+//        for(LocationInfo classLocationInfo: classLocationInfos){
+//            if(beginLine >= classLocationInfo.getBeginLine() && endLine <= classLocationInfo.getEndLine()){
+//                result.add(classLocationInfo.getClassName());
+//            }
+//        }
+//        for(LocationInfo methodLocationInfo: methodLocationInfos){
+//            if(beginLine >= methodLocationInfo.getBeginLine() && endLine <= methodLocationInfo.getEndLine()){
+//                result.add(methodLocationInfo.getMethodName());
+//            }
+//        }
+//        return result;
+//    }
+//
+//    public List<LocationInfo> getClassList(String filePath, String language){
+//        List<LocationInfo> result = new ArrayList<>();
+//        if("java".equals(language)){
+//            List<String> filePathList = new ArrayList<>();
+//            filePathList.add(filePath);
+//            JavaTree javaTree = new JavaTree(filePathList, "t", filePath.substring(0,filePath.lastIndexOf("/")));
+//            List<ClassNode> classInfos = javaTree.getClassInfos();
+//            if(classInfos.isEmpty()) return result;
+//            for(ClassNode classInfo: classInfos){
+//                LocationInfo loc = new LocationInfo(classInfo.getBeginLine(), classInfo.getEndLine(), classInfo.getClassName(), null);
+//                result.add(loc);
+//            }
+//            return result;
+//        }else if("js".equals(language.toLowerCase())||"javascript".equals(language.toLowerCase())){
+//            JsFileParser.setBabelPath(cloneHome + "babelEsLint.js");
+//            List<String> filePathList = new ArrayList<>();
+//            filePathList.add(filePath);
+//            JsTree jsTree = new JsTree(filePathList, "t", filePath.substring(0,filePath.lastIndexOf("/")));
+//            List<ClassNode> classInfos = jsTree.getClassInfos();
+//            if(classInfos.isEmpty()) return result;
+//            for(ClassNode classInfo: classInfos){
+//                LocationInfo loc = new LocationInfo(classInfo.getBeginLine(), classInfo.getEndLine(), classInfo.getClassName(), null);
+//                result.add(loc);
+//            }
+//            return result;
+//        }else{
+//            log.error("don't support language"+language);
+//            return result;
+//        }
+//    }
+//
+//    public List<LocationInfo> getMethodList(String filePath, String language){
+//        List<LocationInfo> result = new ArrayList<>();
+//        if("java".equals(language)){
+//            List<String> filePathList = new ArrayList<>();
+//            filePathList.add(filePath);
+//            JavaTree javaTree = new JavaTree(filePathList, "t", filePath.substring(0,filePath.lastIndexOf("/")));
+//            List<MethodNode> methodInfos = javaTree.getMethodInfos();
+//            if(methodInfos.isEmpty()) return result;
+//            for(MethodNode methodInfo: methodInfos){
+//                LocationInfo loc = new LocationInfo(methodInfo.getBeginLine(), methodInfo.getEndLine(), null, methodInfo.getSignature());
+//                result.add(loc);
+//            }
+//            return result;
+//        }else if("js".equals(language.toLowerCase())||"javascript".equals(language.toLowerCase())){
+//            JsFileParser.setBabelPath(cloneHome + "babelEsLint.js");
+//            List<String> filePathList = new ArrayList<>();
+//            filePathList.add(filePath);
+//            JsTree jsTree = new JsTree(filePathList, "t", filePath.substring(0,filePath.lastIndexOf("/")));
+//            List<MethodNode> methodInfos = jsTree.getMethodInfos();
+//            if(methodInfos.isEmpty()) return result;
+//            for(MethodNode methodInfo: methodInfos){
+//                LocationInfo loc = new LocationInfo(methodInfo.getBeginLine(), methodInfo.getEndLine(), null, methodInfo.getSignature());
+//                result.add(loc);
+//            }
+//            return result;
+//        }else{
+//            log.error("don't support language"+language);
+//            return result;
+//        }
+//    }
 }
