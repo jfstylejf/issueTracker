@@ -74,7 +74,7 @@ public class CompileUtil {
     public static boolean isCompilable(String repoPath) {
 
         List<String> compilePathList = PomAnalysisUtil.getMainPom(getCompilePath(repoPath));
-        if (compilePathList == null || compilePathList.size() == 0) {
+        if (compilePathList == null || compilePathList.isEmpty()) {
             /// fixme 特殊处理  后面在看
             return gradleCompile(repoPath);
         }
@@ -128,7 +128,7 @@ public class CompileUtil {
             boolean timeout = process.waitFor(compileMaxWaitTime, TimeUnit.SECONDS);
             if (!timeout) {
                 process.destroy();
-                log.error("compile gradle timeout ! (60s)");
+                log.error("compile gradle timeout ! ({}s)", compileMaxWaitTime);
                 return false;
             }
             log.info("exit value is {}", process.exitValue());

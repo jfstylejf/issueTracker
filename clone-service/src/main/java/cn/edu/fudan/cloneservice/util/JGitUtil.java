@@ -279,7 +279,7 @@ public class JGitUtil {
                     if(!s.isEmpty() && !s.trim().startsWith("//")
                             && !s.trim().startsWith("/**")
                             && !s.trim().startsWith("*")){
-                        return true;
+                        return false;
                     }
                 }
             }
@@ -288,7 +288,7 @@ public class JGitUtil {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return false;
+        return true;
     }
 
 
@@ -340,12 +340,14 @@ public class JGitUtil {
                         String fullName = diffs.get(i).getNewPath().toLowerCase();
                         String shortName = fullName.substring(fullName.lastIndexOf('/') + 1);
                         //只统计java文件
-                        if (fullName.endsWith(".java")){
+                        if (fullName.endsWith(".java")||fullName.endsWith(".js")){
                             //并且去除其中的test文件
                             if (fullName.contains("/test/") ||
                                     shortName.endsWith("test.java") ||
                                     shortName.endsWith("tests.java") ||
-                                    shortName.startsWith("test")){
+                                    shortName.startsWith("test") ||
+                                    shortName.endsWith("test.js") ||
+                                    shortName.endsWith("tests.js")){
                                 //去除其中的test文件
                                 diffs.remove(i);
                             }
