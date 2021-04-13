@@ -10,4 +10,5 @@ public class LocationInfo {
     int endLine;
     String className;
     String methodName;
+
 }

@@ -1,8 +1,11 @@
 package cn.edu.fudan.cloneservice.task;
 
+import cn.edu.fudan.cloneservice.component.RestInterfaceManager;
 import cn.edu.fudan.cloneservice.domain.clone.CloneScanInitialInfo;
 import cn.edu.fudan.cloneservice.domain.clone.CloneScanResult;
+import cn.edu.fudan.cloneservice.mapper.RepoCommitMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -18,7 +21,12 @@ public class ScanTask {
 
     @Resource(name = "CPUClone")
     private ScanOperation scanOperation;
+    RestInterfaceManager restInterfaceManager;
 
+    @Autowired
+    public void setRestInterfaceManager(RestInterfaceManager restInterfaceManager) {
+        this.restInterfaceManager = restInterfaceManager;
+    }
 
     private void scan(ScanOperation scanOperation, String repoId, String commitId, String type, String repoPath) throws RuntimeException, IOException {
         //没有共享资源，不需要锁
@@ -50,6 +58,8 @@ public class ScanTask {
             return;
         }
         log.info("{} -> scan update complete", Thread.currentThread().getName());
+        log.info("free repo:{}, path:{}", repoId, repoPath);
+        restInterfaceManager.freeRepoPath(repoId, repoPath);
     }
 
     public void runSynchronously(String repoId, String commitId, String category, String repoPath) throws RuntimeException, IOException {

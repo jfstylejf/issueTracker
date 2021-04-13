@@ -29,10 +29,19 @@ public interface CloneLocationMapper {
                                           @Param("commit_id")String commitId);
 
     /**
+     * 获取对应commit的所有clone location(测试用)
+     * @param repoId repo id
+     * @param commitId commit id
+     * @return location list
+     */
+    List<CloneLocation> getCloneLocationsTest(@Param("repo_id") String repoId,
+                                          @Param("commit_id")String commitId);
+
+
+    /**
      * 删除对应repo所有的clone location
      * @param repoId repo id
      */
     void deleteCloneLocations(@Param("repo_id") String repoId);
-
 
 }
