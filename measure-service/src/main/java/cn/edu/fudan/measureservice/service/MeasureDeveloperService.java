@@ -282,30 +282,9 @@ public class MeasureDeveloperService {
             repoName = repoName.replace("/","");
         }
         //获取程序员在本项目中第一次提交commit的日期
-        LocalDateTime firstCommitDateTime;
-        LocalDate firstCommitDate = null;
-        JSONObject firstCommitDateData = restInterfaceManager.getFirstCommitDate(developer);
-        if("Successful".equals(firstCommitDateData.getString("status"))){
-            JSONArray repoDateList = firstCommitDateData.getJSONArray("repos");
-            for(int i=0;i<repoDateList.size();i++) {
-                if (repoDateList.getJSONObject(i).get("repo_id").equals(repoUuid)){
-                    String dateString = repoDateList.getJSONObject(i).getString("first_commit_time");
-                    DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-                    firstCommitDateTime = LocalDateTime.parse(dateString, fmt);
-                    firstCommitDateTime = firstCommitDateTime.plusHours(8);
-                    firstCommitDate = firstCommitDateTime.toLocalDate();
-                    break;
-                }
-            }
-        } else {//commit接口返回有问题时，通过repo_measure表来查看commit日期
-            List<String> repoUuidList = new ArrayList<>();
-            repoUuidList.add(repoUuid);
-            String dateString = repoMeasureMapper.getFirstCommitDateByCondition(repoUuidList,developer);
-            dateString = dateString.substring(0,19);
-            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            firstCommitDateTime = LocalDateTime.parse(dateString, fmt);
-            firstCommitDate = firstCommitDateTime.toLocalDate();
-        }
+        String developerFirstCommitTime = projectDao.getDeveloperFirstCommitDate(developer,since,until,repoUuid);
+        LocalDate firstCommitDate = LocalDate.parse(developerFirstCommitTime,dtf);
+        firstCommitDate = firstCommitDate.plusDays(1);
 
         int developerLOC = repoMeasureMapper.getLOCByCondition(repoUuid,developer,since,until);
         int developerCommitCount = repoMeasureMapper.getCommitCountsByDuration(repoUuid, since, until, developer);
@@ -463,7 +442,6 @@ public class MeasureDeveloperService {
     @Cacheable(cacheNames = {"portraitCompetence"})
 
     public Object getPortraitCompetence(String developer,String repoUuidList,String since,String until, String token) throws ParseException {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         //这里是获取开发者在给定时间段内所有参与的项目
         List<String> filterdRepoList = repoMeasureMapper.getRepoListByDeveloper(developer,since,until);
         //repoList是最后用于计算画像的所有项目
@@ -523,26 +501,11 @@ public class MeasureDeveloperService {
         }
         log.info("Get portrait complete!" );
         //获取第一次提交commit的日期
-        LocalDateTime firstCommitDateTime;
-        LocalDate firstCommitDate = null;
         List<cn.edu.fudan.measureservice.portrait2.DeveloperPortrait> developerPortraitList = new ArrayList<>();
         for(String key : developerMetricMap.keySet()) {
-            JSONObject firstCommitDateData = restInterfaceManager.getFirstCommitDate(key);
-            if("Successful".equals(firstCommitDateData.getString("status"))){
-                JSONObject repoDateList = firstCommitDateData.getJSONObject("repos_summary");
-                String dateString = repoDateList.getString("first_commit_time_summary");
-                DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-                firstCommitDateTime = LocalDateTime.parse(dateString, fmt);
-                firstCommitDateTime = firstCommitDateTime.plusHours(8);
-                firstCommitDate = firstCommitDateTime.toLocalDate();
-            }else {
-                //commit接口返回有问题时，通过repo_measure表来查看commit日期
-                String dateString = repoMeasureMapper.getFirstCommitDateByCondition(null,key);
-                dateString = dateString.substring(0,19);
-                DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-                firstCommitDateTime = LocalDateTime.parse(dateString, fmt);
-                firstCommitDate = firstCommitDateTime.toLocalDate();
-            }
+            String developerFirstCommitTime = projectDao.getDeveloperFirstCommitDate(key,null,null,null);
+            LocalDate firstCommitDate = LocalDate.parse(developerFirstCommitTime,dtf);
+            firstCommitDate = firstCommitDate.plusDays(1);
             //todo 日后需要添加程序员类型接口 目前统一认为是java后端工程师
             /*String index = repoMeasureMapper.getDeveloperType(key);
             String developerType = null ;
@@ -749,7 +712,7 @@ public class MeasureDeveloperService {
             totalStatement += developerRepoMetric.getTotalStatement();
             developerRepositoryMetrics.add(developerRepoMetric);
         }
-        Long days = getSumDays(query.getUntil(),firstCommitDate);
+        long days = getSumDays(query.getUntil(),firstCommitDate);
         int dayAverageStatement = (int) (totalStatement/days);
         return new DeveloperPortrait(firstCommitDate,totalStatement,dayAverageStatement,totalCommitCount,query.getDeveloper(),developerType,developerRepositoryMetrics);
     }

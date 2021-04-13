@@ -134,11 +134,19 @@ public class ProjectController {
         }
     }
 
+    @ApiOperation(value = "删除项目", httpMethod = "DELETE")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "project_name", value = "项目名称", dataType = "String", required = true)
+    })
     @DeleteMapping(value = {"/project"})
-    public ResponseBean delete(@RequestParam("project_name") String projectName,
-                               HttpServletRequest request) {
+    public ResponseBean delete(
+            HttpServletRequest request,
+            @RequestParam("project_name") String projectName) {
         try {
-            projectControl.deleteProject(projectName, request.getHeader(TOKEN));
+            boolean result = projectControl.deleteProject(request.getHeader(TOKEN), projectName);
+            if(!result){
+                return new ResponseBean(412, "failed:this project contains repo!", null);
+            }
             return new ResponseBean(200, "projectName delete success!", null);
         } catch (Exception e) {
             e.printStackTrace();
@@ -212,12 +220,18 @@ public class ProjectController {
     public ResponseBean<Object> deleteRepo(@RequestParam(value = "repo_uuid", required = false) String repoUuid,
                                            @RequestParam(value = "uuid", required = false) String uuid,
                                            HttpServletRequest request) {
+        if(repoUuid == null & uuid == null){
+            return new ResponseBean<>(412, "repo uuid can not be null!", null);
+        }
         try {
-            projectControl.deleteRepo(request.getHeader(TOKEN), repoUuid, uuid);
+            boolean result = projectControl.deleteRepo(request.getHeader(TOKEN), repoUuid, uuid);
+            if (!result){
+                return new ResponseBean<>(412, "repo is not exist!", null);
+            }
             return new ResponseBean<>(200, "repo delete success!", null);
         } catch (Exception e) {
             e.printStackTrace();
-            return new ResponseBean<>(401, "repo delete failed!", null);
+            return new ResponseBean<>(401, "repo delete failed:" + e.getMessage(), null);
         }
     }
 

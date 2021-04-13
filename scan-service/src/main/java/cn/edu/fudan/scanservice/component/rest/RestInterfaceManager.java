@@ -44,6 +44,8 @@ public class RestInterfaceManager {
 
     @Value("${issue.service.path}")
     private String issueServicePath;
+    @Value("${dependency.service.path}")
+    private String dependencyServicePath;
 
     private RestTemplate restTemplate;
 
@@ -114,7 +116,7 @@ public class RestInterfaceManager {
     //---------------------------------------------project service---------------------------------------------------------
     public JSONObject getProjectsOfRepo(String repoId) {
         String path =  projectServicePath + "/inner/project?repo_uuid=" + repoId;
-        log.debug("get request path is {}", path);
+        log.info("get request path is {}", path);
 
         try {
             // 最多等待180*5秒
@@ -244,8 +246,10 @@ public class RestInterfaceManager {
         jsonObject.put("repoUuid",repoId);
         jsonObject.put("branch",branch);
         jsonObject.put("beginCommit",beginCommit);
+        log.debug("params: " + jsonObject.toJSONString());
         // toolName 和 toolType 都来自于 Tool表
         String servicePath = getServicePathByToolType(toolType) + "/" + toolType + "/" + toolName;
+        log.debug("servicePath is :" + servicePath);
         try {
             JSONObject requestResult = restTemplate.postForObject(servicePath, jsonObject, JSONObject.class);
             if(requestResult != null){

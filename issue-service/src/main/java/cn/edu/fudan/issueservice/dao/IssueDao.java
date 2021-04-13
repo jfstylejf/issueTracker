@@ -8,7 +8,9 @@ import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
-
+/**
+ * @author beethoven
+ */
 @Repository
 public class IssueDao {
 
@@ -20,20 +22,18 @@ public class IssueDao {
     }
 
     public void insertIssueList(List<Issue> list) {
+        if (list.isEmpty()) {
+            return;
+        }
         issueMapper.insertIssueList(list);
     }
 
-    public void deleteIssueByRepoIdAndTool(String repoId,String tool) {
-        issueMapper.deleteIssueByRepoIdAndTool(repoId,tool);
+    public void deleteIssueByRepoIdAndTool(String repoId, String tool) {
+        issueMapper.deleteIssueByRepoIdAndTool(repoId, tool);
     }
 
-    public void batchUpdateIssue(List<Issue> list) {
-        issueMapper.batchUpdateIssue(list);
-    }
-
-
-    public Issue getIssueByID(String uuid) {
-        return issueMapper.getIssueByID(uuid);
+    public void batchUpdateIssue(List<Issue> issues) {
+        issues.forEach(issue -> issueMapper.batchUpdateIssue(issue));
     }
 
     public List<String> getRepoWithIssues(String developer) {
@@ -45,32 +45,19 @@ public class IssueDao {
     }
 
     public void updateOneIssuePriority(String issueId, int priority) {
-        issueMapper.updateOneIssuePriority(issueId,priority);
+        issueMapper.updateOneIssuePriority(issueId, priority);
     }
 
-    public void updateOneIssueStatus(String issueId,String status, String manualStatus) {
-        issueMapper.updateOneIssueStatus(issueId,status,manualStatus);
+    public List<Issue> getIssuesByUuid(List<String> issueIds) {
+        return issueMapper.getIssuesByIds(issueIds);
     }
 
-    public Integer getMaxIssueDisplayId(String repoId) {
-        return issueMapper.getMaxIssueDisplayId(repoId);
+    public void updateOneIssueStatus(String issueId, String status, String manualStatus) {
+        issueMapper.updateOneIssueStatus(issueId, status, manualStatus);
     }
 
     public List<Issue> getNotSolvedIssueAllListByToolAndRepoId(List<String> repoUuids, String tool) {
         return issueMapper.getNotSolvedIssueAllListByToolAndRepoId(repoUuids, tool);
-    }
-
-    public List<Issue> getIssueByRepoIdAndToolAndStatusListAndTypeList(String repoId, String tool,
-                                                                           List<String> statusList) {
-        return issueMapper.getIssueByRepoIdAndToolAndStatusList(repoId, tool, statusList);
-    }
-
-    public List<Issue> getIssuesByUuids(List<String> issueIds){
-        return issueMapper.getIssuesByIds(issueIds);
-    }
-
-    public List<Map<String, Object>> getIssueFilterList(Map<String, Object> query) {
-        return issueMapper.getIssueFilterList(query);
     }
 
     public int getIssueFilterListCount(Map<String, Object> query) {
@@ -79,10 +66,6 @@ public class IssueDao {
 
     public int getSolvedIssueFilterListCount(Map<String, Object> query) {
         return issueMapper.getSolvedIssueFilterListCount(query);
-    }
-
-    public List<Map<String, Object>> getSolvedIssueFilterList(Map<String, Object> query) {
-        return issueMapper.getSolvedIssueFilterList(query);
     }
 
     public void updateIssueManualStatus(String repoUuid, String issueUuid, String manualStatus, String issueType, String tool, String currentTime) {
@@ -125,24 +108,49 @@ public class IssueDao {
         return issueMapper.getIssueIntroducers(repoUuids);
     }
 
+    public int getRemainingIssueCount(String repoUuid) {
+        return issueMapper.getRemainingIssueCount(repoUuid);
+    }
+
     public List<JSONObject> getSelfIntroduceLivingIssueCount(Map<String, Object> query) {
         return issueMapper.getSelfIntroduceLivingIssueCount(query);
     }
 
-    public int getIssueCountInRepos(List<String> repoUuids, String since, String until) {
-        return issueMapper.getIssueCountInRepos(repoUuids, since, until);
+    public List<Issue> getIssueCountByIntroducerAndTool(String developer) {
+        return issueMapper.getIssueCountByIntroducerAndTool(developer);
+    }
+
+    public List<Map<String, Object>> getIssuesOverview(Map<String, Object> query) {
+        return issueMapper.getIssuesOverview(query);
+    }
+
+    public List<Map<String, Object>> getIssueCountByCategoryAndType(Map<String, Object> query) {
+        return issueMapper.getIssueCountByCategoryAndType(query);
     }
 
     public Map<String, Object> getLivingIssueTendency(String until, String projectId, String showDetail) {
         String date = until.split(" ")[0];
         Map<String, Object> map = issueMapper.getLivingIssueTendency(until, projectId);
         map.put("date", date);
-        if (showDetail.equals("true")) {
+        if (Boolean.TRUE.toString().equals(showDetail)) {
             List<Map<String, Object>> detail = issueMapper.getLivingIssueTendencyDetail(until, projectId);
             map.put("detail", detail);
         }
         return map;
     }
 
+    public List<Map<String, Object>> getIssueFilterList(Map<String, Object> query) {
+        return issueMapper.getIssueFilterList(query);
+    }
 
+    public List<Map<String, Object>> getSolvedIssueFilterList(Map<String, Object> query) {
+        return issueMapper.getSolvedIssueFilterList(query);
+    }
+
+    public List<String> getIssuesByFilesToolAndRepo(List<String> preFiles, String repoId, String toolName) {
+        if (preFiles.isEmpty()){
+            return new ArrayList<>();
+        }
+        return issueMapper.getIssuesByFilesToolAndRepo(preFiles, repoId, toolName);
+    }
 }

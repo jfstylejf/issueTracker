@@ -90,7 +90,7 @@ public interface ProjectControlService {
      * @param projectName projectName
      * @throws Exception e
      */
-    void deleteProject(String token, String projectName) throws Exception;
+    boolean deleteProject(String token, String projectName) throws Exception;
 
     /**
      * 更新库名
@@ -110,7 +110,7 @@ public interface ProjectControlService {
      * @param repoUuid repo uuid
      * @throws Exception e
      */
-    void deleteRepo(@NotNull String token, String repoUuid, String repoUUID) throws Exception;
+    boolean deleteRepo(@NotNull String token, String repoUuid, String uuid) throws Exception;
 
     /**
      * 更新库回收状态

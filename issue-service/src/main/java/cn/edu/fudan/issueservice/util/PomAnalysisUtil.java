@@ -3,7 +3,6 @@ package cn.edu.fudan.issueservice.util;
 import cn.edu.fudan.issueservice.domain.enums.CompileTool;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 
@@ -23,6 +22,7 @@ public class PomAnalysisUtil {
 
     /**
      * 得到某个主要的pom文件  解决重复编译的问题
+     *
      * @param pomPaths pom.xml 的绝对地址
      * @return 过滤后的pom文件
      */
@@ -35,7 +35,7 @@ public class PomAnalysisUtil {
         Map<String, String> names = new HashMap<>(pomPaths.size() << 1);
         Set<String> modules = new HashSet<>(pomPaths.size() << 1);
         for (String pomPath : pomPaths) {
-            if (! pomPath.endsWith(CompileTool.maven.compileFile())) {
+            if (!pomPath.endsWith(CompileTool.MAVEN.compileFile())) {
                 continue;
             }
             try (FileInputStream fis = new FileInputStream(new File(pomPath))) {
@@ -44,7 +44,7 @@ public class PomAnalysisUtil {
                 Model model = reader.read(fis);
                 modules.addAll(model.getModules());
                 names.put(model.getName(), pomPath);
-            }catch (Exception e) {
+            } catch (Exception e) {
                 log.error("analyzed pom failed！");
                 log.error(e.getMessage());
             }

@@ -5,15 +5,15 @@
 
     <resultMap id="location" type="Location">
         <id property="uuid" column="uuid"/>
-        <result property="start_line" column="start_line"/>
-        <result property="end_line" column="end_line"/>
-        <result property="bug_lines" column="bug_lines"/>
-        <result property="start_token" column="start_token"/>
-        <result property="end_token" column="end_token"/>
-        <result property="file_path" column="file_path"/>
-        <result property="class_name" column="class_name"/>
-        <result property="method_name" column="method_name"/>
-        <result property="rawIssue_id" column="rawIssue_id"/>
+        <result property="startLine" column="start_line"/>
+        <result property="endLine" column="end_line"/>
+        <result property="bugLines" column="bug_lines"/>
+        <result property="startToken" column="start_token"/>
+        <result property="endToken" column="end_token"/>
+        <result property="filePath" column="file_name"/>
+        <result property="className" column="class_name"/>
+        <result property="methodName" column="method_name"/>
+        <result property="rawIssueId" column="rawIssue_uuid"/>
         <result property="code" column="code"/>
     </resultMap>
 
@@ -26,52 +26,68 @@
         bug_lines,
         start_token,
         end_token,
-        file_path,
+        file_name,
         class_name,
         method_name,
-        rawIssue_id,
+        rawIssue_uuid,
         code
         )
         VALUES
         <foreach collection="list" item="item" index="index" separator=",">
             (
             #{item.uuid},
-            #{item.start_line},
-            #{item.end_line},
-            #{item.bug_lines},
-            #{item.start_token},
-            #{item.end_token},
-            #{item.file_path},
-            #{item.class_name},
-            #{item.method_name},
-            #{item.rawIssue_id},
+            #{item.startLine},
+            #{item.endLine},
+            #{item.bugLines},
+            #{item.startToken},
+            #{item.endToken},
+            #{item.filePath},
+            #{item.className},
+            #{item.methodName},
+            #{item.rawIssueId},
             #{item.code}
             )
         </foreach>
     </insert>
 
-    <delete id="deleteLocationByRawIssueIds" >
-        DELETE from location
-        <where>
-            rawIssue_id in
-            <foreach collection="list" separator="," open="(" close=")" item="rawIssueId">
-                #{rawIssueId}
-            </foreach>
-        </where>
 
+    <delete id="deleteLocationByRawIssueIds">
+        DELETE FROM location
+        WHERE rawIssue_uuid IN
+        <foreach collection="list" separator="," open="(" close=")" item="rawIssueId">
+            #{rawIssueId}
+        </foreach>
     </delete>
 
     <select id="getLocations" parameterType="Location" resultMap="location">
-        select * from location where rawIssue_id =#{uuid}
+        SELECT *
+        FROM location
+        WHERE rawIssue_uuid = #{uuid}
     </select>
 
     <select id="getLocationsByRawIssueUuid" parameterType="String" resultType="java.util.HashMap">
-        SELECT uuid, start_line as startLine,end_line as endLine, bug_lines as bugLines, start_token as startToken,
-        end_token as endToken, file_path as filePath, class_name as className,method_name as methodName, code
-        FROM location WHERE rawIssue_id =#{uuid}
+        SELECT start_line  AS startLine,
+               end_line    AS endLine,
+               file_name   AS filePath,
+               method_name AS methodName,
+               code
+        FROM location
+        WHERE rawIssue_uuid = #{uuid}
     </select>
 
     <select id="getRawIssueUuidsByMethodName" parameterType="String" resultType="String">
-        SELECT rawIssue_id FROM location where method_name = #{methodName} and file_path = #{filePath}
+        SELECT DISTINCT (rawIssue_uuid)
+        FROM location
+        WHERE method_name = #{methodName}
+          AND file_name = #{filePath}
+    </select>
+
+    <select id="getIssueFilterDetailList" resultType="java.util.Map">
+        SELECT start_line AS startLine, end_line AS endLine, method_name AS methodName, code
+        FROM location
+        WHERE rawIssue_uuid IN
+        <foreach collection="rawIssueUuids" separator="," open="(" close=")" item="rawIssueId">
+            #{rawIssueId}
+        </foreach>
     </select>
 </mapper>

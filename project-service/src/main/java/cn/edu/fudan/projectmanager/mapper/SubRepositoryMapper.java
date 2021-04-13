@@ -143,7 +143,7 @@ public interface SubRepositoryMapper {
     /**
      * 通过表uuid删除库
      *
-     * @param RepoUUID    库uuid
+     * @param uuid    库uuid
      */
-    void deleteRepoByUuid(@Param("RepoUUID") String RepoUUID);
+    void deleteRepoByUuid(@Param("RepoUUID") String uuid);
 }

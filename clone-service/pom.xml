@@ -12,6 +12,7 @@
     <parent>
         <artifactId>issueTracker</artifactId>
         <groupId>cn.edu.fudan</groupId>
+
         <version>1.0.1</version>
     </parent>
     <dependencies>

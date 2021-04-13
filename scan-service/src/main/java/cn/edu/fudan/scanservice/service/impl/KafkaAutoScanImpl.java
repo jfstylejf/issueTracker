@@ -1,28 +1,21 @@
 package cn.edu.fudan.scanservice.service.impl;
 
-import cn.edu.fudan.scanservice.annotation.FreeResource;
 import cn.edu.fudan.scanservice.component.rest.RestInterfaceManager;
 import cn.edu.fudan.scanservice.component.scan.FirstScanCommitFilterStrategy;
 import cn.edu.fudan.scanservice.dao.ScanDao;
 import cn.edu.fudan.scanservice.domain.dbo.Scan;
-import cn.edu.fudan.scanservice.domain.dto.RepoResourceDTO;
 import cn.edu.fudan.scanservice.domain.dto.CommitMessage;
+import cn.edu.fudan.scanservice.domain.dto.RepoResourceDTO;
 import cn.edu.fudan.scanservice.service.InvokeToolService;
 import cn.edu.fudan.scanservice.service.MessageListeningService;
-import cn.edu.fudan.scanservice.util.CompileUtil;
-import cn.edu.fudan.scanservice.util.JGitHelper;
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.eclipse.jgit.revwalk.RevCommit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 /**
  * description: 自动扫描实现
@@ -59,20 +52,21 @@ public class KafkaAutoScanImpl implements MessageListeningService {
             log.error("repo : [{}] info is null", repoId);
             return;
         }
-
+        log.debug("project is :");
+        log.debug(project.toJSONString());
         //判断如果不是更新，该项目是否已经扫描过
         Scan preScan = scanDao.getScanByRepoId (repoId);
         if( preScan == null){
             isUpdate = false;
         }
-
         String startCommit = null;
         if (! isUpdate) {
             int month = 12;
             if(defaultScanInterval != 0){
                 month = defaultScanInterval;
             }
-            String language = project.getString("language");
+            String language = project.getJSONObject("data").getString("language");
+            log.debug("language is :" + language);
             if (language.equals("Java")) {
                 startCommit = commitFilter.filter (RepoResourceDTO.builder().repoId(repoId).build(), repoId, branch, month);
             } else {
@@ -83,9 +77,12 @@ public class KafkaAutoScanImpl implements MessageListeningService {
             log.error("there is none available commit，repo id：{}", repoId);
             // TODO 更新数据库状态用于通知用户 scanDao
             // scan dao
-
             return;
         }
+        log.debug("repoId is :" + repoId);
+        log.debug("startCommit is :" + startCommit);
+        log.debug("branch is :" + branch);
+        log.info("start invoke all tools...");
         // FIXME 调用工具开始扫描
         invokeToolService.invokeTools(repoId, branch, startCommit);
     }
@@ -135,6 +132,5 @@ public class KafkaAutoScanImpl implements MessageListeningService {
     public void setCommitFilter(FirstScanCommitFilterStrategy commitFilter) {
         this.commitFilter = commitFilter;
     }
-
 
 }

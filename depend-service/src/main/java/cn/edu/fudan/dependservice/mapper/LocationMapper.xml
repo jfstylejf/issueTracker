@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.edu.fudan.dependservice.mapper.LocationMapper">
+
+
+    <resultMap id="projectString" type="String">
+        <result property="projectName" column="project_name"/>
+    </resultMap>
+
+    <select id="getProjectName" parameterType="String" resultMap="projectString">
+        select project_name
+        from issueTracker.project
+        where id = #{projectId};
+    </select>
+
+    <resultMap id="repoList" type="cn.edu.fudan.dependservice.domain.RepoUuidsInfo">
+        <id property="repoUuid" column="repo_uuid"/>
+        <result property="repoName" column="repo_name"/>
+        <result property="language" column="language"/>
+        <result property="branch" column="branch"/>
+    </resultMap>
+    <select id="getRepoUuids" parameterType="String" resultMap="repoList">
+        select repo_uuid, repo_name, language, branch
+        from issueTracker.sub_repository
+        where project_name = #{projectName};
+    </select>
+
+    <resultMap id="projectIds" type="cn.edu.fudan.dependservice.domain.ProjectIdsInfo">
+        <id property="projectId" column="id"/>
+    </resultMap>
+
+    <select id="getAllProjectIds" resultMap="projectIds">
+        select id
+        from issueTracker.project;
+    </select>
+
+    <resultMap id="relationship" type="cn.edu.fudan.dependservice.domain.RelationShip">
+        <id property="repo_uuid" column="repo_uuid"/>
+        <id property="commit_id" column="commit_id"/>
+<!--        <id property="id" column="repo_uuid"/>-->
+        <result property="file" column="file"/>
+        <result property="depend_on" column="depend_on"/>
+<!--        <result property="branch" column="branch"/>-->
+    </resultMap>
+
+
+    <select id="getDependencyInfo" resultMap="relationship">
+        select commit_id, repo_uuid, file,depend_on
+        from dependency_detail
+        where repo_uuid =#{repoUuid}
+    </select>
+<!--    todo  Optimizing Query Statements-->
+<!--    <select id="getDependencyInfo" resultMap="relationship">-->
+<!--        select commit_id, repo_uuid, file,depend_on-->
+<!--        from dependency_detail-->
+<!--        where repo_uuid =#{repoUuid}-->
+<!--         and-->
+<!--        commit_id =( select max(commit_id) from dependency_detail);-->
+<!--    </select>-->
+
+</mapper>

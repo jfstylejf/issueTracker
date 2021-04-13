@@ -10,6 +10,7 @@ import cn.edu.fudan.measureservice.domain.enums.ToolEnum;
 import cn.edu.fudan.measureservice.mapper.MeasureMapper;
 import cn.edu.fudan.measureservice.mapper.ProjectMapper;
 import lombok.Getter;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
@@ -429,6 +430,12 @@ public class ProjectDao {
             log.error("query baseDate failed!\n");
         }
         return null;
+    }
+
+    @SneakyThrows
+    public String getDeveloperFirstCommitDate(String developer,String since ,String until, String repoUuid) {
+        Map<String,String> map = projectMapper.getDeveloperFirstCommitDate(repoUuid,since,until,developer);
+        return map.get("firstCommitDate");
     }
 
 

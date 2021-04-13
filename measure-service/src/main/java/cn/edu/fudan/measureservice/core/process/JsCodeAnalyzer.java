@@ -4,11 +4,15 @@ import cn.edu.fudan.measureservice.domain.*;
 import cn.edu.fudan.measureservice.domain.Objects;
 import cn.edu.fudan.measureservice.domain.dto.FileInfo;
 import cn.edu.fudan.measureservice.domain.dto.MethodInfo;
+import cn.edu.fudan.measureservice.domain.dto.TextInfo;
+import cn.edu.fudan.measureservice.util.FileFilter;
 import cn.edu.fudan.measureservice.util.FileUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 
 import java.io.*;
@@ -19,9 +23,10 @@ import java.util.concurrent.TimeUnit;
  * @author wjzho
  */
 @Slf4j
+@Component
 public class JsCodeAnalyzer extends BaseAnalyzer{
 
-    private static final String jsResultFileHome = "/home/fdse/codeWisdom/service/measure/log/JsResultLog";
+    private static final String jsResultFileHome = "/home/appuser/codeWisdom/service/measure/log/JsResultLog";
     private static final String jsCcnLog = "jsCcn.log";
     private static final String jsLineLog = "jsLine.log";
     public static final String jsScanLog = "jsScan.log";
@@ -55,7 +60,7 @@ public class JsCodeAnalyzer extends BaseAnalyzer{
 
 
     @Override
-    public boolean analyze() {
+    public  boolean analyze() {
         try {
             JSONArray jsCcnResult = readJsParseFile(FileUtil.pathJoint(jsResultFileHome,jsCcnLog));
             JSONArray jsLineResult = readJsParseFile(FileUtil.pathJoint(jsResultFileHome,jsLineLog));
@@ -101,21 +106,89 @@ public class JsCodeAnalyzer extends BaseAnalyzer{
 
 
     @SneakyThrows
-    private boolean executeCommand(String path, String type){
+    private  boolean executeCommand(String path, String type){
         Runtime rt = Runtime.getRuntime();
         String command = binHome + type + " " + path;
         log.info("command -> {}", command);
+        /*
+            note :
+             Process.waitfor 挂起 Java 线程， 等待子进程执行
+             然而本地缓冲区大小有限， 如果不处理写入 buffer 的 标准输入流和标准输出流就会造成子进程阻塞，发生死锁
+         */
         Process process = rt.exec(command);
-        boolean timeout = process.waitFor(200L, TimeUnit.SECONDS);
-        if (!timeout) {
-            process.destroy();
-            log.error("run {} script timeout ! (100s),file: {}",type, path);
+        try {
+            //获取进程的标准输入流
+            final InputStream is1 = process.getInputStream();
+            //获取进城的错误流
+            final InputStream is2 = process.getErrorStream();
+            //启动两个线程，一个线程负责读标准输出流，另一个负责读标准错误流
+            // fixme 使用线程池
+            new Thread() {
+                @Override
+                public void run() {
+                    BufferedReader br1 = new BufferedReader(new InputStreamReader(is1));
+                    try {
+                        String line1;
+                        while ((line1 = br1.readLine()) != null) {
+                            if (line1 != null){}
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    finally{
+                        try {
+                            is1.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }.start();
+            new Thread() {
+                @Override
+                public void  run() {
+                    BufferedReader br2 = new  BufferedReader(new  InputStreamReader(is2));
+                    try {
+                        String line2 = null ;
+                        while ((line2 = br2.readLine()) !=  null ) {
+                            if (line2 != null){}
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    finally{
+                        try {
+                            is2.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }.start();
+            boolean timeout = process.waitFor(200L, TimeUnit.SECONDS);
+            if (!timeout) {
+                process.destroy();
+                log.error("run {} script timeout ! (100s),file: {}",type, path);
+                return false;
+            }
+            if (process.exitValue() != 0) {
+
+            }
+            return true;
+
+        }catch (Exception e) {
+            e.printStackTrace();
+            try{
+                process.getErrorStream().close();
+                process.getInputStream().close();
+                process.getOutputStream().close();
+            }
+            catch(Exception ignored){
+                e.getMessage();
+            }
             return false;
         }
-        if (process.exitValue() != 0) {
 
-        }
-        return true;
     }
 
     //todo 读写文件异常处理细化判断
@@ -139,10 +212,11 @@ public class JsCodeAnalyzer extends BaseAnalyzer{
         for (int i = 0; i < jsCcnResult.size(); i++) {
             JSONObject method = (JSONObject) jsCcnResult.get(i);
             String fileName = FileUtil.systemAvailablePath(method.getString("fileName"));
-            if (!map.containsKey(fileName)) {
-                map.put(fileName,new ArrayList<>());
+            String relativeName = FileUtil.getRelativePath(repoPath,fileName);
+            if (!map.containsKey(relativeName)) {
+                map.put(relativeName,new ArrayList<>());
             }
-            map.get(fileName).add(MethodInfo.builder()
+            map.get(relativeName).add(MethodInfo.builder()
                     .methodName(method.getString("funcName"))
                     .absoluteFilePath(fileName)
                     .methodCcn(method.getIntValue("complexity"))
@@ -153,18 +227,22 @@ public class JsCodeAnalyzer extends BaseAnalyzer{
         for (int i = 0; i < jsLineResult.size(); i++) {
             JSONObject line = (JSONObject) jsLineResult.get(i);
             String fileName = FileUtil.systemAvailablePath(line.getString("file"));
+            String relativeName = FileUtil.getRelativePath(repoPath,fileName);
+            String rawFileText = line.getString("fileContent");
+            String[] fileTexts = rawFileText.split("\n");
+            TextInfo textInfo = FileFilter.textFilter(fileTexts);
             FileInfo fileInfo = FileInfo.builder()
                     .absolutePath(fileName)
-                    .relativePath(FileUtil.getRelativePath(repoPath,fileName))
-                    .codeLines(line.getIntValue("codeLine"))
-                    .blankLines(line.getIntValue("blankLine"))
-                    .totalLines(line.getIntValue("allLine"))
+                    .relativePath(relativeName)
+                    .codeLines(textInfo.getCodeLines())
+                    .blankLines(textInfo.getBlankLines())
+                    .totalLines(textInfo.getTotalLines())
                     .build();
-            if(!map.containsKey(fileName)) {
+            if(!map.containsKey(relativeName)) {
                 fileInfo.setMethodInfoList(new ArrayList<>());
                 fileInfo.setFileCcn(0);
             }else {
-                fileInfo.setMethodInfoList(map.get(fileName));
+                fileInfo.setMethodInfoList(map.get(relativeName));
                 fileInfo.calFileCcn();
             }
             fileInfos.add(fileInfo);
@@ -192,16 +270,20 @@ public class JsCodeAnalyzer extends BaseAnalyzer{
                     .ccn(fileInfo.getFileCcn())
                     .functions(fileInfo.getMethodInfoList().size())
                     .path(fileInfo.getRelativePath())
-                    // fixme totalLines 是代码行还是包括空白行
+                     // 这边拿的总行数，最后入库数据需要剪掉空白+注释
                     .totalLines(fileInfo.getCodeLines())
                     .build());
         }
         Total total = Total.builder()
                 .files(fileInfos.size())
                 .functions(totalFunctions).build();
+        double functionAverageCcn = totalFunctions == 0 ? 0 : totalCcn*1.0/totalFunctions;
+        FunctionAverage functionAverage = FunctionAverage.builder()
+                .ccn(functionAverageCcn).build();
+
         return Measure.builder()
                 .total(total)
-                .functions(Functions.builder().functions(functions).functionAverage(FunctionAverage.builder().ccn(totalCcn*1.0/totalFunctions).build()).build())
+                .functions(Functions.builder().functions(functions).functionAverage(functionAverage).build())
                 .objects(Objects.builder().objects(objects).build())
                 .build();
     }

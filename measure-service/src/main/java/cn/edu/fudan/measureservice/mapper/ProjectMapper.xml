@@ -97,6 +97,26 @@
         Group By developer_unique_name
     </select>
 
+    <select id="getDeveloperFirstCommitDate" resultType="java.util.HashMap" >
+        SELECT developer_unique_name,SUBSTRING(min(commit_time),1,10) AS firstCommitDate FROM issueTracker.commit_view
+        <where>
+            <trim prefixOverrides="and">
+                <if test="repoUuid != null and repoUuid !='' ">
+                    and repo_uuid = #{repoUuid}
+                </if>
+
+                <if test="since != null and since != '' ">
+                    and <![CDATA[ commit_time >= #{since} ]]>
+                </if>
+
+                <if test="until != null and until != '' ">
+                    and <![CDATA[ commit_time <= #{until} ]]>
+                </if>
+                and developer_unique_name = #{developer}
+            </trim>
+        </where>
+    </select>
+
     <select id="getDeveloperDutyTypeList" resultType="java.util.HashMap">
         SELECT distinct account_name,account_status FROM issueTracker.account
     </select>
@@ -237,15 +257,6 @@
         FROM issueTracker.account_project AS p
         WHERE p.account_uuid = #{account_uuid} AND p.account_role = 'LEADER'
     </select>
-
-    <select id="getDeveloperRepoFirstCommitDate" resultType="String">
-        SELECT commit_time AS firstCommitDate FROM issueTracker.commit_view
-        WHERE developer_unique_name = #{developer}
-        AND repo_uuid = #{repoUuid}
-        ORDER BY commit_time DESC
-        LIMIT 1
-    </select>
-
 
     <delete id="deleteRepoMsg">
         DELETE FROM issueTracker.repo_measure

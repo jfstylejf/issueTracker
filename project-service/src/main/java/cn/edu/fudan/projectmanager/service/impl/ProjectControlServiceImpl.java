@@ -303,8 +303,18 @@ public class ProjectControlServiceImpl implements ProjectControlService {
     }
 
     @Override
-    public void deleteProject(String token, String projectName) throws Exception {
-
+    public boolean deleteProject(String token, String projectName) throws Exception {
+        UserInfoDTO userInfoDTO = getUserInfoByToken(token);
+        // 0 表示超级管理员 只有超级管理员能操作
+        if (userInfoDTO.getRight() != 0) {
+            throw new RunTimeException("this user has no right to delete repo!");
+        }
+        List<String> ProjectRepo = projectDao.getProjectRepo(projectName);
+        if(ProjectRepo.size() != 0){
+            return false;
+        }
+        projectDao.deleteProject(projectName);
+        return true;
     }
 
     @Override
@@ -356,7 +366,7 @@ public class ProjectControlServiceImpl implements ProjectControlService {
 
 
     @Override
-    public void deleteRepo(@NotNull String token, String repoUuid, String repoUUID) throws Exception {
+    public boolean deleteRepo(@NotNull String token, String repoUuid, String uuid) throws Exception {
         UserInfoDTO userInfoDTO = getUserInfoByToken(token);
         String accountUuid = userInfoDTO.getUuid();
         // 0 表示超级管理员 只有超级管理员能操作
@@ -366,47 +376,60 @@ public class ProjectControlServiceImpl implements ProjectControlService {
         //该repo的所有projectName 都会改变 只有超级管理员才会有此权限
         log.warn("repo delete by {}! repo uuid is {}", accountUuid, repoUuid);
 
-        if(repoUUID != null){
-            subRepositoryDao.deleteRepoByUuid(repoUUID);
-            return;
-        }
-        accountRepositoryDao.deleteRepoAR(accountUuid, repoUuid);
-        subRepositoryDao.deleteRepoSR(accountUuid, repoUuid);
-
-        boolean deleteCloneRepoSuccess = rest.deleteCloneRepo(repoUuid);
-        if (!deleteCloneRepoSuccess) {
-            log.error("clone repo delete failed!");
+        if (uuid != null) {
+            if (subRepositoryDao.getSubRepoByUuid(uuid) == null) {
+                return false;
+            } else {
+                subRepositoryDao.deleteRepoByUuid(uuid);
+                return true;
+            }
         }
 
-        boolean deleteCodetrackerRepoSuccess = rest.deleteCodetrackerRepo(repoUuid);
-        if (!deleteCodetrackerRepoSuccess) {
-            log.error("codetracker repo delete failed!");
-        }
+        if (repoUuid != null) {
+            if (subRepositoryDao.getSubRepoByRepoUuid(repoUuid) == null) {
+                return false;
+            } else {
+                boolean deleteCloneRepoSuccess = rest.deleteCloneRepo(repoUuid);
+                if (!deleteCloneRepoSuccess) {
+                    log.error("clone repo delete failed!");
+                }
 
-        boolean deleteCommitRepoSucess = rest.deleteCommitRepo(repoUuid);
-        if (!deleteCommitRepoSucess) {
-            log.error("commit repo delete failed!");
-        }
+                boolean deleteCodetrackerRepoSuccess = rest.deleteCodetrackerRepo(repoUuid);
+                if (!deleteCodetrackerRepoSuccess) {
+                    log.error("codetracker repo delete failed!");
+                }
 
-        boolean deleteIssueRepoSuccess = rest.deleteIssueRepo(repoUuid);
-        if (!deleteIssueRepoSuccess) {
-            log.error("issue repo delete failed!");
-        }
+                boolean deleteCommitRepoSucess = rest.deleteCommitRepo(repoUuid);
+                if (!deleteCommitRepoSucess) {
+                    log.error("commit repo delete failed!");
+                }
 
-        boolean deleteMeasureRepoSucess = rest.deleteMeasureRepo(repoUuid);
-        if (!deleteMeasureRepoSucess) {
-            log.error("measure repo delete failed!");
-        }
+                boolean deleteIssueRepoSuccess = rest.deleteIssueRepo(repoUuid);
+                if (!deleteIssueRepoSuccess) {
+                    log.error("issue repo delete failed!");
+                }
 
-        boolean deleteScanRepoSucess = rest.deleteScanRepo(token, repoUuid);
-        if (!deleteScanRepoSucess) {
-            log.error("scan repo delete failed!");
-        }
+                boolean deleteMeasureRepoSucess = rest.deleteMeasureRepo(repoUuid);
+                if (!deleteMeasureRepoSucess) {
+                    log.error("measure repo delete failed!");
+                }
 
-        if (!deleteCloneRepoSuccess || !deleteCodetrackerRepoSuccess || !deleteCommitRepoSucess || !deleteIssueRepoSuccess
-                || !deleteMeasureRepoSucess || !deleteScanRepoSucess) {
-            throw new RunTimeException("delete failed!");
+                boolean deleteScanRepoSucess = rest.deleteScanRepo(token, repoUuid);
+                if (!deleteScanRepoSucess) {
+                    log.error("scan repo delete failed!");
+                }
+
+                if (!deleteCloneRepoSuccess || !deleteCodetrackerRepoSuccess || !deleteCommitRepoSucess || !deleteIssueRepoSuccess
+                        || !deleteMeasureRepoSucess || !deleteScanRepoSucess) {
+                    throw new RunTimeException("delete failed!");
+                }
+
+                accountRepositoryDao.deleteRepoAR(accountUuid, repoUuid);
+                subRepositoryDao.deleteRepoSR(accountUuid, repoUuid);
+            }
         }
+        return true;
+
     }
 
     @Override

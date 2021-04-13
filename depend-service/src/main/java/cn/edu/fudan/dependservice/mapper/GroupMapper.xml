@@ -6,7 +6,7 @@
 <mapper namespace="cn.edu.fudan.dependservice.mapper.GroupMapper">
 
     <select id="getAllGroups" resultType="cn.edu.fudan.dependservice.domain.Group">
-    select repo_uuid,group_id,file,depend_on,depend_details from dependecyDetail
+    select repo_uuid,group_id,file,depend_on,depend_details from dependecy_detail
     </select>
 
     <insert id="add">

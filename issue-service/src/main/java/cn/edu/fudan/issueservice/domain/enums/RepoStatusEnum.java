@@ -14,7 +14,7 @@ public enum RepoStatusEnum {
     /**
      * repo scan status
      */
-    SCANNING ("scanning"),
+    SCANNING("scanning"),
     STOP("stop"),
     FAILED("failed"),
     COMPLETE("complete");

@@ -29,23 +29,23 @@ public class ScanResultDao {
         this.scanResultMapper = scanResultMapper;
     }
 
-    public void addOneScanResult(ScanResult scanResult){
+    public void addOneScanResult(ScanResult scanResult) {
         scanResultMapper.addOneScanResult(scanResult);
     }
 
-    public void deleteScanResultsByRepoIdAndCategory(String repoUuid, String category){
-        try{
+    public void deleteScanResultsByRepoIdAndCategory(String repoUuid, String category) {
+        try {
             scanResultMapper.deleteScanResultsByRepoIdAndCategory(repoUuid, category);
-        }catch (Exception e){
+        } catch (Exception e) {
             logger.error(e.getMessage());
         }
     }
 
 
-    public List<Map<String, Object>> getRepoIssueCounts(List<String> repoUuids, String since, String until, String category, String developer){
-        try{
+    public List<Map<String, Object>> getRepoIssueCounts(List<String> repoUuids, String since, String until, String category, String developer) {
+        try {
             return scanResultMapper.getRepoIssueCounts(repoUuids, since, until, category, developer);
-        }catch (Exception e){
+        } catch (Exception e) {
             logger.error(e.getMessage());
             return new ArrayList<>();
         }

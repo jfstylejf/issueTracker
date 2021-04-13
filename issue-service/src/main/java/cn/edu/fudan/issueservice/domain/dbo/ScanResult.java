@@ -13,28 +13,30 @@ public class ScanResult {
 
     private int id;
     private String category;
-    private String repo_id;
-    private Date scan_date;
-    private String commit_id;
-    private Date commit_date;
+    private String repoId;
+    private Date scanDate;
+    private String commitId;
+    private Date commitDate;
     private String developer;
-    private int new_count;
-    private int eliminated_count;
-    private int remaining_count;
+    private int newCount;
+    private int eliminatedCount;
+    private int remainingCount;
+    private int ignoreCount;
 
     public ScanResult() {
     }
 
-    public ScanResult(String category, String repo_id, Date scan_date, String commit_id, Date commit_date, String developer, int new_count, int eliminated_count, int remaining_count) {
+    public ScanResult(String category, String repoId, Date scanDate, String commitId, Date commitDate, String developer, int newCount, int eliminatedCount, int remainingCount, int ignoreCount) {
         this.category = category;
-        this.repo_id = repo_id;
-        this.scan_date = scan_date;
-        this.commit_id = commit_id;
-        this.commit_date = commit_date;
+        this.repoId = repoId;
+        this.scanDate = scanDate;
+        this.commitId = commitId;
+        this.commitDate = commitDate;
         this.developer = developer;
-        this.new_count = new_count;
-        this.eliminated_count = eliminated_count;
-        this.remaining_count = remaining_count;
+        this.newCount = newCount;
+        this.eliminatedCount = eliminatedCount;
+        this.remainingCount = remainingCount;
+        this.ignoreCount = ignoreCount;
     }
 
 }

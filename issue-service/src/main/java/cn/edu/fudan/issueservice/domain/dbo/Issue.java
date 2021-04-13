@@ -1,33 +1,38 @@
 package cn.edu.fudan.issueservice.domain.dbo;
 
+import cn.edu.fudan.issueservice.domain.enums.IgnoreTypeEnum;
+import cn.edu.fudan.issueservice.domain.enums.IssueStatusEnum;
 import lombok.Data;
+import lombok.Getter;
 
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * @author Beethoven
  */
 @Data
+@Getter
 public class Issue {
 
     private String uuid;
     private String type;
     private String tool;
-    private String start_commit;
-    private Date start_commit_date;
-    private String end_commit;
-    private Date end_commit_date;
-    private String repo_id;
-    private String target_files;
-    private Date create_time;
-    private Date update_time;
+    private String startCommit;
+    private Date startCommitDate;
+    private String endCommit;
+    private Date endCommitDate;
+    private String repoId;
+    private String targetFiles;
+    private Date createTime;
+    private Date updateTime;
     private IssueType issueType;
     private List<Object> tags;
     private int priority;
-    private int displayId ;
+    private int displayId;
     private String status;
-    private String manual_status;
+    private String manualStatus;
     private String resolution;
     private String issueCategory;
 
@@ -36,7 +41,8 @@ public class Issue {
      */
     private String producer;
     private String solver;
-
+    private String solveCommit;
+    private Date solveCommitDate;
 
     /**
      * 展示给前端，此处其实应该新建一个 dto 类，对issue展示给前端的字段进行过滤
@@ -51,176 +57,30 @@ public class Issue {
     public Issue() {
     }
 
-    public Issue(String uuid, String type, String tool, String start_commit, Date start_commit_date, String end_commit, Date end_commit_date, String repo_id, String target_files, Date create_time, Date update_time ,int displayId, int priority, String producer, String solver) {
-        this.uuid = uuid;
-        this.type = type;
-        this.tool = tool;
-        this.start_commit = start_commit;
-        if(start_commit_date == null){
-            this.start_commit_date = null;
-        }else {
-            this.start_commit_date = (Date) start_commit_date.clone();
-        }
-        this.end_commit = end_commit;
-        if(end_commit_date == null){
-            this.end_commit_date = null;
-        }else {
-            this.end_commit_date = (Date) end_commit_date.clone();
-        }
-        this.repo_id = repo_id;
-        this.target_files = target_files;
-        if(create_time == null){
-            this.create_time = null;
-        }else {
-            this.create_time = (Date) create_time.clone();
-        }
-        if(update_time == null){
-            this.update_time = null;
-        }else {
-            this.update_time = (Date) update_time.clone();
-        }
-        this.displayId = displayId;
-        this.priority = priority;
-        this.producer = producer;
-        this.solver = solver;
+    /**
+     * todo 根据rawIssue 产生一个新的Issue
+     */
+    public static Issue valueOf(RawIssue r) {
+        Issue issue = new Issue();
+        issue.setUuid(UUID.randomUUID().toString());
+        issue.setType(r.getType());
+        issue.setTool(r.getTool());
+        issue.setStartCommit(r.getCommitId());
+        issue.setStartCommitDate(r.getCommitTime());
+        issue.setEndCommit(r.getCommitId());
+        issue.setEndCommitDate(r.getCommitTime());
+        issue.setRepoId(r.getRepoId());
+        issue.setTargetFiles(r.getFileName());
+        Date date = new Date();
+        issue.setCreateTime(date);
+        issue.setUpdateTime(date);
+        issue.setPriority(r.getPriority());
+        issue.setStatus(IssueStatusEnum.OPEN.getName());
+        issue.setManualStatus(IgnoreTypeEnum.DEFAULT.getName());
+        issue.setResolution(String.valueOf(0));
+        issue.setProducer(r.getDeveloperName());
+        issue.setSolveCommit(null);
+        issue.setSolveCommitDate(null);
+        return issue;
     }
-
-    public Date getCreate_time() {
-        if(create_time == null){
-            return null;
-        }
-        return (Date)create_time.clone();
-    }
-
-    public void setCreate_time(Date create_time) {
-        if(create_time == null){
-            this.create_time = null;
-        }else {
-            this.create_time = (Date) create_time.clone();
-        }
-    }
-
-    public Date getUpdate_time() {
-        if(update_time == null){
-            return null;
-        }
-        return (Date)update_time.clone();
-    }
-
-    public void setUpdate_time(Date update_time) {
-        if(update_time == null){
-            this.update_time = null;
-        }else {
-            this.update_time = (Date) update_time.clone();
-        }
-    }
-
-
-    public List<Object> getTags() {
-        return tags;
-    }
-
-    public void setTags(List<Object> tags) {
-        this.tags = tags;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public String getTool() {
-        return tool;
-    }
-
-    public void setTool(String tool) {
-        this.tool = tool;
-    }
-
-    public String getStart_commit() {
-        return start_commit;
-    }
-
-    public void setStart_commit(String start_commit) {
-        this.start_commit = start_commit;
-    }
-
-    public String getEnd_commit() {
-        return end_commit;
-    }
-
-    public void setEnd_commit(String end_commit) {
-        this.end_commit = end_commit;
-    }
-
-
-
-    public String getUuid() {
-        return uuid;
-    }
-
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
-    }
-
-    public String getRepo_id() {
-        return repo_id;
-    }
-
-    public void setRepo_id(String repo_id) {
-        this.repo_id = repo_id;
-    }
-
-    public String getTarget_files() {
-        return target_files;
-    }
-
-    public void setTarget_files(String target_files) {
-        this.target_files = target_files;
-    }
-
-    public int getDisplayId() {
-        return displayId;
-    }
-
-    public void setDisplayId(int displayId) {
-        this.displayId = displayId;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public String getManual_status() {
-        return manual_status;
-    }
-
-    public void setManual_status(String manual_status) {
-        this.manual_status = manual_status;
-    }
-
-    public String getResolution() {
-        return resolution;
-    }
-
-    public void setResolution(String resolution) {
-        this.resolution = resolution;
-    }
-
-
-    public String getSeverity() {
-        return severity;
-    }
-
-    public void setSeverity(String severity) {
-        this.severity = severity;
-    }
-
 }
