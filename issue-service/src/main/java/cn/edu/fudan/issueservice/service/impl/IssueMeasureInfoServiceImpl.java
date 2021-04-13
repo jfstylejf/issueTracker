@@ -1,8 +1,11 @@
 package cn.edu.fudan.issueservice.service.impl;
 
 import cn.edu.fudan.issueservice.component.RestInterfaceManager;
-import cn.edu.fudan.issueservice.dao.*;
+import cn.edu.fudan.issueservice.dao.IssueDao;
+import cn.edu.fudan.issueservice.dao.ProjectDao;
 import cn.edu.fudan.issueservice.domain.dbo.Issue;
+import cn.edu.fudan.issueservice.domain.enums.IgnoreTypeEnum;
+import cn.edu.fudan.issueservice.domain.enums.JavaIssuePriorityEnum;
 import cn.edu.fudan.issueservice.domain.enums.*;
 import cn.edu.fudan.issueservice.domain.vo.IssueTopVO;
 import cn.edu.fudan.issueservice.service.IssueMeasureInfoService;

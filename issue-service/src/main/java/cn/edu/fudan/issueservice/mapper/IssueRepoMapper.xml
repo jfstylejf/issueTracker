@@ -21,32 +21,37 @@
 
     <insert id="insertOneIssueRepo" parameterType="IssueRepo">
         insert into issue_repo
-        (uuid,
-         repo_uuid,
-         branch,
-         tool,
-         start_commit,
-         end_commit,
-         total_commit_count,
-         scanned_commit_count,
-         scan_time,
-         status,
-         nature,
-         start_scan_time,
-         end_scan_time)
-        VALUES (#{uuid},
-                #{repoId},
-                #{branch},
-                #{tool},
-                #{startCommit},
-                #{endCommit},
-                #{totalCommitCount},
-                #{scannedCommitCount},
-                #{scanTime},
-                #{status},
-                #{nature},
-                #{startScanTime},
-                #{endScanTime})
+        (
+            uuid,
+            repo_uuid,
+            branch,
+            tool,
+            start_commit,
+            end_commit,
+            total_commit_count,
+            scanned_commit_count,
+            scan_time,
+            status,
+            nature,
+            start_scan_time,
+            end_scan_time
+        )
+        VALUES
+        (
+            #{uuid},
+            #{repoId},
+            #{branch},
+            #{tool},
+            #{startCommit},
+            #{endCommit},
+            #{totalCommitCount},
+            #{scannedCommitCount},
+            #{scanTime},
+            #{status},
+            #{nature},
+            #{startScanTime},
+            #{endScanTime}
+        )
     </insert>
 
     <update id="updateIssueRepo" parameterType="IssueRepo">

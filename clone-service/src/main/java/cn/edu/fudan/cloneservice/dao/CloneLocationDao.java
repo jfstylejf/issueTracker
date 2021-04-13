@@ -29,6 +29,10 @@ public class CloneLocationDao {
         return cloneLocationMapper.getCloneLocations(repoId, commitId);
     }
 
+    public List<CloneLocation> getCloneLocationsTest(String repoId, String commitId){
+        return cloneLocationMapper.getCloneLocationsTest(repoId, commitId);
+    }
+
     public void deleteCloneLocations(String repoId){
         cloneLocationMapper.deleteCloneLocations(repoId);
     }

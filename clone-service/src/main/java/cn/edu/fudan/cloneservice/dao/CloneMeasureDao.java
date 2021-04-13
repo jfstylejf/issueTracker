@@ -20,8 +20,7 @@ public class CloneMeasureDao {
 
     private static Map<String, List<CloneMeasure>> cloneMeasureMap = new ConcurrentHashMap<>(26);
 
-    @Autowired
-    CloneMeasureMapper cloneMeasureMapper;
+    private CloneMeasureMapper cloneMeasureMapper;
 
     public List<CloneMeasure> getCloneMeasures(String repoId){
         if (cloneMeasureMap.keySet().contains(repoId)) {
@@ -32,12 +31,31 @@ public class CloneMeasureDao {
         return cloneMeasureMap.get(repoId);
     }
 
+    @Autowired
+    public void setCloneMeasureMapper(CloneMeasureMapper cloneMeasureMapper){
+        this.cloneMeasureMapper = cloneMeasureMapper;
+    }
+
+    public CloneMeasure getCloneMeasureTest(String repoId, String commitId){
+        CloneMeasure cloneMeasure = cloneMeasureMapper.getCloneMeasureTest(repoId, commitId);
+        return cloneMeasure;
+    }
+
+    public CloneMeasure getCloneMeasure(String repoId, String commitId){
+        CloneMeasure cloneMeasure = cloneMeasureMapper.getCloneMeasure(repoId, commitId);
+        return cloneMeasure;
+    }
+
     public void insertCloneMeasure(CloneMeasure cloneMeasure){
         cloneMeasureMapper.insertCloneMeasure(cloneMeasure);
     }
 
     public void deleteCloneMeasureByRepoId(String repoId){
         cloneMeasureMapper.deleteCloneMeasureByRepoId(repoId);
+    }
+
+    public void deleteCloneMeasureByRepoIdAndCommitId(String repoId, String commitId){
+        cloneMeasureMapper.deleteCloneMeasureByRepoIdAndCommitId(repoId, commitId);
     }
 
     public int getCloneMeasureCount(String repoId, String commitId){

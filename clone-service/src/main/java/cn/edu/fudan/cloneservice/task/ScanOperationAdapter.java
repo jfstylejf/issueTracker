@@ -5,6 +5,7 @@ import cn.edu.fudan.cloneservice.dao.CloneScanDao;
 import cn.edu.fudan.cloneservice.domain.clone.CloneScan;
 import cn.edu.fudan.cloneservice.domain.clone.CloneScanInitialInfo;
 import cn.edu.fudan.cloneservice.domain.clone.CloneScanResult;
+import cn.edu.fudan.cloneservice.mapper.RepoCommitMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,10 +24,16 @@ public class ScanOperationAdapter implements ScanOperation {
     private final static Logger logger = LoggerFactory.getLogger(ScanOperationAdapter.class);
 
     RestInterfaceManager restInterfaceManager;
+    RepoCommitMapper repoCommitMapper;
 
     @Autowired
     public void setRestInterfaceManager(RestInterfaceManager restInterfaceManager) {
         this.restInterfaceManager = restInterfaceManager;
+    }
+
+    @Autowired
+    public void setRepoCommitMapper(RepoCommitMapper repoCommitMapper){
+        this.repoCommitMapper = repoCommitMapper;
     }
 
     private CloneScanDao cloneScanDao;
@@ -54,7 +61,7 @@ public class ScanOperationAdapter implements ScanOperation {
         cloneScan.setCommitId(commitId);
         cloneScan.setUuid(uuid);
         cloneScanDao.insertCloneScan(cloneScan);
-        String language = restInterfaceManager.getLanguage(repoId);
+        String language = (repoCommitMapper.getLanguage(repoId));
         return new CloneScanInitialInfo(cloneScan, repoId, repoPath, true, language);
     }
 

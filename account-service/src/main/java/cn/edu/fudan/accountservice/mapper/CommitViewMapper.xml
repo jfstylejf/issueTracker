@@ -8,7 +8,7 @@
         select distinct developer_unique_name as developerName from commit_view
         <trim prefix="where" prefixOverrides="and">
             <if test="repoUuids != null and repoUuids.size > 0">
-                AND repo_id IN
+                AND repo_uuid IN
                 <foreach collection="repoUuids" separator="," open="(" close=")" item="repoUuid">
                     #{repoUuid}
                 </foreach>
