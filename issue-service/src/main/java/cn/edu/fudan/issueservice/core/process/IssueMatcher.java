@@ -11,6 +11,7 @@ import cn.edu.fudan.issueservice.domain.enums.JavaScriptIssuePriorityEnum;
 import cn.edu.fudan.issueservice.domain.enums.RawIssueStatus;
 import cn.edu.fudan.issueservice.domain.enums.ScanStatusEnum;
 import cn.edu.fudan.issueservice.util.*;
+import com.alibaba.fastjson.JSON;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Component;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author fancying
@@ -193,7 +195,7 @@ public class IssueMatcher {
         preFiles = preFiles.stream().filter(file -> analyzer instanceof SonarQubeBaseAnalyzer ? !FileFilter.javaFilenameFilter(file) : !FileFilter.jsFileFilter(file)).collect(Collectors.toList());
 
         // pre commit中变化部分存在的所有rawIssues
-        List<String> issueUuids = issueDao.getIssuesByFilesToolAndRepo(preFiles, repoId, toolName);
+        List<String> issueUuids = issueDao.getIssuesByFilesToolAndRepo(Stream.concat(preFiles.stream(), curFiles.stream()).collect(Collectors.toList()), repoId, toolName);
         List<RawIssue> preRawIssues = rawIssueDao.getLastVersionRawIssues(issueUuids);
         // 由于这里二进制流是对preRawIssues的引用,对preRawIssuesMap set locations等于set preRawIssues locations
         Map<String, List<RawIssue>> preRawIssuesMap = preRawIssues.stream().collect(Collectors.groupingBy(RawIssue::getUuid));

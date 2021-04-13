@@ -136,7 +136,7 @@ public class IssueOuterController {
             @ApiImplicitParam(name = "manual_status", value = "缺陷是否被忽略", defaultValue = "Default", allowableValues = "Ignore , Misinformation , To_Review , Default")
     })
     @GetMapping(value = {"/issue/filter"})
-    public ResponseBean<Map<String, Object>> filterIssues(HttpServletRequest request, @RequestParam(value = "project_name", required = false) String projectNames,
+    public ResponseBean<Map<String, Object>> filterIssues(HttpServletRequest request, @RequestParam(value = "project_names", required = false) String projectNames,
                                                           @RequestParam(value = "repo_uuids", required = false) String repoUuids,
                                                           @RequestParam(value = "since", required = false) String since,
                                                           @RequestParam(value = "until", required = false) String until,
@@ -218,7 +218,7 @@ public class IssueOuterController {
 
     @ApiOperation(value = "缺陷总览侧边栏", notes = "@return IssueFilterSidebar", httpMethod = "GET")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "project_name", value = "项目名\n项目名之间用英文逗号,作为分隔符"),
+            @ApiImplicitParam(name = "project_names", value = "项目名\n项目名之间用英文逗号,作为分隔符"),
             @ApiImplicitParam(name = "repo_uuids", value = "多个库的uuid\n库uuid之间用英文逗号,作为分隔符"),
             @ApiImplicitParam(name = "since", value = "起始时间\n格式要求: yyyy-MM-dd"),
             @ApiImplicitParam(name = "until", value = "终止时间\n格式要求: yyyy-MM-dd"),
@@ -230,7 +230,7 @@ public class IssueOuterController {
             @ApiImplicitParam(name = "manual_status", value = "manual status", allowableValues = "Ignore , Default")
     })
     @GetMapping(value = "issue/filter/sidebar")
-    public ResponseBean<List<IssueFilterSidebarVO>> getIssueFilterSidebar(@RequestParam(value = "project_name", required = false) String projectNames,
+    public ResponseBean<List<IssueFilterSidebarVO>> getIssueFilterSidebar(@RequestParam(value = "project_names", required = false) String projectNames,
                                                                     @RequestParam(value = "repo_uuids", required = false) String repoUuids,
                                                                     @RequestParam(value = "tools", required = false, defaultValue = "sonarqube,ESLint") String tools,
                                                                     @RequestParam(value = "since", required = false) String since,
@@ -315,7 +315,7 @@ public class IssueOuterController {
     })
     @GetMapping("/issue/filter/download")
     @ResponseBody
-    public void downloadExcel(HttpServletRequest request, @RequestParam(value = "project_name", required = false) String projectNames,
+    public void downloadExcel(HttpServletRequest request, @RequestParam(value = "project_names", required = false) String projectNames,
                               @RequestParam(value = "repo_uuids", required = false) String repoUuids,
                               @RequestParam(value = "tools", required = false, defaultValue = "sonarqube,ESLint") String tools,
                               @RequestParam(value = "since", required = false) String since,
@@ -324,7 +324,7 @@ public class IssueOuterController {
                               @RequestParam(value = "status", required = false) String status,
                               @RequestParam(value = "manual_status", required = false) String manualStatus,
                               @RequestParam(value = "priority", required = false) String priority,
-                              @RequestParam(value = "type", required = false) String type,
+                              @RequestParam(value = "types", required = false) String type,
                               @RequestParam(value = "issue_uuids", required = false) String issueUuids, HttpServletResponse response) throws UrlException {
 
         Map<String, Object> query = new HashMap<>(16);
