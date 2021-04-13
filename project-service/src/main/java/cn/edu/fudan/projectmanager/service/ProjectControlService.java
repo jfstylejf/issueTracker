@@ -120,7 +120,7 @@ public interface ProjectControlService {
      * @param repoUuid 库的UUID
      * @throws Exception e
      */
-    void updateRecycleStatus(String token, Integer recycled, String repoUuid) throws Exception;
+    void updateRecycleStatus(String token, String repoUuid, Integer recycled) throws Exception;
 
     /**
      * 根据URL获取repo信息
@@ -129,4 +129,14 @@ public interface ProjectControlService {
      * @throws Exception e
      */
     SubRepository getRepoInfoByUrl(String Url);
+
+    /**
+     * 更新库删除状态
+     *
+     * @param token     用户token
+     * @param repoUuid  库的UUID
+     * @param serviceName 服务名称
+     * @throws Exception e
+     */
+    void updateRecycled(String token, String repoUuid, String serviceName)throws Exception ;
 }
