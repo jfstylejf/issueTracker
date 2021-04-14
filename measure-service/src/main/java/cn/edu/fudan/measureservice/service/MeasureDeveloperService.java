@@ -6,17 +6,21 @@ import cn.edu.fudan.measureservice.component.RestInterfaceManager;
 import cn.edu.fudan.measureservice.dao.JiraDao;
 import cn.edu.fudan.measureservice.dao.MeasureDao;
 import cn.edu.fudan.measureservice.dao.ProjectDao;
+import cn.edu.fudan.measureservice.domain.Granularity;
 import cn.edu.fudan.measureservice.domain.bo.*;
 import cn.edu.fudan.measureservice.domain.bo.DeveloperPortrait;
 import cn.edu.fudan.measureservice.domain.dto.DeveloperRepoInfo;
 import cn.edu.fudan.measureservice.domain.dto.Query;
 import cn.edu.fudan.measureservice.domain.dto.RepoInfo;
+import cn.edu.fudan.measureservice.domain.enums.GranularityEnum;
+import cn.edu.fudan.measureservice.domain.vo.ProjectCommitStandardTrendChart;
 import cn.edu.fudan.measureservice.mapper.RepoMeasureMapper;
 import cn.edu.fudan.measureservice.portrait.*;
 import cn.edu.fudan.measureservice.portrait2.Contribution;
 import cn.edu.fudan.measureservice.util.DateTimeUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jgit.util.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -871,6 +875,69 @@ public class MeasureDeveloperService {
             developerCommitStandardList.add(developerCommitStandard);
         }
         return developerCommitStandardList;
+    }
+
+    /**
+     * 按照项目对开发者提交数信息聚合
+     * @param projectIds 查询项目列表
+     * @param since 查询起始时间
+     * @param until 查询截止时间
+     * @param interval 聚合间隔
+     * @param showDetail 是否展示明细
+     * @return
+     */
+    @SneakyThrows
+    public synchronized List<ProjectCommitStandardTrendChart> getCommitStandardTrendChartIntegratedByProject(String projectIds,String since,String until,String token,String interval,boolean showDetail) {
+        List<ProjectCommitStandardTrendChart> results = new ArrayList<>();
+
+        Map<String,Integer> queryProjectList = projectDao.getProjectNameById(projectIds);
+        List<String> visibleProjectList = projectDao.getVisibleProjectByToken(token);
+        List<String> checkedProjectList = projectDao.mergeBetweenProject(new ArrayList<>(queryProjectList.keySet()),visibleProjectList);
+
+        LocalDate beginTime = LocalDate.parse(since,dtf);
+        LocalDate endTime = LocalDate.parse(until,dtf);
+        beginTime = DateTimeUtil.initBeginTimeByInterval(beginTime,interval);
+        endTime = DateTimeUtil.initEndTimeByInterval(endTime,interval);
+        if(beginTime == null || endTime == null) {
+            return new ArrayList<>();
+        }
+        while (beginTime.isBefore(endTime)) {
+            LocalDate tempTime = DateTimeUtil.selectTimeIncrementByInterval(beginTime,interval);
+            if(tempTime == null) {
+                break;
+            }
+            if(tempTime.isAfter(endTime)) {
+                tempTime = endTime;
+            }
+            for (String projectName : checkedProjectList) {
+                List<String> repoUuidList = new ArrayList<>();
+                List<RepoInfo> repoInfoList = projectDao.getProjectInvolvedRepoInfo(projectName,token);
+                for (RepoInfo repoInfo : repoInfoList) {
+                    repoUuidList.add(repoInfo.getRepoUuid());
+                }
+                Query query = new Query(token,beginTime.format(dtf),tempTime.format(dtf),null,repoUuidList);
+                List<DeveloperCommitStandard> developerCommitStandardList = getCommitStandard(query,null);
+                long validCommitCountNum = 0, jiraCommitCountNum = 0;
+                for (DeveloperCommitStandard developerCommitStandard : developerCommitStandardList) {
+                    validCommitCountNum += developerCommitStandard.getDeveloperValidCommitCount();
+                    jiraCommitCountNum += developerCommitStandard.getDeveloperJiraCommitCount();
+                }
+                int projectId = queryProjectList.get(projectName);
+                ProjectCommitStandardTrendChart projectCommitStandardTrendChart = ProjectCommitStandardTrendChart.builder()
+                        .projectId(String.valueOf(projectId))
+                        .date(tempTime.format(dtf))
+                        .projectName(projectName)
+                        .num(jiraCommitCountNum * 1.0 / validCommitCountNum).build();
+                projectCommitStandardTrendChart.setOption(jiraCommitCountNum,validCommitCountNum);
+                if (showDetail) {
+                    projectCommitStandardTrendChart.setDetail(developerCommitStandardList);
+                }
+                results.add(projectCommitStandardTrendChart);
+            }
+            beginTime = tempTime;
+
+        }
+        return results;
     }
 
 
