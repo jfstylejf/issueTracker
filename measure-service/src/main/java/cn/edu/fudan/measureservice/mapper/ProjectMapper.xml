@@ -274,10 +274,14 @@
 
     <select id="getProjectNameById" resultType="java.util.HashMap">
         SELECT project_name, id FROM issueTracker.project
-        WHERE id in
-        <foreach collection="projectIdList" separator="," open="(" close=")" item="projectId">
-            #{projectId}
-        </foreach>
+        <where>
+            <if test="projectIdList != null and projectIdList.size >0">
+                id in
+                <foreach collection="projectIdList" separator="," open="(" close=")" item="projectId">
+                    #{projectId}
+                </foreach>
+            </if>
+        </where>
     </select>
 
 </mapper>

@@ -152,5 +152,5 @@ public interface ProjectMapper {
      * @param projectIdList 查询 projectId 列表
      * @return
      */
-    List<Map<String,Object>> getProjectNameById(List<String> projectIdList);
+    List<Map<String,Object>> getProjectNameById(@Param("projectIdList") List<String> projectIdList);
 }

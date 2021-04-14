@@ -894,8 +894,14 @@ public class MeasureDeveloperService {
         List<String> visibleProjectList = projectDao.getVisibleProjectByToken(token);
         List<String> checkedProjectList = projectDao.mergeBetweenProject(new ArrayList<>(queryProjectList.keySet()),visibleProjectList);
 
-        LocalDate beginTime = LocalDate.parse(since,dtf);
         LocalDate endTime = LocalDate.parse(until,dtf);
+        LocalDate beginTime;
+        // fixme since为空时默认处理
+        if (since!=null && !"".equals(since)) {
+            beginTime = LocalDate.parse(since,dtf);
+        }else {
+            beginTime = endTime.minusWeeks(1);
+        }
         beginTime = DateTimeUtil.initBeginTimeByInterval(beginTime,interval);
         endTime = DateTimeUtil.initEndTimeByInterval(endTime,interval);
         if(beginTime == null || endTime == null) {
@@ -923,11 +929,17 @@ public class MeasureDeveloperService {
                     jiraCommitCountNum += developerCommitStandard.getDeveloperJiraCommitCount();
                 }
                 int projectId = queryProjectList.get(projectName);
+                double num = 0.0;
+                if(validCommitCountNum!=0) {
+                    num = jiraCommitCountNum * 1.0 / validCommitCountNum;
+                }
                 ProjectCommitStandardTrendChart projectCommitStandardTrendChart = ProjectCommitStandardTrendChart.builder()
                         .projectId(String.valueOf(projectId))
                         .date(tempTime.format(dtf))
                         .projectName(projectName)
-                        .num(jiraCommitCountNum * 1.0 / validCommitCountNum).build();
+                        .num(num)
+                        .detail(new ArrayList<>())
+                        .option(new HashMap<>()).build();
                 projectCommitStandardTrendChart.setOption(jiraCommitCountNum,validCommitCountNum);
                 if (showDetail) {
                     projectCommitStandardTrendChart.setDetail(developerCommitStandardList);

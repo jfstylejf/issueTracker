@@ -462,12 +462,16 @@ public class ProjectDao {
      */
     @SneakyThrows
     public Map<String,Integer> getProjectNameById(String projectIds) {
-        // fixme projectId不传时查所有
         Map<String,Integer> map = new HashMap<>();
-        List<String> projectIdList = Arrays.asList(projectIds.split(split));
+        List<String> projectIdList;
+        if(projectIds!=null && !"".equals(projectIds)) {
+            projectIdList = Arrays.asList(projectIds.split(split));
+        }else {
+            projectIdList = new ArrayList<>();
+        }
         List<Map<String,Object>> result = projectMapper.getProjectNameById(projectIdList);
         for (int i = 0; i < result.size(); i++) {
-            Map<String,Object> temp = new HashMap<>();
+            Map<String,Object> temp = result.get(i);
             String projectName = (String) temp.get("project_name");
             int id = (Integer) temp.get("id");
             map.put(projectName,id);
