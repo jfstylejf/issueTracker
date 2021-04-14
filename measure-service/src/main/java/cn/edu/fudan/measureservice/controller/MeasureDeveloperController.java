@@ -8,6 +8,7 @@ import cn.edu.fudan.measureservice.domain.dto.DeveloperRepoInfo;
 import cn.edu.fudan.measureservice.domain.dto.Query;
 import cn.edu.fudan.measureservice.domain.vo.DeveloperCommitStandardFrontend;
 import cn.edu.fudan.measureservice.domain.vo.DeveloperWorkLoadFrontend;
+import cn.edu.fudan.measureservice.domain.vo.ProjectCommitStandardTrendChart;
 import cn.edu.fudan.measureservice.portrait.DeveloperMetrics;
 import cn.edu.fudan.measureservice.domain.bo.DeveloperPortrait;
 import cn.edu.fudan.measureservice.service.MeasureDeveloperService;
@@ -284,28 +285,66 @@ public class MeasureDeveloperController {
         }
     }
 
-    @GetMapping("measure/commit-standard/trend-chart")
+    @GetMapping("/measure/commit-standard/trend-chart")
     @CrossOrigin
-    public ResponseBean<Object> getCommitStandardTrendChart(@RequestParam(required = false, defaultValue = "") String projectIds,
-                                                            @RequestParam(required = false, defaultValue = "") String since,
-                                                            @RequestParam(required = false, defaultValue = "") String until,
-                                                            @RequestParam(required = false, defaultValue = "week") String interval,
-                                                            @RequestParam(value = "show_detail",required = false, defaultValue = "false") boolean showDetail,
-                                                            HttpServletRequest request) {
+    public ResponseBean<List<ProjectCommitStandardTrendChart>> getCommitStandardTrendChart(@RequestParam(required = false, defaultValue = "") String projectIds,
+                                                                                           @RequestParam(required = false, defaultValue = "") String since,
+                                                                                           @RequestParam(required = false, defaultValue = "") String until,
+                                                                                           @RequestParam(required = false, defaultValue = "week") String interval,
+                                                                                           @RequestParam(value = "show_detail",required = false, defaultValue = "false") boolean showDetail,
+                                                                                           HttpServletRequest request) {
         try {
             until = timeProcess(until);
             String token = request.getHeader("token");
-            Map<String,Integer> queryProjectList = projectDao.getProjectNameById(projectIds);
-            List<String> visibleProjectList = projectDao.getVisibleProjectByToken(token);
-            List<String> checkedProjectList = projectDao.mergeBetweenProject(new ArrayList<>(queryProjectList.keySet()),visibleProjectList);
-
-
-            return null;
+            return new ResponseBean<>(200,"success",measureDeveloperService.getCommitStandardTrendChartIntegratedByProject(projectIds,since,until,token,interval,showDetail));
         }catch (Exception e) {
             e.getMessage();
         }
-        return null;
+        return new ResponseBean<>(401,"failed",new ArrayList<>());
     }
+
+
+    @GetMapping("/measure/commit-standard/detail")
+    @CrossOrigin
+    public ResponseBean<DeveloperCommitStandardFrontend> getCommitStandardDetail(@RequestParam(value = "developer",required = false)String developer,
+                                                        @RequestParam(value = "developers",required = false) List<String> developers,
+                                                        @RequestParam(value = "project_name",required = false) String projectName,
+                                                        @RequestParam(value = "repo_uuids",required = false)String repoUuid,
+                                                        @RequestParam(value = "since", required = false)String since,
+                                                        @RequestParam(value = "until", required = false)String until,
+                                                        @RequestParam(required = false, defaultValue = "1")int page,
+                                                        @RequestParam(required = false, defaultValue = "5")int ps,
+                                                        @RequestParam(required = false, defaultValue = "true") boolean asc,
+                                                        @RequestParam(required = false, defaultValue = "") String order,
+                                                        HttpServletRequest request) {
+        try {
+            until = timeProcess(until);
+            String token = request.getHeader("token");
+            List<String> repoUuidList;
+            if(projectName!=null && !"".equals(projectName)) {
+                repoUuidList = projectDao.getProjectRepoList(projectName,token);
+            }else {
+                repoUuidList = projectDao.involvedRepoProcess(repoUuid,token);
+            }
+            Query query = new Query(token,since,until,developer,repoUuidList);
+            List<DeveloperCommitStandard> developerCommitStandardList = measureDeveloperService.getCommitStandard(query,developers);
+            Collections.sort(developerCommitStandardList, (o1, o2) -> {
+                if(asc) {
+                    return (int) ((o1.getCommitStandard() - o2.getCommitStandard()) * 100);
+                }else {
+                    return (int) ((o2.getCommitStandard() - o1.getCommitStandard()) * 100);
+                }
+            });
+            int totalPage = developerCommitStandardList.size() % ps == 0 ? developerCommitStandardList.size()/ps : developerCommitStandardList.size()/ps + 1;
+            List<DeveloperCommitStandard> selectedDeveloperCommitStandardList = developerCommitStandardList.subList(ps*(page-1),ps*page > developerCommitStandardList.size() ? developerCommitStandardList.size() : ps*page);
+            DeveloperCommitStandardFrontend developerCommitStandardFrontend = new DeveloperCommitStandardFrontend(page,totalPage,developerCommitStandardList.size(),selectedDeveloperCommitStandardList);
+            return new ResponseBean<>(200,"success",developerCommitStandardFrontend);
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new ResponseBean<>(401,"failed",null);
+    }
+
 
 
     @ApiOperation(value = "返回用户画像页面得代码行数数据，包括所有项目和单个项目的 To codeTracker", notes = "@return Map<String,Object>", httpMethod = "GET")

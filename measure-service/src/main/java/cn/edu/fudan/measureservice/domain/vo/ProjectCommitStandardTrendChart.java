@@ -1,10 +1,12 @@
 package cn.edu.fudan.measureservice.domain.vo;
 
+import cn.edu.fudan.measureservice.domain.bo.DeveloperCommitStandard;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -36,14 +38,21 @@ public class ProjectCommitStandardTrendChart {
      */
     private double num;
     /**
+     * 数据明细
+     */
+    private List<DeveloperCommitStandard> detail;
+
+    /**
      * 可选参数，用于描述上一行数据字段
      */
-    private Map<String,Integer> option;
+    private Map<String,Long> option;
 
-    {
-        option.put("value",0);
-        option.put("total",0);
+    public void setOption(long value, long total) {
+        option.put("value",value);
+        option.put("total",total);
     }
+
+
 
 
 }
