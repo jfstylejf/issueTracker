@@ -203,6 +203,7 @@ public class ProjectDao {
         return projectInfo.get(projectName);
     }
 
+
     /**
      * fixme 方法加个init方法,可以重置项目信息
      * 初始化项目信息
@@ -479,6 +480,16 @@ public class ProjectDao {
         return map;
     }
 
+    @SneakyThrows
+    public int getProjectIdByName(String projectName) {
+        Integer name = projectMapper.getProjectIdByName(projectName);
+        if(name!=null) {
+            return name;
+        }else {
+            log.error("projectName wrong\n");
+            return -1;
+        }
+    }
 
     @Autowired
     public void setRestInterface(RestInterfaceManager restInterface) {

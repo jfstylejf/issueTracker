@@ -284,4 +284,9 @@
         </where>
     </select>
 
+    <select id="getProjectIdByName" resultType="Integer">
+        SELECT id FROM issueTracker.project
+        WHERE project_name = #{projectName}
+    </select>
+
 </mapper>

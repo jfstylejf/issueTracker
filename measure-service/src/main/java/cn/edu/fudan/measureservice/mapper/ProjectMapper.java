@@ -153,4 +153,11 @@ public interface ProjectMapper {
      * @return
      */
     List<Map<String,Object>> getProjectNameById(@Param("projectIdList") List<String> projectIdList);
+
+    /**
+     * 根据 projectName 获取 projectId
+     * @param projectName 查询项目名
+     * @return
+     */
+    Integer getProjectIdByName(@Param("projectName") String projectName);
 }

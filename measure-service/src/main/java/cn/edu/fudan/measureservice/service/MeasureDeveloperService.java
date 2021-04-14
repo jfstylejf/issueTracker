@@ -13,6 +13,7 @@ import cn.edu.fudan.measureservice.domain.dto.DeveloperRepoInfo;
 import cn.edu.fudan.measureservice.domain.dto.Query;
 import cn.edu.fudan.measureservice.domain.dto.RepoInfo;
 import cn.edu.fudan.measureservice.domain.enums.GranularityEnum;
+import cn.edu.fudan.measureservice.domain.vo.ProjectCommitStandardDetail;
 import cn.edu.fudan.measureservice.domain.vo.ProjectCommitStandardTrendChart;
 import cn.edu.fudan.measureservice.mapper.RepoMeasureMapper;
 import cn.edu.fudan.measureservice.portrait.*;
@@ -951,6 +952,97 @@ public class MeasureDeveloperService {
         }
         return results;
     }
+
+    /**
+     *
+     * @param projectNameList
+     * @param repoUuidList
+     * @param since
+     * @param until
+     * @param token
+     * @return
+     */
+    @SneakyThrows
+    public synchronized List<ProjectCommitStandardDetail> getCommitStandardDetailIntegratedByProject(String projectNameList,String repoUuidList,String since,String until,String token) {
+        List<ProjectCommitStandardDetail> projectCommitStandardDetailList = new ArrayList<>();
+
+        /**
+         * 若查询项目列表为空，则查询权限内可见所有项目的库列表
+         * 若查询库列表为空，则查询权限内项目列表范围内的库列表
+         * 若查询项目为空，有查询库列表，则返回权限内可查询的库列表
+         * 若查询项目有，且有查询库列表，则返回权限内该项目可见库列表
+         */
+        List<String> visibleProjectInvolvedRepoList;
+        if(projectNameList!=null && !"".equals(projectNameList)) {
+            visibleProjectInvolvedRepoList = new ArrayList<>();
+            String[] projects = projectNameList.split(split);
+            for (String projectName : projects) {
+                visibleProjectInvolvedRepoList.addAll(projectDao.getProjectRepoList(projectName,token));
+            }
+        }else {
+            visibleProjectInvolvedRepoList = projectDao.involvedRepoProcess(null,token);
+        }
+        List<String> visibleRepoList = new ArrayList<>();
+        if (repoUuidList!=null && !"".equals(repoUuidList)) {
+            List<String> queryRepoList = Arrays.asList(repoUuidList.split(split));
+            visibleRepoList = projectDao.mergeBetweenRepo(queryRepoList,visibleProjectInvolvedRepoList);
+        }else {
+            visibleRepoList = visibleProjectInvolvedRepoList;
+        }
+        for (String repoUuid : visibleRepoList) {
+            Query query = new Query(token,since,until,null,Collections.singletonList(repoUuid));
+            if (!projectDao.getRepoInfoMap().containsKey(repoUuid)) {
+                projectDao.insertProjectInfo(token);
+            }
+            RepoInfo repoInfo = projectDao.getRepoInfoMap().get(repoUuid);
+            String projectName = repoInfo.getProjectName();
+            int projectId = projectDao.getProjectIdByName(projectName);
+            List<DeveloperCommitStandard> developerCommitStandardList = getCommitStandard(query,null);
+            for (DeveloperCommitStandard developerCommitStandard : developerCommitStandardList) {
+                projectCommitStandardDetailList.addAll(dealWithDeveloperCommitStandardDetail(developerCommitStandard,projectName,projectId));
+            }
+        }
+        return projectCommitStandardDetailList;
+     }
+
+     private List<ProjectCommitStandardDetail> dealWithDeveloperCommitStandardDetail(DeveloperCommitStandard developerCommitStandard,String projectName, int projectId) {
+        List<ProjectCommitStandardDetail> projectCommitStandardDetailList = new ArrayList<>();
+        List<Map<String,String>> developerJiraCommitInfo = developerCommitStandard.getDeveloperJiraCommitInfo();
+        List<Map<String,String>> developerInvalidCommitInfo = developerCommitStandard.getDeveloperInvalidCommitInfo();
+         for (Map<String, String> stringStringMap : developerJiraCommitInfo) {
+             String message = stringStringMap.get("message");
+             String commitTime = stringStringMap.get("commit_time");
+             String commitId = stringStringMap.get("commit_id");
+             String developerName;
+             developerName = stringStringMap.getOrDefault("developer_unique_name", "");
+             ProjectCommitStandardDetail projectCommitStandardDetail = ProjectCommitStandardDetail.builder()
+                     .committer(developerName)
+                     .commitId(commitId)
+                     .commitTime(commitTime)
+                     .message(message)
+                     .projectId(String.valueOf(projectId))
+                     .projectName(projectName)
+                     .isValid(true).build();
+             projectCommitStandardDetailList.add(projectCommitStandardDetail);
+         }
+         for (Map<String, String> stringStringMap : developerInvalidCommitInfo) {
+             String message = stringStringMap.get("message");
+             String commitTime = stringStringMap.get("commit_time");
+             String commitId = stringStringMap.get("commit_id");
+             String developerName;
+             developerName = stringStringMap.getOrDefault("developer_unique_name", "");
+             ProjectCommitStandardDetail projectCommitStandardDetail = ProjectCommitStandardDetail.builder()
+                     .committer(developerName)
+                     .commitId(commitId)
+                     .commitTime(commitTime)
+                     .message(message)
+                     .projectId(String.valueOf(projectId))
+                     .projectName(projectName)
+                     .isValid(false).build();
+             projectCommitStandardDetailList.add(projectCommitStandardDetail);
+         }
+         return projectCommitStandardDetailList;
+     }
 
 
     @Autowired
