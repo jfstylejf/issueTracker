@@ -424,8 +424,6 @@ public class ProjectControlServiceImpl implements ProjectControlService {
                     throw new RunTimeException("delete failed!");
                 }
 
-                accountRepositoryDao.deleteRepoAR(accountUuid, repoUuid);
-                subRepositoryDao.deleteRepoSR(accountUuid, repoUuid);
             }
         }
         return true;
@@ -433,9 +431,10 @@ public class ProjectControlServiceImpl implements ProjectControlService {
     }
 
     @Override
-    public void updateRecycleStatus(String token, Integer recycled, String repoUuid) throws Exception {
+    public void updateRecycleStatus(String token, String repoUuid, Integer recycled) throws Exception {
         UserInfoDTO userInfoDTO = getUserInfoByToken(token);
-        String accountUuid = userInfoDTO.getUuid();
+        final Integer outRecycle = 0;
+        final Integer inRecycle = 10000000;
 
         // 0 表示超级管理员 只有超级管理员能操作
         if (userInfoDTO.getRight() != 0) {
@@ -444,18 +443,80 @@ public class ProjectControlServiceImpl implements ProjectControlService {
 
         if (recycled == 0) {
             //将库放入回收站中
-            subRepositoryDao.putIntoRecycled(accountUuid, recycled, repoUuid);
+            recycled = inRecycle;
+            subRepositoryDao.putRecycledStatus(repoUuid, recycled);
+            return;
         }
 
-        if (recycled == 1) {
+        if (recycled == 10000000) {
             //将库从回收站中拿出
-            subRepositoryDao.getFromRecycled(accountUuid, recycled, repoUuid);
+            recycled = outRecycle;
+            subRepositoryDao.putRecycledStatus(repoUuid, recycled);
         }
     }
 
     @Override
     public SubRepository getRepoInfoByUrl(String Url) {
         return subRepositoryDao.getSubRepoByUrl(Url);
+    }
+
+    @Override
+    public void updateRecycled(String token, String repoUuid, String serviceName) throws Exception {
+
+        UserInfoDTO userInfoDTO = getUserInfoByToken(token);
+        String accountUuid = userInfoDTO.getUuid();
+        // 0 表示超级管理员 只有超级管理员能操作
+        if (userInfoDTO.getRight() != 0) {
+            throw new RunTimeException("this user has no right to delete repo!");
+        }
+
+        EnumMap<ServicesManager.Services, Character> serviceStatus = new EnumMap<>(ServicesManager.Services.class);
+
+        Integer recycledStatus = subRepositoryDao.getRecycledStatus(repoUuid);
+        //recycledStatus = new Scanner(System.in).nextInt();
+        char[] deleteStatus = String.valueOf(recycledStatus).toCharArray();
+        serviceStatus.put(ServicesManager.Services.RECYCLED, deleteStatus[0]);
+        serviceStatus.put(ServicesManager.Services.JIRA, deleteStatus[1]);
+        serviceStatus.put(ServicesManager.Services.DEPENDENCY, deleteStatus[2]);
+        serviceStatus.put(ServicesManager.Services.CLONE, deleteStatus[3]);
+        serviceStatus.put(ServicesManager.Services.MEASURE, deleteStatus[4]);
+        serviceStatus.put(ServicesManager.Services.CODETRACKER, deleteStatus[5]);
+        serviceStatus.put(ServicesManager.Services.ISSUE, deleteStatus[6]);
+        serviceStatus.put(ServicesManager.Services.SCAN, deleteStatus[7]);
+
+
+        //服务顺序是RECYCLED, JIRA, DEPENDENCY, CLONE, MEASURE, CODETRACKER, ISSUE, SCAN
+        if("JIRA".equals(serviceName)){
+            serviceStatus.put(ServicesManager.Services.JIRA, '1');
+        }else if("DEPENDENCY".equals(serviceName)){
+            serviceStatus.put(ServicesManager.Services.DEPENDENCY, '1');
+        }else if("CLONE".equals(serviceName)){
+            serviceStatus.put(ServicesManager.Services.CLONE, '1');
+        }else if("MEASURE".equals(serviceName)){
+            serviceStatus.put(ServicesManager.Services.MEASURE, '1');
+        }else if("CODETRACKER".equals(serviceName)){
+            serviceStatus.put(ServicesManager.Services.CODETRACKER, '1');
+        }else if("ISSUE".equals(serviceName)){
+            serviceStatus.put(ServicesManager.Services.ISSUE, '1');
+        }else if("SCAN".equals(serviceName)){
+            serviceStatus.put(ServicesManager.Services.SCAN, '1');
+        }
+
+       String statusCollection = serviceStatus.get(ServicesManager.Services.RECYCLED).toString() + serviceStatus.get(ServicesManager.Services.JIRA).toString()
+               + serviceStatus.get(ServicesManager.Services.DEPENDENCY).toString() + serviceStatus.get(ServicesManager.Services.CLONE).toString()
+               + serviceStatus.get(ServicesManager.Services.MEASURE).toString() + serviceStatus.get(ServicesManager.Services.CODETRACKER).toString()
+               + serviceStatus.get(ServicesManager.Services.ISSUE).toString() + serviceStatus.get(ServicesManager.Services.SCAN).toString();
+
+        Integer status = Integer.parseInt(statusCollection);
+        subRepositoryDao.putRecycledStatus(repoUuid, status);
+
+        if(!serviceStatus.containsValue('0')){
+            accountRepositoryDao.deleteRepoAR(accountUuid, repoUuid);
+            subRepositoryDao.deleteRepoSR(accountUuid, repoUuid);
+        }else {
+            return;
+        }
+
     }
 
     /**

@@ -192,7 +192,7 @@ public class ProjectDao {
      * @param token 查询密钥
      * @return List<RepoInfo>
      */
-    private List<RepoInfo> getProjectInvolvedRepoInfo(String projectName,String token) {
+    public List<RepoInfo> getProjectInvolvedRepoInfo(String projectName,String token) {
         Objects.requireNonNull(projectName,"projectName should not be null when get developerInvolvedRepoList by projectName");
         if(!projectInfo.containsKey(projectName)) {
             if(!insertProjectInfo(token)){
@@ -202,6 +202,7 @@ public class ProjectDao {
         }
         return projectInfo.get(projectName);
     }
+
 
     /**
      * fixme 方法加个init方法,可以重置项目信息
@@ -313,7 +314,7 @@ public class ProjectDao {
      * @return projectList
      */
     @SuppressWarnings("unchecked")
-    private List<String> getVisibleProjectByToken(String token) {
+    public List<String> getVisibleProjectByToken(String token) {
         UserInfoDTO userInfoDTO = null;
         try {
             userInfoDTO = getUserInfoByToken(token);
@@ -363,7 +364,7 @@ public class ProjectDao {
      * @param target 标志库
      * @return List<String> source
      */
-    private List<String> mergeBetweenRepo(List<String> source,List<String> target) {
+    public List<String> mergeBetweenRepo(List<String> source,List<String> target) {
         Objects.requireNonNull(target,"the target list should not be null");
         if(target.size()==0) {
             if(source.size()!=0) {
@@ -372,6 +373,22 @@ public class ProjectDao {
             return new ArrayList<>();
         }
         source.removeIf(o -> !target.contains(o));
+        return source;
+    }
+
+    public List<String> mergeBetweenProject(List<String> source, List<String> target) {
+        Objects.requireNonNull(target,"the target list should not be null");
+        if(target.size()==0) {
+            if(source.size()!=0) {
+                log.error("you dont have the authority to see the project : {}",source);
+            }
+            return new ArrayList<>();
+        }
+        for (int i = source.size()-1; i >= 0; i--) {
+            if (!target.contains(source.get(i))) {
+                log.error("you don't have the authority to see the project : {} !\n",source.remove(i));
+            }
+        }
         return source;
     }
 
@@ -432,12 +449,47 @@ public class ProjectDao {
         return null;
     }
 
+
     @SneakyThrows
     public String getDeveloperFirstCommitDate(String developer,String since ,String until, String repoUuid) {
-        Map<String,String> map = projectMapper.getDeveloperFirstCommitDate(repoUuid,since,until,developer);
+        Map<String, String> map = projectMapper.getDeveloperFirstCommitDate(repoUuid, since, until, developer);
         return map.get("firstCommitDate");
     }
 
+    /**
+     * 获取 projectName 列表
+     * @param projectIds 查询 projectId 列表
+     * @return
+     */
+    @SneakyThrows
+    public Map<String,Integer> getProjectNameById(String projectIds) {
+        Map<String,Integer> map = new HashMap<>();
+        List<String> projectIdList;
+        if(projectIds!=null && !"".equals(projectIds)) {
+            projectIdList = Arrays.asList(projectIds.split(split));
+        }else {
+            projectIdList = new ArrayList<>();
+        }
+        List<Map<String,Object>> result = projectMapper.getProjectNameById(projectIdList);
+        for (int i = 0; i < result.size(); i++) {
+            Map<String,Object> temp = result.get(i);
+            String projectName = (String) temp.get("project_name");
+            int id = (Integer) temp.get("id");
+            map.put(projectName,id);
+        }
+        return map;
+    }
+
+    @SneakyThrows
+    public int getProjectIdByName(String projectName) {
+        Integer name = projectMapper.getProjectIdByName(projectName);
+        if(name!=null) {
+            return name;
+        }else {
+            log.error("projectName wrong\n");
+            return -1;
+        }
+    }
 
     @Autowired
     public void setRestInterface(RestInterfaceManager restInterface) {

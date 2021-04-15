@@ -6,8 +6,7 @@ import cn.edu.fudan.measureservice.domain.bo.DeveloperCommitStandard;
 import cn.edu.fudan.measureservice.domain.bo.DeveloperWorkLoad;
 import cn.edu.fudan.measureservice.domain.dto.DeveloperRepoInfo;
 import cn.edu.fudan.measureservice.domain.dto.Query;
-import cn.edu.fudan.measureservice.domain.vo.DeveloperCommitStandardFrontend;
-import cn.edu.fudan.measureservice.domain.vo.DeveloperWorkLoadFrontend;
+import cn.edu.fudan.measureservice.domain.vo.*;
 import cn.edu.fudan.measureservice.portrait.DeveloperMetrics;
 import cn.edu.fudan.measureservice.domain.bo.DeveloperPortrait;
 import cn.edu.fudan.measureservice.service.MeasureDeveloperService;
@@ -283,6 +282,60 @@ public class MeasureDeveloperController {
             return new ResponseBean<>(401,"failed " + e.getMessage(),null);
         }
     }
+
+
+    @GetMapping("/measure/commit-standard/trend-chart")
+    @CrossOrigin
+    public ResponseBean<List<ProjectCommitStandardTrendChart>> getCommitStandardTrendChart(@RequestParam(required = false, defaultValue = "") String projectIds,
+                                                                                           @RequestParam(required = false, defaultValue = "") String since,
+                                                                                           @RequestParam(required = false, defaultValue = "") String until,
+                                                                                           @RequestParam(required = false, defaultValue = "week") String interval,
+                                                                                           @RequestParam(value = "show_detail",required = false, defaultValue = "false") boolean showDetail,
+                                                                                           HttpServletRequest request) {
+        try {
+            until = timeProcess(until);
+            String token = request.getHeader("token");
+            return new ResponseBean<>(200,"success",measureDeveloperService.getCommitStandardTrendChartIntegratedByProject(projectIds,since,until,token,interval,showDetail));
+        }catch (Exception e) {
+            e.getMessage();
+        }
+        return new ResponseBean<>(401,"failed",new ArrayList<>());
+    }
+
+
+    @GetMapping("/measure/commit-standard/detail")
+    @CrossOrigin
+    public ResponseBean<ProjectCommitStandardFrontend> getCommitStandardDetail(
+                                                        @RequestParam(value = "project_names",required = false) String projectNameList,
+                                                        @RequestParam(value = "repo_uuids",required = false)String repoUuidList,
+                                                        @RequestParam(value = "since", required = false)String since,
+                                                        @RequestParam(value = "until", required = false)String until,
+                                                        @RequestParam(required = false, defaultValue = "1")int page,
+                                                        @RequestParam(required = false, defaultValue = "10")int ps,
+                                                        @RequestParam(required = false, defaultValue = "true") boolean asc,
+                                                        @RequestParam(required = false, defaultValue = "") String order,
+                                                        HttpServletRequest request) {
+        try {
+            until = timeProcess(until);
+            String token = request.getHeader("token");
+            List<ProjectCommitStandardDetail> projectCommitStandardDetailList = measureDeveloperService.getCommitStandardDetailIntegratedByProject(projectNameList,repoUuidList,since,until,token);
+            Collections.sort(projectCommitStandardDetailList, (o1, o2) -> {
+                if(asc) {
+                    return o1.getCommitTime().compareTo(o2.getCommitTime());
+                }else {
+                    return o2.getCommitTime().compareTo(o1.getCommitTime());
+                }
+            });
+            int totalPage = projectCommitStandardDetailList.size() % ps == 0 ? projectCommitStandardDetailList.size()/ps : projectCommitStandardDetailList.size()/ps + 1;
+            List<ProjectCommitStandardDetail> selectedDeveloperCommitStandardList = projectCommitStandardDetailList.subList(ps*(page-1),ps*page > projectCommitStandardDetailList.size() ? projectCommitStandardDetailList.size() : ps*page);
+            ProjectCommitStandardFrontend developerCommitStandardFrontend = new ProjectCommitStandardFrontend(page,totalPage,projectCommitStandardDetailList.size(),selectedDeveloperCommitStandardList);
+            return new ResponseBean<>(200,"success",developerCommitStandardFrontend);
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new ResponseBean<>(401,"failed",null);
+    }
+
 
 
     @ApiOperation(value = "返回用户画像页面得代码行数数据，包括所有项目和单个项目的 To codeTracker", notes = "@return Map<String,Object>", httpMethod = "GET")

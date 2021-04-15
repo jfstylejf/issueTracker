@@ -84,12 +84,12 @@ public class SubRepositoryDao {
         subRepositoryMapper.deleteRepoByUuid(uuid);
     }
 
-    public void putIntoRecycled(String accountUuid, Integer recycled, String repoUuid) {
-        subRepositoryMapper.putIntoRecycled(accountUuid, recycled, repoUuid);
+    public Integer getRecycledStatus(String repoUuid){
+        return subRepositoryMapper.getRecycledStatus(repoUuid);
     }
 
-    public void getFromRecycled(String accountUuid, Integer recycled, String repoUuid) {
-        subRepositoryMapper.getFromRecycled(accountUuid, recycled, repoUuid);
+    public void putRecycledStatus(String repoUuid,  Integer recycled){
+         subRepositoryMapper.putRecycledStatus(repoUuid, recycled);
     }
 
     @Autowired

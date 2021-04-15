@@ -123,27 +123,24 @@ public interface SubRepositoryMapper {
     void deleteRepoSR(@Param("accountUuid") String accountUuid, @Param("RepoUuid") String RepoUuid);
 
     /**
-     * 将库放入回收站中
-     *
-     * @param accountUuid 当前人员uuid
-     * @param recycled    回收状态
-     * @param repoUuid    库UUID
-     */
-    void putIntoRecycled(@Param("accountUuid") String accountUuid, @Param("recycled") Integer recycled, @Param("repoUuid") String repoUuid);
-
-    /**
-     * 将库从回收站中取出
-     *
-     * @param accountUuid 当前人员uuid
-     * @param recycled    回收状态
-     * @param repoUuid    库UUID
-     */
-    void getFromRecycled(@Param("accountUuid") String accountUuid, @Param("recycled") Integer recycled, @Param("repoUuid") String repoUuid);
-
-    /**
      * 通过表uuid删除库
      *
      * @param uuid    库uuid
      */
     void deleteRepoByUuid(@Param("RepoUUID") String uuid);
+
+    /**
+     * 获取库的回收状态
+     *
+     * @param repoUuid    库uuid
+     */
+    Integer getRecycledStatus(@Param("repoUuid") String repoUuid);
+
+    /**
+     * 更改库的recycled状态
+     *
+     * @param repoUuid    库uuid
+     * @param recycled    库回收状态
+     */
+    void putRecycledStatus(@Param("repoUuid") String repoUuid, @Param("recycled") Integer recycled);
 }

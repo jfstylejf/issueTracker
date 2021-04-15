@@ -10,6 +10,7 @@ import cn.edu.fudan.issueservice.util.JGitHelper;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +27,7 @@ import java.util.stream.Stream;
  */
 @Slf4j
 @Component
+@Scope("prototype")
 public class IssuePersistenceManager {
 
     private RawIssueDao rawIssueDao;
