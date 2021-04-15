@@ -5,13 +5,10 @@ import cn.edu.fudan.common.domain.ScanInfo;
 import cn.edu.fudan.common.domain.po.scan.RepoScan;
 import cn.edu.fudan.common.jgit.JGitHelper;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.util.Assert;
 
 import java.util.*;
@@ -19,8 +16,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Getter
-//@EnableAsync(proxyTargetClass=true)
-//@NoArgsConstructor
 public abstract class CommonScanProcess implements CommonScanService {
     private static final Logger log = LoggerFactory.getLogger(CommonScanProcess.class);
     private static final String KEY_DELIMITER = "-";
@@ -39,13 +34,10 @@ public abstract class CommonScanProcess implements CommonScanService {
         baseRepoRestManager = applicationContext.getBean(BaseRepoRestManager.class);
     }
 
-    /**
-     * 设置同步状态 处理接口请求 判断扫描是否需要更新
-     **/
-    public void scan(String repoUuid, String branch, String beginCommit) {
-
+    public void scan(String repoUuid, String branch, String beginCommit, String endCommit) {
         // todo 查询repository表 来查看repo 所包含的语言 让后决定采用什么工具来调用
         String[] tools = getToolsByRepo(repoUuid);
+
         for (String tool : tools) {
             RepoScan scanInfo = getRepoScanStatus(repoUuid, tool);
 
@@ -67,10 +59,17 @@ public abstract class CommonScanProcess implements CommonScanService {
                 }
                 scanStatusMap.putIfAbsent(key, false);
             }
-            beginScan(repoUuid, branch, beginCommit, tool);
-            checkAfterScan(repoUuid, branch, tool);
+            beginScan(repoUuid, branch, beginCommit, tool, endCommit);
+            checkAfterScan(repoUuid, branch, tool, endCommit);
         }
+    }
 
+
+    /**
+     * 设置同步状态 处理接口请求 判断扫描是否需要更新
+     **/
+    public void scan(String repoUuid, String branch, String beginCommit) {
+        scan(repoUuid, branch, beginCommit, null);
     }
 
     protected String generateKey(String repoUuid, String tool) {
@@ -80,7 +79,7 @@ public abstract class CommonScanProcess implements CommonScanService {
     /**
      * 一个 commitList 扫描完成之后再次检查 查看是否有更新扫描的请求
      **/
-    private void checkAfterScan(String repoUuid, String branch, String tool) {
+    private void checkAfterScan(String repoUuid, String branch, String tool, String endCommit) {
         String key = generateKey(repoUuid, tool);
         if (!scanStatusMap.containsKey(key)) {
             log.error("{} : not in cn.edu.fudan.common.scan scanStatusMap", repoUuid);
@@ -94,12 +93,12 @@ public abstract class CommonScanProcess implements CommonScanService {
             }
             scanStatusMap.put(key, false);
         }
-        beginScan(repoUuid, branch, null, tool);
-        checkAfterScan(repoUuid, branch, tool);
+        beginScan(repoUuid, branch, null, tool, endCommit);
+        checkAfterScan(repoUuid, branch, tool, endCommit);
     }
 
     @Async("taskExecutor")
-    void beginScan(String repoUuid, String branch, String beginCommit, String tool) {
+    void beginScan(String repoUuid, String branch, String beginCommit, String tool, String endCommit) {
         Thread curThread = Thread.currentThread();
         String threadName = generateKey(repoUuid, tool);
         curThread.setName(threadName);
@@ -133,6 +132,18 @@ public abstract class CommonScanProcess implements CommonScanService {
                 beginCommit = getLastedScannedCommit(repoUuid, tool);
             }
             List<String> toScanCommitList = new JGitHelper(repoPath).getScanCommitListByBranchAndBeginCommit(branch, beginCommit, scannedCommitList);
+
+
+            // 筛选出end commit
+            if (endCommit != null && !"".equals(endCommit)) {
+                int end = toScanCommitList.indexOf(endCommit);
+                if (end == -1) {
+                    log.error("cannot find end commit {}", endCommit);
+                } else {
+                    toScanCommitList = toScanCommitList.subList(0, end + 1);
+                    log.info("setting end commit {}", endCommit);
+                }
+            }
 
             if (toScanCommitList.isEmpty()) {
                 return;
@@ -187,11 +198,6 @@ public abstract class CommonScanProcess implements CommonScanService {
      **/
     protected abstract List<String> getScannedCommitList(String repoUuid, String tool);
 
-//    /**
-//     * 记录扫描过的commit信息
-//     **/
-//    protected abstract void recordScannedCommit(String commit, RepoScan repoScan);
-
     /**
      * 根据表中的记录得到最新扫描的commit id
      **/
@@ -207,7 +213,6 @@ public abstract class CommonScanProcess implements CommonScanService {
      **/
     protected abstract void insertRepoScan(RepoScan repoScan);
 
-//    public abstract <T extends BaseRepoRestManager> void setBaseRepoRestManager(T restInterfaceManager);
 
     @Override
     public boolean stopScan(String repoUuid, String toolName) {

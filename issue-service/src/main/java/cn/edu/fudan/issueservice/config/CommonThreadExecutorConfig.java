@@ -15,20 +15,26 @@ import java.util.concurrent.ThreadPoolExecutor;
 public class CommonThreadExecutorConfig {
 
 
-    /** Set the ThreadPoolExecutor's core pool size. */
+    /**
+     * Set the ThreadPoolExecutor's core pool size.
+     */
     private int corePoolSize = 5;
-    /** Set the ThreadPoolExecutor's maximum pool size. */
+    /**
+     * Set the ThreadPoolExecutor's maximum pool size.
+     */
     private int maxPoolSize = 10;
-    /** Set the capacity for the ThreadPoolExecutor's BlockingQueue. */
+    /**
+     * Set the capacity for the ThreadPoolExecutor's BlockingQueue.
+     */
     private int queueCapacity = 9999;
 
 
-    private ThreadPoolTaskExecutor commonExecutor ;
+    private ThreadPoolTaskExecutor commonExecutor;
 
     @Bean
     public Executor commonExecutor() {
 
-        commonExecutor = new ThreadPoolTaskExecutor ();
+        commonExecutor = new ThreadPoolTaskExecutor();
         //配置核心线程数
         commonExecutor.setCorePoolSize(corePoolSize);
         //配置最大线程数
@@ -42,7 +48,7 @@ public class CommonThreadExecutorConfig {
         // CALLER_RUNS：不在新线程中执行任务，而是有调用者所在的线程来执行
         commonExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor.AbortPolicy());
 
-        commonExecutor.setKeepAliveSeconds (60);
+        commonExecutor.setKeepAliveSeconds(60);
         //执行初始化
         commonExecutor.initialize();
         return commonExecutor;

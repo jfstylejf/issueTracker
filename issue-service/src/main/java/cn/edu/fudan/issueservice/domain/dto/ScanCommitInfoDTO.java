@@ -13,8 +13,8 @@ import java.util.Objects;
 @AllArgsConstructor
 public class ScanCommitInfoDTO {
 
-    String repoId ;
-    String commitId ;
+    String repoId;
+    String commitId;
     String branch;
     String toolName;
     Boolean isUpdate;
@@ -22,7 +22,7 @@ public class ScanCommitInfoDTO {
     @Override
     public String toString() {
         return "commit{" +
-                "repoId='" + repoId  +
+                "repoId='" + repoId +
                 ", commitId=" + commitId +
                 ", branch=" + branch +
                 ", toolName=" + toolName +
@@ -31,7 +31,7 @@ public class ScanCommitInfoDTO {
 
     @Override
     public int hashCode() {
-        return Objects.hash(repoId,toolName);
+        return Objects.hash(repoId, toolName);
     }
 
     @Override
@@ -43,7 +43,7 @@ public class ScanCommitInfoDTO {
             return false;
         }
         ScanCommitInfoDTO scanCommitInfoDTO = (ScanCommitInfoDTO) o;
-        return repoId.equals(scanCommitInfoDTO.getRepoId ())  &&
-                toolName.equals(scanCommitInfoDTO.getToolName ()) ;
+        return repoId.equals(scanCommitInfoDTO.getRepoId()) &&
+                toolName.equals(scanCommitInfoDTO.getToolName());
     }
 }

@@ -1,7 +1,8 @@
 package cn.edu.fudan.issueservice.component;
 
+import cn.edu.fudan.issueservice.domain.enums.ToolEnum;
 import cn.edu.fudan.issueservice.exception.AuthException;
-import cn.edu.fudan.issueservice.util.SegmentationUtil;
+import cn.edu.fudan.issueservice.util.StringsUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.slf4j.Logger;
@@ -54,6 +55,7 @@ public class RestInterfaceManager {
     private static final String REPO_LIST = "repoList";
     private static final String DATA = "data";
     private static final String REPO_ID = "repo_id";
+    private static final String PROJECT_URL = "/inner/project?repo_uuid=";
 
     public RestInterfaceManager(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
@@ -92,7 +94,7 @@ public class RestInterfaceManager {
      */
     public Map<String, String> getProjectByRepoId(String repoUuid) {
 
-        JSONObject projectInfo = Objects.requireNonNull(restTemplate.getForObject(projectServicePath + "/inner/project?repo_uuid=" + repoUuid, JSONObject.class)).getJSONObject(DATA);
+        JSONObject projectInfo = Objects.requireNonNull(restTemplate.getForObject(projectServicePath + PROJECT_URL + repoUuid, JSONObject.class)).getJSONObject(DATA);
 
         Map<String, String> result = new HashMap<>(8);
 
@@ -104,6 +106,12 @@ public class RestInterfaceManager {
         }
 
         return result;
+    }
+
+    public String getRepoUrl(String repoUuid) {
+        JSONObject projectInfo = restTemplate.getForObject(projectServicePath + PROJECT_URL + repoUuid, JSONObject.class);
+        assert projectInfo != null;
+        return projectInfo.getJSONObject("data").getString("url");
     }
 
     /**
@@ -120,6 +128,28 @@ public class RestInterfaceManager {
         ResponseEntity<JSONObject> responseEntity = restTemplate.exchange(projectServicePath + "/project/all", HttpMethod.GET, request, JSONObject.class);
 
         return Objects.requireNonNull(responseEntity.getBody()).getJSONObject(DATA);
+    }
+
+    /**
+     * 获取指定项目下的repo
+     *
+     * @param userToken    userToken
+     * @param projectNames projectNames
+     * @return repo list
+     */
+    public List<String> getAllRepoByProjectNames(String userToken, List<String> projectNames) {
+        List<String> result = new ArrayList<>();
+        JSONObject allRepo = getAllRepo(userToken);
+        for (String projectName : allRepo.keySet()) {
+            if (projectNames.contains(projectName)){
+                JSONArray repoList = allRepo.getJSONArray(projectName);
+                for (Object value : repoList) {
+                    JSONObject o = (JSONObject) value;
+                    result.add(o.getString(REPO_ID));
+                }
+            }
+        }
+        return result;
     }
 
     public Map<String, String> getAllRepoToRepoName(String userToken) {
@@ -183,21 +213,13 @@ public class RestInterfaceManager {
         return null;
     }
 
-    public List<String> getAllRepoUuidsByProjectName(String userToken, String projectIds) {
-        List<String> repoUuids = new ArrayList<>();
-        HttpHeaders headers = new HttpHeaders();
-        headers.add(TOKEN, userToken);
-        HttpEntity<HttpHeaders> request = new HttpEntity<>(headers);
-        ResponseEntity<JSONObject> responseEntity = restTemplate.exchange(projectServicePath + "/project/all?project_names=" + projectIds, HttpMethod.GET, request, JSONObject.class);
-        JSONObject repoDetails = Objects.requireNonNull(responseEntity.getBody()).getJSONObject(DATA);
-        for (Object value : repoDetails.values()) {
-            JSONArray repoDetail = (JSONArray) value;
-            for (int i = 0; i < repoDetail.size(); i++) {
-                repoUuids.add(repoDetail.getJSONObject(i).getString(REPO_ID));
-            }
-        }
-        return repoUuids;
+    public String getToolByRepoUuid(String repoUuid) {
+        JSONObject repoInfo = restTemplate.getForObject(projectServicePath + PROJECT_URL + repoUuid, JSONObject.class);
+        assert repoInfo != null;
+        String language = repoInfo.getJSONObject(DATA).getString("language");
+        return ToolEnum.getToolByLanguage(language);
     }
+
 
     //---------------------------------------------commit service------------------------------------------------------
 
@@ -238,7 +260,7 @@ public class RestInterfaceManager {
     }
 
     public String getRepoPath(String repoId) {
-        if (testProjectPath != null && !"false".equals(testProjectPath)) {
+        if (testProjectPath != null && !Boolean.FALSE.toString().equals(testProjectPath)) {
             return testProjectPath;
         }
 
@@ -273,7 +295,7 @@ public class RestInterfaceManager {
 
     public void freeRepoPath(String repoId, String repoPath) {
         try {
-            if (testProjectPath != null && !"false".equals(testProjectPath)) {
+            if (testProjectPath != null && !Boolean.FALSE.toString().equals(testProjectPath)) {
                 return;
             }
             if (repoPath == null || repoId == null) {
@@ -387,7 +409,7 @@ public class RestInterfaceManager {
         }});
 
         if (query.get(REPO_LIST) instanceof List) {
-            query.put(REPO_LIST, SegmentationUtil.unionStringList((List<String>) query.get(REPO_LIST)));
+            query.put(REPO_LIST, StringsUtil.unionStringList((List<String>) query.get(REPO_LIST)));
         }
 
         String url = measureServicePath + "/measure/developer/work-load?developer=" +

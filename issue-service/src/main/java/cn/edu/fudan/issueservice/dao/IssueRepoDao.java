@@ -9,25 +9,28 @@ import org.springframework.stereotype.Repository;
 import java.util.HashMap;
 import java.util.List;
 
+/**
+ * @author beethoven
+ */
 @Repository
 public class IssueRepoDao {
 
     private IssueRepoMapper issueRepoMapper;
 
-    public void insertOneIssueRepo(IssueRepo issueRepo){
-        issueRepoMapper.insertOneIssueRepo (issueRepo);
+    public void insertOneIssueRepo(IssueRepo issueRepo) {
+        issueRepoMapper.insertOneIssueRepo(issueRepo);
     }
 
-    public void updateIssueRepo(IssueRepo issueRepo){
-        issueRepoMapper.updateIssueRepo (issueRepo);
+    public void updateIssueRepo(IssueRepo issueRepo) {
+        issueRepoMapper.updateIssueRepo(issueRepo);
     }
 
-    public void delIssueRepo(String repoId, String nature, String tool){
-        issueRepoMapper.deleteIssueRepoByCondition (repoId, nature, tool);
+    public void delIssueRepo(String repoId, String nature, String tool) {
+        issueRepoMapper.deleteIssueRepoByCondition(repoId, nature, tool);
     }
 
-    public List<IssueRepo> getIssueRepoByCondition(String repoId, String nature, String tool){
-        return issueRepoMapper.getIssueRepoByCondition (repoId, nature, tool);
+    public List<IssueRepo> getIssueRepoByCondition(String repoId, String nature, String tool) {
+        return issueRepoMapper.getIssueRepoByCondition(repoId, nature, tool);
     }
 
     public List<HashMap<String, Integer>> getNotScanCommitsCount(String repoUuid, String tool) {

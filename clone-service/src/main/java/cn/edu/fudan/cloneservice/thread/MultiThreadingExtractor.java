@@ -172,7 +172,7 @@ public class MultiThreadingExtractor {
         }
         //先执行粒度为method，仅需执行一次最近的commit
         String latestCommitId = commitList.get(commitList.size() - 1);
-        scanTask.runSynchronously(repoId,latestCommitId, "method", null);
+        scanTask.runSynchronously(repoId,latestCommitId, "snippet", null);
         CloneRepo cloneRepo = initCloneRepo(repoId);
         cloneRepo.setUuid(cloneRepoUuid);
         cloneRepo.setStartScanTime(new Date());

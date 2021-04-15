@@ -23,9 +23,9 @@ public enum JavaScriptIssuePriorityEnum {
         this.rank = rank;
     }
 
-    public static String getPriorityByRank(int rank){
-        for(JavaScriptIssuePriorityEnum priority : JavaScriptIssuePriorityEnum.values()){
-            if(priority.getRank() == rank){
+    public static String getPriorityByRank(int rank) {
+        for (JavaScriptIssuePriorityEnum priority : JavaScriptIssuePriorityEnum.values()) {
+            if (priority.getRank() == rank) {
                 return priority.name;
             }
         }

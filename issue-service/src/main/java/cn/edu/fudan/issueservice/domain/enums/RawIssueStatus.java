@@ -22,9 +22,9 @@ public enum RawIssueStatus {
     MERGE_SOLVED("merge solved");
     private final String type;
 
-    public static RawIssueStatus getStatusByName(String name){
-        for(RawIssueStatus status : RawIssueStatus.values()){
-            if(status.getType().equals(name)){
+    public static RawIssueStatus getStatusByName(String name) {
+        for (RawIssueStatus status : RawIssueStatus.values()) {
+            if (status.getType().equals(name)) {
                 return status;
             }
         }

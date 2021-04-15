@@ -8,14 +8,14 @@
         <result property="type" column="type"/>
         <result property="tool" column="tool"/>
         <result property="detail" column="detail"/>
-        <result property="file_name" column="file_name"/>
-        <result property="scan_id" column="scan_id"/>
-        <result property="issue_id" column="issue_id"/>
-        <result property="commit_id" column="commit_id"/>
-        <result property="repo_id" column="repo_id"/>
-        <result property="code_lines" column="code_lines"/>
-        <result property="commit_time" column="commit_time"/>
-        <result property="developer_email" column="developer_email"/>
+        <result property="fileName" column="file_name"/>
+        <result property="scanId" column="scan_uuid"/>
+        <result property="issueId" column="issue_uuid"/>
+        <result property="commitId" column="commit_id"/>
+        <result property="repoId" column="repo_uuid"/>
+        <result property="codeLines" column="code_lines"/>
+        <result property="commitTime" column="commit_time"/>
+        <result property="developerEmail" column="developer_email"/>
         <result property="status" column="status"/>
         <collection property="locations" column="uuid"
                     select="cn.edu.fudan.issueservice.mapper.LocationMapper.getLocations"/>
@@ -26,12 +26,12 @@
         <result property="type" column="type"/>
         <result property="tool" column="tool"/>
         <result property="detail" column="detail"/>
-        <result property="file_name" column="file_name"/>
-        <result property="scan_id" column="scan_id"/>
-        <result property="issue_id" column="issue_id"/>
-        <result property="commit_id" column="commit_id"/>
-        <result property="repo_id" column="repo_id"/>
-        <result property="code_lines" column="code_lines"/>
+        <result property="fileName" column="file_name"/>
+        <result property="scanId" column="scan_uuid"/>
+        <result property="issueId" column="issue_uuid"/>
+        <result property="commitId" column="commit_id"/>
+        <result property="repoId" column="repo_uuid"/>
+        <result property="codeLines" column="code_lines"/>
         <collection property="locations" column="uuid"
                     select="cn.edu.fudan.issueservice.mapper.LocationMapper.getLocations"/>
     </resultMap>
@@ -41,52 +41,68 @@
         <result property="type" column="type"/>
         <result property="tool" column="tool"/>
         <result property="detail" column="detail"/>
-        <result property="file_name" column="file_name"/>
-        <result property="scan_id" column="scan_id"/>
-        <result property="issue_id" column="issue_id"/>
-        <result property="commit_id" column="commit_id"/>
-        <result property="repo_id" column="repo_id"/>
-        <result property="code_lines" column="code_lines"/>
+        <result property="fileName" column="file_name"/>
+        <result property="scanId" column="scan_uuid"/>
+        <result property="issueId" column="issue_uuid"/>
+        <result property="commitId" column="commit_id"/>
+        <result property="repoId" column="repo_uuid"/>
+        <result property="codeLines" column="code_lines"/>
     </resultMap>
 
+    <resultMap id="rawIssueForScan" type="RawIssue">
+        <id property="uuid" column="uuid"/>
+        <result property="type" column="type"/>
+        <result property="tool" column="tool"/>
+        <result property="detail" column="detail"/>
+        <result property="fileName" column="file_name"/>
+        <result property="scanId" column="scan_uuid"/>
+        <result property="issueId" column="issue_uuid"/>
+        <result property="commitId" column="commit_id"/>
+        <result property="repoId" column="repo_uuid"/>
+        <result property="codeLines" column="code_lines"/>
+        <result property="commitTime" column="commit_time"/>
+        <result property="developerEmail" column="developer_email"/>
+        <result property="version" column="version"/>
+    </resultMap>
+
+
     <insert id="insertRawIssueList" parameterType="List">
-        insert into rawIssue
+        insert into raw_issue
         (
         uuid,
         type,
         tool,
         detail,
         file_name,
-        scan_id,
-        issue_id,
+        repo_uuid,
         commit_id,
-        developer,
-        repo_id,
         code_lines,
-        status
+        scan_uuid,
+        issue_uuid,
+        developer,
+        version
         )
         VALUES
-        <foreach collection="list" item="item" index="index"
-                 separator=",">
+        <foreach collection="list" item="item" index="index" separator=",">
             (
             #{item.uuid},
             #{item.type},
             #{item.tool},
             #{item.detail},
-            #{item.file_name},
-            #{item.scan_id},
-            #{item.issue_id},
-            #{item.commit_id},
+            #{item.fileName},
+            #{item.repoId},
+            #{item.commitId},
+            #{item.codeLines},
+            #{item.scanId},
+            #{item.issueId},
             #{item.developerName},
-            #{item.repo_id},
-            #{item.code_lines},
-            #{item.status}
+            #{item.version}
             )
         </foreach>
     </insert>
 
     <delete id="deleteRawIssueByIds">
-        delete from rawIssue
+        delete from raw_issue
         <where>
             uuid in
             <foreach collection="list" separator="," open="(" close=")" item="rawIssueId">
@@ -95,134 +111,58 @@
         </where>
     </delete>
 
-    <select id="getRawIssueByCommitIDAndTool" parameterType="String" resultMap="rawIssue2">
-        select uuid,type,tool,detail,file_name,scan_id,issue_id,commit_id,repo_id,code_lines,status
-        from rawIssue where repo_id = #{repo_id} and tool = #{tool} and commit_id = #{commit_id} and status != 'solved' and status != 'merge solved'
-    </select>
-
-    <select id="getRawIssueByRepoList" parameterType="String" resultMap="rawIssue2">
-        select uuid,type,tool,detail,file_name,scan_id,issue_id,commit_id,repo_id,code_lines,status
-        from rawIssue where tool = #{tool} and commit_id = #{commit_id} and status != 'solved' and status != 'merge solved'
-        <if test="repoUuids != null and repoUuids.size > 0">
-            AND repo_id IN
-            <foreach collection="repoUuids" separator="," open="(" close=")" item="repoUuid">
-                #{repoUuid}
-            </foreach>
-        </if>
-    </select>
-
-    <select id="getRawIssueByIssueId" parameterType="String" resultType="java.util.HashMap">
-        select distinct a.uuid, a.type, a.tool, a.detail, a.file_name as fileName,a.scan_id as scanId, a.issue_id as issueUuid,
-        a.commit_id as commitId,a.repo_id as repoUuid, a.code_lines as codeLines,a.status,b.commit_time as commitTime, b.developer_email as developerEmail
-        from rawIssue as a
-        inner join commit as b
-        on a.commit_id = b.commit_id
-        where a.issue_id=#{issueId}
-        and status != "default"
-        order by commit_time desc ;
-    </select>
-
     <select id="getNumberOfRawIssuesByIssueId" resultType="Integer">
-        select count(*) from rawIssue where issue_id = #{issueId};
+        select count(*)
+        from raw_issue
+        where issue_uuid = #{issueId};
     </select>
 
-    <select id="getRawIssueListByIssueId" resultMap="rawIssue">
-        select distinct a.uuid,a.type,a.tool,a.detail,a.file_name,a.scan_id,a.issue_id,a.commit_id,a.repo_id,a.code_lines,a.status ,b.commit_time as commit_time , b.developer_email as developer_email
-        from rawIssue as a
-        inner join commit as b
-        on a.commit_id = b.commit_id
-        where a.issue_id = #{issue_id}
-        <if test="statusList != null || statusList.size != 0">
-            <trim prefix="and (" prefixOverrides="or" suffix=")">
-
-                <foreach collection="statusList"  item="status">
-                    or status = #{status}
-                </foreach>
-
-            </trim>
-        </if>
-        order by commit_time desc
-        <if test="start != null  and size != null ">
-            limit #{start},#{size}
-        </if>
-        ;
-    </select>
-
-    <select id="getNumberOfRawIssuesByIssueIdAndStatus" resultType="Integer">
-        select count(*) from rawIssue where issue_id = #{issueId}
-        <if test="list != null || list.size != 0">
-            <trim prefix="and (" prefixOverrides="or" suffix=")">
-                <foreach collection="list"  item="status">
-                    or status = #{status}
-                </foreach>
-            </trim>
-        </if>
-        ;
-    </select>
-
-    <select id="getRawIssueByRepoIdAndTool" resultMap="rawIssue3">
-        select uuid,type,tool,detail,file_name,scan_id,issue_id,commit_id,repo_id,code_lines,status
-        from rawIssue
+    <select id="getRawIssueByRepoIdAndTool" resultType="String">
+        SELECT uuid FROM raw_issue
         <where>
-            repo_id = #{repo_id}
+            repo_uuid = #{repo_uuid}
             <if test="tool != null  and tool != ''">
-                and tool = #{tool}
+                AND tool = #{tool}
             </if>
         </where>
-    </select>
-
-    <select id="getAdderOfOneIssue" parameterType="String" resultType="String">
-        SELECT DISTINCT b.developer_unique_name
-        FROM
-        rawIssue as a
-        INNER JOIN commit_view as b
-        ON a.repo_id = b.repo_id AND a.commit_id = b.commit_id
-        <where>
-            a.`status` = "add"
-            AND a.issue_id = #{issue_id}
-        </where>
-    </select>
-
-    <select id="getLastSolverOfOneIssue" parameterType="String" resultType="String">
-        SELECT b.developer_unique_name
-        FROM
-        rawIssue as a
-        INNER JOIN commit_view as b
-        ON a.repo_id = b.repo_id AND a.commit_id = b.commit_id
-        <where>
-            a.`status` = "solved"
-            AND a.issue_id = #{issue_id}
-        </where>
-        ORDER BY b.commit_time DESC
-        LIMIT 1
-    </select>
-
-    <select id="getLastSolvedInfoOfOneIssue" parameterType="String" resultType="java.util.HashMap">
-        SELECT a.issue_id, b.developer_unique_name as lastSolver, b.commit_id, b.commit_time
-        FROM
-        rawIssue as a
-        INNER JOIN commit_view as b
-        ON a.repo_id = b.repo_id AND a.commit_id = b.commit_id
-        <where>
-            a.`status` = "solved"
-            AND a.issue_id = #{issue_id}
-        </where>
-        ORDER BY b.commit_time DESC
-        LIMIT 1
-    </select>
-
-    <select id="getRawIssueUuidByIssueUuidAndCommit" resultType="String">
-        SELECT a.uuid FROM rawIssue AS a INNER JOIN commit_view AS b ON a.commit_id = b.commit_id AND a.repo_id = b.repo_id
-        <where>
-            a.issue_id = #{issueUuid}
-            <if test="commit != null and commit != ''">
-                AND a.commit_id = #{commit}
-            </if>
-        </where>
-        ORDER BY b.commit_time DESC LIMIT 1
     </select>
 
     <select id="getCommitByRawIssueUuid" parameterType="String" resultType="String">
-        SELECT commit_id from rawIssue where uuid = #{rawIssueUuid}
+        SELECT commit_id
+        from raw_issue
+        where uuid = #{rawIssueUuid}
+    </select>
+
+    <select id="getLastVersionRawIssue" resultMap="rawIssueForScan">
+        SELECT uuid, type, tool, detail, file_name, repo_uuid, commit_id, code_lines, scan_uuid,
+        issue_uuid, developer, version
+        FROM raw_issue
+        WHERE issue_uuid = #{issueUuid}
+        ORDER BY version DESC LIMIT 1
+    </select>
+
+    <select id="getRawIssueByUuids" resultType="java.util.Map">
+        SELECT a.uuid,
+        a.file_name AS fileName,
+        a.commit_id AS commitId,
+        a.repo_uuid AS repoUuid,
+        b.commit_time AS commitTime
+        FROM raw_issue AS a
+        INNER JOIN commit AS b
+        ON a.commit_id = b.commit_id
+        WHERE a.uuid IN
+        <foreach collection="uuids" separator="," open="(" close=")" item="uuid">
+            #{uuid}
+        </foreach>
+    </select>
+
+    <select id="getLatestVersionRawIssueUuids" resultType="String">
+        SELECT uuid FROM raw_issue
+        WHERE issue_uuid IN
+        <foreach collection="issueUuids" separator="," open="(" close=")" item="issueUuid">
+            #{issueUuid}
+        </foreach>
+        GROUP BY issue_uuid
+        HAVING MAX(version)
     </select>
 </mapper>

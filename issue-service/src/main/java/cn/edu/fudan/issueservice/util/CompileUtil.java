@@ -43,7 +43,7 @@ public class CompileUtil {
     }
 
     private static final String[] VAR = {"compile", "-Dmaven.test.skip=true", "-ff",
-            "-B", "-q", "-l /dev/null", "-Dmaven.compile.fork=true","-T 2C"};
+            "-B", "-q", "-l /dev/null", "-Dmaven.compile.fork=true", "-T 2C"};
 
     private static final List<String> var = java.util.Arrays.asList(VAR);
 
@@ -74,7 +74,7 @@ public class CompileUtil {
     public static boolean isCompilable(String repoPath) {
 
         List<String> compilePathList = PomAnalysisUtil.getMainPom(getCompilePath(repoPath));
-        if (compilePathList == null || compilePathList.size() == 0) {
+        if (compilePathList == null || compilePathList.isEmpty()) {
             /// fixme 特殊处理  后面在看
             return gradleCompile(repoPath);
         }
@@ -84,13 +84,13 @@ public class CompileUtil {
             log.info("Compile Path is {}", compilePath);
             log.info("Compile Tool is {}", compileTool.name());
             // TODO 应该根据接口来动态的根据 compileTool 调用相应的实现方法
-            if (compileTool == CompileTool.maven) {
-                if(!mvnCompile(compilePath)){
+            if (compileTool == CompileTool.MAVEN) {
+                if (!mvnCompile(compilePath)) {
                     return false;
                 }
-            } else if (compileTool == CompileTool.gradle) {
+            } else if (compileTool == CompileTool.GRADLE) {
                 compilePath = compilePath.replace("build.gradle", "");
-                if (! gradleCompile(compilePath)) {
+                if (!gradleCompile(compilePath)) {
                     return false;
                 }
             }
@@ -112,7 +112,7 @@ public class CompileUtil {
         //最多等待编译线程执行60s
         try {
             TimeUnit.SECONDS.timedJoin(compileThread, compileMaxWaitTime);
-        }catch (InterruptedException e) {
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
         return compileThread.compileSuccess == 0;
@@ -122,13 +122,13 @@ public class CompileUtil {
 
         try {
             Runtime rt = Runtime.getRuntime();
-            String command = gradleBin + " " + projectDirectory ;
-            log.info("command -> {}",command);
+            String command = gradleBin + " " + projectDirectory;
+            log.info("command -> {}", command);
             Process process = rt.exec(command);
             boolean timeout = process.waitFor(compileMaxWaitTime, TimeUnit.SECONDS);
             if (!timeout) {
                 process.destroy();
-                log.error("compile gradle timeout ! (60s)");
+                log.error("compile gradle timeout ! ({}s)", compileMaxWaitTime);
                 return false;
             }
             log.info("exit value is {}", process.exitValue());
@@ -146,7 +146,7 @@ public class CompileUtil {
                 return compileTool;
             }
         }
-        return CompileTool.maven;
+        return CompileTool.MAVEN;
     }
 
     private static List<String> getCompilePath(String repoPath) {

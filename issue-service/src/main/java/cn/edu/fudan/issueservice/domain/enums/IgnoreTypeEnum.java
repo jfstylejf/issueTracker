@@ -18,7 +18,8 @@ public enum IgnoreTypeEnum {
     MISINFORMATION("Misinformation"),
     TO_REVIEW("To_Review");
 
-    private String name;
+    private final String name;
+
     IgnoreTypeEnum(String name) {
         this.name = name;
     }
@@ -29,17 +30,16 @@ public enum IgnoreTypeEnum {
 
     /**
      * 检查状态name在不在枚举类中
-     * @param name
-     * @return
+     *
+     * @param name name
+     * @return true or false
      */
-    public static boolean statusInEnum(String name){
-
-        for(IgnoreTypeEnum status : IgnoreTypeEnum.values()){
-            if(status.getName().equals(name)){
+    public static boolean isStatusRight(String name) {
+        for (IgnoreTypeEnum status : IgnoreTypeEnum.values()) {
+            if (status.getName().equals(name)) {
                 return true;
             }
         }
-
         return false;
     }
 }

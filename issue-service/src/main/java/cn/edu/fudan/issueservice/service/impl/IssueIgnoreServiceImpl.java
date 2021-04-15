@@ -30,10 +30,10 @@ public class IssueIgnoreServiceImpl implements IssueIgnoreService {
 
         issueIgnoreDao.insertIssueIgnoreRecords(ignoreRecords);
 
-        for (IgnoreRecord ignoreRecord : ignoreRecords){
+        for (IgnoreRecord ignoreRecord : ignoreRecords) {
             boolean updateIssueManualStatusSuccess = updateIssueManualStatus(ignoreRecord.getRepoUuid(), ignoreRecord.getIssueUuid(), ignoreRecord.getTag(), ignoreRecord.getType(), ignoreRecord.getTool(), ignoreRecord.getIgnoreTime());
-            if(!updateIssueManualStatusSuccess){
-                throw  new RuntimeException("update issue manual_status failed!");
+            if (!updateIssueManualStatusSuccess) {
+                throw new RuntimeException("update issue manual_status failed!");
             }
         }
 
@@ -47,11 +47,6 @@ public class IssueIgnoreServiceImpl implements IssueIgnoreService {
         }
         issueDao.updateIssueManualStatus(repoUuid, issueUuid, manualStatus, issueType, tool, ignoreTime);
         return true;
-    }
-
-    @Override
-    public void deleteIssueIgnoreRecord(String tool, String issueUuid, String ignoreUuid) {
-        //issueIgnoreDao.deleteIgnoreRecord()
     }
 
     @Autowired

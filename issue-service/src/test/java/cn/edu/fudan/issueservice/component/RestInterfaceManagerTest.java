@@ -11,6 +11,7 @@ import org.springframework.web.client.RestTemplate;
 public class RestInterfaceManagerTest {
     @InjectMocks //用来注解被测类IssueScanController的实例对象，对其注入mock
     private RestInterfaceManager restInterfaceManager = new RestInterfaceManager(new RestTemplate());
+
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);

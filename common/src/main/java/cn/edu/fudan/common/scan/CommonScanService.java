@@ -26,7 +26,7 @@ public interface CommonScanService {
      * @param toolName 工具名
      * @return 是否已经停止
      */
-    boolean stopScan(String  repoUuid, String toolName);
+    boolean stopScan(String repoUuid, String toolName);
 
     /**
      * 删除代码库所有数据

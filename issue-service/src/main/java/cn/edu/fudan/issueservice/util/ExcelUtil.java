@@ -1,6 +1,7 @@
 package cn.edu.fudan.issueservice.util;
 
 import cn.edu.fudan.issueservice.domain.enums.IssueTypeInChineseEnum;
+import cn.edu.fudan.issueservice.domain.vo.IssueFilterInfoVO;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
@@ -12,7 +13,7 @@ import java.util.*;
  */
 public class ExcelUtil {
 
-    public static HSSFWorkbook exportExcel(Map<String, Object> issueFilterList, Map<String, String> allRepoToRepoName) {
+    public static HSSFWorkbook exportExcel(List<IssueFilterInfoVO> issuesOverview) {
         //创建一个excel
         HSSFWorkbook workbook = new HSSFWorkbook();
         //新建一个sheet页
@@ -77,59 +78,58 @@ public class ExcelUtil {
         cell11.setCellValue("解决缺陷commit");
         cell11.setCellStyle(style);
         //处理表格数据
-        handleExcelData(workbook, sheet, issueFilterList, allRepoToRepoName);
+        handleExcelData(workbook, sheet, issuesOverview);
 
         return workbook;
     }
 
-    @SuppressWarnings("unchecked")
-    private static void handleExcelData(HSSFWorkbook workbook, HSSFSheet sheet, Map<String, Object> issueFilterList, Map<String, String> allRepoToRepoName) {
+    private static void handleExcelData(HSSFWorkbook workbook, HSSFSheet sheet, List<IssueFilterInfoVO> issuesOverview) {
+        Map<String, String> mapToChinese = IssueTypeInChineseEnum.getMapToChinese();
         //获取数据
-        List<Map<String, Object>> issueList = (List<Map<String, Object>>) issueFilterList.get("issueList");
-        issueList.sort(Comparator.comparingInt(o -> (int) o.get("displayId")));
+        issuesOverview.sort(Comparator.comparingInt(IssueFilterInfoVO::getDisplayId));
         //单元格样式
         HSSFCellStyle style = workbook.createCellStyle();
         style.setAlignment(HorizontalAlignment.CENTER);
         style.setVerticalAlignment(VerticalAlignment.CENTER);
         //填入数据,修改样式
         int i = 1;
-        for (Map<String, Object> issue : issueList) {
+        for (IssueFilterInfoVO issueOverview : issuesOverview) {
             HSSFRow row = sheet.createRow(i);
             HSSFCell cell0 = row.createCell(0);
             cell0.setCellValue(i);
             cell0.setCellStyle(style);
             HSSFCell cell1 = row.createCell(1);
-            cell1.setCellValue(IssueTypeInChineseEnum.getIssueTypeInChinese((String) issue.get("type")));
+            cell1.setCellValue(mapToChinese.get(issueOverview.getType()));
             cell1.setCellStyle(style);
             HSSFCell cell2 = row.createCell(2);
-            cell2.setCellValue((String) issue.get("issueCategory"));
+            cell2.setCellValue(issueOverview.getIssueCategory());
             cell2.setCellStyle(style);
             HSSFCell cell3 = row.createCell(3);
-            cell3.setCellValue(allRepoToRepoName.get((String) issue.get("repoId")));
+            cell3.setCellValue(issueOverview.getRepoName());
             cell3.setCellStyle(style);
             HSSFCell cell4 = row.createCell(4);
-            cell4.setCellValue((String) issue.get("targetFiles"));
+            cell4.setCellValue(issueOverview.getFileName());
             cell4.setCellStyle(style);
             HSSFCell cell5 = row.createCell(5);
-            cell5.setCellValue((String) issue.get("producer"));
+            cell5.setCellValue(issueOverview.getProducer());
             cell5.setCellStyle(style);
             HSSFCell cell6 = row.createCell(6);
-            cell6.setCellValue((String) issue.get("startCommitDate"));
+            cell6.setCellValue(DateTimeUtil.format(issueOverview.getStartCommitDate()));
             cell6.setCellStyle(style);
             HSSFCell cell7 = row.createCell(7);
-            cell7.setCellValue((String) issue.get("status"));
+            cell7.setCellValue(issueOverview.getStatus());
             cell7.setCellStyle(style);
             HSSFCell cell8 = row.createCell(8);
-            cell8.setCellValue((String) issue.get("priority"));
+            cell8.setCellValue(issueOverview.getPriority());
             cell8.setCellStyle(style);
             HSSFCell cell9 = row.createCell(9);
-            cell9.setCellValue((String) issue.get("solver"));
+            cell9.setCellValue(issueOverview.getSolver());
             cell9.setCellStyle(style);
             HSSFCell cell10 = row.createCell(10);
-            cell10.setCellValue((String) issue.get("solveTime"));
+            cell10.setCellValue(DateTimeUtil.format(issueOverview.getSolveTime()));
             cell10.setCellStyle(style);
             HSSFCell cell11 = row.createCell(11);
-            cell11.setCellValue((String) issue.get("solveCommit"));
+            cell11.setCellValue(issueOverview.getSolveCommit());
             cell11.setCellStyle(style);
             i++;
         }
