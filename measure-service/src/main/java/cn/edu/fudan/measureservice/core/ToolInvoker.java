@@ -259,6 +259,7 @@ public class ToolInvoker {
         }else if (ToolEnum.JSCodeAnalyzer.getType().equals(scanCommitInfoDto.getToolName())) {
             JsCodeAnalyzer jsCodeAnalyzer = new JsCodeAnalyzer();
             jsCodeAnalyzer.setRepoPath(scanCommitInfoDto.getRepoPath());
+            jsCodeAnalyzer.setLibHome(libHome);
             jsCodeAnalyzer.setBinHome(binHome);
             jsCodeAnalyzer.setScanCommitInfoDto(scanCommitInfoDto);
             FileInfo preFileInfo = jsCodeAnalyzer.getPreFileInfo(filePath);
