@@ -221,4 +221,5 @@ public class ScanServiceImpl implements ScanService {
     public void setCloneMeasureService(CloneMeasureService cloneMeasureService) {
         this.cloneMeasureService = cloneMeasureService;
     }
+
 }
