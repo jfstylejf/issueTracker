@@ -25,6 +25,14 @@ public class ProjectCommitStandardDetail {
      */
     private String projectName;
     /**
+     * 代码库
+     */
+    private String repoUuid;
+    /**
+     * 库名称
+     */
+    private String repoName;
+    /**
      * 提交commit id
      */
     private String commitId;

@@ -996,16 +996,17 @@ public class MeasureDeveloperService {
             }
             RepoInfo repoInfo = projectDao.getRepoInfoMap().get(repoUuid);
             String projectName = repoInfo.getProjectName();
+            String repoName = repoInfo.getRepoName();
             int projectId = projectDao.getProjectIdByName(projectName);
             List<DeveloperCommitStandard> developerCommitStandardList = getCommitStandard(query,null);
             for (DeveloperCommitStandard developerCommitStandard : developerCommitStandardList) {
-                projectCommitStandardDetailList.addAll(dealWithDeveloperCommitStandardDetail(developerCommitStandard,projectName,projectId));
+                projectCommitStandardDetailList.addAll(dealWithDeveloperCommitStandardDetail(developerCommitStandard,projectName,projectId,repoUuid,repoName));
             }
         }
         return projectCommitStandardDetailList;
      }
 
-     private List<ProjectCommitStandardDetail> dealWithDeveloperCommitStandardDetail(DeveloperCommitStandard developerCommitStandard,String projectName, int projectId) {
+     private List<ProjectCommitStandardDetail> dealWithDeveloperCommitStandardDetail(DeveloperCommitStandard developerCommitStandard,String projectName, int projectId,String repoUuid,String repoName) {
         List<ProjectCommitStandardDetail> projectCommitStandardDetailList = new ArrayList<>();
         List<Map<String,String>> developerJiraCommitInfo = developerCommitStandard.getDeveloperJiraCommitInfo();
         List<Map<String,String>> developerInvalidCommitInfo = developerCommitStandard.getDeveloperInvalidCommitInfo();
@@ -1018,6 +1019,8 @@ public class MeasureDeveloperService {
              ProjectCommitStandardDetail projectCommitStandardDetail = ProjectCommitStandardDetail.builder()
                      .committer(developerName)
                      .commitId(commitId)
+                     .repoUuid(repoUuid)
+                     .repoName(repoName)
                      .commitTime(commitTime)
                      .message(message)
                      .projectId(String.valueOf(projectId))
@@ -1034,6 +1037,8 @@ public class MeasureDeveloperService {
              ProjectCommitStandardDetail projectCommitStandardDetail = ProjectCommitStandardDetail.builder()
                      .committer(developerName)
                      .commitId(commitId)
+                     .repoUuid(repoUuid)
+                     .repoName(repoName)
                      .commitTime(commitTime)
                      .message(message)
                      .projectId(String.valueOf(projectId))
