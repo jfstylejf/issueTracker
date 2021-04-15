@@ -79,7 +79,7 @@
     </select>
 
     <insert id="insertFileMeasureList">
-        insert ignore into issueTracker.file_measure
+        insert into issueTracker.file_measure
         (
         uuid,
         repo_id,
@@ -107,10 +107,14 @@
             #{item.totalLine}
             )
         </foreach>
-        on duplicate key update
-        commit_id = #{item.commitId}
     </insert>
 
+    <select id="sameFileMeasureOfOneCommit" resultType="int">
+        select count(*) from issueTracker.file_measure
+        where
+        repo_id = #{repo_id}
+        and commit_id = #{commit_id}
+    </select>
 
 
 </mapper>

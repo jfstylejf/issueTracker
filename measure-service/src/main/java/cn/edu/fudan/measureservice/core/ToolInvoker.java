@@ -237,7 +237,9 @@ public class ToolInvoker {
         }
 
         try{
-            fileMeasureMapper.insertFileMeasureList(fileMeasureList);
+            if(fileMeasureMapper.sameFileMeasureOfOneCommit(scanCommitInfoDto.getRepoUuid(),scanCommitInfoDto.getCommitId())==0) {
+                fileMeasureMapper.insertFileMeasureList(fileMeasureList);
+            }
             return true;
         } catch (Exception e) {
             log.error("Inserting data to DB file_measure table failed：");

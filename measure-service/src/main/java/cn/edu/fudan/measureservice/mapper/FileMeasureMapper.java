@@ -25,4 +25,6 @@ public interface FileMeasureMapper {
     Integer getCcnByCommitIdAndFilePath(@Param("commit_id")String commit_id,@Param("file_path")String file_path);
 
     void insertFileMeasureList(@Param("fileMeasureList")List<FileMeasure> fileMeasureList);
+
+    int sameFileMeasureOfOneCommit(@Param("repo_id")String repoUuid,@Param("commit_id")String commitId);
 }
