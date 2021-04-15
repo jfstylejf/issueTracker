@@ -30,6 +30,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -61,6 +62,7 @@ public class MeasureDeveloperService {
     private static final String Loss = "loss";
     private static final String TOOL = "sonarqube";
     private static final String split = ",";
+    private static final DecimalFormat df = new DecimalFormat("0.000");
     /**
      *
      * @param query 查询条件
@@ -938,7 +940,7 @@ public class MeasureDeveloperService {
                         .projectId(String.valueOf(projectId))
                         .date(tempTime.format(dtf))
                         .projectName(projectName)
-                        .num(num)
+                        .num(df.format(num))
                         .detail(new ArrayList<>())
                         .option(new HashMap<>()).build();
                 projectCommitStandardTrendChart.setOption(jiraCommitCountNum,validCommitCountNum);

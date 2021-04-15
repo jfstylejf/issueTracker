@@ -286,7 +286,7 @@ public class MeasureDeveloperController {
 
     @GetMapping("/measure/commit-standard/trend-chart")
     @CrossOrigin
-    public ResponseBean<List<ProjectCommitStandardTrendChart>> getCommitStandardTrendChart(@RequestParam(required = false, defaultValue = "") String projectIds,
+    public ResponseBean<List<ProjectCommitStandardTrendChart>> getCommitStandardTrendChart(@RequestParam(value = "project_ids",required = false, defaultValue = "") String projectIds,
                                                                                            @RequestParam(required = false, defaultValue = "") String since,
                                                                                            @RequestParam(required = false, defaultValue = "") String until,
                                                                                            @RequestParam(required = false, defaultValue = "week") String interval,
