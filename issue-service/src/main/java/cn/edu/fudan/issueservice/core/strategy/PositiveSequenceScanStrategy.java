@@ -9,13 +9,12 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 /**
  * @author lsw
  */
-@Component("PSSS")
+@Component
 public class PositiveSequenceScanStrategy implements ScanStrategy {
 
     @Override
     public ConcurrentLinkedDeque<String> getScanCommitLinkedQueue(String repoId, JGitHelper jGitHelper, String branch, String beginCommit, List<String> scannedCommits) {
-        List<String> commitList =  jGitHelper.getScanCommitListByBranchAndBeginCommit(branch, beginCommit, scannedCommits);
+        List<String> commitList = jGitHelper.getScanCommitListByBranchAndBeginCommit(branch, beginCommit, scannedCommits);
         return new ConcurrentLinkedDeque<>(commitList);
     }
-
 }

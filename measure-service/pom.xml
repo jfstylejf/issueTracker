@@ -132,7 +132,13 @@
             <artifactId>swagger-bootstrap-ui</artifactId>
             <version>1.6</version>
         </dependency>
-<!--        <dependency>-->
+        <dependency>
+            <groupId>org.codehaus.javancss</groupId>
+            <artifactId>javancss</artifactId>
+            <version>33.54</version>
+            <scope>compile</scope>
+        </dependency>
+        <!--        <dependency>-->
 <!--            <groupId>org.mybatis</groupId>-->
 <!--            <artifactId>mybatis</artifactId>-->
 <!--            <version>3.5.0</version>-->

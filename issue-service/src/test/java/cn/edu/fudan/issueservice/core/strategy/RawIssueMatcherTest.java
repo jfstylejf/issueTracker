@@ -1,8 +1,8 @@
 package cn.edu.fudan.issueservice.core.strategy;
 
+import cn.edu.fudan.issueservice.core.process.RawIssueMatcher;
 import cn.edu.fudan.issueservice.domain.dbo.RawIssue;
 import cn.edu.fudan.issueservice.util.AstParserUtil;
-import cn.edu.fudan.issueservice.util.SearchUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.junit.Assert;
@@ -13,7 +13,6 @@ import org.junit.runners.JUnit4;
 import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -46,7 +45,7 @@ public class RawIssueMatcherTest {
         Set<String> curName = AstParserUtil.getAllMethodAndFieldName(filePath);
 
         rawIssueMatcher.match(preRawIssueList, curRawIssueList, curName);
-        for(RawIssue curRawIssue : curRawIssueList){
+        for (RawIssue curRawIssue : curRawIssueList) {
             Assert.assertEquals(curRawIssue.getMappedRawIssue().getDetail(), curRawIssue.getDetail());
         }
     }
@@ -70,7 +69,7 @@ public class RawIssueMatcherTest {
         Set<String> curName = AstParserUtil.getAllMethodAndFieldName(filePath);
 
         rawIssueMatcher.match(preRawIssueList, curRawIssueList, curName);
-        for(RawIssue curRawIssue : curRawIssueList){
+        for (RawIssue curRawIssue : curRawIssueList) {
             Assert.assertEquals(curRawIssue.getMappedRawIssue().getDetail(), curRawIssue.getDetail());
         }
     }
@@ -94,7 +93,7 @@ public class RawIssueMatcherTest {
         Set<String> curName = AstParserUtil.getAllMethodAndFieldName(filePath);
 
         rawIssueMatcher.match(preRawIssueList, curRawIssueList, curName);
-        for(RawIssue curRawIssue : curRawIssueList){
+        for (RawIssue curRawIssue : curRawIssueList) {
             Assert.assertEquals(curRawIssue.getMappedRawIssue().getDetail(), curRawIssue.getDetail());
         }
     }

@@ -160,7 +160,7 @@
             <if test="account_uuid != null">
                 a.uuid = #{account_uuid}
                 AND a.account_name = c.developer
-                and c.repo_id = s.repo_uuid;
+                and c.repo_uuid = s.repo_uuid;
             </if>
         </where>
     </select>
@@ -209,31 +209,28 @@
         </where>
     </delete>
 
-    <update id="putIntoRecycled" parameterType="String">
-        update sub_repository
-        <set>
-            recycled = 1
-        </set>
-        <where>
-            repo_uuid = #{repoUuid}
-        </where>
-    </update>
-
-    <update id="getFromRecycled" parameterType="String">
-        update sub_repository
-        <set>
-            recycled = 0
-        </set>
-        <where>
-            repo_uuid = #{repoUuid}
-        </where>
-    </update>
-
     <delete id="deleteRepoByUuid" parameterType="String">
         delete from sub_repository
         <where>
             uuid = #{RepoUUID};
         </where>
     </delete>
+
+    <select id="getRecycledStatus" resultType = "Integer">
+        SELECT recycled from sub_repository
+        <where>
+            repo_uuid = #{repoUuid};
+        </where>
+    </select>
+
+    <update id="putRecycledStatus" >
+        update sub_repository
+        <set>
+            recycled = #{recycled}
+        </set>
+        <where>
+            repo_uuid = #{repoUuid}
+        </where>
+    </update>
 
 </mapper>

@@ -29,10 +29,36 @@ public interface CloneLocationMapper {
                                           @Param("commit_id")String commitId);
 
     /**
+     * 获取对应commit的所有clone location(测试用)
+     * @param repoId repo id
+     * @param commitId commit id
+     * @return location list
+     */
+    List<CloneLocation> getCloneLocationsTest(@Param("repo_id") String repoId,
+                                          @Param("commit_id")String commitId);
+
+
+    /**
+     * 获取最近一次commit信息
+     * @param repoUuid
+     * @param since
+     * @param until
+     * @return 最新的commitId
+     */
+    String getLatestCommitId(@Param("repo_uuid") String repoUuid,
+                              @Param("since") String since,
+                              @Param("until") String until);
+    /**
      * 删除对应repo所有的clone location
      * @param repoId repo id
      */
     void deleteCloneLocations(@Param("repo_id") String repoId);
 
+    /**
+     * 根据commitId获得组数
+     * @param latestCommitId
+     * @return clone组数
+     */
+    int getGroupCount(@Param("commit_id") String latestCommitId);
 
 }

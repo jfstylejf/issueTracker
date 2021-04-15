@@ -11,6 +11,8 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 
 import java.io.*;
@@ -21,15 +23,16 @@ import java.util.concurrent.TimeUnit;
  * @author wjzho
  */
 @Slf4j
+@Component
 public class JsCodeAnalyzer extends BaseAnalyzer{
 
-    private static final String jsResultFileHome = "/home/fdse/codeWisdom/service/measure/log/JsResultLog";
+    private String jsResultFileHome = FileUtil.systemAvailablePath("/home/fdse/codeWisdom/service/measure/log/JsResultLog");
     private static final String jsCcnLog = "jsCcn.log";
     private static final String jsLineLog = "jsLine.log";
     public static final String jsScanLog = "jsScan.log";
-    private static final String jsComplexity = "excuteJsComplexity.sh";
-    private static final String jsLine = "excuteJsLine.sh";
-    public static final String jsScan = "excuteJsScan.sh";
+    private static final String jsComplexity = FileUtil.systemAvailablePath("Js/tool/complexity.js");
+    private static final String jsLine = FileUtil.systemAvailablePath("Js/tool/line.js");
+    private static final String jsScan = "excuteJsScan.sh";
 
     @SneakyThrows
     @Override
@@ -57,7 +60,7 @@ public class JsCodeAnalyzer extends BaseAnalyzer{
 
 
     @Override
-    public boolean analyze() {
+    public  boolean analyze() {
         try {
             JSONArray jsCcnResult = readJsParseFile(FileUtil.pathJoint(jsResultFileHome,jsCcnLog));
             JSONArray jsLineResult = readJsParseFile(FileUtil.pathJoint(jsResultFileHome,jsLineLog));
@@ -103,21 +106,89 @@ public class JsCodeAnalyzer extends BaseAnalyzer{
 
 
     @SneakyThrows
-    private boolean executeCommand(String path, String type){
+    private  boolean executeCommand(String path, String type){
         Runtime rt = Runtime.getRuntime();
-        String command = binHome + type + " " + path;
+        String command = "node" + " " + libHome + type + " " + path + " " + jsResultFileHome;
         log.info("command -> {}", command);
+        /*
+            note :
+             Process.waitfor 挂起 Java 线程， 等待子进程执行
+             然而本地缓冲区大小有限， 如果不处理写入 buffer 的 标准输入流和标准输出流就会造成子进程阻塞，发生死锁
+         */
         Process process = rt.exec(command);
-        boolean timeout = process.waitFor(200L, TimeUnit.SECONDS);
-        if (!timeout) {
-            process.destroy();
-            log.error("run {} script timeout ! (100s),file: {}",type, path);
+        try {
+            //获取进程的标准输入流
+            final InputStream is1 = process.getInputStream();
+            //获取进城的错误流
+            final InputStream is2 = process.getErrorStream();
+            //启动两个线程，一个线程负责读标准输出流，另一个负责读标准错误流
+            // fixme 使用线程池
+            new Thread() {
+                @Override
+                public void run() {
+                    BufferedReader br1 = new BufferedReader(new InputStreamReader(is1));
+                    try {
+                        String line1;
+                        while ((line1 = br1.readLine()) != null) {
+                            if (line1 != null){}
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    finally{
+                        try {
+                            is1.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }.start();
+            new Thread() {
+                @Override
+                public void  run() {
+                    BufferedReader br2 = new  BufferedReader(new  InputStreamReader(is2));
+                    try {
+                        String line2 = null ;
+                        while ((line2 = br2.readLine()) !=  null ) {
+                            if (line2 != null){}
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    finally{
+                        try {
+                            is2.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }.start();
+            boolean timeout = process.waitFor(200L, TimeUnit.SECONDS);
+            if (!timeout) {
+                process.destroy();
+                log.error("run {} script timeout ! (100s),file: {}",type, path);
+                return false;
+            }
+            if (process.exitValue() != 0) {
+
+            }
+            return true;
+
+        }catch (Exception e) {
+            e.printStackTrace();
+            try{
+                process.getErrorStream().close();
+                process.getInputStream().close();
+                process.getOutputStream().close();
+            }
+            catch(Exception ignored){
+                e.getMessage();
+            }
             return false;
         }
-        if (process.exitValue() != 0) {
 
-        }
-        return true;
     }
 
     //todo 读写文件异常处理细化判断
@@ -253,9 +324,31 @@ public class JsCodeAnalyzer extends BaseAnalyzer{
         return null;
     }
 
+    public String getJsResultFileHome() {
+        return jsResultFileHome;
+    }
+
+    public void setJsResultFileHome(String jsResultFileHome) {
+        this.jsResultFileHome = jsResultFileHome;
+    }
 
     public static void main(String[] args) {
-
+        String filePath = "C:\\\\Users\\\\wjzho\\\\Desktop\\\\js_test\\\\fortestjs-davidtest_duplicate_fdse-0";
+        JsCodeAnalyzer baseAnalyzer = new JsCodeAnalyzer();
+        baseAnalyzer.setLibHome("C:\\\\Users\\\\wjzho\\\\Desktop\\\\js_test\\\\lib\\\\");
+        baseAnalyzer.setRepoPath(filePath);
+        baseAnalyzer.setJsResultFileHome("C:\\\\Users\\\\wjzho\\\\Desktop\\\\js_test\\\\log");
+        try {
+            if(!baseAnalyzer.invoke()) {
+                log.error("invoke wrong\n");
+            }
+            if(!baseAnalyzer.analyze()) {
+                log.error("analyze wrong\n");
+            }
+            System.out.println(baseAnalyzer.getAnalyzedResult());
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 

@@ -21,15 +21,32 @@ public class CloneLocationDao {
         this.cloneLocationMapper = cloneLocationMapper;
     }
 
-    public void insertCloneLocations(List<CloneLocation> cloneLocations){
+    public int getCloneLocationGroupSum(List<String> repoUuids, String until) {
+        int res = 0;
+        for (String repoUuid : repoUuids) {
+            if (repoUuid != null) {
+                String commitId = cloneLocationMapper.getLatestCommitId(repoUuid, "", until);
+                if (commitId != null) {
+                    res = res + cloneLocationMapper.getGroupCount(cloneLocationMapper.getLatestCommitId(repoUuid, "", until));
+                }
+            }
+        }
+        return res;
+    }
+
+    public void insertCloneLocations(List<CloneLocation> cloneLocations) {
         cloneLocationMapper.insertCloneLocationList(cloneLocations);
     }
 
-    public List<CloneLocation> getCloneLocations(String repoId, String commitId){
+    public List<CloneLocation> getCloneLocations(String repoId, String commitId) {
         return cloneLocationMapper.getCloneLocations(repoId, commitId);
     }
 
-    public void deleteCloneLocations(String repoId){
+    public List<CloneLocation> getCloneLocationsTest(String repoId, String commitId) {
+        return cloneLocationMapper.getCloneLocationsTest(repoId, commitId);
+    }
+
+    public void deleteCloneLocations(String repoId) {
         cloneLocationMapper.deleteCloneLocations(repoId);
     }
 

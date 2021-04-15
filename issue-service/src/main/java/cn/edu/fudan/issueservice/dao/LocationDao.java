@@ -22,12 +22,15 @@ public class LocationDao {
         this.locationMapper = locationMapper;
     }
 
-    public void insertLocationList(List<Location> list) {
-        locationMapper.insertLocationList(list);
+    public void insertLocationList(List<Location> locations) {
+        if (locations.isEmpty()) {
+            return;
+        }
+        locationMapper.insertLocationList(locations);
     }
 
     public void deleteLocationByRawIssueIds(List<String> rawIssueIds) {
-        if(rawIssueIds == null || rawIssueIds.isEmpty ()){
+        if (rawIssueIds == null || rawIssueIds.isEmpty()) {
             return;
         }
         locationMapper.deleteLocationByRawIssueIds(rawIssueIds);

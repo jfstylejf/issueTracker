@@ -63,4 +63,6 @@
         <appender-ref ref="STDOUT" />
         <appender-ref ref="FILE"/>
     </root>
+
+    <logger name="cn.edu.fudan.codetracker.core.tree.parser" level="off" />
 </configuration>

@@ -10,6 +10,7 @@ import org.springframework.web.client.RestTemplate;
 import lombok.extern.slf4j.Slf4j;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -32,7 +33,8 @@ public class RestInterfaceManager {
     private String issueServicePath;
     @Value("${measure.service.path}")
     private String measureServicePath;
-
+    @Value("${account.service.path}")
+    private String accountServicePath;
     @Autowired
     private RestTemplate restTemplate;
 
@@ -88,22 +90,6 @@ public class RestInterfaceManager {
         return restTemplate.getForObject(repoServicePath + "/" + repoId, JSONObject.class);
     }
 
-    public String getLanguage(String repoUuid) {
-        try {
-            ResponseBean<Map<String, String>> response = restTemplate.getForObject(codeServicePath + "?repo_id=" + repoUuid, ResponseBean.class);
-
-            if (response != null && response.getCode()!=200 &&
-            response.getData().get("language").isEmpty()){
-                return response.getData().get("language");
-            } else{
-                return "";
-            }
-        }catch (Exception e){
-            log.error("get language Exception！ ");
-        }
-        return "";
-    }
-
     public String getRepoPath1(String repoId) {
         JSONObject jsonObject = restTemplate.getForObject(codeServicePath + "?repo_id=" + repoId, JSONObject.class);
         return jsonObject.getJSONObject("data").getString("content");
@@ -122,5 +108,20 @@ public class RestInterfaceManager {
         return addLines;
     }
 
+    public UserInfoDTO getUserInfoByToken(String token) {
+        Objects.requireNonNull(token);
+        ResponseBean result = restTemplate.getForObject(accountServicePath + "/user/right/" + token, ResponseBean.class);
+        if (result == null) {
+            log.error("Response is null");
+            return null;
+        }
+
+        if (result.getCode() != 200) {
+            log.error(result.getMsg());
+            return null;
+        }
+        Map<String,Object> data =  (Map<String, Object>) result.getData();
+        return new UserInfoDTO(token, (String) data.get("uuid"), (Integer) data.get("right"));
+    }
 
 }

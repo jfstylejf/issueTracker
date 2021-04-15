@@ -2,6 +2,7 @@ package cn.edu.fudan.cloneservice.service;
 
 import cn.edu.fudan.cloneservice.domain.*;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -41,4 +42,13 @@ public interface CloneMeasureService {
 
     List<CloneMessage> sortByOrder(List<CloneMessage> cloneMessages, String order);
 
+    /**
+     *
+     * @param projectId
+     * @param since
+     * @param until
+     * @param interval
+     * @return Map<projectId, Map<date, num>>
+     */
+    List<CloneGroupSum> getCloneGroupsSum(String projectId, String since, String until, String interval, String token);
 }

@@ -38,7 +38,9 @@ public class ProjectDao {
         return projectMapper.getProjectIdByNameP(projectName);
     }
 
-    ;
+    public void deleteProject(String projectName){ projectMapper.deleteProjectByName(projectName); };
+
+    public List<String> getProjectRepo(String projectName){return projectMapper.getRepoByProjectName(projectName); };
 
     @Autowired
     public void setProjectMapper(ProjectMapper projectMapper) {

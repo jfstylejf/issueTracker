@@ -6,7 +6,7 @@
     <resultMap id="issueScan" type="IssueScan">
         <id property="uuid" column="uuid"/>
         <result property="tool" column="tool"/>
-        <result property="repoId" column="repo_id"/>
+        <result property="repoId" column="repo_uuid"/>
         <result property="commitId" column="commit_id"/>
         <result property="status" column="status"/>
         <result property="startTime" column="start_time"/>
@@ -17,42 +17,40 @@
 
     <insert id="insertOneScan" parameterType="IssueScan">
         insert into issue_scan
-        (
-        uuid,
-        tool,
-        start_time,
-        end_time,
-        repo_id,
-        status,
-        commit_id,
-        commit_time,
-        result_summary
-        )
-        VALUES
-        (
-        #{uuid},
-        #{tool},
-        #{startTime},
-        #{endTime},
-        #{repoId},
-        #{status},
-        #{commitId},
-        #{commitTime},
-        #{resultSummary}
-        )
+        (uuid,
+         tool,
+         start_time,
+         end_time,
+         repo_uuid,
+         status,
+         commit_id,
+         commit_time,
+         result_summary)
+        VALUES (#{uuid},
+                #{tool},
+                #{startTime},
+                #{endTime},
+                #{repoId},
+                #{status},
+                #{commitId},
+                #{commitTime},
+                #{resultSummary})
 
     </insert>
 
     <delete id="deleteIssueScanByRepoIdAndTool" parameterType="String">
-        delete from issue_scan where repo_id = #{repo_id} and tool = #{tool}
+        delete
+        from issue_scan
+        where repo_uuid = #{repo_uuid}
+          and tool = #{tool}
     </delete>
 
-    <select id="getIssueScanByRepoIdAndStatusAndTool"  resultMap="issueScan">
+    <select id="getIssueScanByRepoIdAndStatusAndTool" resultMap="issueScan">
         select * from issue_scan
         <where>
-            repo_id=#{repo_id}
-            <if test="statusList != null ">
-                and status  in
+            repo_uuid=#{repo_uuid}
+            <if test="statusList != null and statusList.size > 0">
+                and status in
                 <foreach collection="statusList" separator="," open="(" close=")" item="status">
                     #{status}
                 </foreach>
@@ -67,7 +65,7 @@
     <select id="getIssueScanByRepoIdAndCommitIdAndTool" parameterType="String" resultMap="issueScan">
         select * from issue_scan
         <where>
-            repo_id=#{repo_id}
+            repo_uuid=#{repo_uuid}
             <if test="commit_id != null and commit_id != ''">
                 and commit_id=#{commit_id}
             </if>
@@ -87,19 +85,20 @@
     <select id="getLatestIssueScanByRepoIdAndTool" parameterType="String" resultMap="issueScan">
         select * from issue_scan
         <where>
-            repo_id=#{repo_id}
+            repo_uuid=#{repo_uuid}
             <if test="tool != null and tool != ''">
                 and tool=#{tool}
             </if>
         </where>
-        order by commit_time desc limit 1
+        order by commit_time desc
+        limit 1
     </select>
 
     <select id="getScannedCommitList" resultType="String">
         SELECT commit_id FROM issue_scan
         <trim prefix="where" prefixOverrides="and">
             <if test="repoUuid != null and repoUuid != ''">
-                and repo_id = #{repoUuid}
+                and repo_uuid = #{repoUuid}
             </if>
             <if test="tool != null and tool != ''">
                 and tool = #{tool}

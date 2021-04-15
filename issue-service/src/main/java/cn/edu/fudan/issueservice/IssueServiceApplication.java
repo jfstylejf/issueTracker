@@ -15,7 +15,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
  */
 @SpringBootApplication
 @MapperScan("cn.edu.fudan.issueservice.mapper")
-@EnableTransactionManagement//开启事务支持
+@EnableTransactionManagement
 @EnableAsync
 @EnableScheduling
 @EnableCaching

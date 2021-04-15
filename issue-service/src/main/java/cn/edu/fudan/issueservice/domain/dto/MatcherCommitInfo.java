@@ -10,14 +10,14 @@ import java.util.Objects;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MatcherCommitInfo {
-    String repoId ;
-    String commitId ;
+    String repoId;
+    String commitId;
     String commitTime;
 
     @Override
     public String toString() {
         return "commit{" +
-                "repoId='" + repoId  +
+                "repoId='" + repoId +
                 ", commitId=" + commitId +
                 '}';
     }
@@ -36,7 +36,7 @@ public class MatcherCommitInfo {
             return false;
         }
         MatcherCommitInfo matcherCommitInfo = (MatcherCommitInfo) o;
-        return repoId == matcherCommitInfo.getRepoId () &&
-                commitId.equals(matcherCommitInfo.getCommitId ());
+        return repoId == matcherCommitInfo.getRepoId() &&
+                commitId.equals(matcherCommitInfo.getCommitId());
     }
 }

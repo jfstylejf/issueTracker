@@ -75,7 +75,7 @@ public class Swagger2 {
                 .defaultValue(userToken).required(false).build();
         pars.add(ticketPar.build());
 
-                    // 指定api类型为swagger2
+        // 指定api类型为swagger2
         return new Docket(DocumentationType.SWAGGER_2)
                 // 用于定义api文档汇总信息
                 .apiInfo(apiInfo())

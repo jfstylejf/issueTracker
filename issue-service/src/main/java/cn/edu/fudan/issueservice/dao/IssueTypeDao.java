@@ -5,6 +5,9 @@ import cn.edu.fudan.issueservice.mapper.IssueTypeMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+/**
+ * @author beethoven
+ */
 @Repository
 public class IssueTypeDao {
 

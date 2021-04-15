@@ -1,5 +1,6 @@
 package cn.edu.fudan.issueservice.controller;
 
+import cn.edu.fudan.issueservice.component.RestInterfaceManager;
 import cn.edu.fudan.issueservice.domain.ResponseBean;
 import cn.edu.fudan.issueservice.domain.dbo.IssueRepo;
 import cn.edu.fudan.issueservice.domain.dto.RepoResourceDTO;
@@ -28,26 +29,33 @@ public class IssueScanController {
 
     private IssueScanService issueScanService;
 
+    private RestInterfaceManager restInterfaceManager;
+
+    private static final String SUCCESS = "success";
+    private static final String FAILED = "failed ";
     private static final String INVOKE_TOOL_FAILED_MESSAGE = "invoke tool:[{}] failed! message is {}";
 
     @ApiOperation(value = "控制扫描开始接口", notes = "@return String", httpMethod = "POST")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "tool", value = "扫描工具名", dataType = "String", required = true, defaultValue = "sonarqube", allowableValues = "sonarqube"),
-            @ApiImplicitParam(name = "scanRequestDTO", value = "所需扫描库Id,分支名,起始commit",dataType = "ScanRequestDTO", required = true)
+            @ApiImplicitParam(name = "scanRequestDTO", value = "所需扫描库Id,分支名,起始commit", dataType = "ScanRequestDTO", required = true)
     })
     @PostMapping(value = {"/issue/{tool}"})
-    public ResponseBean<String> scan(@PathVariable("tool") String tool, @RequestBody ScanRequestDTO scanRequestDTO) {
-        String repoId = scanRequestDTO.getRepoUuid();
+    public ResponseBean<String> scan(@PathVariable(value = "tool") String tools, @RequestBody ScanRequestDTO scanRequestDTO) {
+        String repoUuid = scanRequestDTO.getRepoUuid();
         String branch = scanRequestDTO.getBranch();
         String beginCommit = scanRequestDTO.getBeginCommit();
-        // TODO 调用 tool scan 流程
+        //get tool
+        String tool = restInterfaceManager.getToolByRepoUuid(repoUuid);
+        if (tool == null) {
+            return new ResponseBean<>(400, "failed!", "can't analyze this language");
+        }
         try {
-            RepoResourceDTO repoResourceDTO = RepoResourceDTO.builder ().repoId (repoId).build ();
-            String result = issueScanService.prepareForScan (repoResourceDTO, branch, beginCommit, tool);
-            return new ResponseBean<>(200,"success!",result);
-        }catch (Exception e) {
-            e.printStackTrace ();
-            log.error(INVOKE_TOOL_FAILED_MESSAGE, tool, e.getMessage());
+            RepoResourceDTO repoResourceDTO = RepoResourceDTO.builder().repoId(repoUuid).build();
+            String result = issueScanService.prepareForScan(repoResourceDTO, branch, beginCommit, tool);
+            return new ResponseBean<>(200, "success!", result);
+        } catch (Exception e) {
+            e.printStackTrace();
             return new ResponseBean<>(500, "invoke tool failed!", e.getMessage());
         }
     }
@@ -68,15 +76,15 @@ public class IssueScanController {
             "        \"endScanTime\": \"2020-10-15 17:02:44\"\n" +
             "    }", httpMethod = "GET")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "tool", value = "工具名", required = true, defaultValue = "sonarqube", allowableValues = "sonarqube"),
             @ApiImplicitParam(name = "repo_uuid", value = "代码库uuid", required = true)
     })
     @GetMapping(value = {"/issue/{tool}/scan-status"})
-    public ResponseBean<IssueRepo> scanStatus(@PathVariable("tool") String tool, @RequestParam("repo_uuid") String repoUuid) {
+    public ResponseBean<IssueRepo> scanStatus(@PathVariable(value = "tool")String tools, @RequestParam("repo_uuid") String repoUuid) {
+        String tool = restInterfaceManager.getToolByRepoUuid(repoUuid);
         try {
-            IssueRepo issueRepo = issueScanService.getScanStatus (repoUuid, tool);
+            IssueRepo issueRepo = issueScanService.getScanStatus(repoUuid, tool);
             return new ResponseBean<>(200, "success!", issueRepo);
-        }catch (Exception e) {
+        } catch (Exception e) {
             log.error(INVOKE_TOOL_FAILED_MESSAGE, tool, e.getMessage());
             return new ResponseBean<>(500, e.getMessage(), null);
         }
@@ -87,14 +95,19 @@ public class IssueScanController {
             @ApiImplicitParam(name = "tool", value = "工具名", required = true, defaultValue = "sonarqube", allowableValues = "sonarqube"),
             @ApiImplicitParam(name = "repo_uuid", value = "代码库uuid", required = true)
     })
-    @GetMapping(value = {"/issue/{tool}/stop"})
-    public ResponseBean<String> stopScan(@PathVariable("tool") String tool, @RequestParam("repo_uuid") String repoUuid) {
+    @GetMapping(value = {"/issue/scan-stop"})
+    public ResponseBean<String> stopScan(@RequestParam("repo_uuid") String repoUuid) {
+        String tool = restInterfaceManager.getToolByRepoUuid(repoUuid);
+        if (tool == null) {
+            return new ResponseBean<>(400, FAILED, "stop failed!");
+        }
+
         try {
-            issueScanService.stopScan (repoUuid, tool);
-            return new ResponseBean<>(200, "stop success!", null);
-        }catch (Exception e) {
+            issueScanService.stopScan(repoUuid, tool);
+            return new ResponseBean<>(200, SUCCESS, "stop success!");
+        } catch (Exception e) {
             log.error(INVOKE_TOOL_FAILED_MESSAGE, tool, e.getMessage());
-            return new ResponseBean<>(500, "invoke tool failed!", e.getMessage());
+            return new ResponseBean<>(500, FAILED, e.getMessage());
         }
     }
 
@@ -110,15 +123,15 @@ public class IssueScanController {
             @ApiImplicitParam(name = "ps", value = "页大小\n默认一页10条"),
             @ApiImplicitParam(name = "is_whole", value = "是否需要全部\n默认false", allowableValues = "false , true")
     })
-    @GetMapping(value = {"/issue/{tool}/commit-list"})
+    @GetMapping(value = {"/issue/commit-list"})
     public ResponseBean<Map<String, Object>> getStockCommit(@RequestParam(name = "repo_uuid") String repoUuid,
-                                       @RequestParam(name = "page", required = false, defaultValue = "1") Integer page,
-                                       @RequestParam(name = "ps", required = false, defaultValue = "10") Integer size,
-                                       @RequestParam(name = "is_whole", required = false, defaultValue = "false") Boolean isWhole,
-                                       @PathVariable(name="tool")String tool) {
+                                                            @RequestParam(name = "page", required = false, defaultValue = "1") Integer page,
+                                                            @RequestParam(name = "ps", required = false, defaultValue = "10") Integer size,
+                                                            @RequestParam(name = "is_whole", required = false, defaultValue = "false") Boolean isWhole) {
+        String tool = restInterfaceManager.getToolByRepoUuid(repoUuid);
         try {
-            return new ResponseBean<>(200, "success", size == 0 ? issueScanService.getCommitsCount(repoUuid, tool) : issueScanService.getCommits(repoUuid, page, size, isWhole,tool));
-        }catch (Exception e) {
+            return new ResponseBean<>(200, SUCCESS, size == 0 ? issueScanService.getCommitsCount(repoUuid, tool) : issueScanService.getCommits(repoUuid, page, size, isWhole, tool));
+        } catch (Exception e) {
             log.error("invoke tool:[{}] failed! repoId:{} !message is {}", tool, repoUuid, e.getMessage());
             return new ResponseBean<>(500, e.getMessage(), null);
         }
@@ -127,5 +140,10 @@ public class IssueScanController {
     @Autowired
     public void setIssueScanService(IssueScanService issueScanService) {
         this.issueScanService = issueScanService;
+    }
+
+    @Autowired
+    public void setRestInterfaceManager(RestInterfaceManager restInterfaceManager) {
+        this.restInterfaceManager = restInterfaceManager;
     }
 }

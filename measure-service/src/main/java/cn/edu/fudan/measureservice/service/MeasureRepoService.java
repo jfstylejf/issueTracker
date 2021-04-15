@@ -110,10 +110,10 @@ public class MeasureRepoService {
         switch (granularity){
             case day:
                 for(LocalDate localDate : dates){
-                    RepoMeasure dayOfLatest = map.get(localDate).get(0);
-                    result.add(dayOfLatest);
-                }
-                break;
+                RepoMeasure dayOfLatest = map.get(localDate).get(0);
+                result.add(dayOfLatest);
+            }
+            break;
             case week:
                 for(LocalDate localDate : dates){
                     if(localDate.isAfter(preTimeLimit) || DateTimeUtil.isTheSameDay(localDate,preTimeLimit)){
