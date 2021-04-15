@@ -26,6 +26,8 @@ public class ShHomeConfig {
 
     @Value("${shName}")
     private String shName;
+    @Value("${repoDir}")
+    private String repoDir;
 
 //    public RestTemplate restTemplate(){
 //        return new RestTemplate();

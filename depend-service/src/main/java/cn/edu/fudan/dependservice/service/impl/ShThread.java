@@ -13,13 +13,13 @@ public class ShThread implements Runnable {
 
     String dependenceHome;
     String shName;
+    final static long timeout = 1800;
 
 
     @Override
     public void run() {
         runSh();
     }
-
     public boolean runSh() {
         try {
             Runtime rt = Runtime.getRuntime();
@@ -27,13 +27,13 @@ public class ShThread implements Runnable {
             String command = "sh " + dependenceHome + shName;
             log.info("command -> {}", command);
             Process process = rt.exec(command);
-            boolean timeout = process.waitFor(300L, TimeUnit.SECONDS);
+            boolean timeout = process.waitFor(ShThread.timeout, TimeUnit.SECONDS);
             if (!timeout) {
                 process.destroy();
-                log.error("invoke tool timeout ! (300s)");
+                log.error("invoke tool timeout ! (1800s)");
                 return false;
             }
-            log.info("end of sh");
+            log.info("end of sh1");
             return process.exitValue() == 0;
         } catch (Exception e) {
             e.printStackTrace();

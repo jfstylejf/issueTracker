@@ -4,9 +4,18 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <!-- namespace：命名空间，用于隔离sql，还有一个很重要的作用，后面会讲 -->
 <mapper namespace="cn.edu.fudan.dependservice.mapper.RelationshipMapper">
+    <resultMap id="RelationView" type="cn.edu.fudan.dependservice.domain.RelationView">
+        <id property="projectName" column="project_name"/>
+        <id property="repoUuid" column="repo_uuid"/>
+        <id property="groupId" column="group_id"/>
+        <id property="sourceFile" column="file"/>
+        <id property="targetFile" column="depend_on"/>
+        <id property="relationType" column="depend_details"/>
+    </resultMap>
 
-    <select id="getAllRelationships" resultType="cn.edu.fudan.dependservice.domain.RelationShip">
-    select repo_uuid,group_id,file,depend_on,depend_details from dependency_detail
+    <select id="getAllRelationships" resultMap="RelationView">
+      select d.repo_uuid,d.group_id,d.file,d.depend_on,d.depend_details,s.project_name from dependency_detail d
+    left join issueTracker.sub_repository  s on d.repo_uuid= s.repo_uuid limit #{ps};
     </select>
 
     <insert id="add">
