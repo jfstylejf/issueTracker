@@ -1,8 +1,6 @@
 package cn.edu.fudan.dependservice.service;
 
 import cn.edu.fudan.dependservice.domain.DependencyInfo;
-import cn.edu.fudan.dependservice.domain.MethodOrFileNumInfo;
-import cn.edu.fudan.dependservice.domain.RelationshipView;
 
 import java.util.List;
 

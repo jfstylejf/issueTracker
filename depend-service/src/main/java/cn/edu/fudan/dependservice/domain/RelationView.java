@@ -7,6 +7,7 @@ public class RelationView {
     private String projectName;
     private String repoUuid;
     private String groupId;
+    private String repoName;
     private String sourceFile;
     private String targetFile;
     private String relationType;

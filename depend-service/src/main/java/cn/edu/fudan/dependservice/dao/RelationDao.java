@@ -14,4 +14,8 @@ public class RelationDao {
      public  List<RelationView> getpageRelation(int ps,int page){
         return relationshipMapper.getAllRelationships(ps);
     }
+    public  List<RelationView> getRelationBydate(String date){
+         return relationshipMapper.getRelationBydate(date);
+
+    }
 }
