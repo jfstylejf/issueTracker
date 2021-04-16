@@ -66,15 +66,6 @@ public class WriteUtill {
 
     }
     public  static String  getJsonString(String repoPath){
-//        ScanConfig s= new ScanConfig();
-//        ScanConfig.Project p = new ScanConfig().new Project();
-//        List<ScanConfig.Project> projectList =new ArrayList<>();
-//        projectList.add(p);
-//        p.setLanguage("java");
-//        p.setPath("tempPath");
-//        s.setProject(projectList);
-//
-//        System.out.println(JSON.toJSONString(s, SerializerFeature.WriteMapNullValue));
         String res = projectConf1 +repoPath+projectConf2;
 
         return res;

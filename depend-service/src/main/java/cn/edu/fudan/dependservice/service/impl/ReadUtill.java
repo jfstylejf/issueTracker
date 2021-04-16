@@ -32,17 +32,19 @@ import java.util.Map;
 public class ReadUtill {
     private String commitId;
     private String repo_uuid;
-//    private GroupMapper groupMapper;
-//    private RelationshipMapper relationshipMapper;
+    private String  duplicateDirectoryName;
 
 
-    public Map getFileResult(String filePath) throws IOException, InvalidFormatException {
+    public Map getFileResult(String filePath) {
         Map<String, List> res = new HashMap<>();
         String excelPath = filePath;
         //String encoding = "GBK";
         try{
             File excel = new File(excelPath);
-
+            if(!excel.exists()){
+                log.info("NOT have result file");
+                return res;
+            }
             String[] split = excel.getName().split("\\.");  //.是特殊字符，需要转义！！！！！
             Workbook wb;
             //根据文件后缀（xls/xlsx）进行判断
@@ -62,8 +64,11 @@ public class ReadUtill {
             res.put("relation", relation);
 
         }catch (Exception e){
+            // may do  not have the file。
+            e.printStackTrace();
             log.info("Exception:"+e.getMessage());
         }finally {
+
 
         }
 
@@ -74,7 +79,6 @@ public class ReadUtill {
         List<RelationShip> res = new ArrayList<>();
         int firstRowIndex = sheet.getFirstRowNum() + 1;   //第一行是列名，所以不读
         int lastRowIndex = sheet.getLastRowNum();
-
         // there is no group index==-1.0
         for (int rIndex = firstRowIndex; rIndex <= lastRowIndex; rIndex++) {   //遍历行
             //  not one line one record
@@ -82,8 +86,12 @@ public class ReadUtill {
             relationship.setRepo_uuid(repo_uuid);
             relationship.setCommit_id(commitId);
             relationship.setGroup_id((int) sheet.getRow(rIndex).getCell(1).getNumericCellValue());
-            relationship.setFile(sheet.getRow(rIndex).getCell(2).toString());
-            relationship.setDepend_on(sheet.getRow(rIndex).getCell(3).toString());
+            String filePath =sheet.getRow(rIndex).getCell(2).toString();
+            String filePathInRepo=filePath.substring(filePath.indexOf(duplicateDirectoryName)+duplicateDirectoryName.length());
+            relationship.setFile(filePathInRepo);
+            String targetPath =sheet.getRow(rIndex).getCell(3).toString();
+            String targetPathInRepo=targetPath.substring(targetPath.indexOf(duplicateDirectoryName)+duplicateDirectoryName.length());
+            relationship.setDepend_on(targetPathInRepo);
             relationship.setDepend_details(sheet.getRow(rIndex).getCell(4).toString());
             res.add(relationship);
         }

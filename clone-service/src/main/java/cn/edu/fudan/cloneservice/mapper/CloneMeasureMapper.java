@@ -76,4 +76,5 @@ public interface CloneMeasureMapper {
      */
     List<String> getAllDeveloper(@Param("repositoryId") String repositoryId, @Param("start") String start, @Param("end") String end);
 
+    List<Integer> getProjectByAccountId(@Param("account_uuid") String accountUuid);
 }

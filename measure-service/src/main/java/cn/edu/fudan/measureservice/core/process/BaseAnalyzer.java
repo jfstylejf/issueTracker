@@ -12,6 +12,8 @@ public abstract class BaseAnalyzer {
 
     protected String binHome;
 
+    protected String libHome;
+
     protected String repoPath;
 
     protected ScanCommitInfoDto scanCommitInfoDto;

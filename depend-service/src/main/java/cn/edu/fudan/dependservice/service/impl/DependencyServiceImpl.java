@@ -1,17 +1,9 @@
 package cn.edu.fudan.dependservice.service.impl;
 
-import cn.edu.fudan.common.component.BaseRepoRestManager;
-import cn.edu.fudan.common.domain.po.scan.RepoScan;
-import cn.edu.fudan.common.scan.CommonScanProcess;
-import cn.edu.fudan.common.scan.ToolScan;
+
 import cn.edu.fudan.dependservice.constants.PublicConstants;
 import cn.edu.fudan.dependservice.dao.StatisticsDao;
 import cn.edu.fudan.dependservice.domain.DependencyInfo;
-import cn.edu.fudan.dependservice.domain.MethodOrFileNumInfo;
-import cn.edu.fudan.dependservice.domain.RelationshipView;
-import cn.edu.fudan.dependservice.domain.RepoRestManager;
-import cn.edu.fudan.dependservice.mapper.FileMapper;
-import cn.edu.fudan.dependservice.mapper.GroupMapper;
 import cn.edu.fudan.dependservice.service.DependencyService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,11 +30,6 @@ public class DependencyServiceImpl implements DependencyService {
     public static  String TIME_FORMAT = "yyyy-MM-dd";
 
 
-    @Autowired
-    GroupMapper groupMapper;
-
-    @Autowired
-    FileMapper fileMapper;
 
     private StatisticsDao statisticsDao;
 
@@ -51,37 +38,18 @@ public class DependencyServiceImpl implements DependencyService {
         this.statisticsDao=statisticsDao;
     }
 
-
-
-
     @Autowired
     public void setApplicationContext(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
     }
-    @Override
-    public List<DependencyInfo>  getDependencyNum(String beginDate, String endDate, String projectIds, String interval, String showDetail, String level){
-        List<DependencyInfo> res = new ArrayList<>();
-
-        if (projectIds==null||projectIds.isEmpty()) {
-            projectIds = statisticsDao.getAllProjectIds();
-        }
-        for (String projectId : projectIds.split(",")) {
-            if (projectId.length() != 0) {
-                //
-                res.add(statisticsDao.getDependencyNum(null,null,projectId,showDetail));
-
-            }
-        }
-        return res ;
-
-    }
-
 
     public List<DependencyInfo> getDependencyNumWithDate(String beginDate, String endDate, String projectIds, String interval, String showDetail, String level) {
         List<DependencyInfo> numInfo = new ArrayList<>();
         String time1 = " 00:00:00";
         String time2 = " 24:00:00";
-        if (projectIds==null||projectIds.isEmpty()) {
+        // todo
+        log.info("projectIds : "+projectIds);
+        if (projectIds==null||projectIds.isEmpty()||projectIds.equals("\"\"")) {
             projectIds = statisticsDao.getAllProjectIds();
         }
         log.info("projectIds : "+projectIds);
@@ -155,9 +123,20 @@ public class DependencyServiceImpl implements DependencyService {
     }
 
     @Override
-    public List<RelationshipView> getRe(String ps, String page, String asc, String order) {
+    public List<DependencyInfo> getDependencyNumIfHave(String beginDate, String endDate, String projectIds, String interval, String showDetail) {
+        List<DependencyInfo> numInfo=new ArrayList<>();
+        log.info("projectIds : "+projectIds);
+        if (projectIds==null||projectIds.isEmpty()) {
+            projectIds = statisticsDao.getAllProjectIds();
+        }
+        log.info("projectIds : "+projectIds);
+        for (String projectId : projectIds.split(",")) {
+            if (projectId.length() != 0) {
+                numInfo.addAll(statisticsDao.getNumifHaveCommit(projectId));
+            }
+        }
+        return numInfo;
 
-        return null;
     }
 
     public String datePlus(String tempDate) {
