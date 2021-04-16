@@ -36,7 +36,7 @@ public class ProjectCommitStandardTrendChart {
     /**
      * 趋势图节点对应比值
      */
-    private String num;
+    private double num;
     /**
      * 数据明细
      */

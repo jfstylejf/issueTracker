@@ -940,7 +940,7 @@ public class MeasureDeveloperService {
                         .projectId(String.valueOf(projectId))
                         .date(tempTime.format(dtf))
                         .projectName(projectName)
-                        .num(df.format(num))
+                        .num(Double.parseDouble(df.format(num)))
                         .detail(new ArrayList<>())
                         .option(new HashMap<>()).build();
                 projectCommitStandardTrendChart.setOption(jiraCommitCountNum,validCommitCountNum);
