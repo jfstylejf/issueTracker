@@ -1,24 +1,18 @@
-package cn.edu.fudan.dependservice.service.impl;
+package cn.edu.fudan.dependservice.utill;
 
 import cn.edu.fudan.dependservice.domain.Group;
 import cn.edu.fudan.dependservice.domain.RelationShip;
-import cn.edu.fudan.dependservice.mapper.GroupMapper;
-import cn.edu.fudan.dependservice.mapper.RelationshipMapper;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import javax.servlet.http.HttpServlet;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -32,7 +26,8 @@ import java.util.Map;
 public class ReadUtill {
     private String commitId;
     private String repo_uuid;
-    private String  duplicateDirectoryName;
+//    private GroupMapper groupMapper;
+//    private RelationshipMapper relationshipMapper;
 
 
     public Map getFileResult(String filePath) {
@@ -79,6 +74,7 @@ public class ReadUtill {
         List<RelationShip> res = new ArrayList<>();
         int firstRowIndex = sheet.getFirstRowNum() + 1;   //第一行是列名，所以不读
         int lastRowIndex = sheet.getLastRowNum();
+
         // there is no group index==-1.0
         for (int rIndex = firstRowIndex; rIndex <= lastRowIndex; rIndex++) {   //遍历行
             //  not one line one record
@@ -86,12 +82,8 @@ public class ReadUtill {
             relationship.setRepo_uuid(repo_uuid);
             relationship.setCommit_id(commitId);
             relationship.setGroup_id((int) sheet.getRow(rIndex).getCell(1).getNumericCellValue());
-            String filePath =sheet.getRow(rIndex).getCell(2).toString();
-            String filePathInRepo=filePath.substring(filePath.indexOf(duplicateDirectoryName)+duplicateDirectoryName.length());
-            relationship.setFile(filePathInRepo);
-            String targetPath =sheet.getRow(rIndex).getCell(3).toString();
-            String targetPathInRepo=targetPath.substring(targetPath.indexOf(duplicateDirectoryName)+duplicateDirectoryName.length());
-            relationship.setDepend_on(targetPathInRepo);
+            relationship.setFile(sheet.getRow(rIndex).getCell(2).toString());
+            relationship.setDepend_on(sheet.getRow(rIndex).getCell(3).toString());
             relationship.setDepend_details(sheet.getRow(rIndex).getCell(4).toString());
             res.add(relationship);
         }

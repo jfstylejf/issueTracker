@@ -67,7 +67,7 @@
         from clone_measure
         where repo_id in
         <foreach collection='repo_ids' item='repo_id' open='(' separator=',' close=')'>
-        #{repo_id}
+            #{repo_id}
         </foreach>
         order by commit_time desc limit 1
     </select>
@@ -83,10 +83,16 @@
                 </if>
 
                 <if test="end != null and end != '' ">
-                and <![CDATA[ commit_time <= #{end} ]]>
+                    and <![CDATA[ commit_time <= #{end} ]]>
                 </if>
             </trim>
         </where>
+    </select>
+
+    <select id="getProjectByAccountId" resultType="String">
+    SELECT project_id
+    FROM issueTracker.account_project AS p
+    WHERE p.account_uuid = #{account_uuid} AND p.account_role = 'LEADER'
     </select>
 </mapper>
 

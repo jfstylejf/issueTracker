@@ -4,14 +4,42 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <!-- namespace：命名空间，用于隔离sql，还有一个很重要的作用，后面会讲 -->
 <mapper namespace="cn.edu.fudan.dependservice.mapper.RelationshipMapper">
-
-    <select id="getAllRelationships" resultType="cn.edu.fudan.dependservice.domain.RelationShip">
-    select repo_uuid,group_id,file,depend_on,depend_details from dependency_detail
+    <resultMap id="RelationView" type="cn.edu.fudan.dependservice.domain.RelationView">
+        <id property="projectName" column="project_name"/>
+        <id property="repoUuid" column="repo_uuid"/>
+        <id property="repoName" column="repo_name"/>
+        <id property="groupId" column="group_id"/>
+        <id property="sourceFile" column="file"/>
+        <id property="targetFile" column="depend_on"/>
+        <id property="relationType" column="depend_details"/>
+    </resultMap>
+    <select id="getAllRelationships" resultMap="RelationView">
+     select distinct d.id, d.file,d.depend_on,d.repo_uuid,d.group_id,d.file,d.depend_on,d.depend_details,s.project_name,s.repo_name
+     from issueTracker.dependency_detail d
+    left join issueTracker.sub_repository  s
+    on d.repo_uuid= s.repo_uuid limit #{ps};
     </select>
 
     <insert id="add">
         insert into dependency_detail(commit_id,repo_uuid,group_id,file,depend_on,depend_details)
         values(#{commit_id},#{repo_uuid},#{group_id},#{file},#{depend_on},#{depend_details})
     </insert>
+
+    <select id="getRelationBydate" resultMap="RelationView">
+     select distinct d.id, d.file,d.depend_on,d.repo_uuid,d.group_id,d.depend_details,s.project_name,s.repo_name
+     from issueTracker.dependency_detail d
+     left join issueTracker.sub_repository  s
+     on d.repo_uuid= s.repo_uuid
+     where d.commit_id in (
+        select
+        c.commit_id from
+        (select s.commit_id, s.repo_uuid, max(c.commit_time)
+        from  issueTracker.dependency_san  s left join issueTracker.commit c
+        on s.commit_id=c.commit_id
+        where commit_time &lt; #{date}
+        group by repo_uuid)  c
+    );
+    </select>
+
 
 </mapper>

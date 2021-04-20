@@ -1,8 +1,10 @@
 package cn.edu.fudan.cloneservice.controller;
 
+import cn.edu.fudan.cloneservice.domain.CloneGroupSum;
 import cn.edu.fudan.cloneservice.domain.CloneMeasure;
 import cn.edu.fudan.cloneservice.domain.CloneMessage;
 import cn.edu.fudan.cloneservice.domain.ResponseBean;
+import cn.edu.fudan.cloneservice.mapper.RepoCommitMapper;
 import cn.edu.fudan.cloneservice.service.CloneMeasureService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +24,7 @@ public class CloneMeasureController {
 
     @Autowired
     CloneMeasureService cloneMeasureService;
+
 
     @GetMapping(value = {"/cloneMeasure/latestCloneLines"})
     public ResponseBean<CloneMeasure> getLatestCloneLines(@RequestParam("repo_uuid") String repoId){
@@ -88,5 +91,28 @@ public class CloneMeasureController {
         }
     }
 
+    @GetMapping(value = {"/trend-graph"})
+    public ResponseBean<List<CloneGroupSum>> getTrendGraph(@RequestParam(value = "project_ids", defaultValue = "") String projectIds,
+                                              @RequestParam(value = "since") String start,
+                                              @RequestParam(value = "until") String end,
+                                              @RequestParam(value = "interval", defaultValue = "week") String interval,
+                                              @RequestParam(value = "token") String token){
+        try{
+            if (StringUtils.isEmpty(end)){
+                Date today = new Date();
+                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                end = simpleDateFormat.format(today);
+            }
+            List<CloneGroupSum> cloneGroupsSum = cloneMeasureService.getCloneGroupsSum(projectIds,start,end,interval,token);
 
+            if (!cloneGroupsSum.isEmpty()) {
+                return new ResponseBean<>(200,"success", cloneGroupsSum);
+            }else {
+                return new ResponseBean<>(401, "", null);
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+            return new ResponseBean<>(401,"failed",null);
+        }
+    }
 }

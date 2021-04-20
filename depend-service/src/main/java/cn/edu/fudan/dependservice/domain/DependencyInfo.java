@@ -12,7 +12,7 @@ public class DependencyInfo implements Serializable {
     private String projectName;
     private String projectId;
     private String date;
-    private int num;
+    private Integer num;
     private List<DependencyDetailInfo> detail;
 
     public DependencyInfo() {

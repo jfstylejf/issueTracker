@@ -14,7 +14,6 @@ public class Group implements Cloneable {
     @Override
     public Group clone() throws CloneNotSupportedException {
         return (Group)super.clone();
-
     }
 
 

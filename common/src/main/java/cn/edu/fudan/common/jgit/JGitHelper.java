@@ -425,7 +425,7 @@ public class JGitHelper {
             CheckoutCommand checkoutCommand = git.checkout();
             checkoutCommand.setName(commit).call();
         } catch (Exception e) {
-            log.info("before error commit=: "+ commit);
+            log.info("before error commit=: " + commit);
             log.error("JGitHelper checkout error:{} ", e.getMessage());
         }
     }
@@ -441,20 +441,19 @@ public class JGitHelper {
         return authorName;
     }
 
-//    @SneakyThrows
+    //    @SneakyThrows
     public Date getCommitDateTime(String commit) {
         Date res;
-        if(getCommitTime(commit)==null){
+        if (getCommitTime(commit) == null) {
             log.error("getCommitTime(commit)==null");
             return null;
-        }else {
+        } else {
             try {
-                res=new SimpleDateFormat(format).parse(getCommitTime(commit));
+                res = new SimpleDateFormat(format).parse(getCommitTime(commit));
 
-            }
-            catch (ParseException e) {
-                res=null;
-                log.error("ParseException:"+e.getMessage());
+            } catch (ParseException e) {
+                res = null;
+                log.error("ParseException:" + e.getMessage());
             }
 
         }
@@ -480,24 +479,53 @@ public class JGitHelper {
     }
 
     /**
-     * 获取该分支下最新的一次commit
-     *
-     * @param branch        branch
+     * @param branch, date is timestamp that unit is s
      * @return commitid
+     * @Description get the closest commit near and before date
      * @author shaoxi
      */
-    public String getLatestCommitByBranch(String branch){
+    public String gettoScanCommit(String branch, int date) {
         checkout(branch);
-        String latestCommit=null;
-        int latest=0;
+        String resCommit = null;
+        int latest = 0;
         try {
             Iterable<RevCommit> commits = git.log().call();
-            Iterator<RevCommit> iterator=commits.iterator();
-            while (iterator.hasNext()){
-                RevCommit oneCommt =iterator.next();
-                if(oneCommt.getCommitTime()>latest){
-                    latestCommit=oneCommt.getName();
-                    latest=oneCommt.getCommitTime();
+            Iterator<RevCommit> iterator = commits.iterator();
+            while (iterator.hasNext()) {
+                RevCommit oneCommt = iterator.next();
+                int thisCommitTime = oneCommt.getCommitTime();
+                if (thisCommitTime < date) {
+                    if (thisCommitTime > latest) {
+                        resCommit = oneCommt.getName();
+                        latest = thisCommitTime;
+                    }
+                }
+            }
+        } catch (GitAPIException e) {
+            log.error(e.getMessage());
+        }
+        log.info("to scan time : "+getCommitDateTime(resCommit));
+        return resCommit;
+
+    }
+    /**
+     * @param branch
+     * @return commitid
+     * @Description get the latest commit of the branch
+     * @author shaoxi
+     */
+    public String getLatestCommitByBranch(String branch) {
+        checkout(branch);
+        String latestCommit = null;
+        int latest = 0;
+        try {
+            Iterable<RevCommit> commits = git.log().call();
+            Iterator<RevCommit> iterator = commits.iterator();
+            while (iterator.hasNext()) {
+                RevCommit oneCommt = iterator.next();
+                if (oneCommt.getCommitTime() > latest) {
+                    latestCommit = oneCommt.getName();
+                    latest = oneCommt.getCommitTime();
                 }
 
             }
@@ -508,6 +536,7 @@ public class JGitHelper {
         return latestCommit;
 
     }
+
     /**
      * 根据策略获取扫描列表
      *
@@ -565,7 +594,7 @@ public class JGitHelper {
             RevCommit revCommit = revWalk.parseCommit(ObjectId.fromString(version));
             return revCommit.getCommitTime() * toMillisecond;
         } catch (Exception e) {
-            log.error("error in getLongCommitTime:"+e.getMessage());
+            log.error("error in getLongCommitTime:" + e.getMessage());
             return 0L;
         }
     }
@@ -684,7 +713,7 @@ public class JGitHelper {
             parentCommitList.add(indexCommit);
             RevCommit[] parents = getRevCommit(indexCommit).getParents();
             for (RevCommit parent : parents) {
-                if(!parentCommitList.contains(parent.getName()) && !parentCommitQueue.contains(parent.getName())) {
+                if (!parentCommitList.contains(parent.getName()) && !parentCommitQueue.contains(parent.getName())) {
                     parentCommitQueue.offer(parent.getName());
                 }
             }
