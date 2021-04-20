@@ -51,12 +51,6 @@ public class SonarQubeBaseAnalyzer extends BaseAnalyzer {
     @Override
     public boolean invoke(String repoUuid, String repoPath, String commit) {
 
-        // todo 1 查询数据库中是否有缓存 有则直接返回 无则 执行下面的代码
-        JSONObject analyzeResult = issueAnalyzerDao.getAnalyzeResultByRepoUuidCommitIdTool(repoUuid, commit, TOOL);
-        if (analyzeResult != null) {
-            return true;
-        }
-
         try {
             Runtime rt = Runtime.getRuntime();
             //执行sonar命令,一个commit对应一个sonarqube project(repoUuid_commit)
@@ -79,9 +73,6 @@ public class SonarQubeBaseAnalyzer extends BaseAnalyzer {
 
     @Override
     public boolean analyze(String repoPath, String repoUuid, String commit) {
-
-        // todo 1 查看数据是否缓存  缓存后则将结果 解析成 rawIssues 并存到 resultRawIssues 中  没有缓存则执行
-
 
         long analyzeStartTime = System.currentTimeMillis();
         boolean isChanged = false;

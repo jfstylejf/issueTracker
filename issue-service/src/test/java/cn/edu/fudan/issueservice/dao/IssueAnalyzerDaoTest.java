@@ -2,15 +2,15 @@ package cn.edu.fudan.issueservice.dao;
 
 import cn.edu.fudan.issueservice.IssueServiceApplicationTests;
 import cn.edu.fudan.issueservice.domain.dbo.IssueAnalyzer;
+import cn.edu.fudan.issueservice.domain.dbo.RawIssue;
 import cn.edu.fudan.issueservice.mapper.IssueAnalyzerMapper;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public class IssueAnalyzerDaoTest extends IssueServiceApplicationTests {
@@ -48,7 +48,13 @@ public class IssueAnalyzerDaoTest extends IssueServiceApplicationTests {
 
     @Test
     public void selectTest() {
-        JSONObject issueAnalyzer = issueAnalyzerDao.getAnalyzeResultByRepoUuidCommitIdTool("1", "2", "sonar");
+        JSONObject issueAnalyzer = issueAnalyzerDao.getAnalyzeResultByRepoUuidCommitIdTool("dafeb164-40fb-11eb-b6ff-f9c372bb0fcb", "76b821de0d80e755001d326b1840d417e02f4e42", "ESLint");
+        // 第一步：先获取jsonArray数组
+        JSONArray resArr = issueAnalyzer.getJSONArray("result");
+        // 第二步：将数组转换成字符串
+        String js = JSONObject.toJSONString(resArr, SerializerFeature.WriteClassName);
+        // 第三步：将字符串转换成List集合
+        List<RawIssue> analyzeRawIssues = JSONArray.parseArray(resArr.toJSONString(), RawIssue.class) ;
         System.out.println(1 + 1);
     }
 

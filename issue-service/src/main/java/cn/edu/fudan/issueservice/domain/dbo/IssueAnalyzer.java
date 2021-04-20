@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.UUID;
+
 /**
  * @author Jeff
  */
@@ -18,4 +20,14 @@ public class IssueAnalyzer {
     private int invokeResult;
     private JSONObject analyzeResult;
     private String tool;
+
+    public static IssueAnalyzer initIssueAnalyzer(String repoId, String commitId, String toolName) {
+        IssueAnalyzer issueAnalyzer = new IssueAnalyzer();
+        issueAnalyzer.setUuid(UUID.randomUUID().toString());
+        issueAnalyzer.setTool(toolName);
+        issueAnalyzer.setRepoUuid(repoId);
+        issueAnalyzer.setCommitId(commitId);
+        return issueAnalyzer;
+    }
+
 }
