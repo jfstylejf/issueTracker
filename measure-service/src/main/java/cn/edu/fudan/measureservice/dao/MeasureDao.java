@@ -2,6 +2,7 @@ package cn.edu.fudan.measureservice.dao;
 
 import cn.edu.fudan.measureservice.domain.bo.DeveloperWorkLoad;
 import cn.edu.fudan.measureservice.domain.dto.Query;
+import cn.edu.fudan.measureservice.mapper.FileMeasureMapper;
 import cn.edu.fudan.measureservice.mapper.MeasureMapper;
 import cn.edu.fudan.measureservice.mapper.ProjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,7 @@ import java.util.Objects;
 public class MeasureDao {
 
     private MeasureMapper measureMapper;
+    private FileMeasureMapper fileMeasureMapper;
     private ProjectMapper projectMapper;
 
 
@@ -59,9 +61,23 @@ public class MeasureDao {
         return measureMapper.getMsgNumByRepo(query.getRepoUuidList());
     }
 
+    /**
+     * 查询库下所有大文件最新信息
+     * @param repoUuidList 查询库列表
+     * @return
+     */
+    public List<Map<String,Object>> getCurrentBigFileInfo(List<String> repoUuidList) {
+        return fileMeasureMapper.getCurrentFileInfoByRepoUuidList(repoUuidList);
+    }
+
     @Autowired
     public void setMeasureMapper(MeasureMapper measureMapper){
         this.measureMapper = measureMapper;
+    }
+
+    @Autowired
+    public void setFileMeasureMapper(FileMeasureMapper fileMeasureMapper) {
+        this.fileMeasureMapper = fileMeasureMapper;
     }
 
     @Autowired

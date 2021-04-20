@@ -116,5 +116,24 @@
         and commit_id = #{commit_id}
     </select>
 
+    <select id="getCurrentFileInfoByRepoUuidList" resultType="java.util.Map">
+        SELECT file_path,total_lines,max(commit_time) as currentModifyTime FROM issueTracker.file_measure
+        <where>
+            <trim prefixOverrides="and">
+                <if test="repoUuidList != null and repoUuidList.size >0 ">
+                    and repo_id in
+                    <foreach collection="repoUuidList" separator="," open="(" close=")" item="repoUuid">
+                        #{repoUuid}
+                    </foreach>
+                </if>
+
+                and total_lines >= 1000
+            </trim>
+        </where>
+        GROUP BY
+            file_path
+        ORDER BY
+            commit_time desc
+    </select>
 
 </mapper>

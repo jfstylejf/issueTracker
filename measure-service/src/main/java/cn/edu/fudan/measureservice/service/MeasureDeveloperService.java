@@ -13,6 +13,7 @@ import cn.edu.fudan.measureservice.domain.dto.DeveloperRepoInfo;
 import cn.edu.fudan.measureservice.domain.dto.Query;
 import cn.edu.fudan.measureservice.domain.dto.RepoInfo;
 import cn.edu.fudan.measureservice.domain.enums.GranularityEnum;
+import cn.edu.fudan.measureservice.domain.vo.ProjectBigFileTrendChart;
 import cn.edu.fudan.measureservice.domain.vo.ProjectCommitStandardDetail;
 import cn.edu.fudan.measureservice.domain.vo.ProjectCommitStandardTrendChart;
 import cn.edu.fudan.measureservice.mapper.RepoMeasureMapper;
@@ -899,7 +900,6 @@ public class MeasureDeveloperService {
 
         LocalDate endTime = LocalDate.parse(until,dtf);
         LocalDate beginTime;
-        // fixme since为空时默认处理
         if (since!=null && !"".equals(since)) {
             beginTime = LocalDate.parse(since,dtf);
         }else {
@@ -1050,6 +1050,55 @@ public class MeasureDeveloperService {
          }
          return projectCommitStandardDetailList;
      }
+
+
+     public List<ProjectBigFileTrendChart> getHugeLocRemainedFile(String projectIds,String since,String until,String token,String interval) {
+         List<ProjectBigFileTrendChart> results = new ArrayList<>();
+         Map<String,Integer> queryProjectList = projectDao.getProjectNameById(projectIds);
+         List<String> visibleProjectList = projectDao.getVisibleProjectByToken(token);
+         List<String> checkedProjectList = projectDao.mergeBetweenProject(new ArrayList<>(queryProjectList.keySet()),visibleProjectList);
+
+         LocalDate endTime = LocalDate.parse(until,dtf);
+         LocalDate beginTime;
+         if (since!=null && !"".equals(since)) {
+             beginTime = LocalDate.parse(since,dtf);
+         }else {
+             beginTime = endTime.minusWeeks(1);
+         }
+         beginTime = DateTimeUtil.initBeginTimeByInterval(beginTime,interval);
+         endTime = DateTimeUtil.initEndTimeByInterval(endTime,interval);
+         if(beginTime == null || endTime == null) {
+             return new ArrayList<>();
+         }
+         while (beginTime.isBefore(endTime)) {
+             LocalDate tempTime = DateTimeUtil.selectTimeIncrementByInterval(beginTime,interval);
+             if(tempTime == null) {
+                 break;
+             }
+             if(tempTime.isAfter(endTime)) {
+                 tempTime = endTime;
+             }
+             for (String projectName : checkedProjectList) {
+                 List<String> repoUuidList = new ArrayList<>();
+                 List<RepoInfo> repoInfoList = projectDao.getProjectInvolvedRepoInfo(projectName,token);
+                 for (RepoInfo repoInfo : repoInfoList) {
+                     repoUuidList.add(repoInfo.getRepoUuid());
+                 }
+                 int projectId = queryProjectList.get(projectName);
+                 List<Map<String,Object>> currentBigFileInfo = measureDao.getCurrentBigFileInfo(repoUuidList);
+                 ProjectBigFileTrendChart projectBigFileTrendChart = ProjectBigFileTrendChart.builder()
+                         .projectId(String.valueOf(projectId))
+                         .date(tempTime.format(dtf))
+                         .projectName(projectName)
+                         .num(currentBigFileInfo.size())
+                         .build();
+                 results.add(projectBigFileTrendChart);
+             }
+             beginTime = tempTime;
+         }
+         return results;
+     }
+
 
 
     @Autowired
