@@ -19,9 +19,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 @PowerMockRunnerDelegate(SpringRunner.class)
 @SpringBootTest(classes = IssueServiceApplication.class)
 @ActiveProfiles("test-fancying")
-//@EnableAutoConfiguration
-//@ContextConfiguration
-//@PowerMockIgnore({"javax.crypto.*","javax.management.*","com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*", "org.w3c.*",  "com.sun.org.apache.xalan.internal.xsltc.trax.*"})
 @PowerMockIgnore({"javax.crypto.*","javax.management.*","com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*", "org.w3c.*",  "com.sun.org.apache.xalan.internal.xsltc.trax.*"})
 public class IssueServiceApplicationTest {
 
@@ -42,6 +39,5 @@ public class IssueServiceApplicationTest {
     public void afterTest() {
         System.out.println("结束测试..................................");
     }
-
 
 }

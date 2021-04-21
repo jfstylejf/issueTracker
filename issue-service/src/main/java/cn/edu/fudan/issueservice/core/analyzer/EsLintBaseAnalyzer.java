@@ -227,7 +227,7 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
         List<ClassNode> classInfos = jsTree.getClassInfos();
         for (ClassNode classInfo : classInfos) {
             if (classInfo.getBeginLine() <= line && classInfo.getEndLine() >= endLine) {
-                location.setClassName(classInfo.getClassName());
+                location.setClassName(classInfo.getName());
                 break;
             }
         }

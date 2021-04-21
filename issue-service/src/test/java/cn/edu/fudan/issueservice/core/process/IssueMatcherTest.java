@@ -1,5 +1,6 @@
 package cn.edu.fudan.issueservice.core.process;
 
+import cn.edu.fudan.issueservice.IssueServiceApplicationTest;
 import cn.edu.fudan.issueservice.domain.dbo.RawIssue;
 import cn.edu.fudan.issueservice.util.JGitHelper;
 import com.alibaba.fastjson.JSON;
@@ -7,11 +8,9 @@ import com.alibaba.fastjson.JSONArray;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
-import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
-
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -22,19 +21,20 @@ import java.util.Map;
  * @author beethoven
  * @date 2021-03-02 16:33:39
  */
-@RunWith(JUnit4.class)
-public class IssueMatcherTest {
+public class IssueMatcherTest extends IssueServiceApplicationTest {
 
-    @InjectMocks
+    @Autowired
     private IssueMatcher issueMatcher;
 
-    private final String REPO_PATH = "/Users/beethoven/Desktop/saic/forTest";
+    @Value("${test.repo.java.path}")
+    private String REPO_PATH;
 
-    private final JGitHelper jGitHelper = new JGitHelper(REPO_PATH);
+    private JGitHelper jGitHelper;
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        jGitHelper = new JGitHelper(REPO_PATH);
     }
 
     /**

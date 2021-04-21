@@ -14,6 +14,7 @@ import com.alibaba.fastjson.JSONObject;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.powermock.api.mockito.PowerMockito;
@@ -36,13 +37,10 @@ import java.util.*;
 public class IssueMatcherTestNormalMatch extends IssueServiceApplicationTest {
 
     @Autowired
-    IssueMatcher issueMatcher;
-
-
+    private IssueMatcher issueMatcher;
 
     @Value("${test.repo.java.path}")
     private String REPO_PATH;
-
 
     private JGitHelper jGitHelper ;
 
@@ -51,7 +49,6 @@ public class IssueMatcherTestNormalMatch extends IssueServiceApplicationTest {
         jGitHelper = new JGitHelper(REPO_PATH);
 
         MockitoAnnotations.initMocks(this);
-        // mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
 
         PowerMockito.mockStatic(AstParserUtil.class);
     }
@@ -75,10 +72,8 @@ public class IssueMatcherTestNormalMatch extends IssueServiceApplicationTest {
         Method normalMatch = issueMatcherClass.getDeclaredMethod("normalMatch", String.class, String.class, String.class, Map.class);
 
         String curRawIssuesMatchResultStr = "{\"a711d433786a9045eb91e662142e3d983789faed\":[{\"codeLines\":0,\"commitId\":\"494b3e766c911edfff28b6c6d6f04ff95e86ff93\",\"detail\":\"Define a constant instead of duplicating this literal \\\"normal\\\" 4 times.---MINOR\",\"developerName\":\"支乌\",\"fileName\":\"src/main/java/application/issue/Issue2.java\",\"issueId\":\"38b9c6ef-331d-4c5c-b4ec-ac338aa10906\",\"locations\":[{\"bugLines\":\"9-9\",\"code\":\"    public String volee = \\\"normal\\\";\\n\",\"endLine\":9,\"endToken\":0,\"filePath\":\"src/main/java/application/issue/Issue2.java\",\"locationMatchResults\":[{\"location\":{\"bugLines\":\"9-9\",\"code\":\"    public String volee = \\\"normal\\\";\\n\",\"endLine\":9,\"endToken\":0,\"filePath\":\"src/main/java/application/issue/Issue2.java\",\"locationMatchResults\":[{\"location\":{\"$ref\":\"$.a711d433786a9045eb91e662142e3d983789faed[0].locations[0]\"},\"matchedLocationId\":\"d75696e8-6172-4dc6-a540-3f576c0430b5\",\"matchingDegree\":1.0}],\"matched\":true,\"matchedIndex\":-1,\"methodName\":\"volee \",\"offset\":1,\"rawIssueId\":\"304327b2-56fe-4bf6-a2e4-39ac1b9230bc\",\"startLine\":9,\"startToken\":0,\"tokens\":[-50,-35,-50,-60],\"uuid\":\"3a92a42a-f1fb-4740-9aa4-b6ecdfa89e28\"},\"matchedLocationId\":\"3a92a42a-f1fb-4740-9aa4-b6ecdfa89e28\",\"matchingDegree\":1.0}],\"matched\":true,\"matchedIndex\":-1,\"methodName\":\"volee \",\"offset\":1,\"rawIssueId\":\"ddd413a1-f5de-4893-90ff-6c1f3fbf0e9b\",\"startLine\":9,\"startToken\":0,\"tokens\":[-50,-35,-50,-60],\"uuid\":\"d75696e8-6172-4dc6-a540-3f576c0430b5\"},{\"bugLines\":\"11-11\",\"code\":\"    public String dosome = \\\"normal\\\";\\n\",\"endLine\":11,\"endToken\":0,\"filePath\":\"src/main/java/application/issue/Issue2.java\",\"locationMatchResults\":[{\"location\":{\"bugLines\":\"11-11\",\"code\":\"    public String dosome = \\\"normal\\\";\\n\",\"endLine\":11,\"endToken\":0,\"filePath\":\"src/main/java/application/issue/Issue2.java\",\"locationMatchResults\":[{\"location\":{\"$ref\":\"$.a711d433786a9045eb91e662142e3d983789faed[0].locations[1]\"},\"matchedLocationId\":\"233d9b42-6249-46ba-9a9b-d1fa7137eb16\",\"matchingDegree\":1.0}],\"matched\":true,\"matchedIndex\":-1,\"methodName\":\"dosome \",\"offset\":1,\"rawIssueId\":\"304327b2-56fe-4bf6-a2e4-39ac1b9230bc\",\"startLine\":11,\"startToken\":0,\"tokens\":[-50,-35,-42,-60],\"uuid\":\"6fadaba0-1db6-4058-ba52-4d50879e1898\"},\"matchedLocationId\":\"6fadaba0-1db6-4058-ba52-4d50879e1898\",\"matchingDegree\":1.0}],\"matched\":true,\"matchedIndex\":-1,\"methodName\":\"dosome \",\"offset\":1,\"rawIssueId\":\"ddd413a1-f5de-4893-90ff-6c1f3fbf0e9b\",\"startLine\":11,\"startToken\":0,\"tokens\":[-50,-35,-42,-60],\"uuid\":\"233d9b42-6249-46ba-9a9b-d1fa7137eb16\"},{\"bugLines\":\"13-13\",\"code\":\"    public String test = \\\"normal\\\";\\n\",\"endLine\":13,\"endToken\":0,\"filePath\":\"src/main/java/application/issue/Issue2.java\",\"locationMatchResults\":[{\"location\":{\"bugLines\":\"13-13\",\"code\":\"    public String test = \\\"normal\\\";\\n\",\"endLine\":13,\"endToken\":0,\"filePath\":\"src/main/java/application/issue/Issue2.java\",\"locationMatchResults\":[{\"location\":{\"$ref\":\"$.a711d433786a9045eb91e662142e3d983789faed[0].locations[2]\"},\"matchedLocationId\":\"d3a17029-dca6-423e-bec1-74d1a4ff570e\",\"matchingDegree\":1.0}],\"matched\":true,\"matchedIndex\":-1,\"methodName\":\"test \",\"offset\":1,\"rawIssueId\":\"304327b2-56fe-4bf6-a2e4-39ac1b9230bc\",\"startLine\":13,\"startToken\":0,\"tokens\":[-50,-35,-30,-60],\"uuid\":\"c6eb0cf2-3209-46d1-8e1b-f5516722cd52\"},\"matchedLocationId\":\"c6eb0cf2-3209-46d1-8e1b-f5516722cd52\",\"matchingDegree\":1.0}],\"matched\":true,\"matchedIndex\":-1,\"methodName\":\"test \",\"offset\":1,\"rawIssueId\":\"ddd413a1-f5de-4893-90ff-6c1f3fbf0e9b\",\"startLine\":13,\"startToken\":0,\"tokens\":[-50,-35,-30,-60],\"uuid\":\"d3a17029-dca6-423e-bec1-74d1a4ff570e\"},{\"bugLines\":\"15-15\",\"code\":\"    public String test2 = \\\"normal\\\";\\n\",\"endLine\":15,\"endToken\":0,\"filePath\":\"src/main/java/application/issue/Issue2.java\",\"locationMatchResults\":[{\"location\":{\"bugLines\":\"15-15\",\"code\":\"    public String test2 = \\\"normal\\\";\\n\",\"endLine\":15,\"endToken\":0,\"filePath\":\"src/main/java/application/issue/Issue2.java\",\"locationMatchResults\":[{\"location\":{\"$ref\":\"$.a711d433786a9045eb91e662142e3d983789faed[0].locations[3]\"},\"matchedLocationId\":\"79a362d1-a43a-4220-8454-b5def989b9aa\",\"matchingDegree\":1.0}],\"matched\":true,\"matchedIndex\":-1,\"methodName\":\"test2 \",\"offset\":1,\"rawIssueId\":\"304327b2-56fe-4bf6-a2e4-39ac1b9230bc\",\"startLine\":15,\"startToken\":0,\"tokens\":[-50,-35,-19,-60],\"uuid\":\"98a1f25d-8539-451e-a745-9b1335770df8\"},\"matchedLocationId\":\"98a1f25d-8539-451e-a745-9b1335770df8\",\"matchingDegree\":1.0}],\"matched\":true,\"matchedIndex\":-1,\"methodName\":\"test2 \",\"offset\":1,\"rawIssueId\":\"ddd413a1-f5de-4893-90ff-6c1f3fbf0e9b\",\"startLine\":15,\"startToken\":0,\"tokens\":[-50,-35,-19,-60],\"uuid\":\"79a362d1-a43a-4220-8454-b5def989b9aa\"}],\"mapped\":false,\"matchDegree\":0.0,\"matchInfos\":[{\"curCommitId\":\"494b3e766c911edfff28b6c6d6f04ff95e86ff93\",\"curRawIssueUuid\":\"ddd413a1-f5de-4893-90ff-6c1f3fbf0e9b\",\"issueUuid\":\"38b9c6ef-331d-4c5c-b4ec-ac338aa10906\",\"matchDegree\":1.0,\"preCommitId\":\"38b5cfd2322bd533aa11b960ba9aa1e589fe5197\",\"preRawIssueUuid\":\"304327b2-56fe-4bf6-a2e4-39ac1b9230bc\",\"status\":\"changed\",\"uuid\":\"69035dd4-c405-48ec-9849-e9b650949441\"}],\"matchResultDTOIndex\":-1,\"notChange\":false,\"onceMapped\":true,\"priority\":3,\"rawIssueMatchResults\":[],\"realEliminate\":false,\"repoId\":\"3b1f56e8-69c9-11eb-b829-432f1e48d2fb\",\"scanId\":\"sonarqube\",\"status\":\"add\",\"tool\":\"sonarqube\",\"type\":\"String literals should not be duplicated\",\"uuid\":\"ddd413a1-f5de-4893-90ff-6c1f3fbf0e9b\",\"version\":2}]}";
-
         Map<String, List<RawIssue>> curRawIssuesMatchResult = getCurRawIssuesMatchResult(curRawIssuesMatchResultStr);
 
-        //jGitHelper.checkout("38b5cfd2322bd533aa11b960ba9aa1e589fe5197");
         normalMatch.setAccessible(true);
 
         Mockito.when(AstParserUtil.getAllMethodAndFieldName("/Users/beethoven/Desktop/saic/forTest/src/main/java/application/issue/Issue2.java"))
@@ -90,6 +85,10 @@ public class IssueMatcherTestNormalMatch extends IssueServiceApplicationTest {
                             add("test2");
                         }}
                 );
+
+//        Mockito.when(jGitHelper.getDiffFilePair(preCommit, curCommit, preFileToCurFile, curFileToPreFile))
+//                .thenReturn();
+
         normalMatch.invoke(issueMatcher, "3b1f56e8-69c9-11eb-b829-432f1e48d2fb", "sonarqube", "38b5cfd2322bd533aa11b960ba9aa1e589fe5197", new HashMap<>());
         normalMatch.invoke(issueMatcher, "3b1f56e8-69c9-11eb-b829-432f1e48d2fb", "sonarqube", "a711d433786a9045eb91e662142e3d983789faed", new HashMap<>());
 
