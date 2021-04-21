@@ -66,4 +66,7 @@
         select count(uuid) from clone_repo where repo_id = #{repo_id}
     </select>
 
+    <delete id="deleteRepoByRepoId" parameterType="String">
+        delete from clone_repo where repo_id=#{repo_id}
+    </delete>
 </mapper>

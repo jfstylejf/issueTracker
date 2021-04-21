@@ -16,12 +16,8 @@ import cn.edu.fudan.cloneservice.util.JGitUtil;
 import cn.edu.fudan.cloneservice.util.UserUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-
-import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -49,7 +45,6 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
     public List<CloneMessage> getCloneMeasure(String repositoryId, String developers, String start, String end, String page, String size, Boolean isAsc, String order) {
 
         List<CloneMessage> cloneMessages = new ArrayList<>();
-
         if (StringUtils.isEmpty(developers)) {
             if (StringUtils.isEmpty(repositoryId)) {
                 log.error("repositoryId and developer is null");
@@ -408,6 +403,20 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
         return results;
     }
 
+    @Override
+    public List<CloneOverallView> getCloneOverallViews(String projectId, String date, String interval, String token) {
+        List<String> projectList = getProjectIds(projectId, token);
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDate localDate = LocalDate.parse(date, dtf);
+        LocalDate initDate = DateTimeUtil.initEndTimeByInterval(localDate, interval);
+        List<CloneOverallView> results = new ArrayList<>();
+        for(String aProjectId: projectList) {
+            String projectName = repoCommitMapper.getProjectNameByProjectId(aProjectId);
+            results.addAll(cloneLocationDao.getCloneOverall(repoCommitMapper.getRepoIdByProjectId(aProjectId), initDate.format(dtf), aProjectId, projectName));
+        }
+        return results;
+    }
+
     private List<String> getProjectIds(String projectId, String token) {
         List<String> projectIds = new ArrayList<>();
         if(StringUtils.isEmpty(projectId)) {
@@ -456,3 +465,4 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
         return time;
     }
 }
+

@@ -1,10 +1,12 @@
 package cn.edu.fudan.cloneservice.dao;
 
+import cn.edu.fudan.cloneservice.domain.CloneOverallView;
 import cn.edu.fudan.cloneservice.domain.clone.CloneLocation;
 import cn.edu.fudan.cloneservice.mapper.CloneLocationMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -32,6 +34,36 @@ public class CloneLocationDao {
             }
         }
         return res;
+    }
+
+    public List<CloneOverallView> getCloneOverall(List<String> repoUuids, String initDate, String projectId, String projectName){
+        List<CloneOverallView> result = new ArrayList<>();
+        for(String repoUuid : repoUuids){
+            if(repoUuid != null){
+                String commitId = cloneLocationMapper.getLatestCommitId(repoUuid, "", initDate);
+                if(commitId != null){
+                    int caseSum = cloneLocationMapper.getGroupCount(commitId);
+                    int fileSum = cloneLocationMapper.getFileCount(commitId);
+                    int codeLengthsSize = 0;
+                    int codeLengthsSum = 0;
+                    int codeLengthsAverage = 0;
+                    List<String> codeLengths = cloneLocationMapper.getCloneNum(commitId);
+                    if(!codeLengths.isEmpty()){
+                        codeLengthsSize = codeLengths.size();
+                        for(String codeLength: codeLengths){
+                            codeLengthsSum += codeLength.split(",").length;
+                        }
+                        codeLengthsAverage = codeLengthsSum/codeLengthsSize;
+                    }
+
+                    // FIXME: 2021/4/20 cloneType之后要改
+                    int cloneType = 1;
+                    CloneOverallView cloneOverallView = new CloneOverallView(projectName, projectId, initDate, repoUuid, caseSum, fileSum, codeLengthsAverage, cloneType);
+                    result.add(cloneOverallView);
+                }
+            }
+        }
+        return result;
     }
 
     public void insertCloneLocations(List<CloneLocation> cloneLocations) {

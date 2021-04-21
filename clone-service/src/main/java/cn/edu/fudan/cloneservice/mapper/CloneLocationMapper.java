@@ -61,4 +61,7 @@ public interface CloneLocationMapper {
      */
     int getGroupCount(@Param("commit_id") String latestCommitId);
 
+    int getFileCount(@Param("commit_id") String latestCommitId);
+
+    List<String> getCloneNum(@Param("commit_id") String latestCommitId);
 }

@@ -27,6 +27,8 @@ public class CloneRepoDao {
         cloneRepoMapper.updateCloneRepo(cloneRepo);
     }
 
+    public void deleteCloneRepo(String repoId){cloneRepoMapper.deleteRepoByRepoId(repoId);}
+
     public CloneRepo getLatestCloneRepo(String repoId){
         return cloneRepoMapper.getLatestCloneRepo(repoId);
     }

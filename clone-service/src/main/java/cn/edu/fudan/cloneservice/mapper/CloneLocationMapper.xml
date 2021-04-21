@@ -92,4 +92,29 @@
         </where>
         group by category) as t
     </select>
+
+    <select id="getFileCount" parameterType="String" resultType="java.lang.Integer">
+        select count(*) from (SELECT *
+        from issueTracker.clone_location
+        <where>
+
+            <if test="commit_id != null and commit_id != '' ">
+                and commit_id = #{commit_id}
+            </if>
+
+        </where>
+        group by file_path) as t
+    </select>
+
+    <select id="getCloneNum" parameterType="String" resultType="String">
+        SELECT clone_num
+        from issueTracker.clone_location
+        <where>
+            <trim prefixOverrides="and">
+                <if test="commit_id != null and commit_id != '' ">
+                    and commit_id = #{commit_id}
+                </if>
+            </trim>
+        </where>
+    </select>
 </mapper>
