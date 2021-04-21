@@ -1,6 +1,6 @@
 package cn.edu.fudan.issueservice.dao;
 
-import cn.edu.fudan.issueservice.IssueServiceApplicationTests;
+import cn.edu.fudan.issueservice.IssueServiceApplicationTest;
 import cn.edu.fudan.issueservice.mapper.IssueMapper;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,7 +9,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class IssueDaoTest extends IssueServiceApplicationTests {
+public class IssueDaoTest extends IssueServiceApplicationTest {
 
 
     private IssueMapper issueMapper;

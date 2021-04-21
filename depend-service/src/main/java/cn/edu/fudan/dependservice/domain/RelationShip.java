@@ -4,6 +4,7 @@ import lombok.Data;
 
 @Data
 public class RelationShip {
+    private String projectName;
     private String commit_id;
     private String repo_uuid;
     private int group_id;

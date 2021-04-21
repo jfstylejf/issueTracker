@@ -3,7 +3,7 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.edu.fudan.issueservice.mapper.RawIssueMapper">
 
-    <resultMap id="rawIssue" type="RawIssue">
+    <resultMap id="rawIssue" type="cn.edu.fudan.issueservice.domain.dbo.RawIssue">
         <id property="uuid" column="uuid"/>
         <result property="type" column="type"/>
         <result property="tool" column="tool"/>
@@ -21,7 +21,7 @@
                     select="cn.edu.fudan.issueservice.mapper.LocationMapper.getLocations"/>
     </resultMap>
 
-    <resultMap id="rawIssue2" type="RawIssue">
+    <resultMap id="rawIssue2" type="cn.edu.fudan.issueservice.domain.dbo.RawIssue">
         <id property="uuid" column="uuid"/>
         <result property="type" column="type"/>
         <result property="tool" column="tool"/>
@@ -36,7 +36,7 @@
                     select="cn.edu.fudan.issueservice.mapper.LocationMapper.getLocations"/>
     </resultMap>
 
-    <resultMap id="rawIssue3" type="RawIssue">
+    <resultMap id="rawIssue3" type="cn.edu.fudan.issueservice.domain.dbo.RawIssue">
         <id property="uuid" column="uuid"/>
         <result property="type" column="type"/>
         <result property="tool" column="tool"/>
@@ -49,7 +49,7 @@
         <result property="codeLines" column="code_lines"/>
     </resultMap>
 
-    <resultMap id="rawIssueForScan" type="RawIssue">
+    <resultMap id="rawIssueForScan" type="cn.edu.fudan.issueservice.domain.dbo.RawIssue">
         <id property="uuid" column="uuid"/>
         <result property="type" column="type"/>
         <result property="tool" column="tool"/>

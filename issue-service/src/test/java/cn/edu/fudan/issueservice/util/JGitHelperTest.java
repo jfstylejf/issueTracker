@@ -1,6 +1,6 @@
 package cn.edu.fudan.issueservice.util;
 
-import cn.edu.fudan.issueservice.IssueServiceApplicationTests;
+import cn.edu.fudan.issueservice.IssueServiceApplicationTest;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RunWith(JUnit4.class)
-public class JGitHelperTest extends IssueServiceApplicationTests {
+public class JGitHelperTest extends IssueServiceApplicationTest {
     @InjectMocks
     private JGitHelper jGitHelper = new JGitHelper("D:\\Project\\FDSELab\\TestCase\\forTest");
 

@@ -286,7 +286,7 @@ public class MeasureDeveloperController {
 
     @GetMapping("/measure/commit-standard/trend-chart")
     @CrossOrigin
-    public ResponseBean<List<ProjectCommitStandardTrendChart>> getCommitStandardTrendChart(@RequestParam(required = false, defaultValue = "") String projectIds,
+    public ResponseBean<List<ProjectCommitStandardTrendChart>> getCommitStandardTrendChart(@RequestParam(value = "project_ids",required = false, defaultValue = "") String projectIds,
                                                                                            @RequestParam(required = false, defaultValue = "") String since,
                                                                                            @RequestParam(required = false, defaultValue = "") String until,
                                                                                            @RequestParam(required = false, defaultValue = "week") String interval,
@@ -335,6 +335,25 @@ public class MeasureDeveloperController {
         }
         return new ResponseBean<>(401,"failed",null);
     }
+
+
+    @GetMapping("/measure/big-file/trend-chart")
+    @CrossOrigin
+    public ResponseBean<List<ProjectBigFileTrendChart>> getHugeLocRemainedFileTrendChart(@RequestParam(value = "project_ids",required = false, defaultValue = "") String projectIds,
+                                                                 @RequestParam(required = false, defaultValue = "") String since,
+                                                                 @RequestParam(required = false, defaultValue = "") String until,
+                                                                 @RequestParam(required = false, defaultValue = "week") String interval,
+                                                                 HttpServletRequest request) {
+        try {
+            until = timeProcess(until);
+            String token = request.getHeader("token");
+            return new ResponseBean<>(200,"success",measureDeveloperService.getHugeLocRemainedFile(projectIds,since,until,token,interval));
+        }catch (Exception e) {
+            e.getMessage();
+        }
+        return new ResponseBean<>(401,"failed",new ArrayList<>());
+    }
+
 
 
 

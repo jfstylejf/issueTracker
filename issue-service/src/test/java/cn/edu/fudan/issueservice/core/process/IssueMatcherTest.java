@@ -1,16 +1,16 @@
 package cn.edu.fudan.issueservice.core.process;
 
+import cn.edu.fudan.issueservice.IssueServiceApplicationTest;
 import cn.edu.fudan.issueservice.domain.dbo.RawIssue;
 import cn.edu.fudan.issueservice.util.JGitHelper;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
-import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
-
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -21,19 +21,20 @@ import java.util.Map;
  * @author beethoven
  * @date 2021-03-02 16:33:39
  */
-@RunWith(JUnit4.class)
-public class IssueMatcherTest {
+public class IssueMatcherTest extends IssueServiceApplicationTest {
 
-    @InjectMocks
+    @Autowired
     private IssueMatcher issueMatcher;
 
-    private final String REPO_PATH = "/Users/beethoven/Desktop/saic/forTest";
+    @Value("${test.repo.java.path}")
+    private String REPO_PATH;
 
-    private final JGitHelper jGitHelper = new JGitHelper(REPO_PATH);
+    private JGitHelper jGitHelper;
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        jGitHelper = new JGitHelper(REPO_PATH);
     }
 
     /**
@@ -234,6 +235,144 @@ public class IssueMatcherTest {
         List<RawIssue> preRawIssues1 = JSONArray.parseArray(preRawIssues, RawIssue.class);
         List<RawIssue> curRawIssues1 = JSONArray.parseArray(curRawIssues, RawIssue.class);
 
+        String curLocations = "[\n" +
+                "  {\n" +
+                "    \"bugLines\": \"8-8\",\n" +
+                "    \"code\": \"    public String volee = \\\"normal\\\";\\n\",\n" +
+                "    \"endLine\": 8,\n" +
+                "    \"endToken\": 0,\n" +
+                "    \"filePath\": \"src/main/java/application/issue/Issue2.java\",\n" +
+                "    \"locationMatchResults\": [],\n" +
+                "    \"matched\": false,\n" +
+                "    \"matchedIndex\": -1,\n" +
+                "    \"methodName\": \"volee \",\n" +
+                "    \"offset\": 1,\n" +
+                "    \"rawIssueId\": \"04eb7d47-2fee-47d5-b112-57c42eb01b5e\",\n" +
+                "    \"startLine\": 8,\n" +
+                "    \"startToken\": 0,\n" +
+                "    \"tokens\": [\n" +
+                "      -50,\n" +
+                "      -35,\n" +
+                "      -50,\n" +
+                "      -60\n" +
+                "    ],\n" +
+                "    \"uuid\": \"7ab1ffd8-28f2-4fdd-b0a3-e99456dda7f7\"\n" +
+                "  },\n" +
+                "  {\n" +
+                "    \"bugLines\": \"10-10\",\n" +
+                "    \"code\": \"    public String dosome = \\\"normal\\\";\\n\",\n" +
+                "    \"endLine\": 10,\n" +
+                "    \"endToken\": 0,\n" +
+                "    \"filePath\": \"src/main/java/application/issue/Issue2.java\",\n" +
+                "    \"locationMatchResults\": [],\n" +
+                "    \"matched\": false,\n" +
+                "    \"matchedIndex\": -1,\n" +
+                "    \"methodName\": \"dosome \",\n" +
+                "    \"offset\": 1,\n" +
+                "    \"rawIssueId\": \"04eb7d47-2fee-47d5-b112-57c42eb01b5e\",\n" +
+                "    \"startLine\": 10,\n" +
+                "    \"startToken\": 0,\n" +
+                "    \"tokens\": [\n" +
+                "      -50,\n" +
+                "      -35,\n" +
+                "      -42,\n" +
+                "      -60\n" +
+                "    ],\n" +
+                "    \"uuid\": \"663e3f07-6a14-4dfd-9a91-da63929012ef\"\n" +
+                "  },\n" +
+                "  {\n" +
+                "    \"bugLines\": \"12-12\",\n" +
+                "    \"code\": \"    public String test = \\\"normal\\\";\\n\",\n" +
+                "    \"endLine\": 12,\n" +
+                "    \"endToken\": 0,\n" +
+                "    \"filePath\": \"src/main/java/application/issue/Issue2.java\",\n" +
+                "    \"locationMatchResults\": [],\n" +
+                "    \"matched\": false,\n" +
+                "    \"matchedIndex\": -1,\n" +
+                "    \"methodName\": \"test \",\n" +
+                "    \"offset\": 1,\n" +
+                "    \"rawIssueId\": \"04eb7d47-2fee-47d5-b112-57c42eb01b5e\",\n" +
+                "    \"startLine\": 12,\n" +
+                "    \"startToken\": 0,\n" +
+                "    \"tokens\": [\n" +
+                "      -50,\n" +
+                "      -35,\n" +
+                "      -30,\n" +
+                "      -60\n" +
+                "    ],\n" +
+                "    \"uuid\": \"aac62785-1426-4486-a671-254bab1bc2d6\"\n" +
+                "  }\n" +
+                "]";
+        String preLocations = "[\n" +
+                "  {\n" +
+                "    \"bugLines\": \"10-10\",\n" +
+                "    \"code\": \"    public String dosome = \\\"normal\\\";\\n\",\n" +
+                "    \"endLine\": 10,\n" +
+                "    \"endToken\": 0,\n" +
+                "    \"filePath\": \"src/main/java/application/issue/Issue2.java\",\n" +
+                "    \"locationMatchResults\": [],\n" +
+                "    \"matched\": false,\n" +
+                "    \"matchedIndex\": -1,\n" +
+                "    \"methodName\": \"dosome \",\n" +
+                "    \"offset\": 1,\n" +
+                "    \"rawIssueId\": \"6e9fe53c-70f1-4b55-bcb2-24e9733be7c8\",\n" +
+                "    \"startLine\": 10,\n" +
+                "    \"startToken\": 0,\n" +
+                "    \"tokens\": [\n" +
+                "      -50,\n" +
+                "      -35,\n" +
+                "      -42,\n" +
+                "      -60\n" +
+                "    ],\n" +
+                "    \"uuid\": \"345533c5-02d5-4470-a252-f5599ed6e826\"\n" +
+                "  },\n" +
+                "  {\n" +
+                "    \"bugLines\": \"12-12\",\n" +
+                "    \"code\": \"    public String test = \\\"normal\\\";\\n\",\n" +
+                "    \"endLine\": 12,\n" +
+                "    \"endToken\": 0,\n" +
+                "    \"filePath\": \"src/main/java/application/issue/Issue2.java\",\n" +
+                "    \"locationMatchResults\": [],\n" +
+                "    \"matched\": false,\n" +
+                "    \"matchedIndex\": -1,\n" +
+                "    \"methodName\": \"test \",\n" +
+                "    \"offset\": 1,\n" +
+                "    \"rawIssueId\": \"6e9fe53c-70f1-4b55-bcb2-24e9733be7c8\",\n" +
+                "    \"startLine\": 12,\n" +
+                "    \"startToken\": 0,\n" +
+                "    \"tokens\": [\n" +
+                "      -50,\n" +
+                "      -35,\n" +
+                "      -30,\n" +
+                "      -60\n" +
+                "    ],\n" +
+                "    \"uuid\": \"3fe97477-a977-43e4-b10f-e4685a7b5300\"\n" +
+                "  },\n" +
+                "  {\n" +
+                "    \"bugLines\": \"8-8\",\n" +
+                "    \"code\": \"    public String volumn = \\\"normal\\\";\\n\",\n" +
+                "    \"endLine\": 8,\n" +
+                "    \"endToken\": 0,\n" +
+                "    \"filePath\": \"src/main/java/application/issue/Issue2.java\",\n" +
+                "    \"locationMatchResults\": [],\n" +
+                "    \"matched\": false,\n" +
+                "    \"matchedIndex\": -1,\n" +
+                "    \"methodName\": \"volumn \",\n" +
+                "    \"offset\": 1,\n" +
+                "    \"rawIssueId\": \"6e9fe53c-70f1-4b55-bcb2-24e9733be7c8\",\n" +
+                "    \"startLine\": 8,\n" +
+                "    \"startToken\": 0,\n" +
+                "    \"tokens\": [\n" +
+                "      -50,\n" +
+                "      -35,\n" +
+                "      -52,\n" +
+                "      -60\n" +
+                "    ],\n" +
+                "    \"uuid\": \"4fd185ff-9d98-41b0-be7b-80ec16433e3a\"\n" +
+                "  }\n" +
+                "]";
+
+        System.out.println(JSON.toJSONString(preRawIssues1.get(0).getLocations()));
         jGitHelper.checkout("f846f08b35f6ee3fd532557ef9c88d0342e475ed");
         mapRawIssues.setAccessible(true);
         mapRawIssues.invoke(issueMatcher, preRawIssues1, curRawIssues1, REPO_PATH, new HashMap<>(), new HashMap<>());

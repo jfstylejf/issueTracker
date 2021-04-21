@@ -79,7 +79,7 @@
     </select>
 
     <insert id="insertFileMeasureList">
-        insert ignore into issueTracker.file_measure
+        insert into issueTracker.file_measure
         (
         uuid,
         repo_id,
@@ -107,10 +107,33 @@
             #{item.totalLine}
             )
         </foreach>
-        on duplicate key update
-        commit_id = #{item.commitId}
     </insert>
 
+    <select id="sameFileMeasureOfOneCommit" resultType="int">
+        select count(*) from issueTracker.file_measure
+        where
+        repo_id = #{repo_id}
+        and commit_id = #{commit_id}
+    </select>
 
+    <select id="getCurrentFileInfoByRepoUuidList" resultType="java.util.Map">
+        SELECT file_path,total_lines,max(commit_time) as currentModifyTime FROM issueTracker.file_measure
+        <where>
+            <trim prefixOverrides="and">
+                <if test="repoUuidList != null and repoUuidList.size >0 ">
+                    and repo_id in
+                    <foreach collection="repoUuidList" separator="," open="(" close=")" item="repoUuid">
+                        #{repoUuid}
+                    </foreach>
+                </if>
+
+                and total_lines >= 1000
+            </trim>
+        </where>
+        GROUP BY
+            file_path
+        ORDER BY
+            commit_time desc
+    </select>
 
 </mapper>

@@ -237,7 +237,9 @@ public class ToolInvoker {
         }
 
         try{
-            fileMeasureMapper.insertFileMeasureList(fileMeasureList);
+            if(fileMeasureMapper.sameFileMeasureOfOneCommit(scanCommitInfoDto.getRepoUuid(),scanCommitInfoDto.getCommitId())==0) {
+                fileMeasureMapper.insertFileMeasureList(fileMeasureList);
+            }
             return true;
         } catch (Exception e) {
             log.error("Inserting data to DB file_measure table failed：");
@@ -257,6 +259,7 @@ public class ToolInvoker {
         }else if (ToolEnum.JSCodeAnalyzer.getType().equals(scanCommitInfoDto.getToolName())) {
             JsCodeAnalyzer jsCodeAnalyzer = new JsCodeAnalyzer();
             jsCodeAnalyzer.setRepoPath(scanCommitInfoDto.getRepoPath());
+            jsCodeAnalyzer.setLibHome(libHome);
             jsCodeAnalyzer.setBinHome(binHome);
             jsCodeAnalyzer.setScanCommitInfoDto(scanCommitInfoDto);
             FileInfo preFileInfo = jsCodeAnalyzer.getPreFileInfo(filePath);

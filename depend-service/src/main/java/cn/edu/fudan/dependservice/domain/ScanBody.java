@@ -7,4 +7,5 @@ public class ScanBody {
     private String repo_uuid;
     private String begin_commit;
     private String branch;
+    private String datetime;
 }

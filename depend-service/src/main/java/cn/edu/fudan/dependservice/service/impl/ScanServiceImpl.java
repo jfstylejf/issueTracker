@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Primary;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Service;
@@ -29,6 +30,7 @@ import static org.springframework.context.annotation.AdviceMode.ASPECTJ;
  **/
 @Slf4j
 @Service
+@Primary
 //@EnableAsync(mode = ASPECTJ)
 public class ScanServiceImpl extends CommonScanProcess {
     List<RepoScan> repoScanList;

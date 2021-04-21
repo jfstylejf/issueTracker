@@ -1,5 +1,6 @@
 package cn.edu.fudan.dependservice.service;
 
+import cn.edu.fudan.dependservice.domain.ScanRepo;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -8,7 +9,8 @@ import java.util.List;
 public interface TestService {
 
 
-    List<String> getAllRepoUuidThatNeedScan();
-    void scanAllRepo();
+//    List<String> getAllRepoUuidThatNeedScan();
+    List<ScanRepo> scanAllRepo();
+    List<ScanRepo> scanAllRepoNearToOneDate(String toScanDate);
 }
 
