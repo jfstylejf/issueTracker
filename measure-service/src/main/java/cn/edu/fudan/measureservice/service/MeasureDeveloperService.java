@@ -1162,7 +1162,7 @@ public class MeasureDeveloperService {
              int projectId = projectDao.getProjectIdByName(projectName);
              List<ProjectBigFileDetail> projectBigFileDetailList = measureDao.getCurrentBigFileInfo(Collections.singletonList(repoUuid),null);
              for (ProjectBigFileDetail projectBigFileDetail : projectBigFileDetailList) {
-                 projectBigFileDetail.setProjectId(projectId);
+                 projectBigFileDetail.setProjectId(String.valueOf(projectId));
                  projectBigFileDetail.setProjectName(projectName);
                  projectBigFileDetail.setRepoName(repoName);
              }

@@ -341,6 +341,7 @@ public class MeasureDeveloperController {
     }
 
 
+
     @GetMapping("/measure/big-file/trend-chart")
     @CrossOrigin
     public ResponseBean<List<ProjectBigFileTrendChart>> getHugeLocRemainedFileTrendChart(@RequestParam(value = "project_ids",required = false, defaultValue = "") String projectIds,
@@ -390,7 +391,6 @@ public class MeasureDeveloperController {
             e.printStackTrace();
         }
         return new ResponseBean<>(401,"failed",null);
-
 
     }
 
