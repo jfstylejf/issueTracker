@@ -41,7 +41,7 @@ public interface FileMeasureMapper {
     /**
      * 查询库下所有大文件最新信息
      * @param repoUuidList 查询库列表
-     * @return key: file_path, total_lines, currentModifyTime
+     * @return key: file_path, total_lines, currentModifyTime, repo_id
      */
-    List<Map<String,Object>> getCurrentFileInfoByRepoUuidList(@Param("repoUuidList") List<String> repoUuidList);
+    List<Map<String,Object>> getCurrentFileInfoByRepoUuidList(@Param("repoUuidList") List<String> repoUuidList,@Param("until") String until);
 }

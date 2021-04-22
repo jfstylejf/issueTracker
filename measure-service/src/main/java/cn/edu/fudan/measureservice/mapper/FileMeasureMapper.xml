@@ -117,7 +117,7 @@
     </select>
 
     <select id="getCurrentFileInfoByRepoUuidList" resultType="java.util.Map">
-        SELECT file_path,total_lines,max(commit_time) as currentModifyTime FROM issueTracker.file_measure
+        SELECT file_path,total_lines, repo_id,max(commit_time) as currentModifyTime   FROM issueTracker.file_measure
         <where>
             <trim prefixOverrides="and">
                 <if test="repoUuidList != null and repoUuidList.size >0 ">
@@ -125,6 +125,10 @@
                     <foreach collection="repoUuidList" separator="," open="(" close=")" item="repoUuid">
                         #{repoUuid}
                     </foreach>
+                </if>
+
+                <if test="until != null and until != '' ">
+                    and <![CDATA[ commit_time <= #{until} ]]>
                 </if>
 
                 and total_lines >= 1000
