@@ -90,9 +90,9 @@ public class CloneMeasureController {
 
     @GetMapping(value = {"/clone/overall-view"})
     public ResponseBean<List<CloneOverallView>> getCloneOverallViews(@RequestParam(value = "project_ids", defaultValue = "") String projectIds,
-                                                                  @RequestParam(value = "interval", defaultValue = "week") String interval,
-                                                                  @RequestParam(value = "date") String date,
-                                                                  HttpServletRequest httpServletRequest) {
+                                                                     @RequestParam(value = "interval", defaultValue = "week") String interval,
+                                                                     @RequestParam(value = "date") String date,
+                                                                     HttpServletRequest httpServletRequest) {
         try {
             String token = httpServletRequest.getHeader("token");
             if (StringUtils.isEmpty(date)) {
@@ -104,6 +104,47 @@ public class CloneMeasureController {
 
             if (!cloneOverallViews.isEmpty()) {
                 return new ResponseBean<>(200, "success", cloneOverallViews);
+            } else {
+                return new ResponseBean<>(401, "", null);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseBean<>(401, "failed", null);
+        }
+    }
+
+    @GetMapping(value = {"/clone/details"})
+    public ResponseBean<Object> getCloneDetails(@RequestParam(value = "project_ids", defaultValue = "") String projectIds,
+                                                           @RequestParam(value = "commit_id") String commitIds,
+                                                           @RequestParam(value = "page", required = false, defaultValue = "1") String page,
+                                                           @RequestParam(value = "ps", required = false, defaultValue = "5") String size,
+                                                           @RequestParam(value = "asc", required = false) Boolean isAsc,
+                                                           HttpServletRequest httpServletRequest) {
+        try {
+            String token = httpServletRequest.getHeader("token");
+            List<CloneDetail> cloneDetails = cloneMeasureService.getCloneDetails(projectIds, commitIds, token);
+            Collections.sort(cloneDetails);
+            List<CloneDetail> result = new ArrayList<>();
+            if (page != null && size != null) {
+                int pageDigit = Integer.parseInt(page);
+                int sizeDigit = Integer.parseInt(size);
+                if (isAsc != null && !isAsc) {
+                    Collections.reverse(cloneDetails);
+                }
+                int index = (pageDigit - 1) * sizeDigit;
+                while ((index < cloneDetails.size()) && (index < pageDigit * sizeDigit)) {
+                    result.add(cloneDetails.get(index));
+                    index += 1;
+                }
+            }
+            Map<String, Object> data = new HashMap<>();
+            data.put("page", page);
+            data.put("total", cloneDetails.size() / Integer.parseInt(size) + 1);
+            data.put("records", cloneDetails.size());
+            data.put("rows", result);
+
+            if (!cloneDetails.isEmpty()) {
+                return new ResponseBean<>(200, "success", data);
             } else {
                 return new ResponseBean<>(401, "", null);
             }
