@@ -3,7 +3,7 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.edu.fudan.issueservice.mapper.IssueScanMapper">
 
-    <resultMap id="issueScan" type="IssueScan">
+    <resultMap id="issueScan" type="cn.edu.fudan.issueservice.domain.dbo.IssueScan">
         <id property="uuid" column="uuid"/>
         <result property="tool" column="tool"/>
         <result property="repoId" column="repo_uuid"/>
@@ -15,7 +15,7 @@
         <result property="resultSummary" column="result_summary"/>
     </resultMap>
 
-    <insert id="insertOneScan" parameterType="IssueScan">
+    <insert id="insertOneScan" parameterType="cn.edu.fudan.issueservice.domain.dbo.IssueScan">
         insert into issue_scan
         (uuid,
          tool,

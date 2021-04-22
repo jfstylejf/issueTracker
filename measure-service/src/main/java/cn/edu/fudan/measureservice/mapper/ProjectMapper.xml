@@ -272,4 +272,21 @@
         WHERE repo_uuid = #{repoUuid}
     </select>
 
+    <select id="getProjectNameById" resultType="java.util.HashMap">
+        SELECT project_name, id FROM issueTracker.project
+        <where>
+            <if test="projectIdList != null and projectIdList.size >0">
+                id in
+                <foreach collection="projectIdList" separator="," open="(" close=")" item="projectId">
+                    #{projectId}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="getProjectIdByName" resultType="Integer">
+        SELECT id FROM issueTracker.project
+        WHERE project_name = #{projectName}
+    </select>
+
 </mapper>

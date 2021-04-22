@@ -12,6 +12,7 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -29,6 +30,7 @@ import java.util.Map;
 @Slf4j
 @Service
 @Data
+@Primary
 public class ToolScanImpl extends ToolScan {
     // where sh run
     String dependenceHome;
@@ -127,7 +129,6 @@ public class ToolScanImpl extends ToolScan {
         this.setResultFileDir(applicationContext.getBean(ShHomeConfig.class).getResultFileDir());
         //make config file
         String configFile = this.resultFileDir + "source-project-conf.json";
-        log.info("configFile :" + configFile);
         WriteUtill.writeProjecConf(configFile, this.getScanData().getRepoPath());
         // clean all
         File dir = new File(resultFileDir);

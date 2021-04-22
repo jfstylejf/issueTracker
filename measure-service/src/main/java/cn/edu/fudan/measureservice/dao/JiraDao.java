@@ -94,7 +94,6 @@ public class JiraDao {
         // 从字符串开头，返回匹配到的第一个字符串
         if (matcher.find()) {
             // 输出第一次匹配的内容
-            log.info("jira ID is : {}",matcher.group());
             return matcher.group();
         }
         return "noJiraID" ;

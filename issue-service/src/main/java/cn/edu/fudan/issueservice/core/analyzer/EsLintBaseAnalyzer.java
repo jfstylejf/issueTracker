@@ -308,5 +308,7 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
         esLintBaseAnalyzer.setBabelEsLintPath("/Users/beethoven/Desktop/saic/IssueTracker-Master/issue-service/src/main/resources/node/babelEsLint.js");
         esLintBaseAnalyzer.setResultFileHome("/Users/beethoven/Desktop/saic/issue-tracker-web");
         esLintBaseAnalyzer.analyze("/Users/beethoven/Desktop/saic/issue-tracker-web", "test", "4f42e73bda0a80d044a013ef73da4d8af0f4c981");
+        JsTree jsTree = new JsTree(Collections.singletonList("/Users/beethoven/Desktop/saic/issue-tracker-web/src/pages/Home/Home.js"), "", "");
+        esLintBaseAnalyzer.handleFieldName(24, 25, new Location(), "/Users/beethoven/Desktop/saic/issue-tracker-web/src/pages/Home/Home.js", jsTree);
     }
 }

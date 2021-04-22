@@ -11,6 +11,7 @@ import cn.edu.fudan.issueservice.domain.enums.JavaScriptIssuePriorityEnum;
 import cn.edu.fudan.issueservice.domain.enums.RawIssueStatus;
 import cn.edu.fudan.issueservice.domain.enums.ScanStatusEnum;
 import cn.edu.fudan.issueservice.util.*;
+import com.alibaba.fastjson.JSON;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Component;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author fancying
@@ -193,7 +195,7 @@ public class IssueMatcher {
         preFiles = preFiles.stream().filter(file -> analyzer instanceof SonarQubeBaseAnalyzer ? !FileFilter.javaFilenameFilter(file) : !FileFilter.jsFileFilter(file)).collect(Collectors.toList());
 
         // pre commit中变化部分存在的所有rawIssues
-        List<String> issueUuids = issueDao.getIssuesByFilesToolAndRepo(preFiles, repoId, toolName);
+        List<String> issueUuids = issueDao.getIssuesByFilesToolAndRepo(Stream.concat(preFiles.stream(), curFiles.stream()).collect(Collectors.toList()), repoId, toolName);
         List<RawIssue> preRawIssues = rawIssueDao.getLastVersionRawIssues(issueUuids);
         // 由于这里二进制流是对preRawIssues的引用,对preRawIssuesMap set locations等于set preRawIssues locations
         Map<String, List<RawIssue>> preRawIssuesMap = preRawIssues.stream().collect(Collectors.groupingBy(RawIssue::getUuid));
@@ -206,7 +208,7 @@ public class IssueMatcher {
         curAllRawIssues.stream().filter(r -> !curRawIssues.contains(r)).forEach(rawIssue -> rawIssue.setNotChange(true));
 
         // 匹配两个rawIssue集合（parent的rawIssue集合，当前的rawIssue集合）
-//        log.info("cur all rawIssues:" + JSON.toJSONString(curAllRawIssues));
+        log.info("cur all rawIssues:" + JSON.toJSONString(curAllRawIssues));
 //        log.info("pre rawIssues:" + JSON.toJSONString(preRawIssues));
 //        log.info("cur rawIssues:" + JSON.toJSONString(curRawIssues));
         mapRawIssues(preRawIssues, curRawIssues, jGitHelper.getRepoPath(), preFileToCurFile, curFileToPreFile);
@@ -320,6 +322,7 @@ public class IssueMatcher {
         Map<String, List<RawIssue>> preRawIssuesMap = new LinkedHashMap<>(parentCommits.size() << 1);
         // 得到所有待匹配的组合 两两按照normalMatch匹配
         for (String parentCommit : parentCommits) {
+            log.info("curRawIssuesMatchResult:" + JSON.toJSONString(curRawIssuesMatchResult));
             normalMatch(repoUuid, toolName, parentCommit, curRawIssuesMatchResult);
             preRawIssuesMap.put(parentCommit, parentRawIssuesResult.get(parentCommit));
         }

@@ -184,6 +184,7 @@ public class ScanServiceImpl implements ScanService {
         cloneLocationDao.deleteCloneLocations(repoId);
         cloneMeasureDao.deleteCloneMeasureByRepoId(repoId);
         cloneInfoDao.deleteCloneInfo(repoId);
+        cloneRepoDao.deleteCloneRepo(repoId);
     }
 
     @Override
@@ -221,4 +222,5 @@ public class ScanServiceImpl implements ScanService {
     public void setCloneMeasureService(CloneMeasureService cloneMeasureService) {
         this.cloneMeasureService = cloneMeasureService;
     }
+
 }

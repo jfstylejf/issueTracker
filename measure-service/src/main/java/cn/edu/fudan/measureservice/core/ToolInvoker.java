@@ -18,10 +18,7 @@ import cn.edu.fudan.measureservice.domain.enums.ScanStatusEnum;
 import cn.edu.fudan.measureservice.domain.enums.ToolEnum;
 import cn.edu.fudan.measureservice.mapper.FileMeasureMapper;
 import cn.edu.fudan.measureservice.mapper.RepoMeasureMapper;
-import cn.edu.fudan.measureservice.util.FileFilter;
-import cn.edu.fudan.measureservice.util.JGitHelper;
-import cn.edu.fudan.measureservice.util.JavaFileFilter;
-import cn.edu.fudan.measureservice.util.JsFileFilter;
+import cn.edu.fudan.measureservice.util.*;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jgit.diff.*;
@@ -48,7 +45,11 @@ public class ToolInvoker {
     private FileMeasureMapper fileMeasureMapper;
 
     @Value("${binHome}")
-    protected  String binHome;
+    protected String binHome;
+
+    @Value("${libHome}")
+    protected String libHome;
+
 
 
     @SneakyThrows
@@ -64,8 +65,9 @@ public class ToolInvoker {
             return ;
         }
         baseAnalyzer.setScanCommitInfoDto(scanCommitInfoDto);
-        baseAnalyzer.setBinHome(binHome);
-        baseAnalyzer.setRepoPath(scanCommitInfoDto.getRepoPath());
+        baseAnalyzer.setBinHome(FileUtil.systemAvailablePath(binHome));
+        baseAnalyzer.setLibHome(FileUtil.systemAvailablePath(libHome));
+        baseAnalyzer.setRepoPath(FileUtil.systemAvailablePath(scanCommitInfoDto.getRepoPath()));
         //2.开始扫描
         Boolean scanResult = executeScan(baseAnalyzer);
         if (!scanResult) {
@@ -162,7 +164,7 @@ public class ToolInvoker {
         }
 
         try{
-            if(repoMeasureMapper.sameMeasureOfOneCommit(scanCommitInfoDto.getRepoUuid(),scanCommitInfoDto.getCommitId())==0) {
+            if(repoMeasureMapper.sameRepoMeasureOfOneCommit(scanCommitInfoDto.getRepoUuid(),scanCommitInfoDto.getCommitId())==0) {
                 repoMeasureMapper.insertOneRepoMeasure(repoMeasure);
             }
         } catch (Exception e) {
@@ -235,7 +237,9 @@ public class ToolInvoker {
         }
 
         try{
-            fileMeasureMapper.insertFileMeasureList(fileMeasureList);
+            if(fileMeasureMapper.sameFileMeasureOfOneCommit(scanCommitInfoDto.getRepoUuid(),scanCommitInfoDto.getCommitId())==0) {
+                fileMeasureMapper.insertFileMeasureList(fileMeasureList);
+            }
             return true;
         } catch (Exception e) {
             log.error("Inserting data to DB file_measure table failed：");
@@ -249,12 +253,13 @@ public class ToolInvoker {
      * @param filePath
      * @return
      */
-    private int getPreFileCcn(ScanCommitInfoDto scanCommitInfoDto,String filePath) {
+     int getPreFileCcn(ScanCommitInfoDto scanCommitInfoDto,String filePath) {
         if (ToolEnum.JavaCodeAnalyzer.getType().equals(scanCommitInfoDto.getToolName())) {
             return JavaNcss.getOneFileCcn(scanCommitInfoDto.getRepoPath()+'/'+filePath);
         }else if (ToolEnum.JSCodeAnalyzer.getType().equals(scanCommitInfoDto.getToolName())) {
             JsCodeAnalyzer jsCodeAnalyzer = new JsCodeAnalyzer();
             jsCodeAnalyzer.setRepoPath(scanCommitInfoDto.getRepoPath());
+            jsCodeAnalyzer.setLibHome(libHome);
             jsCodeAnalyzer.setBinHome(binHome);
             jsCodeAnalyzer.setScanCommitInfoDto(scanCommitInfoDto);
             FileInfo preFileInfo = jsCodeAnalyzer.getPreFileInfo(filePath);
@@ -265,7 +270,7 @@ public class ToolInvoker {
 
     }
 
-    private DiffInfo getTotalDiffInfo(List<DiffInfo> diffInfos) {
+    DiffInfo getTotalDiffInfo(List<DiffInfo> diffInfos) {
         int sumAddLines = 0;
         int sumDelLines = 0;
         int sumAddCommentLines = 0;
@@ -296,7 +301,7 @@ public class ToolInvoker {
      * @return
      */
     @SneakyThrows
-    private List<DiffInfo> getDiffTextInfo(List<DiffEntry> diffEntries)  {
+    List<DiffInfo> getDiffTextInfo(List<DiffEntry> diffEntries)  {
         if (diffEntries == null) {
             return new ArrayList<>();
         }
@@ -344,7 +349,7 @@ public class ToolInvoker {
      * @param toolName
      * @return
      */
-    private List<DiffEntry> getFilteredFileDiff(String commitId, String toolName) {
+    public List<DiffEntry> getFilteredFileDiff(String commitId, String toolName) {
         List<DiffEntry> filteredDiffEntries = new ArrayList<>();
         List<DiffEntry> diffEntries = jGitHelper.getDiffEntry(commitId);
         // 若是第一个 commit 返回空列表
@@ -394,7 +399,7 @@ public class ToolInvoker {
      * @param toolName
      * @return
      */
-    private FileFilter getSpecificFilter(String toolName) {
+    public FileFilter getSpecificFilter(String toolName) {
         FileFilter fileFilter;
         if (toolName.equals(ToolEnum.JavaCodeAnalyzer.getType())) {
             fileFilter = new JavaFileFilter();
@@ -420,5 +425,13 @@ public class ToolInvoker {
     @Autowired
     public void setFileMeasureMapper(FileMeasureMapper fileMeasureMapper) {
         this.fileMeasureMapper = fileMeasureMapper;
+    }
+
+    public JGitHelper getjGitHelper() {
+        return jGitHelper;
+    }
+
+    public void setjGitHelper(JGitHelper jGitHelper) {
+        this.jGitHelper = jGitHelper;
     }
 }

@@ -1,8 +1,10 @@
 package cn.edu.fudan.cloneservice.mapper;
 
+import lombok.Setter;
 import org.apache.ibatis.annotations.Select;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -72,4 +74,16 @@ public interface RepoCommitMapper {
 
     @Select("SELECT language FROM issueTracker.sub_repository where repo_uuid = #{repo_uuid};")
     String getLanguage(String repo_id);
+
+    @Select("select repo_uuid from sub_repository where project_name in(SELECT project_name FROM issueTracker.project where id = #{project_id});")
+    List<String> getRepoIdByProjectId(String project_id);
+
+    @Select("SELECT id FROM issueTracker.project")
+    List<Integer> getProjectIds();
+
+    @Select("SELECT repo_uuid from issueTracker.commit_view where commit_id = #{commit_id} limit 1;")
+    String getRepoIdByCommitId(String commit_id);
+
+    @Select("SELECT project_name FROM issueTracker.project where id = #{project_id};")
+    String getProjectNameByProjectId(String projectId);
 }

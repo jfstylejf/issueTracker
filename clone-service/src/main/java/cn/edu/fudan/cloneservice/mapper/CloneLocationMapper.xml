@@ -60,8 +60,61 @@
         delete from clone_location where repo_id=#{repo_id}
     </delete>
 
-    <select id="getCloneLocationsTest" resultMap="cloneLocation">
+    <select id="getCloneLocationsTest" parameterType="String" resultMap="cloneLocation">
         select * from issueTrackerTest.clone_location where repo_id=#{repo_id} and commit_id=#{commit_id}
     </select>
 
+    <select id="getLatestCommitId" parameterType="String" resultType="String">
+        SELECT commit_id
+        from issueTracker.commit_view
+        <where>
+            <if test="repo_uuid != null and repo_uuid != '' ">
+                and repo_uuid = #{repo_uuid}
+            </if>
+            <if test="until != null and until != '' ">
+                and <![CDATA[ commit_time <= #{until} ]]>
+            </if>
+            and message NOT LIKE '%Merge%'
+        </where>
+
+        ORDER By commit_time desc limit 1
+    </select>
+
+    <select id="getGroupCount" parameterType="String" resultType="java.lang.Integer">
+        select count(*) from (SELECT *
+        from issueTracker.clone_location
+        <where>
+
+            <if test="commit_id != null and commit_id != '' ">
+                and commit_id = #{commit_id}
+            </if>
+
+        </where>
+        group by category) as t
+    </select>
+
+    <select id="getFileCount" parameterType="String" resultType="java.lang.Integer">
+        select count(*) from (SELECT *
+        from issueTracker.clone_location
+        <where>
+
+            <if test="commit_id != null and commit_id != '' ">
+                and commit_id = #{commit_id}
+            </if>
+
+        </where>
+        group by file_path) as t
+    </select>
+
+    <select id="getCloneNum" parameterType="String" resultType="String">
+        SELECT clone_num
+        from issueTracker.clone_location
+        <where>
+            <trim prefixOverrides="and">
+                <if test="commit_id != null and commit_id != '' ">
+                    and commit_id = #{commit_id}
+                </if>
+            </trim>
+        </where>
+    </select>
 </mapper>

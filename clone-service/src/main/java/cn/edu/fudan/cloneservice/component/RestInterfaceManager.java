@@ -1,5 +1,6 @@
 package cn.edu.fudan.cloneservice.component;
 
+import cn.edu.fudan.cloneservice.dao.UserInfoDTO;
 import cn.edu.fudan.cloneservice.domain.CommitInfo;
 import cn.edu.fudan.cloneservice.domain.ResponseBean;
 import com.alibaba.fastjson.JSONObject;
@@ -10,7 +11,10 @@ import org.springframework.web.client.RestTemplate;
 import lombok.extern.slf4j.Slf4j;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+
+import static org.reflections.Reflections.log;
 
 /**
  * @author WZY
@@ -32,7 +36,8 @@ public class RestInterfaceManager {
     private String issueServicePath;
     @Value("${measure.service.path}")
     private String measureServicePath;
-
+    @Value("${account.service.path}")
+    private String accountServicePath;
     @Autowired
     private RestTemplate restTemplate;
 
@@ -104,6 +109,22 @@ public class RestInterfaceManager {
             }
         }
         return addLines;
+    }
+
+    public UserInfoDTO getUserInfoByToken(String token) {
+        Objects.requireNonNull(token);
+        ResponseBean result = restTemplate.getForObject(accountServicePath + "/user/right/" + token, ResponseBean.class);
+        if (result == null) {
+            log.error("Response is null");
+            return null;
+        }
+
+        if (result.getCode() != 200) {
+            log.error(result.getMsg());
+            return null;
+        }
+        Map<String,Object> data =  (Map<String, Object>) result.getData();
+        return new UserInfoDTO(token, (String) data.get("uuid"), (Integer) data.get("right"));
     }
 
 }

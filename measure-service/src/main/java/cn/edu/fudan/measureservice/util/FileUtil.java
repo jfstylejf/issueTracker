@@ -8,6 +8,7 @@ public class FileUtil {
 
     private static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().contains("win");
     private static final String WINDOWS_SEPARATOR = "\\\\";
+    private static final String SINGLE_WINDOWS_SEPARATOR = "\\";
     private static final String LINUX_SEPARATOR = "/";
     public static String pathJoint(String prefix, String postfix) {
         return getExecutablePath(prefix) + postfix;
@@ -36,6 +37,9 @@ public class FileUtil {
         }
         if (IS_WINDOWS && source.contains(LINUX_SEPARATOR)) {
             return source.replace(LINUX_SEPARATOR,WINDOWS_SEPARATOR);
+        }
+        if(IS_WINDOWS && source.contains(SINGLE_WINDOWS_SEPARATOR)) {
+            return source.replace(SINGLE_WINDOWS_SEPARATOR,WINDOWS_SEPARATOR);
         }
         return source;
     }

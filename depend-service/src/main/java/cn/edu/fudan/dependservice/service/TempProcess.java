@@ -10,6 +10,7 @@ import cn.edu.fudan.common.scan.ToolScan;
 import cn.edu.fudan.dependservice.domain.RepoRestManager;
 import cn.edu.fudan.dependservice.mapper.GroupMapper;
 import cn.edu.fudan.dependservice.service.impl.ToolScanImpl;
+import cn.edu.fudan.dependservice.service.impl.ToolScanImplPara;
 import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +26,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 @Data
-//@Service
+@Service
 public class TempProcess implements CommonScanService {
     private static final Logger log = LoggerFactory.getLogger(CommonScanProcess.class);
     private static final String KEY_DELIMITER = "-";
@@ -52,7 +53,7 @@ public class TempProcess implements CommonScanService {
     private final Short lock = 1;
     protected ToolScan getToolScan(String tool) {
         //todo retur tool by tool name
-        return applicationContext.getBean(ToolScanImpl.class);
+        return applicationContext.getBean(ToolScanImplPara.class);
     }
     protected String[] getToolsByRepo(String repoUuid) {
         return new String[]{"ToolScanImpl"};
@@ -214,23 +215,6 @@ public class TempProcess implements CommonScanService {
                 }
                 log.warn("thread:{} stopped", threadName);
             }
-
-//            for (String commit : toScanCommitList) {
-//                //
-//
-//                specificTool.prepareForOneScan(commit);
-//                success = specificTool.scanOneCommit(commit);
-//                specificTool.cleanUpForOneScan(commit);
-//                scannedCommitCount++;
-//                if(curThread.isInterrupted()){
-//                    synchronized (lock) {
-//                        scanStatusMap.remove(threadName);
-//                    }
-//                    log.warn("thread:{} stopped", threadName);
-//                    break;
-//                }
-//                break;
-//            }
             specificTool.cleanUpForScan();
             repoScan.setStatus(success ? ScanInfo.Status.COMPLETE.getStatus(): ScanInfo.Status.FAILED.getStatus());
             repoScan.setEndScanTime(new Date());

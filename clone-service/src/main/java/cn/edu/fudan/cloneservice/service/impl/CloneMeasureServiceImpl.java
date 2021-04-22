@@ -2,10 +2,7 @@ package cn.edu.fudan.cloneservice.service.impl;
 
 import cn.edu.fudan.cloneservice.component.RestInterfaceManager;
 import cn.edu.fudan.cloneservice.dao.*;
-import cn.edu.fudan.cloneservice.domain.CloneInfo;
-import cn.edu.fudan.cloneservice.domain.CloneMeasure;
-import cn.edu.fudan.cloneservice.domain.CloneMessage;
-import cn.edu.fudan.cloneservice.domain.CommitChange;
+import cn.edu.fudan.cloneservice.domain.*;
 import cn.edu.fudan.cloneservice.dao.CloneLocationDao;
 import cn.edu.fudan.cloneservice.domain.clone.CloneLocation;
 import cn.edu.fudan.cloneservice.mapper.CloneInfoMapper;
@@ -14,13 +11,15 @@ import cn.edu.fudan.cloneservice.mapper.RepoCommitMapper;
 import cn.edu.fudan.cloneservice.service.CloneMeasureService;
 import cn.edu.fudan.cloneservice.thread.ForkJoinRecursiveTask;
 import cn.edu.fudan.cloneservice.util.ComputeUtil;
+import cn.edu.fudan.cloneservice.util.DateTimeUtil;
 import cn.edu.fudan.cloneservice.util.JGitUtil;
+import cn.edu.fudan.cloneservice.util.UserUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-
-import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -40,12 +39,12 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
     private final CloneMeasureMapper cloneMeasureMapper;
     @Autowired
     private final CloneInfoMapper cloneInfoMapper;
+    private final UserUtil userUtil;
 
     @Override
     public List<CloneMessage> getCloneMeasure(String repositoryId, String developers, String start, String end, String page, String size, Boolean isAsc, String order) {
 
         List<CloneMessage> cloneMessages = new ArrayList<>();
-
         if (StringUtils.isEmpty(developers)) {
             if (StringUtils.isEmpty(repositoryId)) {
                 log.error("repositoryId and developer is null");
@@ -318,7 +317,7 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
     }
 
     @Autowired
-    public CloneMeasureServiceImpl(RepoCommitMapper repoCommitMapper, RestInterfaceManager restInterfaceManager, CloneMeasureDao cloneMeasureDao, CloneInfoDao cloneInfoDao, CloneLocationDao cloneLocationDao, ForkJoinRecursiveTask forkJoinRecursiveTask, CloneMeasureMapper cloneMeasureMapper, CloneInfoMapper cloneInfoMapper) {
+    public CloneMeasureServiceImpl(RepoCommitMapper repoCommitMapper, RestInterfaceManager restInterfaceManager, CloneMeasureDao cloneMeasureDao, CloneInfoDao cloneInfoDao, CloneLocationDao cloneLocationDao, ForkJoinRecursiveTask forkJoinRecursiveTask, CloneMeasureMapper cloneMeasureMapper, CloneInfoMapper cloneInfoMapper, UserUtil userUtil) {
         this.repoCommitMapper = repoCommitMapper;
         this.restInterfaceManager = restInterfaceManager;
         this.cloneMeasureDao = cloneMeasureDao;
@@ -327,6 +326,7 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
         this.forkJoinRecursiveTask = forkJoinRecursiveTask;
         this.cloneMeasureMapper = cloneMeasureMapper;
         this.cloneInfoMapper = cloneInfoMapper;
+        this.userUtil = userUtil;
     }
 
     List<String> split(String repositoryId) {
@@ -347,7 +347,7 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
 
     @Override
     public List<CloneMessage> sortByOrder(List<CloneMessage> cloneMessages, String order) {
-        if(cloneMessages.isEmpty()) return new ArrayList<>();
+        if (cloneMessages.isEmpty()) return new ArrayList<>();
         switch (order) {
             case "increasedCloneLinesRate":
                 Collections.sort(cloneMessages);
@@ -389,4 +389,92 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
         }
         return cloneMessages;
     }
+
+    @Override
+    public List<CloneGroupSum> getCloneGroupsSum(String projectId, String since, String until, String interval, String token) {
+        List<String> projectList = getProjectIds(projectId, token);
+        List<LocalDate> timeList = getTimeList(since, until, interval);
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        List<CloneGroupSum> results = new ArrayList<>();
+        for(String aProjectId: projectList) {
+            String projectName = repoCommitMapper.getProjectNameByProjectId(aProjectId);
+            timeList.forEach(a -> results.add(new CloneGroupSum(projectName, aProjectId, a.format(dtf), cloneLocationDao.getCloneLocationGroupSum(repoCommitMapper.getRepoIdByProjectId(aProjectId), a.format(dtf)))));
+        }
+        return results;
+    }
+
+    @Override
+    public List<CloneOverallView> getCloneOverallViews(String projectId, String date, String interval, String token) {
+        List<String> projectList = getProjectIds(projectId, token);
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDate localDate = LocalDate.parse(date, dtf);
+        LocalDate initDate = DateTimeUtil.initEndTimeByInterval(localDate, interval);
+        List<CloneOverallView> results = new ArrayList<>();
+        for(String aProjectId: projectList) {
+            String projectName = repoCommitMapper.getProjectNameByProjectId(aProjectId);
+            results.addAll(cloneLocationDao.getCloneOverall(repoCommitMapper.getRepoIdByProjectId(aProjectId), initDate.format(dtf), aProjectId, projectName));
+        }
+        return results;
+    }
+
+    private List<String> getProjectIds(String projectId, String token) {
+        List<String> projectIds = new ArrayList<>();
+        if(StringUtils.isEmpty(projectId)) {
+            List<Integer> temp = repoCommitMapper.getProjectIds();
+            temp.forEach(a -> projectIds.add(a.toString()));
+        }else{
+            projectIds.add(projectId);
+        }
+        List<Integer> projectsWithRightTemp = userUtil.getVisibleProjectByToken(token);
+        List<String> projectsWithRight = new ArrayList<>();
+        if(!StringUtils.isEmpty(projectsWithRightTemp)) {
+            projectsWithRightTemp.forEach(a -> projectsWithRight.add(a.toString()));
+        }
+        return projectIds.stream().filter(projectsWithRight::contains).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<CloneDetail> getCloneDetails(String projectId, String commitId, String token){
+        List<String> projectList = getProjectIds(projectId, token);
+        List<CloneDetail> results = new ArrayList<>();
+        for(String aProjectId: projectList) {
+            String projectName = repoCommitMapper.getProjectNameByProjectId(aProjectId);
+            String repoId = repoCommitMapper.getRepoIdByCommitId(commitId);
+            cloneLocationDao.getCloneDetail(repoId, projectId, projectName, commitId);
+            results.addAll(cloneLocationDao.getCloneDetail(repoId, projectId, projectName, commitId));
+        }
+        return results;
+    };
+
+    private List<LocalDate> getTimeList(String since, String until, String interval) {
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDate endTime = LocalDate.parse(until, dtf);
+        LocalDate beginTime;
+        // fixme since为空时默认处理
+        if (since != null && !"".equals(since)) {
+            beginTime = LocalDate.parse(since, dtf);
+        } else {
+            beginTime = endTime.minusWeeks(1);
+        }
+        beginTime = DateTimeUtil.initBeginTimeByInterval(beginTime, interval);
+        endTime = DateTimeUtil.initEndTimeByInterval(endTime, interval);
+        List<LocalDate> time = new ArrayList<>();
+
+        while (true) {
+            assert beginTime != null;
+            assert endTime != null;
+            if (!beginTime.isBefore(endTime)) break;
+            time.add(beginTime);
+            LocalDate tempTime = DateTimeUtil.selectTimeIncrementByInterval(beginTime, interval);
+            if (tempTime == null) {
+                break;
+            }
+            if (tempTime.isAfter(endTime)) {
+                tempTime = endTime;
+            }
+            beginTime = tempTime;
+        }
+        return time;
+    }
 }
+

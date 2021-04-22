@@ -281,19 +281,45 @@ public class ProjectController {
     })
     @PutMapping(value = {"/repository/recycle"})
     public ResponseBean updateRecycleStatus(HttpServletRequest request,
-                                            @RequestParam("recycled") int recycled,
-                                            @RequestParam("repo_uuid") String repoUuid) {
+                                            @RequestParam("repo_uuid") String repoUuid,
+                                            @RequestParam("recycled") int recycled) {
         try {
             SubRepository repository = accountRepository.getRepoInfoByRepoId(repoUuid);
             if (repository == null) {
                 return new ResponseBean<>(412, "repo not exist", null);
             }
-            projectControl.updateRecycleStatus(request.getHeader(TOKEN), recycled, repoUuid);
+            projectControl.updateRecycleStatus(request.getHeader(TOKEN), repoUuid, recycled);
             return new ResponseBean<>(200, "update success", null);
         } catch (Exception e) {
             return new ResponseBean<>(401, "update failed :" + e.getMessage(), null);
         }
     }
+
+    @ApiOperation(value = "删除成功回调接口", httpMethod = "PUT")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "recycled", value = "库的回收状态", dataType = "int", required = true),
+            @ApiImplicitParam(name = "repo_uuid", value = "库的uuid", dataType = "String", required = true)
+    })
+    @PutMapping(value = {"/repo"})
+    public ResponseBean updateRecycled(HttpServletRequest request,
+                                            @RequestParam("repo_uuid") String repoUuid,
+                                            @RequestParam("service_name") String serviceName) throws Exception {
+        try {
+            SubRepository repository = accountRepository.getRepoInfoByRepoId(repoUuid);
+            if (repository == null) {
+                return new ResponseBean<>(412, "repo not exist", null);
+            }
+            if(serviceName == null){
+                return new ResponseBean<>(412, "please input service name!", null);
+            }
+            projectControl.updateRecycled(request.getHeader(TOKEN), repoUuid, serviceName);
+            return new ResponseBean<>(200, "update success", null);
+        } catch (Exception e) {
+            return new ResponseBean<>(401, "update failed :" + e.getMessage(), null);
+        }
+    }
+
+
 
     @Autowired
     public void setAccountRepository(AccountRepositoryService accountRepository) {
