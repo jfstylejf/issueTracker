@@ -433,6 +433,18 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
         return projectIds.stream().filter(projectsWithRight::contains).collect(Collectors.toList());
     }
 
+    @Override
+    public List<CloneDetail> getCloneDetails(String projectId, String commitId, String token){
+        List<String> projectList = getProjectIds(projectId, token);
+        List<CloneDetail> results = new ArrayList<>();
+        for(String aProjectId: projectList) {
+            String projectName = repoCommitMapper.getProjectNameByProjectId(aProjectId);
+            String repoId = repoCommitMapper.getRepoIdByCommitId(commitId);
+            cloneLocationDao.getCloneDetail(repoId, projectId, projectName, commitId);
+            results.addAll(cloneLocationDao.getCloneDetail(repoId, projectId, projectName, commitId));
+        }
+        return results;
+    };
 
     private List<LocalDate> getTimeList(String since, String until, String interval) {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");

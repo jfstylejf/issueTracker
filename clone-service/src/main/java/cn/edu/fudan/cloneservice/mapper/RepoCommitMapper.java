@@ -1,5 +1,6 @@
 package cn.edu.fudan.cloneservice.mapper;
 
+import lombok.Setter;
 import org.apache.ibatis.annotations.Select;
 import org.springframework.stereotype.Repository;
 
@@ -79,6 +80,9 @@ public interface RepoCommitMapper {
 
     @Select("SELECT id FROM issueTracker.project")
     List<Integer> getProjectIds();
+
+    @Select("SELECT repo_uuid from issueTracker.commit_view where commit_id = #{commit_id} limit 1;")
+    String getRepoIdByCommitId(String commit_id);
 
     @Select("SELECT project_name FROM issueTracker.project where id = #{project_id};")
     String getProjectNameByProjectId(String projectId);

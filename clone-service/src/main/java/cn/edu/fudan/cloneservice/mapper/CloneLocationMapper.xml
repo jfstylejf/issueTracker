@@ -60,7 +60,7 @@
         delete from clone_location where repo_id=#{repo_id}
     </delete>
 
-    <select id="getCloneLocationsTest" parameterType="String">
+    <select id="getCloneLocationsTest" parameterType="String" resultMap="cloneLocation">
         select * from issueTrackerTest.clone_location where repo_id=#{repo_id} and commit_id=#{commit_id}
     </select>
 

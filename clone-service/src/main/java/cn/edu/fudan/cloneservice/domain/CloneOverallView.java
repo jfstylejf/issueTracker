@@ -16,4 +16,5 @@ public class CloneOverallView {
     private int fileSum;
     private int codeLengthAverage;
     private int cloneType;
+    private String commitId;
 }

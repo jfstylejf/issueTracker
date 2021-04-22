@@ -54,4 +54,6 @@ public interface CloneMeasureService {
     List<CloneGroupSum> getCloneGroupsSum(String projectId, String since, String until, String interval, String token);
 
     List<CloneOverallView> getCloneOverallViews(String projectId, String date, String interval, String token);
+
+    List<CloneDetail> getCloneDetails(String projectId, String commitId, String token);
 }
