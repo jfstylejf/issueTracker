@@ -276,25 +276,6 @@ public void testGetCommitStandardDetailIntegratedByProject() throws Exception {
 //TODO: Test goes here... 
 } 
 
-/** 
-* 
-* Method: setMeasureDeveloperServiceImpl(MeasureDeveloperService measureDeveloperServiceImpl) 
-* 
-*/ 
-@Test
-public void testSetMeasureDeveloperServiceImpl() throws Exception { 
-//TODO: Test goes here... 
-} 
-
-/** 
-* 
-* Method: setMethodMeasureAspect(MethodMeasureAspect methodMeasureAspect) 
-* 
-*/ 
-@Test
-public void testSetMethodMeasureAspect() throws Exception { 
-//TODO: Test goes here... 
-} 
 
 /** 
 * 

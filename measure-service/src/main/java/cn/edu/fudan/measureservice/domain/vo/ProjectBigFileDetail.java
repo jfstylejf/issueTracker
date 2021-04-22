@@ -19,7 +19,7 @@ public class ProjectBigFileDetail {
     /**
      * 项目id
      */
-    private int projectId;
+    private String projectId;
     /**
      * 项目名称
      */
