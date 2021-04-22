@@ -313,12 +313,16 @@ public class MeasureDeveloperController {
                                                         @RequestParam(required = false, defaultValue = "1")int page,
                                                         @RequestParam(required = false, defaultValue = "10")int ps,
                                                         @RequestParam(required = false, defaultValue = "true") boolean asc,
+                                                        @RequestParam(required = false, defaultValue = "false") boolean valid,
                                                         @RequestParam(required = false, defaultValue = "") String order,
                                                         HttpServletRequest request) {
         try {
             until = timeProcess(until);
             String token = request.getHeader("token");
             List<ProjectCommitStandardDetail> projectCommitStandardDetailList = measureDeveloperService.getCommitStandardDetailIntegratedByProject(projectNameList,repoUuidList,since,until,token);
+            if (valid) {
+                projectCommitStandardDetailList.removeIf(projectCommitStandardDetail -> (!projectCommitStandardDetail.isValid()));
+            }
             Collections.sort(projectCommitStandardDetailList, (o1, o2) -> {
                 if(asc) {
                     return o1.getCommitTime().compareTo(o2.getCommitTime());
