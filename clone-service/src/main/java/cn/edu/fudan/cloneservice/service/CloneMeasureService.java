@@ -48,7 +48,10 @@ public interface CloneMeasureService {
      * @param since
      * @param until
      * @param interval
+     * @param token
      * @return Map<projectId, Map<date, num>>
      */
     List<CloneGroupSum> getCloneGroupsSum(String projectId, String since, String until, String interval, String token);
+
+    List<CloneOverallView> getCloneOverallViews(String projectId, String date, String interval, String token);
 }

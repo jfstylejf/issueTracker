@@ -3,7 +3,7 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.edu.fudan.issueservice.mapper.IssueRepoMapper">
 
-    <resultMap id="issueRepo" type="IssueRepo">
+    <resultMap id="issueRepo" type="cn.edu.fudan.issueservice.domain.dbo.IssueRepo">
         <id property="uuid" column="uuid"/>
         <result property="repoId" column="repo_uuid"/>
         <result property="branch" column="branch"/>
@@ -19,7 +19,7 @@
         <result property="endScanTime" column="end_scan_time"/>
     </resultMap>
 
-    <insert id="insertOneIssueRepo" parameterType="IssueRepo">
+    <insert id="insertOneIssueRepo" parameterType="cn.edu.fudan.issueservice.domain.dbo.IssueRepo">
         insert into issue_repo
         (
             uuid,
@@ -54,7 +54,7 @@
         )
     </insert>
 
-    <update id="updateIssueRepo" parameterType="IssueRepo">
+    <update id="updateIssueRepo" parameterType="cn.edu.fudan.issueservice.domain.dbo.IssueRepo">
         update issue_repo
         <trim prefix="set" suffixOverrides=",">
             <if test="totalCommitCount != null and totalCommitCount != ''">

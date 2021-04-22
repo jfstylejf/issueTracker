@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.edu.fudan.issueservice.mapper.IssueTypeMapper">
-    <resultMap id="issueTypeWithoutDescription" type="IssueType">
+    <resultMap id="issueTypeWithoutDescription" type="cn.edu.fudan.issueservice.domain.dbo.IssueType">
         <id property="uuid" column="uuid"/>
         <result property="type" column="type"/>
         <result property="specificationSource" column="specification_source"/>

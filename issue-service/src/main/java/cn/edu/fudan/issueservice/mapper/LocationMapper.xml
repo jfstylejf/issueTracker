@@ -3,7 +3,7 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.edu.fudan.issueservice.mapper.LocationMapper">
 
-    <resultMap id="location" type="Location">
+    <resultMap id="location" type="cn.edu.fudan.issueservice.domain.dbo.Location">
         <id property="uuid" column="uuid"/>
         <result property="startLine" column="start_line"/>
         <result property="endLine" column="end_line"/>
@@ -59,7 +59,7 @@
         </foreach>
     </delete>
 
-    <select id="getLocations" parameterType="Location" resultMap="location">
+    <select id="getLocations" parameterType="cn.edu.fudan.issueservice.domain.dbo.Location" resultMap="location">
         SELECT *
         FROM location
         WHERE rawIssue_uuid = #{uuid}
