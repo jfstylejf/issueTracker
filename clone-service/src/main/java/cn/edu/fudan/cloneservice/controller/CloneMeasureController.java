@@ -89,21 +89,41 @@ public class CloneMeasureController {
     }
 
     @GetMapping(value = {"/clone/overall-view"})
-    public ResponseBean<List<CloneOverallView>> getCloneOverallViews(@RequestParam(value = "project_ids", defaultValue = "") String projectIds,
-                                                                     @RequestParam(value = "interval", defaultValue = "week") String interval,
-                                                                     @RequestParam(value = "date") String date,
+    public ResponseBean<Object> getCloneOverallViews(@RequestParam(value = "project_ids", defaultValue = "") String projectIds,
+                                                                     @RequestParam(value = "until") String until,
+                                                                     @RequestParam(value = "page", required = false, defaultValue = "1") String page,
+                                                                     @RequestParam(value = "ps", required = false, defaultValue = "5") String size,
+                                                                     @RequestParam(value = "asc", required = false) Boolean isAsc,
                                                                      HttpServletRequest httpServletRequest) {
         try {
             String token = httpServletRequest.getHeader("token");
-            if (StringUtils.isEmpty(date)) {
+            if (StringUtils.isEmpty(until)) {
                 Date today = new Date();
                 SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-                date = simpleDateFormat.format(today);
+                until = simpleDateFormat.format(today);
             }
-            List<CloneOverallView> cloneOverallViews = cloneMeasureService.getCloneOverallViews(projectIds, date, interval, token);
+            List<CloneOverallView> cloneOverallViews = cloneMeasureService.getCloneOverallViews(projectIds, until, token);
 
+            List<CloneOverallView> result = new ArrayList<>();
+            if (page != null && size != null) {
+                int pageDigit = Integer.parseInt(page);
+                int sizeDigit = Integer.parseInt(size);
+                if (isAsc != null && !isAsc) {
+                    Collections.reverse(cloneOverallViews);
+                }
+                int index = (pageDigit - 1) * sizeDigit;
+                while ((index < cloneOverallViews.size()) && (index < pageDigit * sizeDigit)) {
+                    result.add(cloneOverallViews.get(index));
+                    index += 1;
+                }
+            }
+            Map<String, Object> data = new HashMap<>();
+            data.put("page", page);
+            data.put("total", cloneOverallViews.size() / Integer.parseInt(size) + 1);
+            data.put("records", cloneOverallViews.size());
+            data.put("rows", result);
             if (!cloneOverallViews.isEmpty()) {
-                return new ResponseBean<>(200, "success", cloneOverallViews);
+                return new ResponseBean<>(200, "success", data);
             } else {
                 return new ResponseBean<>(401, "", null);
             }

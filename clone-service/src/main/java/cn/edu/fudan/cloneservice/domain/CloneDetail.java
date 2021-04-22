@@ -6,17 +6,19 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public class CloneDetail implements Comparable<CloneDetail>{
+    private String uuid;
     private String projectName;
     private String projectId;
-    private String repository;
+    private String repoUuid;
     private String commitId;
+    private String filePath;
     private int groupId;
     private String className;
     private int startLine;
     private int endLine;
     private int lineCount;
     private String detail;
-    private int type;
+    private int cloneType;
 
 
     @Override

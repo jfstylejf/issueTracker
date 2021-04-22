@@ -404,15 +404,14 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
     }
 
     @Override
-    public List<CloneOverallView> getCloneOverallViews(String projectId, String date, String interval, String token) {
+    public List<CloneOverallView> getCloneOverallViews(String projectId, String until, String token) {
         List<String> projectList = getProjectIds(projectId, token);
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDate localDate = LocalDate.parse(date, dtf);
-        LocalDate initDate = DateTimeUtil.initEndTimeByInterval(localDate, interval);
+        LocalDate localDate = LocalDate.parse(until, dtf);
         List<CloneOverallView> results = new ArrayList<>();
         for(String aProjectId: projectList) {
             String projectName = repoCommitMapper.getProjectNameByProjectId(aProjectId);
-            results.addAll(cloneLocationDao.getCloneOverall(repoCommitMapper.getRepoIdByProjectId(aProjectId), initDate.format(dtf), aProjectId, projectName));
+            results.addAll(cloneLocationDao.getCloneOverall(repoCommitMapper.getRepoIdByProjectId(aProjectId), localDate.format(dtf), aProjectId, projectName));
         }
         return results;
     }
@@ -456,21 +455,21 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
         } else {
             beginTime = endTime.minusWeeks(1);
         }
-        beginTime = DateTimeUtil.initBeginTimeByInterval(beginTime, interval);
+        beginTime = DateTimeUtil.initEndTimeByInterval(beginTime, interval);
         endTime = DateTimeUtil.initEndTimeByInterval(endTime, interval);
         List<LocalDate> time = new ArrayList<>();
 
         while (true) {
             assert beginTime != null;
             assert endTime != null;
-            if (!beginTime.isBefore(endTime)) break;
+            if (!(beginTime.isBefore(endTime) || beginTime.isEqual(endTime))) break;
             time.add(beginTime);
             LocalDate tempTime = DateTimeUtil.selectTimeIncrementByInterval(beginTime, interval);
             if (tempTime == null) {
                 break;
             }
             if (tempTime.isAfter(endTime)) {
-                tempTime = endTime;
+                break;
             }
             beginTime = tempTime;
         }
