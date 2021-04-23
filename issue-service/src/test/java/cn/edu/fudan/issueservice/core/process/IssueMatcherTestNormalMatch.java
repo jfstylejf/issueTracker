@@ -76,7 +76,7 @@ public class IssueMatcherTestNormalMatch extends IssueServiceApplicationTest {
 
         normalMatch.setAccessible(true);
 
-        Mockito.when(AstParserUtil.getAllMethodAndFieldName("/Users/beethoven/Desktop/saic/forTest/src/main/java/application/issue/Issue2.java"))
+        Mockito.when(AstParserUtil.getAllMethodAndFieldName(REPO_PATH + "/src/main/java/application/issue/Issue2.java"))
                 .thenReturn(
                         new HashSet<>() {{
                             add("volee");
