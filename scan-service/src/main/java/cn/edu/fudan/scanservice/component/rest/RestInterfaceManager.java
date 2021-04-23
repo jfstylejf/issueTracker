@@ -8,11 +8,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import java.lang.reflect.Field;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 
@@ -134,6 +135,15 @@ public class RestInterfaceManager {
         }
 
         return restTemplate.getForObject(path , JSONObject.class);
+    }
+
+    public boolean deleteRecall(String repoId, String token) {
+        String path =  projectServicePath + "/repo?service_name=SCAN&repo_uuid=" + repoId;
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("token", token);
+        HttpEntity<HttpHeaders> request = new HttpEntity<>(headers);
+        ResponseEntity<JSONObject> responseEntity = restTemplate.exchange(path, HttpMethod.PUT, request, JSONObject.class);
+        return Objects.requireNonNull(responseEntity.getBody()).getIntValue("code") == 200;
     }
 
     //---------------------------------------------code service---------------------------------------------------------
