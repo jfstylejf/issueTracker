@@ -900,6 +900,8 @@ public class MeasureDeveloperService {
         List<String> checkedProjectList = projectDao.mergeBetweenProject(new ArrayList<>(queryProjectList.keySet()),visibleProjectList);
 
         LocalDate endTime = LocalDate.parse(until,dtf);
+        // 按照前端传值， 不加 1
+        endTime = endTime.minusDays(1);
         LocalDate beginTime;
         if (since!=null && !"".equals(since)) {
             beginTime = LocalDate.parse(since,dtf);
@@ -985,7 +987,7 @@ public class MeasureDeveloperService {
         }else {
             visibleProjectInvolvedRepoList = projectDao.involvedRepoProcess(null,token);
         }
-        List<String> visibleRepoList = new ArrayList<>();
+        List<String> visibleRepoList;
         if (repoUuidList!=null && !"".equals(repoUuidList)) {
             List<String> queryRepoList = Arrays.asList(repoUuidList.split(split));
             visibleRepoList = projectDao.mergeBetweenRepo(queryRepoList,visibleProjectInvolvedRepoList);
@@ -1079,6 +1081,8 @@ public class MeasureDeveloperService {
          List<String> checkedProjectList = projectDao.mergeBetweenProject(new ArrayList<>(queryProjectList.keySet()),visibleProjectList);
 
          LocalDate endTime = LocalDate.parse(until,dtf);
+         // 这边最后一天还是按照前端传值，不加 1
+         endTime = endTime.minusDays(1);
          LocalDate beginTime;
          if (since!=null && !"".equals(since)) {
              beginTime = LocalDate.parse(since,dtf);
@@ -1162,7 +1166,7 @@ public class MeasureDeveloperService {
              int projectId = projectDao.getProjectIdByName(projectName);
              List<ProjectBigFileDetail> projectBigFileDetailList = measureDao.getCurrentBigFileInfo(Collections.singletonList(repoUuid),null);
              for (ProjectBigFileDetail projectBigFileDetail : projectBigFileDetailList) {
-                 projectBigFileDetail.setProjectId(projectId);
+                 projectBigFileDetail.setProjectId(String.valueOf(projectId));
                  projectBigFileDetail.setProjectName(projectName);
                  projectBigFileDetail.setRepoName(repoName);
              }
