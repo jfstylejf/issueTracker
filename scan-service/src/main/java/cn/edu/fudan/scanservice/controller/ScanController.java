@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
+
 /**
  * description: receive scan request and
  *             query data about scan eg scan status, scan commits
@@ -83,10 +85,12 @@ public class ScanController {
     })
     @DeleteMapping(value = {"/scan/{repo_uuid}"})
     @CrossOrigin
-    public ResponseBean deleteOneRepo(@PathVariable(name = "repo_uuid") String repoId) {
+    public ResponseBean deleteOneRepo(@PathVariable(name = "repo_uuid") String repoId,
+                                      HttpServletRequest request) {
 
         try {
-            scanInfoService.deleteOneRepo(repoId);
+            String token = request.getHeader("token");
+            scanInfoService.deleteOneRepo(repoId, token);
             return new ResponseBean<>(HttpStatus.OK.value(), "delete success!", null);
         } catch (Exception e) {
             return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(), "delete failed!", null);

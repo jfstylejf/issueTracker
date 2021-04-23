@@ -55,4 +55,8 @@
         select * from scan where repo_uuid = #{repo_id} ;
     </select>
 
+    <select id="getScanCountByRepoId" parameterType="String" resultType="Integer">
+        select count(*) from scan where repo_uuid = #{repo_id} ;
+    </select>
+
 </mapper>

@@ -20,6 +20,7 @@ import org.springframework.util.StringUtils;
 import java.security.acl.LastOwnerException;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author fancying
@@ -186,8 +187,16 @@ public class ScanInfoServiceImpl implements ScanInfoService {
 
     @Override
     @Async("taskExecutor")
-    public void deleteOneRepo(String repoId) {
+    public void deleteOneRepo(String repoId, String token) throws InterruptedException {
         scanDao.deleteScanByRepoId(repoId);
+        for (int i = 0; i < 30; i++) {
+            if (scanDao.checkDeleteSuccessful(repoId)) {
+                if(restInterfaceManager.deleteRecall(repoId, token)){
+                    return;
+                }
+            }
+            TimeUnit.SECONDS.sleep(1);
+        }
     }
 
     @Autowired

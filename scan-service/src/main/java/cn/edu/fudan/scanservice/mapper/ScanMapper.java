@@ -14,4 +14,6 @@ public interface ScanMapper {
     void updateOneScan(Scan scan);
 
     Scan getScanByRepoId(@Param("repo_id") String repoId);
+
+    int getScanCountByRepoId(@Param("repo_id") String repoId);
 }
