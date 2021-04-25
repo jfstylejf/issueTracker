@@ -17,8 +17,12 @@ import cn.edu.fudan.issueservice.util.CompileUtil;
 import cn.edu.fudan.issueservice.util.DateTimeUtil;
 import cn.edu.fudan.issueservice.util.DirExplorer;
 import cn.edu.fudan.issueservice.util.JGitHelper;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.aspectj.weaver.tools.ISupportsMessageContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
@@ -40,6 +44,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 public class ToolInvoker {
 
     private IssueScanDao issueScanDao;
+    private IssueAnalyzerDao issueAnalyzerDao;
     private RestInterfaceManager restInvoker;
     private ApplicationContext applicationContext;
     private IssueRepoDao issueRepoDao;
@@ -191,48 +196,84 @@ public class ToolInvoker {
         String repoId = repoResourceDTO.getRepoId();
         String repoPath = repoResourceDTO.getRepoPath();
         String commit = issueScan.getCommitId();
-        if (analyzer instanceof SonarQubeBaseAnalyzer) {
-            //0. 先清除编译生成的target文件
-            long startTime = System.currentTimeMillis();
-            DirExplorer.deleteRedundantTarget(repoPath);
-            long deleteTargetTime = System.currentTimeMillis();
-            log.info("delete target time --> {}", (deleteTargetTime - startTime) / 1000);
 
-            //1. 先判断是否可编译 以及是否编译成功
-            if (!CompileUtil.isCompilable(repoPath)) {
-                log.error("compile failed ! ");
-                issueScan.setStatus(ScanStatusEnum.COMPILE_FAILED.getType());
+        // 用于匹配的rawIssues 要么从缓存库中获取 要么重新调用工具获取
+        List<RawIssue> analyzeRawIssues;
+
+        // 首先判断数据库是否有扫描工具之前的缓存数据
+        JSONObject analyzeCache = issueAnalyzerDao.getAnalyzeResultByRepoUuidCommitIdTool(repoId, commit, analyzer.getToolName());
+        // 如果没有缓存数据，则进行工具调用
+        if (analyzeCache == null) {
+            // 初始化IssueAnalyzer，用于记录缓存数据
+            IssueAnalyzer issueAnalyzer = IssueAnalyzer.initIssueAnalyzer(repoId, commit, analyzer.getToolName());
+            log.info("There is no cache data, need to invoke tool!");
+            if (analyzer instanceof SonarQubeBaseAnalyzer) {
+                //0. 先清除编译生成的target文件
+                long startTime = System.currentTimeMillis();
+                DirExplorer.deleteRedundantTarget(repoPath);
+                long deleteTargetTime = System.currentTimeMillis();
+                log.info("delete target time --> {}", (deleteTargetTime - startTime) / 1000);
+
+                //1. 先判断是否可编译 以及是否编译成功
+                if (!CompileUtil.isCompilable(repoPath)) {
+                    log.error("compile failed ! ");
+                    issueScan.setStatus(ScanStatusEnum.COMPILE_FAILED.getType());
+                    // 0表示缓存失败
+                    issueAnalyzer.setInvokeResult(0);
+                    return;
+                }
+                long compileTime = System.currentTimeMillis();
+                log.info("compile time --> {}, compile success ! ", (compileTime - deleteTargetTime) / 1000);
+            }
+            long compileTime2 = System.currentTimeMillis();
+
+            //2. 调用工具进行扫描
+            boolean invokeToolResult = analyzer.invoke(repoId, repoPath, commit);
+            if (!invokeToolResult) {
+                long invokeToolTime = System.currentTimeMillis();
+                log.info("invoke tool --> {}", (invokeToolTime - compileTime2) / 1000);
+                log.error("invoke tool failed ! ");
+                issueScan.setStatus(ScanStatusEnum.INVOKE_TOOL_FAILED.getType());
+                // 0表示缓存失败
+                issueAnalyzer.setInvokeResult(0);
                 return;
             }
-            long compileTime = System.currentTimeMillis();
-            log.info("compile time --> {}, compile success ! ", (compileTime - deleteTargetTime) / 1000);
-        }
-        long compileTime2 = System.currentTimeMillis();
-
-        //2. 调用工具进行扫描
-        boolean invokeToolResult = analyzer.invoke(repoId, repoPath, commit);
-        if (!invokeToolResult) {
             long invokeToolTime = System.currentTimeMillis();
             log.info("invoke tool --> {}", (invokeToolTime - compileTime2) / 1000);
-            log.error("invoke tool failed ! ");
-            issueScan.setStatus(ScanStatusEnum.INVOKE_TOOL_FAILED.getType());
-            return;
-        }
-        long invokeToolTime = System.currentTimeMillis();
-        log.info("invoke tool --> {}", (invokeToolTime - compileTime2) / 1000);
-        log.info("invoke tool success ! ");
+            log.info("invoke tool success ! ");
 
-        //3. 调用工具进行解析
-        boolean analyzeResult = analyzer.analyze(repoPath, repoId, commit);
-        if (!analyzeResult) {
-            log.error("analyze failed ! ");
-            issueScan.setStatus(ScanStatusEnum.ANALYZE_FAILED.getType());
-            return;
+            //3. 调用工具进行解析
+            boolean analyzeResult = analyzer.analyze(repoPath, repoId, commit);
+            if (!analyzeResult) {
+                log.error("analyze failed ! ");
+                issueScan.setStatus(ScanStatusEnum.ANALYZE_FAILED.getType());
+                // 0表示缓存失败
+                issueAnalyzer.setInvokeResult(0);
+                return;
+            }
+            long analyzeToolTime = System.currentTimeMillis();
+            log.info("analyze tool --> {}", (analyzeToolTime - invokeToolTime) / 1000);
+            log.info("analyze success ! ");
+            // 1表示缓存成功
+            issueAnalyzer.setInvokeResult(1);
+            analyzeRawIssues = analyzer.getResultRawIssues();
+            // 将解析好的resultRawIssues 缓存入库
+            JSONObject issueAnalyzerResult = new JSONObject();
+            issueAnalyzerResult.put("result", analyzeRawIssues);
+            issueAnalyzer.setAnalyzeResult(issueAnalyzerResult);
+            List<IssueAnalyzer> cacheData = new ArrayList<>();
+            cacheData.add(issueAnalyzer);
+            issueAnalyzerDao.insertIssueAnalyzer(cacheData);
+        } else {
+            // 有缓存数据，直接进行匹配
+            log.info("The cache data already exists, go ahead to mapping issue!");
+            // 第一步：先获取jsonArray数组
+            JSONArray resArr = analyzeCache.getJSONArray("result");
+            // 第二步：将JSON字符串转换成List集合
+            analyzeRawIssues = JSONArray.parseArray(resArr.toJSONString(), RawIssue.class) ;
         }
-        long analyzeToolTime = System.currentTimeMillis();
-        log.info("analyze tool --> {}", (analyzeToolTime - invokeToolTime) / 1000);
-        log.info("analyze success ! ");
-        List<RawIssue> analyzeRawIssues = analyzer.getResultRawIssues();
+
+
 
         //4. 缺陷匹配
         issueMatcher.setAnalyzer(analyzer);
@@ -370,5 +411,10 @@ public class ToolInvoker {
     @Autowired
     public void setIssueRepoDao(IssueRepoDao issueRepoDao) {
         this.issueRepoDao = issueRepoDao;
+    }
+
+    @Autowired
+    public void setIssueAnalyzerDao(IssueAnalyzerDao issueAnalyzerDao) {
+        this.issueAnalyzerDao = issueAnalyzerDao;
     }
 }
