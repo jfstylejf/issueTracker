@@ -1,5 +1,6 @@
 package cn.edu.fudan.cloneservice.component;
 
+import cn.edu.fudan.cloneservice.dao.UserInfoDTO;
 import cn.edu.fudan.cloneservice.domain.CommitInfo;
 import cn.edu.fudan.cloneservice.domain.ResponseBean;
 import com.alibaba.fastjson.JSONObject;
@@ -12,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+
+import static org.reflections.Reflections.log;
 
 /**
  * @author WZY

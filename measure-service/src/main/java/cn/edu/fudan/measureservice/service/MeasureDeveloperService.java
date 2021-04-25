@@ -13,6 +13,8 @@ import cn.edu.fudan.measureservice.domain.dto.DeveloperRepoInfo;
 import cn.edu.fudan.measureservice.domain.dto.Query;
 import cn.edu.fudan.measureservice.domain.dto.RepoInfo;
 import cn.edu.fudan.measureservice.domain.enums.GranularityEnum;
+import cn.edu.fudan.measureservice.domain.vo.ProjectBigFileDetail;
+import cn.edu.fudan.measureservice.domain.vo.ProjectBigFileTrendChart;
 import cn.edu.fudan.measureservice.domain.vo.ProjectCommitStandardDetail;
 import cn.edu.fudan.measureservice.domain.vo.ProjectCommitStandardTrendChart;
 import cn.edu.fudan.measureservice.mapper.RepoMeasureMapper;
@@ -30,6 +32,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -61,6 +64,7 @@ public class MeasureDeveloperService {
     private static final String Loss = "loss";
     private static final String TOOL = "sonarqube";
     private static final String split = ",";
+    private static final DecimalFormat df = new DecimalFormat("0.000");
     /**
      *
      * @param query 查询条件
@@ -879,13 +883,13 @@ public class MeasureDeveloperService {
     }
 
     /**
-     * 按照项目对开发者提交数信息聚合
+     * 按照项目对开发者提交数信息按照 interval 对查询时间 分组聚合
      * @param projectIds 查询项目列表
      * @param since 查询起始时间
      * @param until 查询截止时间
      * @param interval 聚合间隔
      * @param showDetail 是否展示明细
-     * @return
+     * @return new ArrayList<{@link ProjectCommitStandardTrendChart}>
      */
     @SneakyThrows
     public synchronized List<ProjectCommitStandardTrendChart> getCommitStandardTrendChartIntegratedByProject(String projectIds,String since,String until,String token,String interval,boolean showDetail) {
@@ -896,8 +900,9 @@ public class MeasureDeveloperService {
         List<String> checkedProjectList = projectDao.mergeBetweenProject(new ArrayList<>(queryProjectList.keySet()),visibleProjectList);
 
         LocalDate endTime = LocalDate.parse(until,dtf);
+        // 按照前端传值， 不加 1
+        endTime = endTime.minusDays(1);
         LocalDate beginTime;
-        // fixme since为空时默认处理
         if (since!=null && !"".equals(since)) {
             beginTime = LocalDate.parse(since,dtf);
         }else {
@@ -938,7 +943,7 @@ public class MeasureDeveloperService {
                         .projectId(String.valueOf(projectId))
                         .date(tempTime.format(dtf))
                         .projectName(projectName)
-                        .num(num)
+                        .num(Double.parseDouble(df.format(num)))
                         .detail(new ArrayList<>())
                         .option(new HashMap<>()).build();
                 projectCommitStandardTrendChart.setOption(jiraCommitCountNum,validCommitCountNum);
@@ -954,13 +959,13 @@ public class MeasureDeveloperService {
     }
 
     /**
-     *
-     * @param projectNameList
-     * @param repoUuidList
-     * @param since
-     * @param until
-     * @param token
-     * @return
+     * 获取提交规范性按照项目聚合的明细
+     * @param projectNameList 查询项目列表
+     * @param repoUuidList 查询库列表
+     * @param since 查询起始时间
+     * @param until 查询截至时间
+     * @param token 查询权限
+     * @return new ArrayList<{@link ProjectCommitStandardDetail}>
      */
     @SneakyThrows
     public synchronized List<ProjectCommitStandardDetail> getCommitStandardDetailIntegratedByProject(String projectNameList,String repoUuidList,String since,String until,String token) {
@@ -982,7 +987,7 @@ public class MeasureDeveloperService {
         }else {
             visibleProjectInvolvedRepoList = projectDao.involvedRepoProcess(null,token);
         }
-        List<String> visibleRepoList = new ArrayList<>();
+        List<String> visibleRepoList;
         if (repoUuidList!=null && !"".equals(repoUuidList)) {
             List<String> queryRepoList = Arrays.asList(repoUuidList.split(split));
             visibleRepoList = projectDao.mergeBetweenRepo(queryRepoList,visibleProjectInvolvedRepoList);
@@ -1006,6 +1011,17 @@ public class MeasureDeveloperService {
         return projectCommitStandardDetailList;
      }
 
+    /**
+     * 转换相关数据
+     * @see DeveloperCommitStandard
+     * @see ProjectCommitStandardDetail
+     * @param developerCommitStandard 开发者提交规范性明细
+     * @param projectName 项目名
+     * @param projectId 项目id
+     * @param repoUuid 库id
+     * @param repoName 库名称
+     * @return new ArrayList<{@link ProjectCommitStandardDetail}>
+     */
      private List<ProjectCommitStandardDetail> dealWithDeveloperCommitStandardDetail(DeveloperCommitStandard developerCommitStandard,String projectName, int projectId,String repoUuid,String repoName) {
         List<ProjectCommitStandardDetail> projectCommitStandardDetailList = new ArrayList<>();
         List<Map<String,String>> developerJiraCommitInfo = developerCommitStandard.getDeveloperJiraCommitInfo();
@@ -1047,6 +1063,116 @@ public class MeasureDeveloperService {
              projectCommitStandardDetailList.add(projectCommitStandardDetail);
          }
          return projectCommitStandardDetailList;
+     }
+
+    /**
+     *
+     * @param projectIds
+     * @param since
+     * @param until
+     * @param token
+     * @param interval
+     * @return
+     */
+     public List<ProjectBigFileTrendChart> getHugeLocRemainedFile(String projectIds,String since,String until,String token,String interval) {
+         List<ProjectBigFileTrendChart> results = new ArrayList<>();
+         Map<String,Integer> queryProjectList = projectDao.getProjectNameById(projectIds);
+         List<String> visibleProjectList = projectDao.getVisibleProjectByToken(token);
+         List<String> checkedProjectList = projectDao.mergeBetweenProject(new ArrayList<>(queryProjectList.keySet()),visibleProjectList);
+
+         LocalDate endTime = LocalDate.parse(until,dtf);
+         // 这边最后一天还是按照前端传值，不加 1
+         endTime = endTime.minusDays(1);
+         LocalDate beginTime;
+         if (since!=null && !"".equals(since)) {
+             beginTime = LocalDate.parse(since,dtf);
+         }else {
+             beginTime = endTime.minusWeeks(1);
+         }
+         beginTime = DateTimeUtil.initBeginTimeByInterval(beginTime,interval);
+         endTime = DateTimeUtil.initEndTimeByInterval(endTime,interval);
+         if(beginTime == null || endTime == null) {
+             return new ArrayList<>();
+         }
+         while (beginTime.isBefore(endTime)) {
+             LocalDate tempTime = DateTimeUtil.selectTimeIncrementByInterval(beginTime,interval);
+             if(tempTime == null) {
+                 break;
+             }
+             if(tempTime.isAfter(endTime)) {
+                 tempTime = endTime;
+             }
+             for (String projectName : checkedProjectList) {
+                 List<String> repoUuidList = new ArrayList<>();
+                 List<RepoInfo> repoInfoList = projectDao.getProjectInvolvedRepoInfo(projectName,token);
+                 for (RepoInfo repoInfo : repoInfoList) {
+                     repoUuidList.add(repoInfo.getRepoUuid());
+                 }
+                 int projectId = queryProjectList.get(projectName);
+                 List<ProjectBigFileDetail> projectBigFileDetailList = measureDao.getCurrentBigFileInfo(repoUuidList,tempTime.format(DateTimeUtil.dtf));
+                 ProjectBigFileTrendChart projectBigFileTrendChart = ProjectBigFileTrendChart.builder()
+                         .projectId(String.valueOf(projectId))
+                         .date(tempTime.format(dtf))
+                         .projectName(projectName)
+                         .num(projectBigFileDetailList.size())
+                         .build();
+                 results.add(projectBigFileTrendChart);
+             }
+             beginTime = tempTime;
+         }
+         return results;
+     }
+
+    /**
+     *
+     * @param projectNameList
+     * @param repoUuidList
+     * @param token
+     * @return
+     */
+    @SneakyThrows
+     public List<ProjectBigFileDetail> getHugeLocRemainedDetail(String projectNameList,String repoUuidList,String token) {
+         List<ProjectBigFileDetail> result = new ArrayList<>();
+         /**
+          * 若查询项目列表为空，则查询权限内可见所有项目的库列表
+          * 若查询库列表为空，则查询权限内项目列表范围内的库列表
+          * 若查询项目为空，有查询库列表，则返回权限内可查询的库列表
+          * 若查询项目有，且有查询库列表，则返回权限内该项目可见库列表
+          */
+         List<String> visibleProjectInvolvedRepoList;
+         if(projectNameList!=null && !"".equals(projectNameList)) {
+             visibleProjectInvolvedRepoList = new ArrayList<>();
+             String[] projects = projectNameList.split(split);
+             for (String projectName : projects) {
+                 visibleProjectInvolvedRepoList.addAll(projectDao.getProjectRepoList(projectName,token));
+             }
+         }else {
+             visibleProjectInvolvedRepoList = projectDao.involvedRepoProcess(null,token);
+         }
+         List<String> visibleRepoList;
+         if (repoUuidList!=null && !"".equals(repoUuidList)) {
+             List<String> queryRepoList = Arrays.asList(repoUuidList.split(split));
+             visibleRepoList = projectDao.mergeBetweenRepo(queryRepoList,visibleProjectInvolvedRepoList);
+         }else {
+             visibleRepoList = visibleProjectInvolvedRepoList;
+         }
+         for (String repoUuid : visibleRepoList) {
+             if (!projectDao.getRepoInfoMap().containsKey(repoUuid)) {
+                 projectDao.insertProjectInfo(token);
+             }
+             RepoInfo repoInfo = projectDao.getRepoInfoMap().get(repoUuid);
+             String projectName = repoInfo.getProjectName();
+             String repoName = repoInfo.getRepoName();
+             int projectId = projectDao.getProjectIdByName(projectName);
+             List<ProjectBigFileDetail> projectBigFileDetailList = measureDao.getCurrentBigFileInfo(Collections.singletonList(repoUuid),null);
+             for (ProjectBigFileDetail projectBigFileDetail : projectBigFileDetailList) {
+                 projectBigFileDetail.setProjectId(String.valueOf(projectId));
+                 projectBigFileDetail.setProjectName(projectName);
+                 projectBigFileDetail.setRepoName(repoName);
+             }
+             result.addAll(projectBigFileDetailList);
+         }
+         return result;
      }
 
 

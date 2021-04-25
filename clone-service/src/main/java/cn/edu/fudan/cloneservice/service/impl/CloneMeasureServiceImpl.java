@@ -16,12 +16,8 @@ import cn.edu.fudan.cloneservice.util.JGitUtil;
 import cn.edu.fudan.cloneservice.util.UserUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-
-import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -49,7 +45,6 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
     public List<CloneMessage> getCloneMeasure(String repositoryId, String developers, String start, String end, String page, String size, Boolean isAsc, String order) {
 
         List<CloneMessage> cloneMessages = new ArrayList<>();
-
         if (StringUtils.isEmpty(developers)) {
             if (StringUtils.isEmpty(repositoryId)) {
                 log.error("repositoryId and developer is null");
@@ -408,6 +403,19 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
         return results;
     }
 
+    @Override
+    public List<CloneOverallView> getCloneOverallViews(String projectId, String until, String token) {
+        List<String> projectList = getProjectIds(projectId, token);
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDate localDate = LocalDate.parse(until, dtf);
+        List<CloneOverallView> results = new ArrayList<>();
+        for(String aProjectId: projectList) {
+            String projectName = repoCommitMapper.getProjectNameByProjectId(aProjectId);
+            results.addAll(cloneLocationDao.getCloneOverall(repoCommitMapper.getRepoIdByProjectId(aProjectId), localDate.format(dtf), aProjectId, projectName));
+        }
+        return results;
+    }
+
     private List<String> getProjectIds(String projectId, String token) {
         List<String> projectIds = new ArrayList<>();
         if(StringUtils.isEmpty(projectId)) {
@@ -424,6 +432,18 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
         return projectIds.stream().filter(projectsWithRight::contains).collect(Collectors.toList());
     }
 
+    @Override
+    public List<CloneDetail> getCloneDetails(String projectId, String commitId, String token){
+        List<String> projectList = getProjectIds(projectId, token);
+        List<CloneDetail> results = new ArrayList<>();
+        for(String aProjectId: projectList) {
+            String projectName = repoCommitMapper.getProjectNameByProjectId(aProjectId);
+            String repoId = repoCommitMapper.getRepoIdByCommitId(commitId);
+            cloneLocationDao.getCloneDetail(repoId, projectId, projectName, commitId);
+            results.addAll(cloneLocationDao.getCloneDetail(repoId, projectId, projectName, commitId));
+        }
+        return results;
+    };
 
     private List<LocalDate> getTimeList(String since, String until, String interval) {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -435,24 +455,25 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
         } else {
             beginTime = endTime.minusWeeks(1);
         }
-        beginTime = DateTimeUtil.initBeginTimeByInterval(beginTime, interval);
+        beginTime = DateTimeUtil.initEndTimeByInterval(beginTime, interval);
         endTime = DateTimeUtil.initEndTimeByInterval(endTime, interval);
         List<LocalDate> time = new ArrayList<>();
 
         while (true) {
             assert beginTime != null;
             assert endTime != null;
-            if (!beginTime.isBefore(endTime)) break;
+            if (!(beginTime.isBefore(endTime) || beginTime.isEqual(endTime))) break;
             time.add(beginTime);
             LocalDate tempTime = DateTimeUtil.selectTimeIncrementByInterval(beginTime, interval);
             if (tempTime == null) {
                 break;
             }
             if (tempTime.isAfter(endTime)) {
-                tempTime = endTime;
+                break;
             }
             beginTime = tempTime;
         }
         return time;
     }
 }
+

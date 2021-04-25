@@ -1,22 +1,36 @@
 package cn.edu.fudan.cloneservice.util;
 
+import cn.edu.fudan.cloneservice.component.RestInterfaceManager;
+import cn.edu.fudan.cloneservice.dao.UserInfoDTO;
 import cn.edu.fudan.cloneservice.mapper.CloneMeasureMapper;
 import cn.edu.fudan.cloneservice.mapper.RepoCommitMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 
+
 import static org.reflections.Reflections.log;
 
+@Component
 public class UserUtil {
 
+    RestInterfaceManager restInterfaceManager;
     CloneMeasureMapper cloneMeasureMapper;
     RepoCommitMapper repoCommitMapper;
+
+    @Autowired
+    public UserUtil(RestInterfaceManager restInterfaceManager, CloneMeasureMapper cloneMeasureMapper, RepoCommitMapper repoCommitMapper){
+        this.restInterfaceManager = restInterfaceManager;
+        this.cloneMeasureMapper = cloneMeasureMapper;
+        this.repoCommitMapper = repoCommitMapper;
+    }
 
     public List<Integer> getVisibleProjectByToken(String token) {
         UserInfoDTO userInfoDTO = null;
         try {
-            userInfoDTO = getUserInfoByToken(token);
+            userInfoDTO = restInterfaceManager.getUserInfoByToken(token);
         }catch (Exception e) {
             log.error(e.getMessage());
         }
@@ -34,4 +48,6 @@ public class UserUtil {
             return cloneMeasureMapper.getProjectByAccountId(userUuid);
         }
     }
+
+
 }

@@ -53,6 +53,8 @@ public class DateTimeUtil {
             .appendValue(ChronoField.MONTH_OF_YEAR, 2)
             .toFormatter();
 
+    public static DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
     public static LocalDate parse(String dateStr){
         return LocalDate.parse(dateStr,Y_M_D_formatter);
     }

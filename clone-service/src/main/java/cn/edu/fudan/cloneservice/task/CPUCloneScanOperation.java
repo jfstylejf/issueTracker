@@ -266,6 +266,8 @@ public class CPUCloneScanOperation extends ScanOperationAdapter {
             return null;
         }
     }
+
+
 //
 //    public List<String> getClassAndMethod(String cloneLines, List<LocationInfo> classLocationInfos, List<LocationInfo> methodLocationInfos){
 //        List<String> result = new ArrayList<>();

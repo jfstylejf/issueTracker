@@ -19,6 +19,8 @@ public interface CloneRepoMapper {
      */
     void updateCloneRepo(CloneRepo cloneRepo);
 
+    void deleteRepoByRepoId(@Param("repo_id") String repoId);
+
     /**
      * 获取最新的clone repo
      * @param repoId repo id

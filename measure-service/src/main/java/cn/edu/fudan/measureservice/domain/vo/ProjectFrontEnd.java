@@ -1,21 +1,25 @@
 package cn.edu.fudan.measureservice.domain.vo;
 
-import cn.edu.fudan.measureservice.domain.bo.DeveloperWorkLoad;
+import cn.edu.fudan.measureservice.domain.bo.DeveloperCommitStandard;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
- * @author wjzho
+ * @ClassName: ProjectCommitStandardFrontend
+ * @Description:
+ * @Author wjzho
+ * @Date 2021/4/14
  */
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @Builder
-public class DeveloperWorkLoadFrontend {
+public class ProjectFrontEnd<T> implements Serializable {
     /**
      * 当前页
      */
@@ -31,5 +35,5 @@ public class DeveloperWorkLoadFrontend {
     /**
      * 具体工作行数据
      */
-    private List<DeveloperWorkLoad> rows;
+    private List<T> rows;
 }

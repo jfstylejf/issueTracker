@@ -105,8 +105,8 @@ public class MeasureDeveloperController {
                     }
                 });
                 int totalPage = developerWorkLoadList.size() % ps == 0 ? developerWorkLoadList.size()/ps : developerWorkLoadList.size()/ps + 1;
-                List<DeveloperWorkLoad> selectedDeveloperWorkLoadList = developerWorkLoadList.subList((page-1)*ps,page * ps > developerWorkLoadList.size() ? developerWorkLoadList.size() : page*ps);
-                DeveloperWorkLoadFrontend developerWorkLoadFrontend = new DeveloperWorkLoadFrontend(page,totalPage,developerWorkLoadList.size(),selectedDeveloperWorkLoadList);
+                List<DeveloperWorkLoad> selectedDeveloperWorkLoadList = developerWorkLoadList.subList((page-1)*ps, Math.min(page * ps, developerWorkLoadList.size()));
+                ProjectFrontEnd<DeveloperWorkLoad> developerWorkLoadFrontend = new ProjectFrontEnd<>(page,totalPage,developerWorkLoadList.size(),selectedDeveloperWorkLoadList);
                 return new ResponseBean<>(200,"success",developerWorkLoadFrontend);
             }else {
                 return new ResponseBean<>(200,"success",developerWorkLoadList);
@@ -265,13 +265,13 @@ public class MeasureDeveloperController {
                     }
                 });
                 int totalPage = developerCommitStandardList.size() % ps == 0 ? developerCommitStandardList.size()/ps : developerCommitStandardList.size()/ps + 1;
-                List<DeveloperCommitStandard> selectedDeveloperCommitStandardList = developerCommitStandardList.subList(ps*(page-1),ps*page > developerCommitStandardList.size() ? developerCommitStandardList.size() : ps*page);
-                DeveloperCommitStandardFrontend developerCommitStandardFrontend = new DeveloperCommitStandardFrontend(page,totalPage,developerCommitStandardList.size(),selectedDeveloperCommitStandardList);
+                List<DeveloperCommitStandard> selectedDeveloperCommitStandardList = developerCommitStandardList.subList(ps*(page-1), Math.min(ps * page, developerCommitStandardList.size()));
+                ProjectFrontEnd<DeveloperCommitStandard> developerCommitStandardFrontend = new ProjectFrontEnd<>(page,totalPage,developerCommitStandardList.size(),selectedDeveloperCommitStandardList);
                 return new ResponseBean<>(200,"success",developerCommitStandardFrontend);
             }else if (developer!=null && !"".equals(developer)){
                 // 如果传入单个开发者，此时 page 按照不规范明细进行分页
                 DeveloperCommitStandard developerCommitStandard = developerCommitStandardList.get(0);
-                List<Map<String,String>> developerInvalidCommitList = developerCommitStandard.getDeveloperInvalidCommitInfo().subList((page-1)*ps , page*ps > developerCommitStandard.getDeveloperInvalidCommitCount() ? developerCommitStandard.getDeveloperInvalidCommitCount() : page*ps);
+                List<Map<String,String>> developerInvalidCommitList = developerCommitStandard.getDeveloperInvalidCommitInfo().subList((page-1)*ps , Math.min(page * ps, developerCommitStandard.getDeveloperInvalidCommitCount()));
                 developerCommitStandard.setDeveloperInvalidCommitInfo(developerInvalidCommitList);
                 return new ResponseBean<>(200,"success",Collections.singletonList(developerCommitStandard));
             }else {
@@ -286,7 +286,7 @@ public class MeasureDeveloperController {
 
     @GetMapping("/measure/commit-standard/trend-chart")
     @CrossOrigin
-    public ResponseBean<List<ProjectCommitStandardTrendChart>> getCommitStandardTrendChart(@RequestParam(required = false, defaultValue = "") String projectIds,
+    public ResponseBean<List<ProjectCommitStandardTrendChart>> getCommitStandardTrendChart(@RequestParam(value = "project_ids",required = false, defaultValue = "") String projectIds,
                                                                                            @RequestParam(required = false, defaultValue = "") String since,
                                                                                            @RequestParam(required = false, defaultValue = "") String until,
                                                                                            @RequestParam(required = false, defaultValue = "week") String interval,
@@ -305,7 +305,7 @@ public class MeasureDeveloperController {
 
     @GetMapping("/measure/commit-standard/detail")
     @CrossOrigin
-    public ResponseBean<ProjectCommitStandardFrontend> getCommitStandardDetail(
+    public ResponseBean<ProjectFrontEnd<ProjectCommitStandardDetail>> getCommitStandardDetail(
                                                         @RequestParam(value = "project_names",required = false) String projectNameList,
                                                         @RequestParam(value = "repo_uuids",required = false)String repoUuidList,
                                                         @RequestParam(value = "since", required = false)String since,
@@ -313,12 +313,16 @@ public class MeasureDeveloperController {
                                                         @RequestParam(required = false, defaultValue = "1")int page,
                                                         @RequestParam(required = false, defaultValue = "10")int ps,
                                                         @RequestParam(required = false, defaultValue = "true") boolean asc,
+                                                        @RequestParam(required = false, defaultValue = "false") boolean valid,
                                                         @RequestParam(required = false, defaultValue = "") String order,
                                                         HttpServletRequest request) {
         try {
             until = timeProcess(until);
             String token = request.getHeader("token");
             List<ProjectCommitStandardDetail> projectCommitStandardDetailList = measureDeveloperService.getCommitStandardDetailIntegratedByProject(projectNameList,repoUuidList,since,until,token);
+            if (valid) {
+                projectCommitStandardDetailList.removeIf(projectCommitStandardDetail -> (!projectCommitStandardDetail.isValid()));
+            }
             Collections.sort(projectCommitStandardDetailList, (o1, o2) -> {
                 if(asc) {
                     return o1.getCommitTime().compareTo(o2.getCommitTime());
@@ -327,14 +331,69 @@ public class MeasureDeveloperController {
                 }
             });
             int totalPage = projectCommitStandardDetailList.size() % ps == 0 ? projectCommitStandardDetailList.size()/ps : projectCommitStandardDetailList.size()/ps + 1;
-            List<ProjectCommitStandardDetail> selectedDeveloperCommitStandardList = projectCommitStandardDetailList.subList(ps*(page-1),ps*page > projectCommitStandardDetailList.size() ? projectCommitStandardDetailList.size() : ps*page);
-            ProjectCommitStandardFrontend developerCommitStandardFrontend = new ProjectCommitStandardFrontend(page,totalPage,projectCommitStandardDetailList.size(),selectedDeveloperCommitStandardList);
+            List<ProjectCommitStandardDetail> selectedDeveloperCommitStandardList = projectCommitStandardDetailList.subList(ps*(page-1), Math.min(ps * page, projectCommitStandardDetailList.size()));
+            ProjectFrontEnd<ProjectCommitStandardDetail> developerCommitStandardFrontend = new ProjectFrontEnd<>(page,totalPage,projectCommitStandardDetailList.size(),selectedDeveloperCommitStandardList);
             return new ResponseBean<>(200,"success",developerCommitStandardFrontend);
         }catch (Exception e) {
             e.printStackTrace();
         }
         return new ResponseBean<>(401,"failed",null);
     }
+
+
+
+    @GetMapping("/measure/big-file/trend-chart")
+    @CrossOrigin
+    public ResponseBean<List<ProjectBigFileTrendChart>> getHugeLocRemainedFileTrendChart(@RequestParam(value = "project_ids",required = false, defaultValue = "") String projectIds,
+                                                                 @RequestParam(required = false, defaultValue = "") String since,
+                                                                 @RequestParam(required = false, defaultValue = "") String until,
+                                                                 @RequestParam(required = false, defaultValue = "week") String interval,
+                                                                 HttpServletRequest request) {
+        try {
+            until = timeProcess(until);
+            String token = request.getHeader("token");
+            return new ResponseBean<>(200,"success",measureDeveloperService.getHugeLocRemainedFile(projectIds,since,until,token,interval));
+        }catch (Exception e) {
+            e.getMessage();
+        }
+        return new ResponseBean<>(401,"failed",new ArrayList<>());
+    }
+
+
+    @GetMapping("/measure/big-file/detail")
+    @CrossOrigin
+    public ResponseBean<ProjectFrontEnd<ProjectBigFileDetail>> getHugeLocRemainedFileDetail(
+                                        @RequestParam(value = "project_names",required = false) String projectNameList,
+                                        @RequestParam(value = "repo_uuids",required = false)String repoUuidList,
+                                        @RequestParam(value = "since", required = false)String since,
+                                        @RequestParam(value = "until", required = false)String until,
+                                        @RequestParam(required = false, defaultValue = "1")int page,
+                                        @RequestParam(required = false, defaultValue = "10")int ps,
+                                        @RequestParam(required = false, defaultValue = "true") boolean asc,
+                                        @RequestParam(required = false, defaultValue = "") String order,
+                                        HttpServletRequest request) {
+
+        try {
+            String token = request.getHeader("token");
+            List<ProjectBigFileDetail> projectBigFileDetailList = measureDeveloperService.getHugeLocRemainedDetail(projectNameList,repoUuidList,token);
+            Collections.sort(projectBigFileDetailList, (o1, o2) -> {
+                if(asc) {
+                    return o1.getCurrentModifyTime().compareTo(o2.getCurrentModifyTime());
+                }else {
+                    return o2.getCurrentModifyTime().compareTo(o1.getCurrentModifyTime());
+                }
+            });
+            int totalPage = projectBigFileDetailList.size() % ps == 0 ? projectBigFileDetailList.size()/ps : projectBigFileDetailList.size()/ps + 1;
+            List<ProjectBigFileDetail> selectedDeveloperCommitStandardList = projectBigFileDetailList.subList(ps*(page-1), Math.min(ps * page, projectBigFileDetailList.size()));
+            ProjectFrontEnd<ProjectBigFileDetail> projectBigFileDetailProjectFrontEnd = new ProjectFrontEnd<>(page,totalPage,projectBigFileDetailList.size(),selectedDeveloperCommitStandardList);
+            return new ResponseBean<>(200,"success",projectBigFileDetailProjectFrontEnd);
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new ResponseBean<>(401,"failed",null);
+
+    }
+
 
 
 
