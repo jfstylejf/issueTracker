@@ -987,30 +987,7 @@ public class MeasureDeveloperService {
     @SneakyThrows
     public synchronized List<ProjectCommitStandardDetail> getCommitStandardDetailIntegratedByProject(String projectNameList,String repoUuidList,String since,String until,String token) {
         List<ProjectCommitStandardDetail> projectCommitStandardDetailList = new ArrayList<>();
-
-        /**
-         * 若查询项目列表为空，则查询权限内可见所有项目的库列表
-         * 若查询库列表为空，则查询权限内项目列表范围内的库列表
-         * 若查询项目为空，有查询库列表，则返回权限内可查询的库列表
-         * 若查询项目有，且有查询库列表，则返回权限内该项目可见库列表
-         */
-        List<String> visibleProjectInvolvedRepoList;
-        if(projectNameList!=null && !"".equals(projectNameList)) {
-            visibleProjectInvolvedRepoList = new ArrayList<>();
-            String[] projects = projectNameList.split(split);
-            for (String projectName : projects) {
-                visibleProjectInvolvedRepoList.addAll(projectDao.getProjectRepoList(projectName,token));
-            }
-        }else {
-            visibleProjectInvolvedRepoList = projectDao.involvedRepoProcess(null,token);
-        }
-        List<String> visibleRepoList;
-        if (repoUuidList!=null && !"".equals(repoUuidList)) {
-            List<String> queryRepoList = Arrays.asList(repoUuidList.split(split));
-            visibleRepoList = projectDao.mergeBetweenRepo(queryRepoList,visibleProjectInvolvedRepoList);
-        }else {
-            visibleRepoList = visibleProjectInvolvedRepoList;
-        }
+        List<String> visibleRepoList = projectDao.getVisibleRepoListByProjectNameAndRepo(projectNameList,repoUuidList,token);
         for (String repoUuid : visibleRepoList) {
             Query query = new Query(token,since,until,null,Collections.singletonList(repoUuid));
             if (!projectDao.getRepoInfoMap().containsKey(repoUuid)) {
@@ -1085,6 +1062,19 @@ public class MeasureDeveloperService {
      }
 
     /**
+     * 前端项目总览界面， 添加提交者列表功能
+     * note 这里的开发者是参与项目所在库中的全部开发者，不区分提交时间
+     * @param projectNameList 查询项目列表
+     * @param repoUuidList 查询库列表
+     * @return List<String> commiter
+     */
+     public List<String> getCommitStandardCommitterList(String projectNameList,String repoUuidList,String token) {
+         List<String> checkedRepoList = projectDao.getVisibleRepoListByProjectNameAndRepo(projectNameList,repoUuidList,token);
+         return projectDao.getDeveloperList(new Query(token,null,null,null,checkedRepoList));
+     }
+
+
+    /**
      *
      * @param projectIds
      * @param since
@@ -1151,31 +1141,7 @@ public class MeasureDeveloperService {
     @SneakyThrows
      public List<ProjectBigFileDetail> getHugeLocRemainedDetail(String projectNameList,String repoUuidList,String token) {
          List<ProjectBigFileDetail> result = new ArrayList<>();
-         /**
-          * 若查询项目列表为空，则查询权限内可见所有项目的库列表
-          * 若查询库列表为空，则查询权限内项目列表范围内的库列表
-          * 若查询项目为空，有查询库列表，则返回权限内可查询的库列表
-          * 若查询项目有，且有查询库列表，则返回权限内该项目可见库列表
-          */
-         List<String> visibleProjectInvolvedRepoList;
-         /** Case 1 : 若查询项目列表为空，则查询权限内可见所有项目的库列表 */
-         if(projectNameList!=null && !"".equals(projectNameList)) {
-             visibleProjectInvolvedRepoList = new ArrayList<>();
-             String[] projects = projectNameList.split(split);
-             for (String projectName : projects) {
-                 visibleProjectInvolvedRepoList.addAll(projectDao.getProjectRepoList(projectName,token));
-             }
-         }else {  /** Case 2 : 返回所查询项目列表的涉及库列表 */
-             visibleProjectInvolvedRepoList = projectDao.involvedRepoProcess(null,token);
-         }
-         List<String> visibleRepoList;
-         /** Case 1 : 若同时给定了 */
-         if (repoUuidList!=null && !"".equals(repoUuidList)) {
-             List<String> queryRepoList = Arrays.asList(repoUuidList.split(split));
-             visibleRepoList = projectDao.mergeBetweenRepo(queryRepoList,visibleProjectInvolvedRepoList);
-         }else {  /** Case 2 : */
-             visibleRepoList = visibleProjectInvolvedRepoList;
-         }
+         List<String> visibleRepoList = projectDao.getVisibleRepoListByProjectNameAndRepo(projectNameList,repoUuidList,token);
          for (String repoUuid : visibleRepoList) {
              if (!projectDao.getRepoInfoMap().containsKey(repoUuid)) {
                  projectDao.insertProjectInfo(token);

@@ -368,6 +368,22 @@ public class MeasureDeveloperController {
         }
     }
 
+    @GetMapping("/measure/commit-standard/committers")
+    @CrossOrigin
+    public ResponseBean<Object> getCommitterList(@RequestParam(value = "project_names",required = false) String projectNameList,
+                                                @RequestParam(value = "repo_uuids",required = false)String repoUuidList,
+                                                HttpServletRequest request) {
+        try {
+            String token = request.getHeader("token");
+            List<String> committerList = measureDeveloperService.getCommitStandardCommitterList(projectNameList,repoUuidList,token);
+            committerList.sort((o1, o2) -> o1.compareTo(o2));
+            return new ResponseBean<>(200,"success",committerList);
+        }catch (Exception e) {
+            e.getMessage();
+        }
+        return new ResponseBean<>(401,"failed",null);
+    }
+
 
 
     @GetMapping("/measure/big-file/trend-chart")
@@ -444,6 +460,7 @@ public class MeasureDeveloperController {
             e.getMessage();
         }
     }
+
 
 
 
