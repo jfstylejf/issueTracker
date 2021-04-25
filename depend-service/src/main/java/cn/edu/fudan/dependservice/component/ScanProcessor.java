@@ -1,17 +1,13 @@
 package cn.edu.fudan.dependservice.component;
 
 import cn.edu.fudan.dependservice.config.ShHomeConfig;
-import cn.edu.fudan.dependservice.domain.RepoUuidsInfo;
 import cn.edu.fudan.dependservice.domain.ScanRepo;
+import cn.edu.fudan.dependservice.domain.ScanStatus;
 import cn.edu.fudan.dependservice.service.ProcessPrepare;
 import cn.edu.fudan.dependservice.service.ScanProcess;
-import cn.edu.fudan.dependservice.utill.TimeUtill;
-import cn.edu.fudan.dependservice.utill.WriteUtill2;
-import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -31,6 +27,8 @@ public class ScanProcessor extends Thread {
     @Autowired
     BatchProcessor batchProcessor;
 
+
+
     @Autowired
     ProcessPrepare processPrepare;
 
@@ -46,7 +44,14 @@ public class ScanProcessor extends Thread {
 
     // 1 is batch
     // 2 is one by one but scan one batch
-    private Boolean scanning=false;
+    // if not static it is should be
+//    private static Boolean scanning=false;
+    // must be a Object but not Bollo
+    private static Boolean scanning=new Boolean(true);
+    private static class Lock{
+
+    }
+    private static Object lock =new Lock();
 
 
     private Map<String,Boolean> scanStatus;
@@ -67,29 +72,37 @@ public class ScanProcessor extends Thread {
     }
     // todo getScanstatus
     /**
-     * @param scanRepo 查询的repoca,
      * @return: scanstatus true false
      * @Description get scan status
      */
+    public ScanStatus getScanStatus(String repouuid){
+        return batchProcessor.getScanStatus(repouuid);
+
+    }
     public boolean scanStatus(ScanRepo scanRepo){
+
+
         return true;
     }
 
-
-    private boolean canScanbatch() {
-
-        return false;
-    }
      public void scanOneBatch(){
-        //
-        synchronized(scanning){
-            scanning=true;
+        synchronized(lock){
+//            scanning=!scanning;
             String configFile = applicationContext.getBean(ShHomeConfig.class).getResultFileDir()+ "source-project-conf.json";
             //todo not all project is java
             while (batchProcessor.continueScan()){
                 // todo prepare
                 List<ScanRepo> scanRepos =batchProcessor.getScanList();
                 log.info("in scanOneBatch ,size ="+scanRepos.size());
+                try {
+                    log.info(" batch batchProcessing.......");
+                    Thread.sleep(30*1000);
+
+
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+                /*
 
                 List<String> repoDirs=new ArrayList<>();
                 for(ScanRepo scanRepo:scanRepos){
@@ -102,8 +115,13 @@ public class ScanProcessor extends Thread {
                 //todo not all project is java
                 WriteUtill2.writeProjecConf(configFile,repoDirs);
                 scanProcess.beginScan(scanRepos,null);
+
+                 */
+                log.info("end of a batch");
             }
-            scanning=false;
+//            scanning=!scanning;
+            log.info("end of processor");
+
         }
 
 

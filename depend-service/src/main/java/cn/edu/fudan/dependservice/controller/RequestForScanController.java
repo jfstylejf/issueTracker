@@ -3,11 +3,13 @@ package cn.edu.fudan.dependservice.controller;
 import cn.edu.fudan.dependservice.component.ScanProcessor;
 import cn.edu.fudan.dependservice.domain.*;
 import cn.edu.fudan.dependservice.service.DependencyService;
+import cn.edu.fudan.dependservice.service.StatusService;
 import cn.edu.fudan.dependservice.service.TempProcess;
 import cn.edu.fudan.dependservice.utill.DateHandler;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
+import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -24,11 +26,11 @@ import java.util.Vector;
 @EnableAsync
 public class RequestForScanController {
 //    private DependencyService dependencyService;
-    private long waitTime;
 
     @Autowired
     ScanProcessor scanProcessor;
-
+    @Autowired
+    StatusService statusService;
     private List<ScanRepo> toScanList;
     @Autowired
     public void setToScanList(){
@@ -50,7 +52,7 @@ public class RequestForScanController {
 //    })
 //    @PostMapping(value = {"dependency/dependency"})
     public ResponseBean<String> startScan(@RequestBody ScanBody scanBody) {
-        scanProcessor.scan(new ScanRepo());
+//        scanProcessor.scan(new ScanRepo());
 
         ScanRepo scanRepo = new ScanRepo();
         scanBody.setRepo_uuid(scanBody.getRepo_uuid());
@@ -58,14 +60,16 @@ public class RequestForScanController {
 
         return new ResponseBean<>(200,"successs",null);
 
-
     }
     @PostMapping(value = {"dependency/dependency"})
     public ResponseBean<String> scanByScan(@RequestBody ScanBody scanBody) {
 //        scanOneRepo();
         ScanRepo scanRepo = new ScanRepo();
         scanRepo.setBranch(scanBody.getBranch());
-        scanRepo.setRepoUuid(scanBody.getBranch());
+        scanRepo.setRepoUuid(scanBody.getRepo_uuid());
+        ScanStatus scanStatus =new ScanStatus();
+        scanStatus.setTs_start(System.currentTimeMillis());
+        scanRepo.setScanStatus(scanStatus);
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -75,8 +79,9 @@ public class RequestForScanController {
         return new ResponseBean<>(200,"successs",null);
     }
     //todo why can not async ,
-    @Async("taskExecutor")
+//    @Async("taskExecutor")
     public void scanOneRepo(ScanRepo scanRepo){
+        //todo need I to get sanCommit
         try {
             toScanList.add(scanRepo);
             int size =toScanList.size();
@@ -93,16 +98,37 @@ public class RequestForScanController {
             e.printStackTrace();
         }
         log.info(Thread.currentThread().getName());
-        log.info("end ");
+        log.info("end");
     }
     @GetMapping(value = {"dependency/dependency/scan-status"})
     public ResponseBean<ScanStatus> getScanStatus(@RequestParam(value = "repo_uuid") String repoUuid) {
-        ScanStatus ss= new ScanStatus();
-        ss.setScanTime("40");
-        ss.setStatus("complete");
-        ss.setStartScanTime("2021-02-27 00:00:00");
-        ss.setEndScanTime("2021-02-27 00:00:40");
-        return new ResponseBean<>(200,"successs",ss);
+        // get if in scanning by processor
+        // get from data base ,最近的一次成功失败
+        // todo get scanrepo from
+        ScanStatus scanStatus=getFromWaitQueue(repoUuid);
+        if(scanStatus==null){
+            scanStatus =scanProcessor.getScanStatus(repoUuid);
+        }
+        log.info("scanStatus: "+scanStatus);
+        if(scanStatus!=null){
+            scanStatus.setStatus("scanning");
+            String scanTime =String.valueOf((System.currentTimeMillis()-scanStatus.getTs_start())/1000);
+            scanStatus.setScanTime(scanTime);
+            return new ResponseBean<>(200,"success",scanStatus);
+        }
+        scanStatus=statusService.getScanStatus(repoUuid);
+        //go to database for status
+
+        return new ResponseBean<>(200,"successs",scanStatus);
+    }
+    public ScanStatus getFromWaitQueue(String repouuid){
+        for(ScanRepo s:toScanList){
+            if(s.getRepoUuid().equals(repouuid)){
+                return s.getScanStatus();
+            }
+        }
+        return null;
+
     }
 
 

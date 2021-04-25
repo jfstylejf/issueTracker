@@ -4,10 +4,24 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <!-- namespace：命名空间，用于隔离sql，还有一个很重要的作用，后面会讲 -->
 <mapper namespace="cn.edu.fudan.dependservice.mapper.ScanMapper">
+    <resultMap id="status" type="cn.edu.fudan.dependservice.domain.ScanStatus">
+        <id property="status" column="status"/>
+        <id property="startScanTime" column="start_time"/>
+        <id property="endScanTime" column="end_time"/>
+    </resultMap>
 
     <insert id="insert">
         insert into issueTracker.dependency_san(repo_uuid,commit_id,status,end_time)
         values(#{repo_uuid},#{commit_id},#{status},#{end_time})
     </insert>
+    <select id="getScanStatus" resultMap="status">
+        select * from issueTracker.dependency_san
+        where end_time =(
+            select max(end_time)
+            from issueTracker.dependency_san
+            where repo_uuid = #{repouuid}
+        )
+        and repo_uuid=#{repouuid}
+    </select>
 
 </mapper>
