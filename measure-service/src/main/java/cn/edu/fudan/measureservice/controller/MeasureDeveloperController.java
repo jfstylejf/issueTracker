@@ -10,13 +10,12 @@ import cn.edu.fudan.measureservice.domain.vo.*;
 import cn.edu.fudan.measureservice.portrait.DeveloperMetrics;
 import cn.edu.fudan.measureservice.domain.bo.DeveloperPortrait;
 import cn.edu.fudan.measureservice.service.MeasureDeveloperService;
+import com.alibaba.excel.EasyExcel;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -24,6 +23,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -340,6 +342,32 @@ public class MeasureDeveloperController {
         return new ResponseBean<>(401,"failed",null);
     }
 
+    @GetMapping("/measure/commit-standard/detail/download")
+    @CrossOrigin
+    public void downLoadCommitStandardDetail(
+                                         @RequestParam(value = "project_names",required = false) String projectNameList,
+                                         @RequestParam(value = "repo_uuids",required = false)String repoUuidList,
+                                         @RequestParam(value = "since", required = false)String since,
+                                         @RequestParam(value = "until", required = false)String until,
+                                         @RequestParam(required = false, defaultValue = "") String order,
+                                         HttpServletResponse response,
+                                         HttpServletRequest request)  {
+        try {
+            until = timeProcess(until);
+            String token = request.getHeader("token");
+            List<ProjectCommitStandardDetail> projectCommitStandardDetailList = measureDeveloperService.getCommitStandardDetailIntegratedByProject(projectNameList,repoUuidList,since,until,token);
+            projectCommitStandardDetailList.sort((o1, o2) -> o2.getCommitTime().compareTo(o1.getCommitTime()));
+            response.setContentType("application/vnd.ms-excel");
+            response.setCharacterEncoding("utf-8");
+            // 保证下载到本地文件名不乱码的
+            String fileName = URLEncoder.encode("提交规范性",StandardCharsets.UTF_8.toString());
+            response.setHeader("Content-disposition", "attachment;filename=" + fileName + ".xlsx");
+            EasyExcel.write(response.getOutputStream(), ProjectCommitStandardDetail.class).sheet("sheet").doWrite(projectCommitStandardDetailList);
+        }catch (Exception e) {
+            e.getMessage();
+        }
+    }
+
 
 
     @GetMapping("/measure/big-file/trend-chart")
@@ -394,6 +422,28 @@ public class MeasureDeveloperController {
 
     }
 
+    @GetMapping("/measure/big-file/detail/downLoad")
+    @CrossOrigin
+    public void downLoadHugeLocRemainedFileDetail (@RequestParam(value = "project_names",required = false) String projectNameList,
+                                                   @RequestParam(value = "repo_uuids",required = false)String repoUuidList,
+                                                   @RequestParam(value = "since", required = false)String since,
+                                                   @RequestParam(value = "until", required = false)String until,
+                                                   @RequestParam(required = false, defaultValue = "") String order,
+                                                   HttpServletResponse response,
+                                                   HttpServletRequest request)  {
+        try {
+            String token = request.getHeader("token");
+            List<ProjectBigFileDetail> projectBigFileDetailList = measureDeveloperService.getHugeLocRemainedDetail(projectNameList,repoUuidList,token);
+            projectBigFileDetailList.sort((o1, o2) -> o2.getCurrentModifyTime().compareTo(o1.getCurrentModifyTime()));
+            response.setCharacterEncoding("utf-8");
+            // 保证下载到本地文件名不乱码的
+            String fileName = URLEncoder.encode("超大文件数",StandardCharsets.UTF_8.toString());
+            response.setHeader("Content-disposition", "attachment;filename=" + fileName + ".xlsx");
+            EasyExcel.write(response.getOutputStream(), ProjectBigFileDetail.class).sheet("sheet").doWrite(projectBigFileDetailList);
+        }catch (Exception e) {
+            e.getMessage();
+        }
+    }
 
 
 

@@ -214,7 +214,7 @@ public void  testMultipleRepoGetCommitStandard() throws Exception{
     String since = "2020-06-01";
     String until = "2020-06-15";
 
-    // 单库单人测试
+    // 多库单人测试
     Query query2 = new Query(token,since,until,"zhangjingfu", Arrays.asList(repoUuid0,repoUuid1));
     List<DeveloperCommitStandard> developerCommitStandardList2 = measureDeveloperService.getCommitStandard(query2,Collections.singletonList("zhangjingfu"));
     Assert.assertEquals("查询人数不对",developerCommitStandardList2.size(),1);
@@ -224,7 +224,7 @@ public void  testMultipleRepoGetCommitStandard() throws Exception{
     Assert.assertEquals("开发者不规范提交次数错误",developerCommitStandard1.getDeveloperInvalidCommitCount(),18);
     Assert.assertEquals("开发者总提交次数有误（去Merge）",developerCommitStandard1.getDeveloperValidCommitCount(),18);
 
-    // 单库多人测试
+    // 多库多人测试
     Query query1 = new Query(token,since,until,null,Arrays.asList(repoUuid0,repoUuid1));
     List<DeveloperCommitStandard> developerCommitStandardList1 = measureDeveloperService.getCommitStandard(query1,null);
     Assert.assertEquals("开发者人数有误",developerCommitStandardList1.size(),3);

@@ -16,10 +16,22 @@ import java.util.Map;
 @NoArgsConstructor
 public class DeveloperCommitStandard implements Serializable {
     private String developerName;
+    /**
+     * 开发者提交次数（不含Merge）
+     */
     private int developerValidCommitCount;
+    /**
+     * 开发者包含Jira单号的提交次数
+     */
     private int developerJiraCommitCount;
+    /**
+     * 开发者不规范的提交次数
+     */
     private int developerInvalidCommitCount;
     private double commitStandard;
+    /**
+     * 开发者
+     */
     private List<Map<String,String>> developerJiraCommitInfo;
     private List<Map<String,String>> developerInvalidCommitInfo;
 }

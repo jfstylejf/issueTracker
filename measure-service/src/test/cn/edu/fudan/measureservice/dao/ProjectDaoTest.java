@@ -290,8 +290,7 @@ public void testSetRestInterface() throws Exception {
 public void testSetProjectMapper() throws Exception { 
 //TODO: Test goes here... 
 } 
-
-/** 
+/**
 * 
 * Method: setMeasureMapper(MeasureMapper measureMapper) 
 * 
