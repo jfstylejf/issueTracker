@@ -122,7 +122,6 @@ public class ToolScanImplPara extends ToolScan {
 
     private void setScanResult(ScanRepo scanRepo) {
         scanDao.updateScan(scanRepo);
-
     }
 
     public boolean resultFileDetect() {

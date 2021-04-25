@@ -11,9 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -21,6 +19,24 @@ import java.util.stream.Collectors;
 public class RelationServiceImpl implements RelationService {
     @Autowired
     RelationDao relationDao;
+
+
+    private Map<String,String> type_C2E;
+    @Autowired
+    public void setType_C2E(){
+        type_C2E=new HashMap<>();
+        type_C2E.put("调用","CALL");
+        type_C2E.put("继承","EXTENDS");
+        type_C2E.put("实现","IMPLEMENTS");
+    }
+    private Map<String,String> type_E2C;
+    @Autowired
+    public void setType_E2C(){
+        type_E2C=new HashMap<>();
+        type_E2C.put("CALL","调用");
+        type_E2C.put("EXTENDS","继承");
+        type_E2C.put("IMPLEMENTS","实现");
+    }
 
     @Autowired
     StatisticsDao statisticsDao;
@@ -35,16 +51,11 @@ public class RelationServiceImpl implements RelationService {
 
 
     @Override
-    public RelationData getRelationShips(String ps, String page, String project_names, String repo_uuids, String relation_type, String scan_until, String acs, String order) {
-        log.info("ps: "+ ps );
-        log.info("project_names: "+ project_names );
-        log.info("repo_uuids: "+ repo_uuids );
-        log.info("relation_type: "+ relation_type );
-        log.info("scan_until: "+ scan_until );
-        log.info("scan_until.length: "+ scan_until.length() );
-        log.info("acs: "+ acs );
-        log.info("order: "+ ps );
-
+    public RelationData getRelationShips(String ps, String page, String project_names,  String relation_type, String scan_until, String order) {
+//        log.info("ps: "+ ps );
+//        log.info("project_names: "+ project_names );
+//        log.info("relation_type: "+ relation_type );
+//        log.info("scan_until: "+ scan_until );
         if(scan_until==null||scan_until.length()==0){
             scan_until= TimeUtill.getCurrentDateTime();
         }
@@ -53,9 +64,20 @@ public class RelationServiceImpl implements RelationService {
             List<String> projects= Arrays.asList(project_names.split(","));
             res=res.stream().filter(e->projects.contains(e.getProjectName())).collect(Collectors.toList());
         }
+        if(relation_type!=null&&relation_type.length()>0){
+            List<String> types=Arrays.asList(relation_type.split(",")).stream().map(e->e.toUpperCase()).collect(Collectors.toList());
+
+            res=res.stream().filter(e->{
+                for(String s:types){
+                    if(e.getRelationType().indexOf(type_C2E.get(s))>=0) return true;
+                }
+                return false;
+            }).collect(Collectors.toList());
+        }
         RelationData relationData =new RelationData();
         int id=0;
         sortRelation(res);
+        //todo may one project have many repo
         for(RelationView r:res){
             r.setGroupId(r.getProjectName()+"-"+r.getGroupId());
             r.setId(id++);
@@ -90,6 +112,12 @@ public class RelationServiceImpl implements RelationService {
             reslist=res.subList(start,res.size());
         }else {
             reslist=res.subList(start,start+intps);
+        }
+        for(RelationView r:res){
+            for(String s:type_E2C.keySet()){
+                String resType= r.getRelationType().replace(s,type_E2C.get(s));
+                r.setRelationType(resType);
+            }
         }
         return reslist;
     }

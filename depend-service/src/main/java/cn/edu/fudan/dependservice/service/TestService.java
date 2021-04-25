@@ -12,5 +12,6 @@ public interface TestService {
 //    List<String> getAllRepoUuidThatNeedScan();
     List<ScanRepo> scanAllRepo();
     List<ScanRepo> scanAllRepoNearToOneDate(String toScanDate);
+    List<ScanRepo> scanAllRepoNew();
 }
 

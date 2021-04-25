@@ -1,20 +1,13 @@
 package cn.edu.fudan.dependservice.service.impl;
 
-import cn.edu.fudan.common.domain.po.scan.RepoScan;
-import cn.edu.fudan.common.scan.CommonScanProcess;
-import cn.edu.fudan.common.scan.CommonScanService;
+import cn.edu.fudan.dependservice.component.ScanProcessor;
 import cn.edu.fudan.dependservice.config.ShHomeConfig;
 import cn.edu.fudan.dependservice.dao.StatisticsDao;
-import cn.edu.fudan.dependservice.domain.ProjectIdsInfo;
 import cn.edu.fudan.dependservice.domain.RepoUuidsInfo;
 import cn.edu.fudan.dependservice.domain.ScanRepo;
-import cn.edu.fudan.dependservice.mapper.GroupMapper;
-import cn.edu.fudan.dependservice.mapper.RepoMapper;
 import cn.edu.fudan.dependservice.service.ProcessPrepare;
-import cn.edu.fudan.dependservice.service.TempProcess;
-import cn.edu.fudan.dependservice.service.TempTempProcess;
+import cn.edu.fudan.dependservice.service.ScanProcess;
 import cn.edu.fudan.dependservice.service.TestService;
-import cn.edu.fudan.dependservice.utill.WriteUtill;
 import cn.edu.fudan.dependservice.utill.WriteUtill2;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,17 +26,42 @@ public class TestServiceImpl implements TestService {
     ApplicationContext applicationContext;
 
     @Autowired
+    ScanProcessor scanProcessor;
+
+    @Autowired
     ProcessPrepare processPrepare;
 
     @Autowired
-    TempTempProcess tempTempProcess;
+    ScanProcess scanProcess;
 
     @Autowired
     public void setApplicationContext(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
     }
 
-    // this is scan latest
+    // this is scan latest  // get to scan repo
+    //
+    @Override
+    public List<ScanRepo> scanAllRepoNew() {
+        List<RepoUuidsInfo> repoUuidsInfos= statisticsDao.getallRepoUuid();
+        List<RepoUuidsInfo> repoUuidsInfosThatNeedScan=new ArrayList<>();
+        for(RepoUuidsInfo repoUuidsInfo:repoUuidsInfos){
+            if(repoUuidsInfo.getLanguage()!=null&&(repoUuidsInfo.getLanguage().equals("Java")||repoUuidsInfo.getLanguage().equals("C++"))){
+                repoUuidsInfosThatNeedScan.add(repoUuidsInfo);
+            }
+        }
+        List<ScanRepo> scanRepos =new ArrayList<>();
+        for(RepoUuidsInfo re:repoUuidsInfosThatNeedScan){
+            ScanRepo scanRepo=new ScanRepo();
+            scanRepo.setRepoUuid(re.getRepoUuid());
+            scanRepo.setBranch(re.getBranch());
+            scanRepos.add(scanRepo);
+        }
+        // scan
+        scanProcessor.scan(scanRepos);
+        return scanRepos;
+    }
+    @Deprecated
     public List<ScanRepo> scanAllRepo() {
         List<RepoUuidsInfo> repoUuidsInfos= statisticsDao.getallRepoUuid();
         List<RepoUuidsInfo> repoUuidsInfosThatNeedScan=new ArrayList<>();
@@ -55,16 +73,21 @@ public class TestServiceImpl implements TestService {
         List<String> repoDirs=new ArrayList<>();
         List<ScanRepo> scanRepos =new ArrayList<>();
         for(RepoUuidsInfo re:repoUuidsInfosThatNeedScan){
-            ScanRepo scanRepo=processPrepare.prepareFile(re.getRepoUuid(),re.getBranch(),null);
+            ScanRepo scanRepo=new ScanRepo();
+            scanRepo.setRepoUuid(re.getRepoUuid());
+            scanRepo.setBranch(re.getBranch());
+                    processPrepare.prepareFile(null,scanRepo);
             if(scanRepo.isCopyStatus()){
                 repoDirs.add(scanRepo.getCopyRepoPath());
             }
             scanRepos.add(scanRepo);
         }
+        // scan
+        scanProcessor.scan(scanRepos);
         String configFile = applicationContext.getBean(ShHomeConfig.class).getResultFileDir()+ "source-project-conf.json";
         //todo not all project is java
         WriteUtill2.writeProjecConf(configFile,repoDirs);
-        tempTempProcess.beginScan(scanRepos,null);
+        scanProcess.beginScan(scanRepos,null);
         return scanRepos;
 
 
@@ -81,7 +104,10 @@ public class TestServiceImpl implements TestService {
         List<String> repoDirs=new ArrayList<>();
         List<ScanRepo> scanRepos =new ArrayList<>();
         for(RepoUuidsInfo re:repoUuidsInfosThatNeedScan){
-            ScanRepo scanRepo=processPrepare.prepareFile(re.getRepoUuid(),re.getBranch(),toScanDate);
+            ScanRepo scanRepo=new ScanRepo();
+            scanRepo.setBranch(re.getBranch());
+            scanRepo.setRepoUuid(re.getRepoUuid());
+                    processPrepare.prepareFile(toScanDate,scanRepo);
             if(scanRepo.isCopyStatus()){
                 repoDirs.add(scanRepo.getCopyRepoPath());
             }
@@ -90,9 +116,7 @@ public class TestServiceImpl implements TestService {
         String configFile = applicationContext.getBean(ShHomeConfig.class).getResultFileDir()+ "source-project-conf.json";
         //todo not all project is java
         WriteUtill2.writeProjecConf(configFile,repoDirs);
-        tempTempProcess.beginScan(scanRepos,null);
+        scanProcess.beginScan(scanRepos,null);
         return scanRepos;
-
-
     }
 }

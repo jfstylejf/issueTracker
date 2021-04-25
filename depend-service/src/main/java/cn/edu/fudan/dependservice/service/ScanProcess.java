@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 
 @Data
 @Service
-public class TempTempProcess implements CommonScanService {
+public class ScanProcess implements CommonScanService {
     // todo use toolscan one time
     private static final Logger log = LoggerFactory.getLogger(CommonScanProcess.class);
     private static final String KEY_DELIMITER = "-";

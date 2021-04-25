@@ -115,6 +115,7 @@
             <artifactId>swagger-bootstrap-ui</artifactId>
             <version>1.6</version>
         </dependency>
+<!--        common-->
         <dependency>
             <groupId>cn.edu.fudan</groupId>
             <artifactId>common</artifactId>

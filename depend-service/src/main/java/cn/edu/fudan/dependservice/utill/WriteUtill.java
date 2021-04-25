@@ -1,6 +1,5 @@
 package cn.edu.fudan.dependservice.utill;
 
-import cn.edu.fudan.dependservice.config.ScanConfig;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import lombok.extern.slf4j.Slf4j;
