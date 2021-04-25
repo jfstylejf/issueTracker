@@ -1,6 +1,6 @@
 package cn.edu.fudan.issueservice.dao;
 
-import cn.edu.fudan.issueservice.IssueServiceApplicationTests;
+import cn.edu.fudan.issueservice.IssueServiceApplicationTest;
 import cn.edu.fudan.issueservice.domain.dbo.IssueAnalyzer;
 import cn.edu.fudan.issueservice.domain.dbo.RawIssue;
 import cn.edu.fudan.issueservice.mapper.IssueAnalyzerMapper;
@@ -13,7 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.ArrayList;
 import java.util.List;
 
-public class IssueAnalyzerDaoTest extends IssueServiceApplicationTests {
+public class IssueAnalyzerDaoTest extends IssueServiceApplicationTest {
 
 
     private IssueAnalyzerMapper issueAnalyzerMapper;
