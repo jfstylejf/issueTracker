@@ -34,6 +34,7 @@ public class MeasureJGitHelper extends JGitHelper {
      * @param commit commit id
      * @return RevCommit
      */
+    @Override
     @SneakyThrows
     public RevCommit getRevCommit(String commit){
         return revWalk.parseCommit(repository.resolve(commit));
