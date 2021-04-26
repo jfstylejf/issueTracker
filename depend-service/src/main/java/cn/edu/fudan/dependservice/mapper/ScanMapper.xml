@@ -10,9 +10,11 @@
         <id property="endScanTime" column="end_time"/>
     </resultMap>
 
-    <insert id="insert">
-        insert into issueTracker.dependency_san(repo_uuid,commit_id,status,end_time)
-        values(#{repo_uuid},#{commit_id},#{status},#{end_time})
+
+    <insert id="insert" parameterType="cn.edu.fudan.dependservice.domain.ScanRepo">
+        insert into
+        issueTracker.dependency_san(repo_uuid,commit_id,status,start_time,end_time)
+        values(#{repoUuid},#{scanCommit},#{scanStatus.status},#{scanStatus.startScanTime},#{scanStatus.endScanTime})
     </insert>
     <select id="getScanStatus" resultMap="status">
         select * from issueTracker.dependency_san

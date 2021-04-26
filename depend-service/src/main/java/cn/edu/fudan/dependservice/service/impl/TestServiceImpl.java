@@ -5,9 +5,11 @@ import cn.edu.fudan.dependservice.config.ShHomeConfig;
 import cn.edu.fudan.dependservice.dao.StatisticsDao;
 import cn.edu.fudan.dependservice.domain.RepoUuidsInfo;
 import cn.edu.fudan.dependservice.domain.ScanRepo;
+import cn.edu.fudan.dependservice.domain.ScanStatus;
 import cn.edu.fudan.dependservice.service.ProcessPrepare;
 import cn.edu.fudan.dependservice.service.ScanProcess;
 import cn.edu.fudan.dependservice.service.TestService;
+import cn.edu.fudan.dependservice.utill.TimeUtill;
 import cn.edu.fudan.dependservice.utill.WriteUtill2;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +47,7 @@ public class TestServiceImpl implements TestService {
     public List<ScanRepo> scanAllRepoNew() {
         List<RepoUuidsInfo> repoUuidsInfos= statisticsDao.getallRepoUuid();
         List<RepoUuidsInfo> repoUuidsInfosThatNeedScan=new ArrayList<>();
+        // todo change to lambda
         for(RepoUuidsInfo repoUuidsInfo:repoUuidsInfos){
             if(repoUuidsInfo.getLanguage()!=null&&(repoUuidsInfo.getLanguage().equals("Java")||repoUuidsInfo.getLanguage().equals("C++"))){
                 repoUuidsInfosThatNeedScan.add(repoUuidsInfo);
@@ -52,9 +55,14 @@ public class TestServiceImpl implements TestService {
         }
         List<ScanRepo> scanRepos =new ArrayList<>();
         for(RepoUuidsInfo re:repoUuidsInfosThatNeedScan){
+            // todo set scanstatus
             ScanRepo scanRepo=new ScanRepo();
             scanRepo.setRepoUuid(re.getRepoUuid());
             scanRepo.setBranch(re.getBranch());
+            ScanStatus scanStatus =new ScanStatus();
+            scanStatus.setStartScanTime(TimeUtill.getCurrentDateTime());
+            scanStatus.setTs_start(System.currentTimeMillis());
+            scanStatus.setStatus("scanning");
             scanRepos.add(scanRepo);
         }
         // scan

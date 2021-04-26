@@ -13,13 +13,9 @@ import org.springframework.stereotype.Component;
  * @description
  **/
 @Component
-public class ApplicationStarter  implements ApplicationRunner {
-    @Autowired
-    BatchProcessor batchProcessor;
+public class ApplicationStarter implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        System.out.println(" in applicationStarter ");
-//        batchProcessor.init();
-//        new Thread(new ScanThread()).start();
+        System.out.println(" in shaoxi's application Starter ");
     }
 }

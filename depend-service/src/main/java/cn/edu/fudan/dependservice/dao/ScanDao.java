@@ -29,7 +29,8 @@ public class ScanDao {
     }
     public int updateScan(ScanRepo scanRepo){
         //find if have
-        scanMapper.insert(scanRepo.getRepoUuid(),scanRepo.getScanCommit(),scanRepo.getScanStatus().getStatus(), TimeUtill.getCurrentDateTime());
+        // todo add
+        scanMapper.insert(scanRepo);
         return 1;
 
     }

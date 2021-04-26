@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,20 +46,11 @@ public class ScanProcessor extends Thread {
     // if not static it is should be
 //    private static Boolean scanning=false;
     // must be a Object but not Bollo
-    private static Boolean scanning=new Boolean(true);
     private static class Lock{
 
     }
     private static Object lock =new Lock();
 
-
-    private Map<String,Boolean> scanStatus;
-
-    @Autowired
-    private void setScanStatus(){
-        scanStatus=new HashMap<>();
-
-    }
 //    @Async
     // todo do not need Async
     public void scan(List<ScanRepo> scanRepos){
@@ -79,25 +69,18 @@ public class ScanProcessor extends Thread {
         return batchProcessor.getScanStatus(repouuid);
 
     }
-    public boolean scanStatus(ScanRepo scanRepo){
-
-
-        return true;
-    }
 
      public void scanOneBatch(){
         synchronized(lock){
-//            scanning=!scanning;
             String configFile = applicationContext.getBean(ShHomeConfig.class).getResultFileDir()+ "source-project-conf.json";
             //todo not all project is java
             while (batchProcessor.continueScan()){
                 // todo prepare
                 List<ScanRepo> scanRepos =batchProcessor.getScanList();
-                log.info("in scanOneBatch ,size ="+scanRepos.size());
+                log.info("in one scanOneBatch, size ="+scanRepos.size());
                 try {
                     log.info(" batch batchProcessing.......");
                     Thread.sleep(30*1000);
-
 
                 }catch (Exception e){
                     e.printStackTrace();
@@ -117,8 +100,10 @@ public class ScanProcessor extends Thread {
                 scanProcess.beginScan(scanRepos,null);
 
                  */
+
                 log.info("end of a batch");
             }
+            batchProcessor.inScanning.clear();
 //            scanning=!scanning;
             log.info("end of processor");
 
