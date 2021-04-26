@@ -6,7 +6,7 @@ import cn.edu.fudan.issueservice.domain.dbo.Location;
 import cn.edu.fudan.issueservice.domain.dbo.RawIssue;
 import cn.edu.fudan.issueservice.domain.dbo.RawIssueMatchInfo;
 import cn.edu.fudan.issueservice.domain.enums.RawIssueStatus;
-import cn.edu.fudan.issueservice.util.JGitHelper;
+import cn.edu.fudan.common.jgit.JGitHelper;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

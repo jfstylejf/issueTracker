@@ -61,7 +61,7 @@ public class ToolInvoker {
         ScanStrategy scanStrategy = applicationContext.getBean(PositiveSequenceScanStrategy.class);
 
         //3.set repo source for scan
-        RepoResourceDTO repoResourceDTO = RepoResourceDTO.builder().repoId(repoId).build();
+        RepoResourceDTO repoResourceDTO = RepoResourceDTO.builder().repoUuid(repoId).build();
 
         //4.execute scan
         Assert.notNull(analyzer, "tool " + toolName + " analyzer is null");
@@ -83,14 +83,14 @@ public class ToolInvoker {
         boolean result = true;
         String repoPath = null;
         try {
-            repoPath = restInvoker.getRepoPath(repoResourceDTO.getRepoId());
+            repoPath = restInvoker.getRepoPath(repoResourceDTO.getRepoUuid());
             repoResourceDTO.setRepoPath(repoPath);
             if (StringUtils.isEmpty(repoPath)) {
-                log.error("can not get repo path! repo id --> {}", repoResourceDTO.getRepoId());
+                log.error("can not get repo path! repo id --> {}", repoResourceDTO.getRepoUuid());
                 return false;
             }
             log.info("get repo path --> {}", repoPath);
-            String repoId = repoResourceDTO.getRepoId();
+            String repoId = repoResourceDTO.getRepoUuid();
             String toolName = analyzer.getToolName();
             //1.配置jGit资源
             JGitHelper jGitInvoker = new JGitHelper(repoPath);
@@ -176,7 +176,7 @@ public class ToolInvoker {
             issueRepoDao.updateIssueRepo(issueRepo);
         } finally {
             if (repoPath != null) {
-                restInvoker.freeRepoPath(repoResourceDTO.getRepoId(), repoResourceDTO.getRepoPath());
+                restInvoker.freeRepoPath(repoResourceDTO.getRepoUuid(), repoResourceDTO.getRepoPath());
             }
         }
         return result;
@@ -188,7 +188,7 @@ public class ToolInvoker {
     @Transactional(rollbackFor = Exception.class)
     public void scan(IssueScan issueScan, RepoResourceDTO repoResourceDTO, BaseAnalyzer analyzer, JGitHelper jGitInvoker,
                      IssueMatcher issueMatcher, IssueStatistics issueStatistics, IssuePersistenceManager issuePersistenceManager) throws InterruptedException {
-        String repoId = repoResourceDTO.getRepoId();
+        String repoId = repoResourceDTO.getRepoUuid();
         String repoPath = repoResourceDTO.getRepoPath();
         String commit = issueScan.getCommitId();
         if (analyzer instanceof SonarQubeBaseAnalyzer) {
@@ -236,26 +236,26 @@ public class ToolInvoker {
 
         //4. 缺陷匹配
         issueMatcher.setAnalyzer(analyzer);
-        boolean matchResult = issueMatcher.matchProcess(repoId, commit, jGitInvoker, analyzer.getToolName(), analyzeRawIssues);
-        if (!matchResult) {
-            log.error("match failed ! ");
-            issueScan.setStatus(ScanStatusEnum.MATCH_FAILED.getType());
-            return;
-        }
-        log.info("match success ! ");
+//        boolean matchResult = issueMatcher.matchProcess(repoId, commit, jGitInvoker, analyzer.getToolName(), analyzeRawIssues);
+//        if (!matchResult) {
+//            log.error("match failed ! ");
+//            issueScan.setStatus(ScanStatusEnum.MATCH_FAILED.getType());
+//            return;
+//        }
+//        log.info("match success ! ");
 
         //5. 更新issue信息 ,做相应的缺陷统计
-        issueStatistics.setCommitId(commit);
-        issueStatistics.setCurrentCommitDate(DateTimeUtil.localToUtc(jGitInvoker.getCommitTime(commit)));
-        issueStatistics.setAnalyzer(analyzer);
-        issueStatistics.setJGitHelper(jGitInvoker);
-        boolean statisticalResult = issueStatistics.doingStatisticalAnalysis(issueMatcher, repoId, analyzer.getToolName());
-        if (!statisticalResult) {
-            log.error("statistical failed ! ");
-            issueScan.setStatus(ScanStatusEnum.STATISTICAL_FAILED.getType());
-            return;
-        }
-        log.info("statistical success ! ");
+//        issueStatistics.setCommitId(commit);
+//        issueStatistics.setCurrentCommitDate(DateTimeUtil.localToUtc(jGitInvoker.getCommitTime(commit)));
+//        issueStatistics.setAnalyzer(analyzer);
+//        issueStatistics.setJGitHelper(jGitInvoker);
+//        boolean statisticalResult = issueStatistics.doingStatisticalAnalysis(issueMatcher, repoId, analyzer.getToolName());
+//        if (!statisticalResult) {
+//            log.error("statistical failed ! ");
+//            issueScan.setStatus(ScanStatusEnum.STATISTICAL_FAILED.getType());
+//            return;
+//        }
+//        log.info("statistical success ! ");
 
         //6. 持久化扫描结果
         try {

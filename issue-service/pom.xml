@@ -267,6 +267,13 @@
             <scope>test</scope>
         </dependency>
         <!-- test end  -->
+
+        <dependency>
+            <groupId>cn.edu.fudan</groupId>
+            <artifactId>common</artifactId>
+            <version>1.0.1</version>
+        </dependency>
+
     </dependencies>
 
     <build>

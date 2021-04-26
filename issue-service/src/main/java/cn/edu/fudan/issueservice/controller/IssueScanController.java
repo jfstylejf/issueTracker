@@ -51,7 +51,7 @@ public class IssueScanController {
             return new ResponseBean<>(400, "failed!", "can't analyze this language");
         }
         try {
-            RepoResourceDTO repoResourceDTO = RepoResourceDTO.builder().repoId(repoUuid).build();
+            RepoResourceDTO repoResourceDTO = RepoResourceDTO.builder().repoUuid(repoUuid).build();
             String result = issueScanService.prepareForScan(repoResourceDTO, branch, beginCommit, tool);
             return new ResponseBean<>(200, "success!", result);
         } catch (Exception e) {

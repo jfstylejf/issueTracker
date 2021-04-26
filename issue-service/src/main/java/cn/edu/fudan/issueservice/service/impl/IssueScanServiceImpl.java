@@ -48,7 +48,7 @@ public class IssueScanServiceImpl implements IssueScanService {
     public String prepareForScan(RepoResourceDTO repoResourceDTO, String branch, String beginCommit, String toolName) {
         String repoPath;
         try {
-            String repoId = repoResourceDTO.getRepoId();
+            String repoId = repoResourceDTO.getRepoUuid();
             repoPath = repoResourceDTO.getRepoPath();
             if (repoPath == null) {
                 throw new RuntimeException("can't get repo path!");
@@ -120,8 +120,8 @@ public class IssueScanServiceImpl implements IssueScanService {
 
             return "start scanning";
         } finally {
-            log.info("free repo:{}, path:{}", repoResourceDTO.getRepoId(), repoResourceDTO.getRepoPath());
-            restInvoker.freeRepoPath(repoResourceDTO.getRepoId(), repoResourceDTO.getRepoPath());
+            log.info("free repo:{}, path:{}", repoResourceDTO.getRepoUuid(), repoResourceDTO.getRepoPath());
+            restInvoker.freeRepoPath(repoResourceDTO.getRepoUuid(), repoResourceDTO.getRepoPath());
         }
 
     }

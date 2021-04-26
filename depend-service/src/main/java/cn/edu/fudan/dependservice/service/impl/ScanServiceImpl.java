@@ -55,7 +55,7 @@ public class ScanServiceImpl extends CommonScanProcess {
     }
 
     @Override
-    protected ToolScan getToolScan(String tool) {
+    protected cn.edu.fudan.issueservice.service.impl.ToolScanImpl getToolScan(String tool) {
         //todo retur tool by tool name
         return applicationContext.getBean(ToolScanImpl.class);
     }

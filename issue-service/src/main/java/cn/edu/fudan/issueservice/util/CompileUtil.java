@@ -1,6 +1,7 @@
 package cn.edu.fudan.issueservice.util;
 
 import cn.edu.fudan.issueservice.domain.enums.CompileTool;
+import cn.edu.fudan.issueservice.domain.enums.ToolEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.maven.shared.invoker.*;
 import org.springframework.beans.factory.annotation.Value;
@@ -155,7 +156,7 @@ public class CompileUtil {
         List<String> pathList = new ArrayList<>();
         new DirExplorer((level, path, file) -> (file.isFile() && isContainsCompileFile(path)),
                 (level, path, file) -> pathList.add(file.getAbsolutePath())).explore(repoFile);
-        if (pathList.size() == 0) {
+        if (pathList.isEmpty()) {
             return new ArrayList<>();
         }
         return pathList;
@@ -170,4 +171,7 @@ public class CompileUtil {
         return false;
     }
 
+    public static boolean checkNeedCompile(String tool) {
+        return ToolEnum.SONAR.getType().equals(tool);
+    }
 }

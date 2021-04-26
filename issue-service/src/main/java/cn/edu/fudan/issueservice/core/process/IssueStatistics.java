@@ -7,7 +7,7 @@ import cn.edu.fudan.issueservice.dao.*;
 import cn.edu.fudan.issueservice.domain.dbo.*;
 import cn.edu.fudan.issueservice.domain.enums.IgnoreTypeEnum;
 import cn.edu.fudan.issueservice.util.AstParserUtil;
-import cn.edu.fudan.issueservice.util.JGitHelper;
+import cn.edu.fudan.common.jgit.JGitHelper;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

@@ -1,5 +1,6 @@
 package cn.edu.fudan.issueservice.core.process;
 
+import cn.edu.fudan.common.jgit.JGitHelper;
 import cn.edu.fudan.issueservice.core.analyzer.BaseAnalyzer;
 import cn.edu.fudan.issueservice.core.analyzer.EsLintBaseAnalyzer;
 import cn.edu.fudan.issueservice.core.analyzer.SonarQubeBaseAnalyzer;
