@@ -1,26 +1,19 @@
 package cn.edu.fudan.dependservice.service.impl;
 
-import cn.edu.fudan.common.component.BaseRepoRestManager;
 import cn.edu.fudan.common.domain.po.scan.RepoScan;
 import cn.edu.fudan.common.jgit.JGitHelper;
 import cn.edu.fudan.common.scan.CommonScanProcess;
 import cn.edu.fudan.common.scan.ToolScan;
-import cn.edu.fudan.dependservice.domain.RepoRestManager;
 import cn.edu.fudan.dependservice.mapper.GroupMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Primary;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
-import static org.springframework.context.annotation.AdviceMode.ASPECTJ;
 
 /**
  * description: 依赖分析流程

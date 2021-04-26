@@ -1,4 +1,4 @@
-package cn.edu.fudan.dependservice.utill;
+package cn.edu.fudan.dependservice.util;
 
 import cn.edu.fudan.dependservice.domain.Group;
 import cn.edu.fudan.dependservice.domain.RelationShip;
@@ -23,7 +23,7 @@ import java.util.Map;
 @Builder
 @Value
 @Data
-public class ReadUtill {
+public class ReadUtil {
     private String commitId;
     private String repo_uuid;
 //    private GroupMapper groupMapper;

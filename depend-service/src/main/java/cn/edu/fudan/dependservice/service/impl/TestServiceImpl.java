@@ -9,8 +9,8 @@ import cn.edu.fudan.dependservice.domain.ScanStatus;
 import cn.edu.fudan.dependservice.service.ProcessPrepare;
 import cn.edu.fudan.dependservice.service.ScanProcess;
 import cn.edu.fudan.dependservice.service.TestService;
-import cn.edu.fudan.dependservice.utill.TimeUtill;
-import cn.edu.fudan.dependservice.utill.WriteUtill2;
+import cn.edu.fudan.dependservice.util.TimeUtil;
+import cn.edu.fudan.dependservice.util.WriteUtil2;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -60,7 +60,7 @@ public class TestServiceImpl implements TestService {
             scanRepo.setRepoUuid(re.getRepoUuid());
             scanRepo.setBranch(re.getBranch());
             ScanStatus scanStatus =new ScanStatus();
-            scanStatus.setStartScanTime(TimeUtill.getCurrentDateTime());
+            scanStatus.setStartScanTime(TimeUtil.getCurrentDateTime());
             scanStatus.setTs_start(System.currentTimeMillis());
             scanStatus.setStatus("scanning");
             scanRepos.add(scanRepo);
@@ -94,7 +94,7 @@ public class TestServiceImpl implements TestService {
         scanProcessor.scan(scanRepos);
         String configFile = applicationContext.getBean(ShHomeConfig.class).getResultFileDir()+ "source-project-conf.json";
         //todo not all project is java
-        WriteUtill2.writeProjecConf(configFile,repoDirs);
+        WriteUtil2.writeProjecConf(configFile,repoDirs);
         scanProcess.beginScan(scanRepos,null);
         return scanRepos;
 
@@ -123,7 +123,7 @@ public class TestServiceImpl implements TestService {
         }
         String configFile = applicationContext.getBean(ShHomeConfig.class).getResultFileDir()+ "source-project-conf.json";
         //todo not all project is java
-        WriteUtill2.writeProjecConf(configFile,repoDirs);
+        WriteUtil2.writeProjecConf(configFile,repoDirs);
         scanProcess.beginScan(scanRepos,null);
         return scanRepos;
     }

@@ -1,18 +1,13 @@
-package cn.edu.fudan.dependservice.utill;
+package cn.edu.fudan.dependservice.util;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.serializer.SerializerFeature;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import springfox.documentation.spring.web.json.Json;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
 
 @Slf4j
 @Component
-public class WriteUtill {
+public class WriteUtil {
     public static String projectConf1="{\n" +
             "\t\"architectures\": {},\n" +
             "\t\"projects\": [{\n" +

@@ -3,7 +3,7 @@ package cn.edu.fudan.dependservice.controller;
 import cn.edu.fudan.dependservice.component.ScanProcessor;
 import cn.edu.fudan.dependservice.domain.*;
 import cn.edu.fudan.dependservice.service.StatusService;
-import cn.edu.fudan.dependservice.utill.TimeUtill;
+import cn.edu.fudan.dependservice.util.TimeUtil;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -95,7 +95,7 @@ public class RequestForScanController {
         scanRepo.setBranch(scanBody.getBranch());
         scanRepo.setRepoUuid(scanBody.getRepo_uuid());
         ScanStatus scanStatus =new ScanStatus();
-        scanStatus.setStartScanTime(TimeUtill.getCurrentDateTime());
+        scanStatus.setStartScanTime(TimeUtil.getCurrentDateTime());
         scanStatus.setTs_start(System.currentTimeMillis());
         scanRepo.setScanStatus(scanStatus);
         return scanRepo;

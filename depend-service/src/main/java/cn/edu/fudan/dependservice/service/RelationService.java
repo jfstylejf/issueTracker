@@ -13,4 +13,5 @@ import java.util.List;
 public interface RelationService {
 
     RelationData getRelationShips(String ps, String page, String project_names, String relation_type, String scan_until,  String order);
+    RelationData getRelationShips(String project_names, String relation_type, String scan_until,  String order);
 }
