@@ -64,7 +64,7 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
             Runtime rt = Runtime.getRuntime();
 
             //get bash command
-            String bashCommand = binHome + "executeESLint.sh " + repoPath + " " + repoUuid + "_" + commit + resultFileHome;
+            String bashCommand = binHome + "executeESLint.sh " + repoPath + " " + repoUuid + "_" + commit + " " + resultFileHome;
             log.info("bashCommand -> {}", bashCommand);
 
             //exe command
@@ -90,7 +90,7 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
         StringBuilder eslintCommand = new StringBuilder("eslint --config ${repoPath}/.eslintrc_fdse.json");
 
         for (String ignoreFile : ignoreFiles) {
-            eslintCommand.append(" --ignore-pattern").append(ignoreFile);
+            eslintCommand.append(" --ignore-pattern ").append(ignoreFile);
         }
 
         eslintCommand.append(" ").append(resultFileHome)
@@ -120,7 +120,7 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
 
     private void writeCommandToFile(String command) throws IOException {
         //get file name
-        String fileName = resultFileHome + "eslintCommand.txt";
+        String fileName = resultFileHome + "/eslintCommand.txt";
         //get path
         Path path = Paths.get(fileName);
         //write command
