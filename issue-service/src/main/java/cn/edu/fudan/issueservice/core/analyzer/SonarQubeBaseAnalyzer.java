@@ -2,6 +2,7 @@ package cn.edu.fudan.issueservice.core.analyzer;
 
 import cn.edu.fudan.issueservice.component.RestInterfaceManager;
 import cn.edu.fudan.issueservice.dao.CommitDao;
+import cn.edu.fudan.issueservice.dao.IssueAnalyzerDao;
 import cn.edu.fudan.issueservice.domain.dbo.Location;
 import cn.edu.fudan.issueservice.domain.dbo.RawIssue;
 import cn.edu.fudan.issueservice.domain.enums.RawIssueStatus;
@@ -35,6 +36,8 @@ public class SonarQubeBaseAnalyzer extends BaseAnalyzer {
 
     private CommitDao commitDao;
 
+    private IssueAnalyzerDao issueAnalyzerDao;
+
     private RestInterfaceManager restInterfaceManager;
 
     @Value("${binHome}")
@@ -42,11 +45,11 @@ public class SonarQubeBaseAnalyzer extends BaseAnalyzer {
 
     private static final String COMPONENT = "component";
 
+    private static final String TOOL = "sonarqube";
+
+
     @Override
     public boolean invoke(String repoUuid, String repoPath, String commit) {
-
-        // todo 1 查询数据库中是否有缓存 有则直接返回 无则 执行下面的代码
-
 
         try {
             Runtime rt = Runtime.getRuntime();
@@ -70,9 +73,6 @@ public class SonarQubeBaseAnalyzer extends BaseAnalyzer {
 
     @Override
     public boolean analyze(String repoPath, String repoUuid, String commit) {
-
-        // todo 1 查看数据是否缓存  缓存后则将结果 解析成 rawIssues 并存到 resultRawIssues 中  没有缓存则执行
-
 
         long analyzeStartTime = System.currentTimeMillis();
         boolean isChanged = false;
@@ -351,6 +351,11 @@ public class SonarQubeBaseAnalyzer extends BaseAnalyzer {
     @Autowired
     public void setCommitDao(CommitDao commitDao) {
         this.commitDao = commitDao;
+    }
+
+    @Autowired
+    public void setIssueAnalyzerDao(IssueAnalyzerDao issueAnalyzerDao) {
+        this.issueAnalyzerDao = issueAnalyzerDao;
     }
 
 }

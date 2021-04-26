@@ -10,11 +10,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+/**
+ * @author beethoven
+ */
 @Getter
 public abstract class CommonScanProcess implements CommonScanService {
     private static final Logger log = LoggerFactory.getLogger(CommonScanProcess.class);
@@ -106,7 +110,7 @@ public abstract class CommonScanProcess implements CommonScanService {
         ToolScan specificTool = getToolScan(tool);
 
         // 获取repo所在路径
-        log.info("repoUuid: " + repoUuid);
+        log.info("repoUuid:{} ", repoUuid);
         String repoPath = baseRepoRestManager.getCodeServiceRepo(repoUuid);
         if (repoPath == null) {
             log.error("{} : can't get repoPath", repoUuid);
@@ -114,9 +118,9 @@ public abstract class CommonScanProcess implements CommonScanService {
         }
         List<String> scannedCommitList = getScannedCommitList(repoUuid, tool);
 
-        log.info("scannedCommitList.size():" + scannedCommitList.size());
+        log.info("scannedCommitList.size():{}", scannedCommitList.size());
         boolean initialScan = scannedCommitList.isEmpty();
-        Integer scannedCommitCount = 0;
+        int scannedCommitCount = 0;
         RepoScan repoScan = RepoScan.builder()
                 .repoUuid(repoUuid)
                 .branch(branch)
@@ -128,14 +132,14 @@ public abstract class CommonScanProcess implements CommonScanService {
                 .endScanTime(new Date())
                 .build();
         try {
-            if (beginCommit == null || "".equals(beginCommit)) {
+            if (StringUtils.isEmpty(beginCommit)) {
                 beginCommit = getLastedScannedCommit(repoUuid, tool);
             }
             List<String> toScanCommitList = new JGitHelper(repoPath).getScanCommitListByBranchAndBeginCommit(branch, beginCommit, scannedCommitList);
 
 
             // 筛选出end commit
-            if (endCommit != null && !"".equals(endCommit)) {
+            if (!StringUtils.isEmpty(endCommit)) {
                 int end = toScanCommitList.indexOf(endCommit);
                 if (end == -1) {
                     log.error("cannot find end commit {}", endCommit);

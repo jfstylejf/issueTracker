@@ -38,37 +38,34 @@ public class ProcessPrepare{
 
     }
 
-    public ScanRepo prepareFile(String repoUuid, String branch, String date) {
+    public void prepareFile(String date,ScanRepo scanRepo) {
         String repoPath= null;
-        log.info("to scan bef");
+        log.info("prepareFiles");
         int timeStamp=getTimeStamp(date);
 
-        ScanRepo scanRepo= new ScanRepo();
-        scanRepo.setRepoUuid(repoUuid);
-        scanRepo.setBranch(branch);
         ScanStatus scanStatus=new ScanStatus();
         scanRepo.setScanStatus(scanStatus);
         try {
-            repoPath = baseRepoRestManager.getCodeServiceRepo(repoUuid);
+            repoPath = baseRepoRestManager.getCodeServiceRepo(scanRepo.getRepoUuid());
         }catch (Exception e){
             log.info("Exception: "+ e.getMessage());
             copyFail(scanRepo,scanStatus);
-            return scanRepo;
+            return ;
         }
         if (repoPath == null) {
-            log.error("{} : can't get repoPath", repoUuid);
+            log.error("{} : can't get repoPath", scanRepo.getRepoUuid());
             copyFail(scanRepo,scanStatus);
-            return scanRepo;
+            return ;
         }
         scanRepo.setRepoPath(repoPath);
         try {
             JGitHelper jGitHelper=new JGitHelper(repoPath);
-            String toScanCommit=jGitHelper.gettoScanCommit(branch,timeStamp);
+            String toScanCommit=jGitHelper.gettoScanCommit(scanRepo.getBranch(),timeStamp);
             if(toScanCommit==null){
                 scanRepo.setCopyStatus(false);
                 scanRepo.getScanStatus().setStatus("fail");
-                scanRepo.setMsg(" no commit before the time ");
-                return scanRepo;
+                scanRepo.setMsg("no commit before the time ");
+                return ;
             }
             jGitHelper.checkout(toScanCommit);
             scanRepo.setScanCommit(toScanCommit);
@@ -81,14 +78,14 @@ public class ProcessPrepare{
             if(new File(targetDir).exists()) {
                 log.info("targetDir exit, do not copy again");
                 copyOK(scanRepo,scanStatus);
-                return scanRepo;
+                return ;
             }
             if(copyFile(repoPath,targetDir)){
                 copyOK(scanRepo,scanStatus);
 
             }else {
                 copyFail(scanRepo,scanStatus);
-                return scanRepo;
+                return ;
             }
 
         } catch (Exception e) {
@@ -96,9 +93,9 @@ public class ProcessPrepare{
             scanRepo.getScanStatus().setStatus("fail");
             e.printStackTrace();
         } finally {
-            baseRepoRestManager.freeRepo(repoUuid, repoPath);
+            baseRepoRestManager.freeRepo(scanRepo.getRepoUuid(), repoPath);
         }
-        return scanRepo;
+        return ;
     }
     private int getTimeStamp(String datetime){
         return TimeUtill.timeStampforJgit(datetime);

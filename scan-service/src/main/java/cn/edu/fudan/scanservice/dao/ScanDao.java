@@ -36,4 +36,8 @@ public class ScanDao {
     public Scan getScanByRepoId(String repoId){
         return scanMapper.getScanByRepoId (repoId);
     }
+
+    public boolean checkDeleteSuccessful(String repoId) {
+        return scanMapper.getScanCountByRepoId (repoId) == 0;
+    }
 }

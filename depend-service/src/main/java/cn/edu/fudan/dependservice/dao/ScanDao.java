@@ -1,9 +1,6 @@
 package cn.edu.fudan.dependservice.dao;
 
-import cn.edu.fudan.dependservice.domain.Commit;
-import cn.edu.fudan.dependservice.domain.Group;
-import cn.edu.fudan.dependservice.domain.RelationShip;
-import cn.edu.fudan.dependservice.domain.ScanRepo;
+import cn.edu.fudan.dependservice.domain.*;
 import cn.edu.fudan.dependservice.mapper.GroupMapper;
 import cn.edu.fudan.dependservice.mapper.RelationshipMapper;
 import cn.edu.fudan.dependservice.mapper.ScanMapper;
@@ -35,6 +32,9 @@ public class ScanDao {
         scanMapper.insert(scanRepo.getRepoUuid(),scanRepo.getScanCommit(),scanRepo.getScanStatus().getStatus(), TimeUtill.getCurrentDateTime());
         return 1;
 
+    }
+    public ScanStatus getScanStatus(String repouuid){
+         return  scanMapper.getScanStatus(repouuid);
     }
 
     public int addGroup(Group entity) {

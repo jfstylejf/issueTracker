@@ -81,9 +81,11 @@ public class CloneLocationDao {
                         // FIXME: 2021/4/22
                         int cloneType = 1;
                         int lineCount = cloneLocation.getNum().split(",").length;
+                        String uuid = cloneLocation.getUuid();
                         String detail = cloneLocation.getNum();
                         String className = cloneLocation.getClassName();
-                        CloneDetail cloneDetail = new CloneDetail(projectName, projectId, repoUuid, commitId, groupId, className, startLine, endLine, lineCount, detail, cloneType);
+                        String filePath = cloneLocation.getFilePath();
+                        CloneDetail cloneDetail = new CloneDetail(uuid, projectName, projectId, repoUuid, commitId, filePath, groupId, className, startLine, endLine, lineCount, detail, cloneType);
                         result.add(cloneDetail);
                     }
                 }

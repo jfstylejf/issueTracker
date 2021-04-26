@@ -2,10 +2,8 @@ package cn.edu.fudan.dependservice.controller;
 
 
 import cn.edu.fudan.dependservice.domain.DependencyInfo;
-import cn.edu.fudan.dependservice.domain.MethodOrFileNumInfo;
 import cn.edu.fudan.dependservice.domain.ResponseBean;
 import cn.edu.fudan.dependservice.service.DependencyService;
-import cn.edu.fudan.dependservice.service.impl.DependencyServiceImpl;
 import cn.edu.fudan.dependservice.utill.DateHandler;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -30,11 +28,11 @@ public class RequestController {
         this.dependencyService = dependencyService;
     }
 
-    @ApiOperation(value = "获取循环依赖中文件的数量", httpMethod = "GET", notes = "@return Map{\"code\": String, \"msg\": String, \"data\": List<Map>}")
+    @ApiOperation(value = "获取在循环依赖中文件的数量", httpMethod = "GET", notes = "@return Map{\"code\": String, \"msg\": String, \"data\": List<Map>}")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "since", value = "起始时间(yyyy-MM-dd)", required = true, dataType = "String", defaultValue = "1990-01-01"),
-            @ApiImplicitParam(name = "until", value = "截止时间(yyyy-MM-dd)", required = true, dataType = "String", defaultValue = "当天"),
-            @ApiImplicitParam(name = "projectIds", value = "项目id", dataType = "String"),
+            @ApiImplicitParam(name = "since", value = "起始时间(yyyy-MM-dd)", required = true, dataType = "String"),
+            @ApiImplicitParam(name = "until", value = "截止时间(yyyy-MM-dd)", required = true, dataType = "String"),
+            @ApiImplicitParam(name = "projectIds", value = "项目id, 以逗号间隔", dataType = "String",defaultValue = "所有的project"),
             @ApiImplicitParam(name = "interval", value = "间隔类型", dataType = "String", defaultValue = "week"),
             @ApiImplicitParam(name = "showDetail", value = "是否展示detail", dataType = "String", defaultValue = "false")
     })
@@ -79,7 +77,7 @@ public class RequestController {
             @ApiImplicitParam(name = "interval", value = "间隔类型", dataType = "String", defaultValue = "week"),
             @ApiImplicitParam(name = "showDetail", value = "是否展示detail", dataType = "String", defaultValue = "false")
     })
-    @GetMapping(value = {"/dependency/ifScan"})
+//    @GetMapping(value = {"/dependency/ifScan"})
     @CrossOrigin
     public ResponseBean<List<DependencyInfo>> getCycleNumIfScan(@RequestParam(value = "since") String beginDate,
                                                           @RequestParam(value = "until") String endDate,
