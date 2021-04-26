@@ -1,5 +1,6 @@
 package cn.edu.fudan.measureservice.domain.vo;
 
+import cn.edu.fudan.measureservice.converter.isValidConverter;
 import com.alibaba.excel.annotation.ExcelIgnore;
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.annotation.format.NumberFormat;
@@ -72,6 +73,6 @@ public class ProjectCommitStandardDetail {
      * 是否是规范的提交
      * note 这里的boolean再导入excel需要用到 converter，具体的转换类型可见 {@link com.alibaba.excel.converters}
      */
-    @ExcelProperty(value = "提交是否规范",converter = StringBooleanConverter.class)
-    private boolean isValid;
+    @ExcelProperty(value = "提交是否规范",converter = isValidConverter.class)
+    private Boolean isValid;
 }

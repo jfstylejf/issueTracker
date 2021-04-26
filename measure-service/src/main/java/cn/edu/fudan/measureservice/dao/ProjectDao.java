@@ -46,12 +46,21 @@ public class ProjectDao {
 
 
     /**
-     * 返回所参与repo下的所有开发者列表
+     * 返回所参与repo下的所有开发者列表，若为 null,则返回 “”
      *  @param query 查询条件
      * @return List<String> 返回开发者人员信息
      */
     public List<String> getDeveloperList(Query query) {
-        return projectMapper.getDeveloperList(query.getRepoUuidList(),query.getSince(),query.getUntil());
+        List<String> list = new ArrayList<>();
+        List<String> developerList =  projectMapper.getDeveloperList(query.getRepoUuidList(),query.getSince(),query.getUntil());
+        for (String developer : developerList) {
+            if (developer == null) {
+                list.add("");
+            }else {
+                list.add(developer);
+            }
+        }
+        return list;
     }
 
 

@@ -323,7 +323,7 @@ public class MeasureDeveloperController {
             String token = request.getHeader("token");
             List<ProjectCommitStandardDetail> projectCommitStandardDetailList = measureDeveloperService.getCommitStandardDetailIntegratedByProject(projectNameList,repoUuidList,since,until,token);
             if (valid) {
-                projectCommitStandardDetailList.removeIf(projectCommitStandardDetail -> (!projectCommitStandardDetail.isValid()));
+                projectCommitStandardDetailList.removeIf(projectCommitStandardDetail -> (!projectCommitStandardDetail.getIsValid()));
             }
             Collections.sort(projectCommitStandardDetailList, (o1, o2) -> {
                 if(asc) {
@@ -376,7 +376,7 @@ public class MeasureDeveloperController {
         try {
             String token = request.getHeader("token");
             List<String> committerList = measureDeveloperService.getCommitStandardCommitterList(projectNameList,repoUuidList,token);
-            committerList.sort((o1, o2) -> o1.compareTo(o2));
+            committerList.sort(String::compareTo);
             return new ResponseBean<>(200,"success",committerList);
         }catch (Exception e) {
             e.getMessage();
