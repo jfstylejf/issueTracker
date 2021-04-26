@@ -5,6 +5,7 @@ import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.annotation.format.NumberFormat;
 import com.alibaba.excel.annotation.write.style.ColumnWidth;
 import com.alibaba.excel.converters.booleanconverter.BooleanStringConverter;
+import com.alibaba.excel.converters.string.StringBooleanConverter;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -69,8 +70,8 @@ public class ProjectCommitStandardDetail {
     private String message;
     /**
      * 是否是规范的提交
+     * note 这里的boolean再导入excel需要用到 converter，具体的转换类型可见 {@link com.alibaba.excel.converters}
      */
-
-    @ExcelProperty(value = "提交是否规范",converter = BooleanStringConverter.class)
+    @ExcelProperty(value = "提交是否规范",converter = StringBooleanConverter.class)
     private boolean isValid;
 }
