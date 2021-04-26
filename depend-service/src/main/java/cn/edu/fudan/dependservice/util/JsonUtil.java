@@ -1,14 +1,12 @@
-package cn.edu.fudan.dependservice.utill;
+package cn.edu.fudan.dependservice.util;
 
-import com.alibaba.fastjson.JSONException;
-import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.*;
 
 
 @Slf4j
-public class    JsonUtill {
+public class JsonUtil {
     public static String readJsonFile(String fileName) {
         String jsonStr = "";
         try {

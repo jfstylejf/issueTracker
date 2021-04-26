@@ -4,7 +4,7 @@ package cn.edu.fudan.dependservice.controller;
 import cn.edu.fudan.dependservice.domain.DependencyInfo;
 import cn.edu.fudan.dependservice.domain.ResponseBean;
 import cn.edu.fudan.dependservice.service.DependencyService;
-import cn.edu.fudan.dependservice.utill.DateHandler;
+import cn.edu.fudan.dependservice.util.DateHandler;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;

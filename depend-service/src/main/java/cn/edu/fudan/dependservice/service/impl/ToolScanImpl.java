@@ -7,7 +7,7 @@ import cn.edu.fudan.dependservice.domain.Group;
 import cn.edu.fudan.dependservice.domain.RelationShip;
 import cn.edu.fudan.dependservice.mapper.GroupMapper;
 import cn.edu.fudan.dependservice.mapper.RelationshipMapper;
-import cn.edu.fudan.dependservice.utill.WriteUtill;
+import cn.edu.fudan.dependservice.util.WriteUtil;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -129,7 +129,7 @@ public class ToolScanImpl extends ToolScan {
         this.setResultFileDir(applicationContext.getBean(ShHomeConfig.class).getResultFileDir());
         //make config file
         String configFile = this.resultFileDir + "source-project-conf.json";
-        WriteUtill.writeProjecConf(configFile, this.getScanData().getRepoPath());
+        WriteUtil.writeProjecConf(configFile, this.getScanData().getRepoPath());
         // clean all
         File dir = new File(resultFileDir);
         if (!dir.isDirectory()) {

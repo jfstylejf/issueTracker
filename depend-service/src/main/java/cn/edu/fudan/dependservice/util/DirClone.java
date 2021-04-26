@@ -1,4 +1,4 @@
-package cn.edu.fudan.dependservice.utill;
+package cn.edu.fudan.dependservice.util;
 
 import java.io.File;
 import java.io.FileInputStream;

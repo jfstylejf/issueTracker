@@ -7,8 +7,8 @@ import cn.edu.fudan.common.scan.CommonScanProcess;
 
 import cn.edu.fudan.dependservice.config.ShHomeConfig;
 import cn.edu.fudan.dependservice.domain.ScanRepo;
-import cn.edu.fudan.dependservice.utill.DirClone;
-import cn.edu.fudan.dependservice.utill.TimeUtill;
+import cn.edu.fudan.dependservice.util.DirClone;
+import cn.edu.fudan.dependservice.util.TimeUtil;
 import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -93,7 +93,7 @@ public class ProcessPrepare{
         return ;
     }
     private int getTimeStamp(String datetime){
-        return TimeUtill.timeStampforJgit(datetime);
+        return TimeUtil.timeStampforJgit(datetime);
     }
 
     private void copyOK(ScanRepo scanRepo) {

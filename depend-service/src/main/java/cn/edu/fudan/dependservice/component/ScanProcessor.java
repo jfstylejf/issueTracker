@@ -89,7 +89,7 @@ public class ScanProcessor extends Thread {
 
                 List<String> repoDirs=new ArrayList<>();
                 for(ScanRepo scanRepo:scanRepos){
-                    processPrepare.prepareFile(TimeUtill.getCurrentDateTime(),scanRepo);
+                    processPrepare.prepareFile(TimeUtil.getCurrentDateTime(),scanRepo);
                     if(scanRepo.isCopyStatus()){
                         repoDirs.add(scanRepo.getCopyRepoPath());
                     }

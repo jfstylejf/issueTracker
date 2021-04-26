@@ -1,16 +1,12 @@
 package cn.edu.fudan.dependservice.service.impl;
 
-import cn.edu.fudan.common.component.BaseRepoRestManager;
 import cn.edu.fudan.common.domain.po.scan.RepoScan;
 import cn.edu.fudan.common.scan.CommonScanProcess;
-import cn.edu.fudan.common.scan.CommonScanService;
 import cn.edu.fudan.common.scan.ToolScan;
-import cn.edu.fudan.dependservice.domain.RepoRestManager;
 import cn.edu.fudan.dependservice.mapper.GroupMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 

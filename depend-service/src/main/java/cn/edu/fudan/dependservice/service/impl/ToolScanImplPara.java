@@ -9,8 +9,7 @@ import cn.edu.fudan.dependservice.domain.ScanRepo;
 import cn.edu.fudan.dependservice.domain.ScanStatus;
 import cn.edu.fudan.dependservice.mapper.GroupMapper;
 import cn.edu.fudan.dependservice.mapper.RelationshipMapper;
-import cn.edu.fudan.dependservice.utill.TimeUtill;
-import cn.edu.fudan.dependservice.utill.WriteUtill;
+import cn.edu.fudan.dependservice.util.TimeUtil;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -123,7 +122,7 @@ public class ToolScanImplPara extends ToolScan {
 
     private void setScanResult(ScanRepo scanRepo) {
         ScanStatus scanStatus =scanRepo.getScanStatus();
-        scanStatus.setEndScanTime(TimeUtill.getCurrentDateTime());
+        scanStatus.setEndScanTime(TimeUtil.getCurrentDateTime());
         long now =System.currentTimeMillis();
         scanStatus.setTs_end(now);
         scanStatus.setScanTime(String.valueOf(now-scanStatus.getTs_start()));
