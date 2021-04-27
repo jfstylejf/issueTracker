@@ -316,14 +316,14 @@ public class MeasureDeveloperController {
                                                         @RequestParam(required = false, defaultValue = "1")int page,
                                                         @RequestParam(required = false, defaultValue = "10")int ps,
                                                         @RequestParam(required = false, defaultValue = "true") boolean asc,
-                                                        @RequestParam(required = false, defaultValue = "false") boolean valid,
+                                                        @RequestParam(required = false, defaultValue = "false") boolean is_valid,
                                                         @RequestParam(required = false, defaultValue = "") String order,
                                                         HttpServletRequest request) {
         try { //todo 增加更具开发者查询功能
             until = timeProcess(until);
             String token = request.getHeader("token");
             List<ProjectCommitStandardDetail> projectCommitStandardDetailList = measureDeveloperService.getCommitStandardDetailIntegratedByProject(projectNameList,repoUuidList,committer,since,until,token);
-            if (valid) {
+            if (is_valid) {
                 projectCommitStandardDetailList.removeIf(projectCommitStandardDetail -> (!projectCommitStandardDetail.getIsValid()));
             }
             Collections.sort(projectCommitStandardDetailList, (o1, o2) -> {
