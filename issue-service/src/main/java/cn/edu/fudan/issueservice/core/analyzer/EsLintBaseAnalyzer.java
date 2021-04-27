@@ -11,8 +11,10 @@ import cn.edu.fudan.issueservice.domain.dbo.Location;
 import cn.edu.fudan.issueservice.domain.dbo.RawIssue;
 import cn.edu.fudan.issueservice.domain.enums.JavaScriptIssuePriorityEnum;
 import cn.edu.fudan.issueservice.domain.enums.ToolEnum;
-import cn.edu.fudan.issueservice.util.*;
 import cn.edu.fudan.issueservice.util.FileFilter;
+import cn.edu.fudan.issueservice.util.FileUtil;
+import cn.edu.fudan.issueservice.util.JGitHelper;
+import cn.edu.fudan.issueservice.util.StringsUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import lombok.Setter;
@@ -21,11 +23,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -51,25 +50,11 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
     @Override
     public boolean invoke(String repoUuid, String repoPath, String commit) {
         try {
-            //eslint ignore
-            List<String> ignoreFiles = getIgnoreFiles(repoPath);
-
-            //get command
-            StringBuilder eslintCommand = getEsLintCommand(ignoreFiles, repoPath, repoUuid + "_" + commit);
-
-            //write command to file
-            writeCommandToFile(eslintCommand.toString());
-
-            //ESLint exe command
             Runtime rt = Runtime.getRuntime();
-
-            //get bash command
-            String bashCommand = binHome + "executeESLint.sh " + repoPath + " " + repoUuid + "_" + commit + " " + resultFileHome;
-            log.info("bashCommand -> {}", bashCommand);
-
-            //exe command
-            Process process = rt.exec(bashCommand);
-
+            //ESLint exe command
+            String command = binHome + "executeESLint.sh " + repoPath + " " + repoUuid + "_" + commit;
+            log.info("command -> {}", command);
+            Process process = rt.exec(command);
             //wait command 200s,if time > 200,invoke tool failed
             boolean timeout = process.waitFor(200L, TimeUnit.SECONDS);
             if (!timeout) {
@@ -77,56 +62,11 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
                 log.error("invoke tool timeout ! (200s)");
                 return false;
             }
-
             return process.exitValue() == 0;
         } catch (Exception e) {
             log.error("ESLint can not parse this repo,repoUuid: {},commit: {}", repoUuid, commit);
         }
         return false;
-    }
-
-    private StringBuilder getEsLintCommand(List<String> ignoreFiles, String repoPath, String repoName) {
-
-        StringBuilder eslintCommand = new StringBuilder("eslint --config ").append(repoPath).append("/.eslintrc_fdse.json");
-
-        for (String ignoreFile : ignoreFiles) {
-            eslintCommand.append(" --ignore-pattern ").append(ignoreFile).append(" ");
-        }
-
-        eslintCommand.append("--output-file").append(resultFileHome).append("/eslint-report_")
-                .append(repoName).append(".json --format json ").append(repoPath).append(" > ")
-                .append(resultFileHome).append("eslint-running-").append(repoName).append(".log 2>&1");
-
-        log.info("eslintCommand -> {}", eslintCommand.toString());
-
-        return eslintCommand;
-    }
-
-    private List<String> getIgnoreFiles(String repoPath) throws IOException {
-
-        List<String> ignoreFiles = new ArrayList<>();
-
-        if (new File(repoPath + "/.eslintignore").exists()) {
-            try (BufferedReader buffer = new BufferedReader(new FileReader(repoPath + "/.eslintignore"))) {
-                String s;
-                while ((s = buffer.readLine()) != null) {
-                    ignoreFiles.add(s);
-                }
-            }
-        }
-
-        return ignoreFiles;
-    }
-
-    private void writeCommandToFile(String command) throws IOException {
-        //get file name
-        String fileName = resultFileHome + "/eslintCommand.txt";
-        //get path
-        Path path = Paths.get(fileName);
-        //write command
-        try (BufferedWriter writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
-            writer.write(command);
-        }
     }
 
     @Override
@@ -363,11 +303,12 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
         this.commitDao = commitDao;
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         EsLintBaseAnalyzer esLintBaseAnalyzer = new EsLintBaseAnalyzer();
         esLintBaseAnalyzer.setBabelEsLintPath("/Users/beethoven/Desktop/saic/IssueTracker-Master/issue-service/src/main/resources/node/babelEsLint.js");
         esLintBaseAnalyzer.setResultFileHome("/Users/beethoven/Desktop/saic/issue-tracker-web");
-        esLintBaseAnalyzer.writeCommandToFile("123");
-        esLintBaseAnalyzer.writeCommandToFile("1234");
+        esLintBaseAnalyzer.analyze("/Users/beethoven/Desktop/saic/issue-tracker-web", "test", "4f42e73bda0a80d044a013ef73da4d8af0f4c981");
+        JsTree jsTree = new JsTree(Collections.singletonList("/Users/beethoven/Desktop/saic/issue-tracker-web/src/pages/Home/Home.js"), "", "");
+        esLintBaseAnalyzer.handleFieldName(24, 25, new Location(), "/Users/beethoven/Desktop/saic/issue-tracker-web/src/pages/Home/Home.js", jsTree);
     }
 }
