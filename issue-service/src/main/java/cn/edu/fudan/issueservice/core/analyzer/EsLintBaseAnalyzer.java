@@ -55,7 +55,7 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
             List<String> ignoreFiles = getIgnoreFiles(repoPath);
 
             //get command
-            StringBuilder eslintCommand = getEsLintCommand(ignoreFiles);
+            StringBuilder eslintCommand = getEsLintCommand(ignoreFiles, repoPath, repoUuid + "_" + commit);
 
             //write command to file
             writeCommandToFile(eslintCommand.toString());
@@ -85,17 +85,17 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
         return false;
     }
 
-    private StringBuilder getEsLintCommand(List<String> ignoreFiles) {
+    private StringBuilder getEsLintCommand(List<String> ignoreFiles, String repoPath, String repoName) {
 
-        StringBuilder eslintCommand = new StringBuilder("eslint --config ${repoPath}/.eslintrc_fdse.json");
+        StringBuilder eslintCommand = new StringBuilder("eslint --config ").append(repoPath).append("/.eslintrc_fdse.json");
 
         for (String ignoreFile : ignoreFiles) {
-            eslintCommand.append(" --ignore-pattern ").append(ignoreFile);
+            eslintCommand.append(" --ignore-pattern ").append(ignoreFile).append(" ");
         }
 
-        eslintCommand.append(" ").append(resultFileHome)
-                .append(" eslint-report_${repoName}.json --format json ${repoPath} > ")
-                .append(resultFileHome).append("eslint-running-${repoName}.log 2>&1");
+        eslintCommand.append("--output-file").append(resultFileHome).append("/eslint-report_")
+                .append(repoName).append(".json --format json ").append(repoPath).append(" > ")
+                .append(resultFileHome).append("eslint-running-").append(repoName).append(".log 2>&1");
 
         log.info("eslintCommand -> {}", eslintCommand.toString());
 
