@@ -175,7 +175,7 @@ public class ToolScanImpl extends ToolScan {
         }
         try {
             ShThread2 shRunner = new ShThread2();
-            shRunner.setShName("tdepend2.sh");
+            shRunner.setShName("stopScan.sh");
             shRunner.setDependenceHome(dependenceHome);
             shRunner.setRepoPath(scanData.getRepoPath());
             Thread shThread = new Thread(shRunner);

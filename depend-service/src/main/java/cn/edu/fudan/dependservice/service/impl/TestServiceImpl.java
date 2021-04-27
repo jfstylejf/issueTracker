@@ -63,6 +63,7 @@ public class TestServiceImpl implements TestService {
             scanStatus.setStartScanTime(TimeUtil.getCurrentDateTime());
             scanStatus.setTs_start(System.currentTimeMillis());
             scanStatus.setStatus("scanning");
+            scanRepo.setScanStatus(scanStatus);
             scanRepos.add(scanRepo);
         }
         // scan

@@ -38,16 +38,10 @@ public class Scan {
 
     @RequestMapping(value = {"depend/scanTest"},method = RequestMethod.POST)
     public ResponseBean<List<ScanRepo>> scanT(){
-//        if(scannning){
-//            return new ResponseBean<>(200,"in scannning",null);
-//        }
-//        scannning=true;
-
         long scanStartTime =System.currentTimeMillis();
         List<ScanRepo> data =testService.scanAllRepoNew();
         long costTime =(System.currentTimeMillis()-scanStartTime)/1000;
         String msg= "scan cost "+ costTime+" seconds";
-//        scannning=false;
         return new ResponseBean<>(200, msg, data);
     }
 

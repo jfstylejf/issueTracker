@@ -30,14 +30,12 @@ public class BatchProcessor {
     }
 
     public List<ScanRepo> getScanList() {
-        List<ScanRepo> res = new ArrayList<>();
         synchronized (scanQueue) {
-            while (res.size() < batchNum && !scanQueue.isEmpty()) {
-                res.add(scanQueue.poll());
+            while (inScanning.size() < batchNum && !scanQueue.isEmpty()) {
+                inScanning.add(scanQueue.poll());
             }
         }
-        inScanning = res;
-        return res;
+        return inScanning;
     }
 
     public ScanStatus getScanStatus(String repouuid) {
