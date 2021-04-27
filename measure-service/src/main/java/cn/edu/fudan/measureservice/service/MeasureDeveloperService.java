@@ -985,11 +985,11 @@ public class MeasureDeveloperService {
      * @return new ArrayList<{@link ProjectCommitStandardDetail}>
      */
     @SneakyThrows
-    public synchronized List<ProjectCommitStandardDetail> getCommitStandardDetailIntegratedByProject(String projectNameList,String repoUuidList,String since,String until,String token) {
+    public synchronized List<ProjectCommitStandardDetail> getCommitStandardDetailIntegratedByProject(String projectNameList,String repoUuidList,String committer,String since,String until,String token) {
         List<ProjectCommitStandardDetail> projectCommitStandardDetailList = new ArrayList<>();
         List<String> visibleRepoList = projectDao.getVisibleRepoListByProjectNameAndRepo(projectNameList,repoUuidList,token);
         for (String repoUuid : visibleRepoList) {
-            Query query = new Query(token,since,until,null,Collections.singletonList(repoUuid));
+            Query query = new Query(token,since,until,committer,Collections.singletonList(repoUuid));
             if (!projectDao.getRepoInfoMap().containsKey(repoUuid)) {
                 projectDao.insertProjectInfo(token);
             }
