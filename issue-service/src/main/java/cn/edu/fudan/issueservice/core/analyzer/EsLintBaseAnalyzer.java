@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -49,7 +50,16 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
 
     @Override
     public boolean invoke(String repoUuid, String repoPath, String commit) {
+
         try {
+            File file = new File(repoPath + "/.eslintignore");
+            if (!file.exists()){
+                boolean newFile = file.createNewFile();
+                if (!newFile){
+                    log.error("create .eslintignore failed!");
+                    return false;
+                }
+            }
             Runtime rt = Runtime.getRuntime();
             //ESLint exe command
             String command = binHome + "executeESLint.sh " + repoPath + " " + repoUuid + "_" + commit;
