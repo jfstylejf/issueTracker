@@ -11,6 +11,8 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Scope;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -22,10 +24,13 @@ import java.io.IOException;
 @Slf4j
 @RestController
 @CrossOrigin
+@Scope("singleton")
 public class RelationController {
     private static final String PARAMETER_IS_EMPTY = "parameter is empty";
     private static final String NO_SUCH_PROJECT = "no such project";
     private RelationService relationService;
+    @Value("sdfsd")
+    private String kkk;
 
     private static final String RESPONSE_STATUS_SUCCESS = "success";
 

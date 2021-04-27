@@ -8,13 +8,14 @@
         <id property="status" column="status"/>
         <id property="startScanTime" column="start_time"/>
         <id property="endScanTime" column="end_time"/>
+        <id property="scanTime" column="scan_time"/>
     </resultMap>
 
 
     <insert id="insert" parameterType="cn.edu.fudan.dependservice.domain.ScanRepo">
         insert into
-        issueTracker.dependency_san(repo_uuid,commit_id,status,start_time,end_time)
-        values(#{repoUuid},#{scanCommit},#{scanStatus.status},#{scanStatus.startScanTime},#{scanStatus.endScanTime})
+        issueTracker.dependency_san(repo_uuid,commit_id,status,start_time,end_time,scan_time)
+        values(#{repoUuid},#{scanCommit},#{scanStatus.status},#{scanStatus.startScanTime},#{scanStatus.endScanTime},#{scanStatus.scanTime})
     </insert>
     <select id="getScanStatus" resultMap="status">
         select * from issueTracker.dependency_san

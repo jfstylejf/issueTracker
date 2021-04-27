@@ -4,6 +4,8 @@ import cn.edu.fudan.dependservice.component.ScanProcessor;
 import cn.edu.fudan.dependservice.domain.*;
 import cn.edu.fudan.dependservice.service.StatusService;
 import cn.edu.fudan.dependservice.util.TimeUtil;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,19 +31,15 @@ public class RequestForScanController {
         // Array list is not  thread safy
         this.toScanList=new Vector<>();
     }
-    @ApiOperation(value = "被scan服务调用来开启依赖分析的扫描", httpMethod = "POST", notes = "@return Map{\"code\": String, \"msg\": String, \"data\": List<Map>}")
-//    @ApiImplicitParams({
-//            @ApiImplicitParam(name = "since", value = "起始时间(yyyy-MM-dd)", required = true, dataType = "String", defaultValue = "1990-01-01"),
-//            @ApiImplicitParam(name = "until", value = "截止时间(yyyy-MM-dd)", required = true, dataType = "String", defaultValue = "当天"),
-//            @ApiImplicitParam(name = "projectIds", value = "项目id", dataType = "String"),
-//            @ApiImplicitParam(name = "interval", value = "间隔类型", dataType = "String", defaultValue = "week"),
-//            @ApiImplicitParam(name = "showDetail", value = "是否展示detail", dataType = "String", defaultValue = "false")
-//    })
+    @ApiOperation(value = "被scan服务调用来开启依赖分析的扫描", httpMethod = "POST", notes = "@return Map{\"code\": String, \"msg\": String, \"data\":null}")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "scanBody", value = "开发人员信息列表", dataType = "ScanBody", required = true)
+    })
     @PostMapping(value = {"dependency/dependency"})
     public ResponseBean<String> scanByScan(@RequestBody ScanBody scanBody) {
         ScanRepo scanRepo = initScanRepo(scanBody);
         new Thread(() -> scanOneRepo(scanRepo)).start();
-        return new ResponseBean<>(200,"successs",null);
+        return new ResponseBean<>(200,"success",null);
     }
     //todo why can not async
 //    @Async("taskExecutor")
@@ -62,6 +60,10 @@ public class RequestForScanController {
             e.printStackTrace();
         }
     }
+    @ApiOperation(value = "获取扫描状态", httpMethod = "GET", notes = "@return Map{\"code\": String, \"msg\": String, \"data\":null}")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "scanBody", value = "开发人员信息列表", dataType = "ScanBody", required = true)
+    })
     @GetMapping(value = {"dependency/dependency/scan-status"})
     public ResponseBean<ScanStatus> getScanStatus(@RequestParam(value = "repo_uuid") String repoUuid) {
         // get if in scanning by processor

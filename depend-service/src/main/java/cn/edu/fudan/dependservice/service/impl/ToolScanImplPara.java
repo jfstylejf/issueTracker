@@ -125,7 +125,7 @@ public class ToolScanImplPara extends ToolScan {
         scanStatus.setEndScanTime(TimeUtil.getCurrentDateTime());
         long now =System.currentTimeMillis();
         scanStatus.setTs_end(now);
-        scanStatus.setScanTime(String.valueOf(now-scanStatus.getTs_start()));
+        scanStatus.setScanTime(String.valueOf((now-scanStatus.getTs_start())/1000));
         scanDao.updateScan(scanRepo);
     }
 
@@ -198,14 +198,13 @@ public class ToolScanImplPara extends ToolScan {
 
         try {
             ShThread2 shRunner = new ShThread2();
-            shRunner.setShName("tdepend2.sh");
+            shRunner.setShName("stopScan.sh");
             shRunner.setDependenceHome(dependenceHome);
             shRunner.setRepoPath(scanData.getRepoPath());
             Thread shThread = new Thread(shRunner);
             shThread.start();
             shThread.join();
-            log.info("sh2 end ");
-
+            log.info("stopScan.sh end ");
         } catch (Exception e) {
             log.error("Exception:" + e.getMessage());
         }
