@@ -60,9 +60,9 @@ public class RequestForScanController {
             e.printStackTrace();
         }
     }
-    @ApiOperation(value = "获取扫描状态", httpMethod = "GET", notes = "@return Map{\"code\": String, \"msg\": String, \"data\":null}")
+    @ApiOperation(value = "获取扫描状态", httpMethod = "GET", notes = "@return Map{\"code\": String, \"msg\": String, \"data\":ScanStatus}")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "scanBody", value = "开发人员信息列表", dataType = "ScanBody", required = true)
+            @ApiImplicitParam(name = "repo_uuid", value = "repouuid", dataType = "String", required = true)
     })
     @GetMapping(value = {"dependency/dependency/scan-status"})
     public ResponseBean<ScanStatus> getScanStatus(@RequestParam(value = "repo_uuid") String repoUuid) {
