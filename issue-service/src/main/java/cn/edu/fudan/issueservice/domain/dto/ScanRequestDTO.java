@@ -10,4 +10,5 @@ public class ScanRequestDTO {
     private String repoUuid;
     private String branch;
     private String beginCommit;
+    private String endCommit;
 }
