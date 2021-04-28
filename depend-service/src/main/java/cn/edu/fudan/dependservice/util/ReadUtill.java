@@ -1,4 +1,4 @@
-package cn.edu.fudan.dependservice.service.impl;
+package cn.edu.fudan.dependservice.util;
 
 import cn.edu.fudan.dependservice.domain.Group;
 import cn.edu.fudan.dependservice.domain.RelationShip;

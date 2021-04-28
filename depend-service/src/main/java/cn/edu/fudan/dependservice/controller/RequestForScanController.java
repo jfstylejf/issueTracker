@@ -28,7 +28,6 @@ public class RequestForScanController {
     private List<ScanRepo> toScanList;
     @Autowired
     public void setToScanList(){
-        // Array list is not  thread safy
         this.toScanList=new Vector<>();
     }
     @ApiOperation(value = "被scan服务调用来开启依赖分析的扫描", httpMethod = "POST", notes = "@return Map{\"code\": String, \"msg\": String, \"data\":null}")
@@ -44,7 +43,6 @@ public class RequestForScanController {
     //todo why can not async
 //    @Async("taskExecutor")
     public void scanOneRepo(ScanRepo scanRepo){
-        //todo need I to get sanCommit
         try {
             toScanList.add(scanRepo);
             int size =toScanList.size();
@@ -79,8 +77,8 @@ public class RequestForScanController {
             scanStatus.setScanTime(scanTime);
             return new ResponseBean<>(200,"success",scanStatus);
         }
-        scanStatus=statusService.getScanStatus(repoUuid);
         //go to database for status
+        scanStatus=statusService.getScanStatus(repoUuid);
 
         return new ResponseBean<>(200,"success",scanStatus);
     }

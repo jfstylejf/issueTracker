@@ -9,6 +9,7 @@ import cn.edu.fudan.dependservice.domain.ScanRepo;
 import cn.edu.fudan.dependservice.domain.ScanStatus;
 import cn.edu.fudan.dependservice.mapper.GroupMapper;
 import cn.edu.fudan.dependservice.mapper.RelationshipMapper;
+import cn.edu.fudan.dependservice.util.ReadUtill;
 import cn.edu.fudan.dependservice.util.TimeUtil;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;

@@ -13,9 +13,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author shaoxi
@@ -94,7 +92,8 @@ public class ScanProcessor extends Thread {
 
                 List<String> repoDirs=new ArrayList<>();
                 for(ScanRepo scanRepo:scanRepos){
-                    processPrepare.prepareFile(TimeUtil.getCurrentDateTime(),scanRepo);
+                    if(scanRepo.toString()==null) scanRepo.setToScanDate(TimeUtil.getCurrentDateTime());
+                    processPrepare.prepareFile(scanRepo.getToScanDate(),scanRepo);
                     if(scanRepo.isCopyStatus()){
                         repoDirs.add(scanRepo.getCopyRepoPath());
                     }
@@ -103,9 +102,6 @@ public class ScanProcessor extends Thread {
                 //todo not all project is java
                 WriteUtil2.writeProjecConf(configFile,repoDirs);
                 scanProcess.beginScan(scanRepos,null);
-
-
-
                 log.info("end of a batch");
                 batchProcessor.inScanning.clear();
             }

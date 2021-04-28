@@ -65,13 +65,10 @@ public class ProcessPrepare{
             jGitHelper.checkout(toScanCommit);
             scanRepo.setScanCommit(toScanCommit);
             String[] repoPaths=repoPath.split(File.separator);
-            log.info("repoPath: " +repoPath);
 
             targetDir=repoDir+repoPaths[repoPaths.length-1]+"_"+toScanCommit;
-            log.info("targetDir :"+targetDir);
             scanRepo.setCopyRepoPath(targetDir);
             if(new File(targetDir).exists()) {
-                log.info("targetDir exit, do not copy again");
                 copyOK(scanRepo);
                 return ;
             }
