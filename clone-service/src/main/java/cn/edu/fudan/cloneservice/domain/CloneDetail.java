@@ -1,8 +1,10 @@
 package cn.edu.fudan.cloneservice.domain;
 
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.Getter;
 
+@Data
 @AllArgsConstructor
 @Getter
 public class CloneDetail implements Comparable<CloneDetail>{
@@ -19,7 +21,6 @@ public class CloneDetail implements Comparable<CloneDetail>{
     private int lineCount;
     private String detail;
     private int cloneType;
-
 
     @Override
     public int compareTo(CloneDetail o) {

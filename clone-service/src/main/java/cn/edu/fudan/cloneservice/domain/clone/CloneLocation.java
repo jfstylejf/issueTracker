@@ -1,10 +1,12 @@
 package cn.edu.fudan.cloneservice.domain.clone;
 
+import cn.edu.fudan.cloneservice.domain.CloneDetailOverall;
+
 /**
  * @author zyh
  * @date 2020/5/25
  */
-public class CloneLocation {
+public class CloneLocation implements Comparable<CloneLocation>{
     private String uuid;
     private String repoId;
     private String commitId;
@@ -31,6 +33,20 @@ public class CloneLocation {
     private String code;
 
     @Override
+    public int compareTo(CloneLocation o) {
+        int thisValue;
+        int objectValue;
+        thisValue = Integer.parseInt(this.category);
+        objectValue = Integer.parseInt(o.category);
+        if(thisValue > objectValue){
+            return 1;
+        }else if(thisValue < objectValue){
+            return -1;
+        }
+        return 0;
+    }
+
+    @Override
     public boolean equals(Object obj){
         if(this == obj){
             return true;
@@ -47,6 +63,7 @@ public class CloneLocation {
 
         return false;
     }
+
 
     public String getUuid() {
         return uuid;
