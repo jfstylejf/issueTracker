@@ -33,7 +33,7 @@ public class ShThread implements Runnable {
                 log.error("invoke tool timeout ! (1800s)");
                 return false;
             }
-            log.info("end of sh1");
+            log.info("end of scan.sh");
             return process.exitValue() == 0;
         } catch (Exception e) {
             e.printStackTrace();

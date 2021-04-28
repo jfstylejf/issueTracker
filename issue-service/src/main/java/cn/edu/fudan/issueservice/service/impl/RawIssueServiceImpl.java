@@ -61,7 +61,7 @@ public class RawIssueServiceImpl implements RawIssueService {
             String uuid = (String) rawIssue.get(UUID);
             rawIssue.put(STATUS, rawIssueStatus.get(uuid));
         });
-
+        result.sort((o1, o2) -> (int) o1.get("version") - (int) o2.get("version"));
         //get repo uuid
         String repoUuid = result.isEmpty() ? "" : (String) result.get(0).get("repoUuid");
         //solved or merge solved

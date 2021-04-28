@@ -2,10 +2,7 @@ package cn.edu.fudan.measureservice.dao;
 
 import cn.edu.fudan.measureservice.component.RestInterfaceManager;
 import cn.edu.fudan.measureservice.domain.bo.DeveloperLevel;
-import cn.edu.fudan.measureservice.domain.dto.DeveloperRepoInfo;
-import cn.edu.fudan.measureservice.domain.dto.Query;
-import cn.edu.fudan.measureservice.domain.dto.RepoInfo;
-import cn.edu.fudan.measureservice.domain.dto.UserInfoDTO;
+import cn.edu.fudan.measureservice.domain.dto.*;
 import cn.edu.fudan.measureservice.domain.enums.ToolEnum;
 import cn.edu.fudan.measureservice.mapper.MeasureMapper;
 import cn.edu.fudan.measureservice.mapper.ProjectMapper;
@@ -49,12 +46,21 @@ public class ProjectDao {
 
 
     /**
-     * 返回所参与repo下的所有开发者列表
+     * 返回所参与repo下的所有开发者列表，若为 null,则返回 “”
      *  @param query 查询条件
      * @return List<String> 返回开发者人员信息
      */
     public List<String> getDeveloperList(Query query) {
-        return projectMapper.getDeveloperList(query.getRepoUuidList(),query.getSince(),query.getUntil());
+        List<String> list = new ArrayList<>();
+        List<String> developerList =  projectMapper.getDeveloperList(query.getRepoUuidList(),query.getSince(),query.getUntil());
+        for (String developer : developerList) {
+            if (developer == null) {
+                list.add("");
+            }else {
+                list.add(developer);
+            }
+        }
+        return list;
     }
 
 
@@ -375,7 +381,12 @@ public class ProjectDao {
         source.removeIf(o -> !target.contains(o));
         return source;
     }
-
+    /**
+     * 去除source中不在target中的 project , 无则返回空列表
+     * @param source 待去除项目
+     * @param target 标志项目
+     * @return List<String> source
+     */
     public List<String> mergeBetweenProject(List<String> source, List<String> target) {
         Objects.requireNonNull(target,"the target list should not be null");
         if(target.size()==0) {
@@ -457,9 +468,60 @@ public class ProjectDao {
     }
 
     /**
-     * 获取 projectName 列表
+     * 通过前端查询的项目列表和库列表，来获得可查询的库信息
+     * @param projectNameList 查询项目列表
+     * @param repoUuidList 查询库列表
+     * @param token 查询权限
+     * @return 可查询库列表
+     */
+    @SneakyThrows
+    public List<String> getVisibleRepoListByProjectNameAndRepo(String projectNameList, String repoUuidList, String token) {
+        List<String> visibleProjectInvolvedRepoList;
+        // Case 1 : 若查询项目列表不为空，则查询项目权限内可看库
+        if(projectNameList!=null && !"".equals(projectNameList)) {
+            visibleProjectInvolvedRepoList = new ArrayList<>();
+            String[] projects = projectNameList.split(split);
+            for (String projectName : projects) {
+                visibleProjectInvolvedRepoList.addAll(getProjectRepoList(projectName,token));
+            }
+        }else {  // Case 2 : 若查询项目列表为空，则查询权限内可见所有项目的库列表
+            visibleProjectInvolvedRepoList = involvedRepoProcess(null,token);
+        }
+        List<String> visibleRepoList;
+        // Case 1 : 若给定了查询库列表， 则根据查询库列表对 visibleProjectInvolvedRepoList 进行过滤，只取交集
+        if (repoUuidList!=null && !"".equals(repoUuidList)) {
+            List<String> queryRepoList = Arrays.asList(repoUuidList.split(split));
+            visibleRepoList = mergeBetweenRepo(queryRepoList,visibleProjectInvolvedRepoList);
+        }else {  // Case 2 : 若没有给定查询库列表， 则可查询库列表就为 visibleProjectInvolvedRepoList
+            visibleRepoList = visibleProjectInvolvedRepoList;
+        }
+        return visibleRepoList;
+    }
+
+
+    /**
+     * 根据 projectIds 获取可查询的项目列表
+     * @param projectIds 查询项目 Id
+     * @param token 查询权限
+     * @return {@link ProjectPair} checkedProjectPair
+     */
+    @SneakyThrows
+    public List<ProjectPair> getVisibleProjectPairListByProjectIds(String projectIds, String token) {
+        List<ProjectPair> projectPairList = new ArrayList<>();
+        Map<String,Integer> queryProjectMap = getProjectNameById(projectIds);
+        List<String> visibleProjectList = getVisibleProjectByToken(token);
+        List<String> checkedProjectList = mergeBetweenProject(new ArrayList<>(queryProjectMap.keySet()),visibleProjectList);
+        for (String projectName : checkedProjectList) {
+            projectPairList.add(new ProjectPair(projectName,queryProjectMap.get(projectName)));
+        }
+        return projectPairList;
+    }
+
+
+    /**
+     * 根据查询项目Id, 获取 projectName 列表
      * @param projectIds 查询 projectId 列表
-     * @return
+     * @return key : projectName, id
      */
     @SneakyThrows
     public Map<String,Integer> getProjectNameById(String projectIds) {
@@ -471,15 +533,19 @@ public class ProjectDao {
             projectIdList = new ArrayList<>();
         }
         List<Map<String,Object>> result = projectMapper.getProjectNameById(projectIdList);
-        for (int i = 0; i < result.size(); i++) {
-            Map<String,Object> temp = result.get(i);
+        for (Map<String, Object> temp : result) {
             String projectName = (String) temp.get("project_name");
             int id = (Integer) temp.get("id");
-            map.put(projectName,id);
+            map.put(projectName, id);
         }
         return map;
     }
 
+    /**
+     * 根据 项目名 获取项目Id
+     * @param projectName 查询项目名
+     * @return int projectId
+     */
     @SneakyThrows
     public int getProjectIdByName(String projectName) {
         Integer name = projectMapper.getProjectIdByName(projectName);
@@ -490,6 +556,10 @@ public class ProjectDao {
             return -1;
         }
     }
+
+
+
+
 
     @Autowired
     public void setRestInterface(RestInterfaceManager restInterface) {

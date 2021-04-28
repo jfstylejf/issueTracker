@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -48,6 +49,7 @@ public class ProjectCommitStandardTrendChart {
     private Map<String,Long> option;
 
     public void setOption(long value, long total) {
+        option = new HashMap<>();
         option.put("value",value);
         option.put("total",total);
     }

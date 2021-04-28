@@ -20,6 +20,7 @@ import org.springframework.util.StringUtils;
 import java.security.acl.LastOwnerException;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author fancying
@@ -68,7 +69,7 @@ public class ScanInfoServiceImpl implements ScanInfoService {
                     scanStatus.setStatus (ScanStatusEnum.INVOKE_FAILED.getType ());
                     overAllStatus = ScanStatusEnum.INVOKE_FAILED.getType ();
                     // 再次调用该工具进行扫描
-//                    reScan(scan, tool);
+                    reScan(scan, tool);
                     continue;
                 }
                 //3. 调用成功 获取各个服务的扫描状态
@@ -79,7 +80,7 @@ public class ScanInfoServiceImpl implements ScanInfoService {
                     scanStatus.setStatus (ScanStatusEnum.WAITING_FOR_SCAN.getType ());
                     overAllStatus = judgeOverStatus(overAllStatus, ScanStatusEnum.WAITING_FOR_SCAN);
                     // 再次调用该工具进行扫描
-//                    reScan(scan, tool);
+                    reScan(scan, tool);
                     continue;
                 }
 
@@ -186,8 +187,16 @@ public class ScanInfoServiceImpl implements ScanInfoService {
 
     @Override
     @Async("taskExecutor")
-    public void deleteOneRepo(String repoId) {
+    public void deleteOneRepo(String repoId, String token) throws InterruptedException {
         scanDao.deleteScanByRepoId(repoId);
+        for (int i = 0; i < 30; i++) {
+            if (scanDao.checkDeleteSuccessful(repoId)) {
+                if(restInterfaceManager.deleteRecall(repoId, token)){
+                    return;
+                }
+            }
+            TimeUnit.SECONDS.sleep(1);
+        }
     }
 
     @Autowired

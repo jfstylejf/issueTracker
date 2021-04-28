@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.edu.fudan.issueservice.mapper.IssueAnalyzerMapper">
+
+    <resultMap id="issueAnalyzer" type="IssueAnalyzer">
+        <id property="uuid" column="uuid"/>
+        <result property="repoUuid" column="repo_uuid"/>
+        <result property="commitId" column="commit_id"/>
+        <result property="invokeResult" column="invoke_result"/>
+        <result property="analyzeResult" column="analyze_result" javaType="com.alibaba.fastjson.JSONObject" typeHandler="cn.edu.fudan.issueservice.handler.JsonTypeHandler"/>
+        <result property="tool" column="tool"/>
+    </resultMap>
+
+
+    <insert id="insertIssueAnalyzerRecords">
+        insert into issue_analyzer
+        (
+        uuid,
+        repo_uuid,
+        commit_id,
+        analyze_result,
+        invoke_result,
+        tool
+        )
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.uuid},
+            #{item.repoUuid},
+            #{item.commitId},
+            #{item.analyzeResult,jdbcType=OTHER,typeHandler=cn.edu.fudan.issueservice.handler.JsonTypeHandler},
+            #{item.invokeResult},
+            #{item.tool}
+            )
+        </foreach>
+    </insert>
+
+    <select id="getIssueAnalyzeResultByRepoUuidCommitIdTool" parameterType="String" resultMap="issueAnalyzer">
+        SELECT uuid, repo_uuid, commit_id, analyze_result, invoke_result, tool
+        FROM issue_analyzer
+        WHERE repo_uuid = #{repoUuid}
+        AND commit_id = #{commitId}
+        AND tool = #{tool}
+    </select>
+</mapper>

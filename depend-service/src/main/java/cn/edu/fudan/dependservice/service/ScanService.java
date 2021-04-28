@@ -6,11 +6,9 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public interface TestService {
+public interface ScanService {
 
 
-//    List<String> getAllRepoUuidThatNeedScan();
-    List<ScanRepo> scanAllRepo();
     List<ScanRepo> scanAllRepoNearToOneDate(String toScanDate);
 }
 

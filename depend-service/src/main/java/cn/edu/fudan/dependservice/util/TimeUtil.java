@@ -1,4 +1,4 @@
-package cn.edu.fudan.dependservice.utill;
+package cn.edu.fudan.dependservice.util;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -8,7 +8,7 @@ import java.util.Date;
  * @autthor shaoxi
  * @description transfer datetime to timestamp that jgit need(unit is 's',not 'ms' )
  */
-public class TimeUtill {
+public class TimeUtil {
 
     public static String getCurrentDateTime(){
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//设置日期格式

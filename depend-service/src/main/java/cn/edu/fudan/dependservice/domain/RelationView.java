@@ -13,4 +13,5 @@ public class RelationView {
     private String relationType;
     private String commit_id;
     private int id;
+//    private String latestFilePath;
 }

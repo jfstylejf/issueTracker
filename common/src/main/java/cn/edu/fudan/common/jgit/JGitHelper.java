@@ -383,7 +383,7 @@ public class JGitHelper {
 
     protected static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().contains("win");
 
-    protected final String REPO_PATH;
+    protected String REPO_PATH;
 
     protected Repository repository;
 
@@ -391,9 +391,9 @@ public class JGitHelper {
 
     protected Git git;
 
-    protected final String format = "yyyy-MM-dd HH:mm:ss";
+    protected static final String FORMAT = "yyyy-MM-dd HH:mm:ss";
 
-    protected final long toMillisecond = 1000L;
+    protected static final long TO_MILLISECOND = 1000L;
 
     public JGitHelper(String repoPath) {
         REPO_PATH = repoPath;
@@ -449,7 +449,7 @@ public class JGitHelper {
             return null;
         } else {
             try {
-                res = new SimpleDateFormat(format).parse(getCommitTime(commit));
+                res = new SimpleDateFormat(FORMAT).parse(getCommitTime(commit));
 
             } catch (ParseException e) {
                 res = null;
@@ -465,12 +465,12 @@ public class JGitHelper {
         try {
             RevCommit revCommit = revWalk.parseCommit(ObjectId.fromString(commit));
             int t = revCommit.getCommitTime();
-            long timestamp = Long.parseLong(String.valueOf(t)) * toMillisecond;
+            long timestamp = Long.parseLong(String.valueOf(t)) * TO_MILLISECOND;
             Date date = new java.util.Date(timestamp);
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(date);
             calendar.add(Calendar.HOUR_OF_DAY, -8);
-            time = new java.text.SimpleDateFormat(format).format(calendar.getTime());
+            time = new java.text.SimpleDateFormat(FORMAT).format(calendar.getTime());
         } catch (Exception e) {
             log.error("error in revWalk.parseCommit(ObjectId.fromString(commit)):");
             log.error(e.getMessage());
@@ -520,12 +520,10 @@ public class JGitHelper {
         int latest = 0;
         try {
             Iterable<RevCommit> commits = git.log().call();
-            Iterator<RevCommit> iterator = commits.iterator();
-            while (iterator.hasNext()) {
-                RevCommit oneCommt = iterator.next();
-                if (oneCommt.getCommitTime() > latest) {
-                    latestCommit = oneCommt.getName();
-                    latest = oneCommt.getCommitTime();
+            for (RevCommit oneCommit : commits) {
+                if (oneCommit.getCommitTime() > latest) {
+                    latestCommit = oneCommit.getName();
+                    latest = oneCommit.getCommitTime();
                 }
 
             }
@@ -558,7 +556,7 @@ public class JGitHelper {
         try {
             Iterable<RevCommit> commits = git.log().call();
             commits.forEach(commit -> {
-                if (commit.getCommitTime() * toMillisecond >= start) {
+                if (commit.getCommitTime() * TO_MILLISECOND >= start) {
                     Set<String> parents = new HashSet<>();
                     List<RevCommit> parentsCommit = Arrays.asList(commit.getParents());
                     parentsCommit.forEach(parentCommit -> parents.add(parentCommit.getName()));
@@ -592,7 +590,7 @@ public class JGitHelper {
     private Long getLongCommitTime(String version) {
         try {
             RevCommit revCommit = revWalk.parseCommit(ObjectId.fromString(version));
-            return revCommit.getCommitTime() * toMillisecond;
+            return revCommit.getCommitTime() * TO_MILLISECOND;
         } catch (Exception e) {
             log.error("error in getLongCommitTime:" + e.getMessage());
             return 0L;
