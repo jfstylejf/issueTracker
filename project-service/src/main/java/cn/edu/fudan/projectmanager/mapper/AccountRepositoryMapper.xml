@@ -59,7 +59,7 @@
         delete
         from account_repository
         where sub_repository_uuid =
-              (select uuid from sub_repository where repo_uuid = #{RepoUuid} AND recycled = 1);
+              (select uuid from sub_repository where repo_uuid = #{repoUuid} );
     </delete>
 
 

@@ -431,7 +431,7 @@ public class ProjectControlServiceImpl implements ProjectControlService {
     }
 
     @Override
-    public void updateRecycleStatus(String token, String repoUuid, Integer recycled) throws Exception {
+    public Integer updateRecycleStatus(String token, String repoUuid, Integer recycled) throws Exception {
         UserInfoDTO userInfoDTO = getUserInfoByToken(token);
         final Integer outRecycle = 0;
         final Integer inRecycle = 10000000;
@@ -445,14 +445,17 @@ public class ProjectControlServiceImpl implements ProjectControlService {
             //将库放入回收站中
             recycled = inRecycle;
             subRepositoryDao.putRecycledStatus(repoUuid, recycled);
-            return;
+            return subRepositoryDao.getRecycledStatus(repoUuid);
         }
 
         if (recycled == 10000000) {
             //将库从回收站中拿出
             recycled = outRecycle;
             subRepositoryDao.putRecycledStatus(repoUuid, recycled);
+            return subRepositoryDao.getRecycledStatus(repoUuid);
         }
+
+        return null;
     }
 
     @Override
@@ -461,7 +464,7 @@ public class ProjectControlServiceImpl implements ProjectControlService {
     }
 
     @Override
-    public void updateRecycled(String token, String repoUuid, String serviceName) throws Exception {
+    public Integer updateRecycled(String token, String repoUuid, String serviceName) throws Exception {
 
         UserInfoDTO userInfoDTO = getUserInfoByToken(token);
         String accountUuid = userInfoDTO.getUuid();
@@ -510,14 +513,28 @@ public class ProjectControlServiceImpl implements ProjectControlService {
         Integer status = Integer.parseInt(statusCollection);
         subRepositoryDao.putRecycledStatus(repoUuid, status);
 
-        if(!serviceStatus.containsValue('0')){
+        //硬删除project服务中的表
+//        if(!serviceStatus.containsValue('0')){
+//            accountRepositoryDao.deleteRepoAR(accountUuid, repoUuid);
+//            subRepositoryDao.deleteRepoSR(accountUuid, repoUuid);
+//        }else {
+//            return subRepositoryDao.getRecycledStatus(repoUuid);
+//        }
+        return subRepositoryDao.getRecycledStatus(repoUuid);
+    }
+
+    @Override
+    public Boolean deleteRepoInfo(String token, String repoUuid) throws Exception {
+        UserInfoDTO userInfoDTO = getUserInfoByToken(token);
+        String accountUuid = userInfoDTO.getUuid();
+
+        if (subRepositoryDao.getRecycledStatus(repoUuid) == 11111111) {
             accountRepositoryDao.deleteRepoAR(accountUuid, repoUuid);
             subRepositoryDao.deleteRepoSR(accountUuid, repoUuid);
-        }else {
-            return;
+            return true;
+        } else {
+            return false;
         }
-
-
     }
 
     /**
