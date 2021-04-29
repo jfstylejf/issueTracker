@@ -208,7 +208,7 @@ public class IssueMatcher {
         curAllRawIssues.stream().filter(r -> !curRawIssues.contains(r)).forEach(rawIssue -> rawIssue.setNotChange(true));
 
         // 匹配两个rawIssue集合（parent的rawIssue集合，当前的rawIssue集合）
-        log.info("cur all rawIssues:" + JSON.toJSONString(curAllRawIssues));
+//        log.info("cur all rawIssues:" + JSON.toJSONString(curAllRawIssues));
 //        log.info("pre rawIssues:" + JSON.toJSONString(preRawIssues));
 //        log.info("cur rawIssues:" + JSON.toJSONString(curRawIssues));
         mapRawIssues(preRawIssues, curRawIssues, jGitHelper.getRepoPath(), preFileToCurFile, curFileToPreFile);
@@ -322,7 +322,7 @@ public class IssueMatcher {
         Map<String, List<RawIssue>> preRawIssuesMap = new LinkedHashMap<>(parentCommits.size() << 1);
         // 得到所有待匹配的组合 两两按照normalMatch匹配
         for (String parentCommit : parentCommits) {
-            log.info("curRawIssuesMatchResult:" + JSON.toJSONString(curRawIssuesMatchResult));
+//            log.info("curRawIssuesMatchResult:" + JSON.toJSONString(curRawIssuesMatchResult));
             normalMatch(repoUuid, toolName, parentCommit, curRawIssuesMatchResult);
             preRawIssuesMap.put(parentCommit, parentRawIssuesResult.get(parentCommit));
         }

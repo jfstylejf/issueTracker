@@ -137,6 +137,7 @@ public class JavaNcss {
         double singleCommentLinesA = 0.0;
         double implementationCommentLinesA = 0.0;
 
+
         for (File f : files) {
             Javancss javancss = new Javancss(f);
             int ccn = 0;
@@ -155,7 +156,9 @@ public class JavaNcss {
             int javaDocsLines = javancss.getJdcl();
             int singleCommentLines = javancss.getSl();
             int implementationCommentLines = javancss.getSl() + javancss.getMl();
-            oObjects.add(new OObject(path, ncss, functions, classes, javaDocs, javaDocsLines, singleCommentLines, implementationCommentLines, ccn, ncss));
+            int absoluteLines = javancss.getLOC();
+
+            oObjects.add(new OObject(path, ncss, functions, classes, javaDocs, javaDocsLines, singleCommentLines, implementationCommentLines, ccn, ncss,absoluteLines));
             ncssA += ncss;
             functionsA += functions;
             classesA += classes;

@@ -272,6 +272,7 @@ public class JsCodeAnalyzer extends BaseAnalyzer{
                     .path(fileInfo.getRelativePath())
                      // 这边拿的总行数，最后入库数据需要剪掉空白+注释
                     .totalLines(fileInfo.getCodeLines())
+                    .absoluteLines(fileInfo.getTotalLines())
                     .build());
         }
         Total total = Total.builder()

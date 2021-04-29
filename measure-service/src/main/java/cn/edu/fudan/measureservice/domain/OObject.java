@@ -25,6 +25,13 @@ public class OObject {
     private int implementationCommentLines;
 
     private int ccn;
+    /**
+     * 文件相对物理行数 (去除注释，空白行)
+     */
     private int totalLines;
+    /**
+     * 文件绝对物理行（包含注释， 空白行）
+     */
+    private int absoluteLines;
 
 }
