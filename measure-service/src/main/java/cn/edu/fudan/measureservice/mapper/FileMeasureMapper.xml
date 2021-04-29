@@ -14,6 +14,7 @@
         <result property="deleteLine" column="del_lines"/>
         <result property="totalLine" column="total_lines"/>
         <result property="diffCcn" column="diff_ccn"/>
+        <result property="absoluteLine" column="absolute_lines"/>
     </resultMap>
 
     <insert id="insertOneFileMeasure" >
@@ -90,7 +91,8 @@
         ccn,
         add_lines,
         del_lines,
-        total_lines
+        total_lines,
+        absolute_lines
         )
         VALUES
         <foreach collection="fileMeasureList" item="item" index="index" separator=",">
@@ -104,7 +106,8 @@
             #{item.ccn},
             #{item.addLine},
             #{item.deleteLine},
-            #{item.totalLine}
+            #{item.totalLine},
+            #{item.absoluteLine}
             )
         </foreach>
     </insert>
