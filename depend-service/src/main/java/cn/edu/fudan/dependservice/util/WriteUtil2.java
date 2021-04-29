@@ -1,4 +1,4 @@
-package cn.edu.fudan.dependservice.utill;
+package cn.edu.fudan.dependservice.util;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -9,7 +9,7 @@ import java.util.List;
 
 @Slf4j
 @Component
-public class WriteUtill2 {
+public class WriteUtil2 {
     public static String befor="{\n" +
             "\t\"architectures\": {},\n" +
             "\t\"projects\": [";

@@ -22,6 +22,7 @@ public interface IssueAnalyzerMapper {
 
 
     /**
+     * 尝试获取解析结果
      *
      * @param repoUuid repoUuid
      * @param commitId commitId

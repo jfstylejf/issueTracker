@@ -118,9 +118,9 @@ public interface SubRepositoryMapper {
      * 删除库
      *
      * @param accountUuid 当前人员uuid
-     * @param RepoUuid    库uuid
+     * @param repoUuid    库uuid
      */
-    void deleteRepoSR(@Param("accountUuid") String accountUuid, @Param("RepoUuid") String RepoUuid);
+    void deleteRepoSR(@Param("accountUuid") String accountUuid, @Param("repoUuid") String repoUuid);
 
     /**
      * 通过表uuid删除库

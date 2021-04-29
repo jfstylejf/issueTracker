@@ -6,7 +6,7 @@ import cn.edu.fudan.dependservice.domain.RelationData;
 import cn.edu.fudan.dependservice.domain.RelationView;
 import cn.edu.fudan.dependservice.mapper.LocationMapper;
 import cn.edu.fudan.dependservice.service.RelationService;
-import cn.edu.fudan.dependservice.utill.TimeUtill;
+import cn.edu.fudan.dependservice.util.TimeUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -48,16 +48,46 @@ public class RelationServiceImpl implements RelationService {
     public void locationMapper(LocationMapper locationMapper) {
         this.locationMapper = locationMapper;
     }
+    @Override
+    public RelationData getRelationShips(String project_names,  String relation_type, String scan_until, String order) {
+        if(scan_until==null||scan_until.length()==0){
+            scan_until= TimeUtil.getCurrentDateTime();
+        }
+        List<RelationView> res=relationDao.getRelationBydate(scan_until);
+        if(project_names!=null&&project_names.length()>0){
+            List<String> projects= Arrays.asList(project_names.split(","));
+            res=res.stream().filter(e->projects.contains(e.getProjectName())).collect(Collectors.toList());
+        }
+        if(relation_type!=null&&relation_type.length()>0){
+            List<String> types=Arrays.asList(relation_type.split(",")).stream().map(e->e.toUpperCase()).collect(Collectors.toList());
 
+            res=res.stream().filter(e->{
+                for(String s:types){
+                    if(e.getRelationType().indexOf(type_C2E.get(s))>=0) return true;
+                }
+                return false;
+            }).collect(Collectors.toList());
+        }
+        RelationData relationData =new RelationData();
+        int id=0;
+        sortRelation(res);
+        //todo may one project have many repo
+        for(RelationView r:res){
+            r.setGroupId(r.getProjectName()+"-"+r.getGroupId());
+            r.setId(id++);
+        }
+        relationData.setRows(res);
+        relationData.setRecords(res.size());
+        relationData.setPage(-1);
+        relationData.setTotal(res.size());
+        return relationData;
+    }
 
     @Override
     public RelationData getRelationShips(String ps, String page, String project_names,  String relation_type, String scan_until, String order) {
-//        log.info("ps: "+ ps );
-//        log.info("project_names: "+ project_names );
-//        log.info("relation_type: "+ relation_type );
-//        log.info("scan_until: "+ scan_until );
+
         if(scan_until==null||scan_until.length()==0){
-            scan_until= TimeUtill.getCurrentDateTime();
+            scan_until= TimeUtil.getCurrentDateTime();
         }
         List<RelationView> res=relationDao.getRelationBydate(scan_until);
         if(project_names!=null&&project_names.length()>0){

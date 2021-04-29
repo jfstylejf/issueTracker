@@ -54,9 +54,9 @@ public interface AccountRepositoryMapper {
      * 删除库
      *
      * @param accountUuid 当前人员uuid
-     * @param RepoUuid    库uuid
+     * @param repoUuid    库uuid
      */
-    void deleteRepoAR(@Param("accountUuid") String accountUuid, @Param("RepoUuid") String RepoUuid);
+    void deleteRepoAR(@Param("accountUuid") String accountUuid, @Param("repoUuid") String repoUuid);
 
     @Delete("DELETE FROM `account_repository` WHERE `sub_repository_uuid` = #{subRepoUuid};")
     void deleteRelation(@Param("subRepoUuid") String subRepoUuid);

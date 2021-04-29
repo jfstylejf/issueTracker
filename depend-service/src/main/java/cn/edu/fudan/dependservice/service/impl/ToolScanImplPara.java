@@ -9,7 +9,8 @@ import cn.edu.fudan.dependservice.domain.ScanRepo;
 import cn.edu.fudan.dependservice.domain.ScanStatus;
 import cn.edu.fudan.dependservice.mapper.GroupMapper;
 import cn.edu.fudan.dependservice.mapper.RelationshipMapper;
-import cn.edu.fudan.dependservice.utill.WriteUtill;
+import cn.edu.fudan.dependservice.util.ReadUtill;
+import cn.edu.fudan.dependservice.util.TimeUtil;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -121,6 +122,11 @@ public class ToolScanImplPara extends ToolScan {
     }
 
     private void setScanResult(ScanRepo scanRepo) {
+        ScanStatus scanStatus =scanRepo.getScanStatus();
+        scanStatus.setEndScanTime(TimeUtil.getCurrentDateTime());
+        long now =System.currentTimeMillis();
+        scanStatus.setTs_end(now);
+        scanStatus.setScanTime(String.valueOf((now-scanStatus.getTs_start())/1000));
         scanDao.updateScan(scanRepo);
     }
 
@@ -193,14 +199,13 @@ public class ToolScanImplPara extends ToolScan {
 
         try {
             ShThread2 shRunner = new ShThread2();
-            shRunner.setShName("tdepend2.sh");
+            shRunner.setShName("stopScan.sh");
             shRunner.setDependenceHome(dependenceHome);
             shRunner.setRepoPath(scanData.getRepoPath());
             Thread shThread = new Thread(shRunner);
             shThread.start();
             shThread.join();
-            log.info("sh2 end ");
-
+            log.info("stopScan.sh end ");
         } catch (Exception e) {
             log.error("Exception:" + e.getMessage());
         }

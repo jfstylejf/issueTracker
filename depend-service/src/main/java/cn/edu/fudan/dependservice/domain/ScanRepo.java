@@ -18,6 +18,7 @@ public class ScanRepo {
     private boolean copyStatus;
     private String msg;
     private ScanStatus scanStatus;
+    private String toScanDate;
     public void test()
     {
 

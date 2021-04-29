@@ -1,7 +1,5 @@
 package cn.edu.fudan.dependservice.start;
 
-import cn.edu.fudan.dependservice.component.BatchProcessor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
@@ -13,13 +11,9 @@ import org.springframework.stereotype.Component;
  * @description
  **/
 @Component
-public class ApplicationStarter  implements ApplicationRunner {
-    @Autowired
-    BatchProcessor batchProcessor;
+public class ApplicationStarter implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        System.out.println(" in applicationStarter ");
-//        batchProcessor.init();
-//        new Thread(new ScanThread()).start();
+        System.out.println(" in shaoxi's application Starter ");
     }
 }

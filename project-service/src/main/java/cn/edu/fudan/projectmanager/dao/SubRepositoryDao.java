@@ -76,8 +76,8 @@ public class SubRepositoryDao {
         subRepositoryMapper.updateRepoProjectSR(accountUuid, oldProjectName, newProjectName, RepoUuid);
     }
 
-    public void deleteRepoSR(String accountUuid, String RepoUuid) {
-        subRepositoryMapper.deleteRepoSR(accountUuid, RepoUuid);
+    public void deleteRepoSR(String accountUuid, String repoUuid) {
+        subRepositoryMapper.deleteRepoSR(accountUuid, repoUuid);
     }
 
     public void deleteRepoByUuid(String uuid){

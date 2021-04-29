@@ -53,7 +53,19 @@
     </insert>
 
     <select id="getCloneLocations" resultMap="cloneLocation">
-        select * from clone_location where repo_id=#{repo_id} and commit_id=#{commit_id}
+        select * from clone_location
+        <where>
+            <if test="repo_id != null and repo_id != '' ">
+                and repo_id = #{repo_id}
+            </if>
+            <if test="commit_id != null and commit_id != '' ">
+                and commit_id = #{commit_id}
+            </if>
+            <if test="group_id != null and group_id != '' ">
+                and category = #{group_id}
+            </if>
+        </where>
+        order by category
     </select>
 
     <delete id="deleteCloneLocations" parameterType="String">
@@ -76,12 +88,21 @@
             </if>
             and message NOT LIKE '%Merge%'
         </where>
-
         ORDER By commit_time desc limit 1
     </select>
 
+    <select id="getRepoIdByCommitId" parameterType="String" resultType="String">
+        SELECT distinct repo_id
+        from issueTracker.clone_location
+        <where>
+            <if test="commit_id != null and commit_id != '' ">
+                and commit_id = #{commit_id}
+            </if>
+        </where>
+    </select>
+
     <select id="getGroupCount" parameterType="String" resultType="java.lang.Integer">
-        select count(*) from (SELECT *
+        select count(*) from (SELECT distinct category
         from issueTracker.clone_location
         <where>
 
@@ -90,20 +111,23 @@
             </if>
 
         </where>
-        group by category) as t
+        ) as t
     </select>
 
     <select id="getFileCount" parameterType="String" resultType="java.lang.Integer">
-        select count(*) from (SELECT *
+        select count(*) from (SELECT distinct file_path
         from issueTracker.clone_location
         <where>
 
             <if test="commit_id != null and commit_id != '' ">
                 and commit_id = #{commit_id}
             </if>
+            <if test="group_id != null and group_id != '' ">
+                and category = #{group_id}
+            </if>
 
         </where>
-        group by file_path) as t
+        ) as t
     </select>
 
     <select id="getCloneNum" parameterType="String" resultType="String">
@@ -114,7 +138,38 @@
                 <if test="commit_id != null and commit_id != '' ">
                     and commit_id = #{commit_id}
                 </if>
+                <if test="group_id != null and group_id != '' ">
+                    and category = #{group_id}
+                </if>
             </trim>
         </where>
+    </select>
+
+    <select id="getCaseCount" parameterType="String" resultType="java.lang.Integer">
+        select count(*) from (SELECT *
+        from issueTracker.clone_location
+        <where>
+
+            <if test="commit_id != null and commit_id != '' ">
+                and commit_id = #{commit_id}
+            </if>
+            <if test="group_id != null and group_id != '' ">
+                and category = #{group_id}
+            </if>
+        </where>
+        ) as t
+    </select>
+
+    <select id="getGroupIds" parameterType="String" resultType="String">
+        SELECT distinct category
+        from issueTracker.clone_location
+        <where>
+            <trim prefixOverrides="and">
+                <if test="commit_id != null and commit_id != '' ">
+                    and commit_id = #{commit_id}
+                </if>
+            </trim>
+        </where>
+        order by category
     </select>
 </mapper>

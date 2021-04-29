@@ -4,7 +4,6 @@ import cn.edu.fudan.dependservice.domain.*;
 import cn.edu.fudan.dependservice.mapper.GroupMapper;
 import cn.edu.fudan.dependservice.mapper.RelationshipMapper;
 import cn.edu.fudan.dependservice.mapper.ScanMapper;
-import cn.edu.fudan.dependservice.utill.TimeUtill;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -29,7 +28,8 @@ public class ScanDao {
     }
     public int updateScan(ScanRepo scanRepo){
         //find if have
-        scanMapper.insert(scanRepo.getRepoUuid(),scanRepo.getScanCommit(),scanRepo.getScanStatus().getStatus(), TimeUtill.getCurrentDateTime());
+        // todo add
+        scanMapper.insert(scanRepo);
         return 1;
 
     }

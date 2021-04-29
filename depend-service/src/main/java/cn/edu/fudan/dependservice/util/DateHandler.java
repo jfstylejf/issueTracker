@@ -1,4 +1,4 @@
-package cn.edu.fudan.dependservice.utill;
+package cn.edu.fudan.dependservice.util;
 
 import java.util.ArrayList;
 import java.util.Calendar;

@@ -7,10 +7,8 @@ import cn.edu.fudan.common.scan.CommonScanProcess;
 
 import cn.edu.fudan.dependservice.config.ShHomeConfig;
 import cn.edu.fudan.dependservice.domain.ScanRepo;
-import cn.edu.fudan.dependservice.domain.ScanStatus;
-
-import cn.edu.fudan.dependservice.utill.DirClone;
-import cn.edu.fudan.dependservice.utill.TimeUtill;
+import cn.edu.fudan.dependservice.util.DirClone;
+import cn.edu.fudan.dependservice.util.TimeUtil;
 import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,21 +38,18 @@ public class ProcessPrepare{
 
     public void prepareFile(String date,ScanRepo scanRepo) {
         String repoPath= null;
-        log.info("prepareFiles");
         int timeStamp=getTimeStamp(date);
 
-        ScanStatus scanStatus=new ScanStatus();
-        scanRepo.setScanStatus(scanStatus);
         try {
             repoPath = baseRepoRestManager.getCodeServiceRepo(scanRepo.getRepoUuid());
         }catch (Exception e){
             log.info("Exception: "+ e.getMessage());
-            copyFail(scanRepo,scanStatus);
+            copyFail(scanRepo);
             return ;
         }
         if (repoPath == null) {
             log.error("{} : can't get repoPath", scanRepo.getRepoUuid());
-            copyFail(scanRepo,scanStatus);
+            copyFail(scanRepo);
             return ;
         }
         scanRepo.setRepoPath(repoPath);
@@ -70,21 +65,18 @@ public class ProcessPrepare{
             jGitHelper.checkout(toScanCommit);
             scanRepo.setScanCommit(toScanCommit);
             String[] repoPaths=repoPath.split(File.separator);
-            log.info("repoPath: " +repoPath);
 
             targetDir=repoDir+repoPaths[repoPaths.length-1]+"_"+toScanCommit;
-            log.info("targetDir :"+targetDir);
             scanRepo.setCopyRepoPath(targetDir);
             if(new File(targetDir).exists()) {
-                log.info("targetDir exit, do not copy again");
-                copyOK(scanRepo,scanStatus);
+                copyOK(scanRepo);
                 return ;
             }
             if(copyFile(repoPath,targetDir)){
-                copyOK(scanRepo,scanStatus);
+                copyOK(scanRepo);
 
             }else {
-                copyFail(scanRepo,scanStatus);
+                copyFail(scanRepo);
                 return ;
             }
 
@@ -98,16 +90,16 @@ public class ProcessPrepare{
         return ;
     }
     private int getTimeStamp(String datetime){
-        return TimeUtill.timeStampforJgit(datetime);
+        return TimeUtil.timeStampforJgit(datetime);
     }
 
-    private void copyOK(ScanRepo scanRepo,ScanStatus scanStatus) {
+    private void copyOK(ScanRepo scanRepo) {
         scanRepo.setCopyStatus(true);
     }
-    public void copyFail(ScanRepo scanRepo,ScanStatus scanStatus){
+    public void copyFail(ScanRepo scanRepo){
         scanRepo.setCopyStatus(false);
-        scanStatus.setStatus("failed");
-        scanStatus.setMsg("get repo fail");
+        scanRepo.getScanStatus().setStatus("failed");
+        scanRepo.getScanStatus().setMsg("get repo fail");
     }
 
     public boolean copyFile(String source,String target){
