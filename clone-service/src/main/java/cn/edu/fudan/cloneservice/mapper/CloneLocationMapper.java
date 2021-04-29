@@ -26,6 +26,7 @@ public interface CloneLocationMapper {
      * @return location list
      */
     List<CloneLocation> getCloneLocations(@Param("repo_id") String repoId,
+                                          @Param("group_id") String groupId,
                                           @Param("commit_id")String commitId);
 
     /**
@@ -61,7 +62,13 @@ public interface CloneLocationMapper {
      */
     int getGroupCount(@Param("commit_id") String latestCommitId);
 
-    int getFileCount(@Param("commit_id") String latestCommitId);
+    int getCaseCount(@Param("commit_id") String latestCommitId, @Param("group_id")String groupId);
 
-    List<String> getCloneNum(@Param("commit_id") String latestCommitId);
+    int getFileCount(@Param("commit_id") String latestCommitId, @Param("group_id")String groupId);
+
+    List<String> getCloneNum(@Param("commit_id") String latestCommitId, @Param("group_id")String groupId);
+
+    List<String> getGroupIds(@Param("commit_id") String latestCommitId);
+
+    String getRepoIdByCommitId(@Param("commit_id") String latestCommitId);
 }

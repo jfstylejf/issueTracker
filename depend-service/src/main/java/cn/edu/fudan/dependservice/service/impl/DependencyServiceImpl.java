@@ -48,7 +48,6 @@ public class DependencyServiceImpl implements DependencyService {
         String time1 = " 00:00:00";
         String time2 = " 24:00:00";
         // todo
-        log.info("projectIds : "+projectIds);
         if (projectIds==null||projectIds.isEmpty()||projectIds.equals("\"\"")) {
             projectIds = statisticsDao.getAllProjectIds();
         }

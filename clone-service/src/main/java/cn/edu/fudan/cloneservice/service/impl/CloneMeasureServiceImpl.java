@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -396,7 +397,7 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
         List<LocalDate> timeList = getTimeList(since, until, interval);
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         List<CloneGroupSum> results = new ArrayList<>();
-        for(String aProjectId: projectList) {
+        for (String aProjectId : projectList) {
             String projectName = repoCommitMapper.getProjectNameByProjectId(aProjectId);
             timeList.forEach(a -> results.add(new CloneGroupSum(projectName, aProjectId, a.format(dtf), cloneLocationDao.getCloneLocationGroupSum(repoCommitMapper.getRepoIdByProjectId(aProjectId), a.format(dtf)))));
         }
@@ -404,46 +405,75 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
     }
 
     @Override
-    public List<CloneOverallView> getCloneOverallViews(String projectId, String until, String token) {
+    public List<CloneOverallView> getCloneOverallViews(String projectId, String repoUuid, String until, String token) {
         List<String> projectList = getProjectIds(projectId, token);
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         LocalDate localDate = LocalDate.parse(until, dtf);
         List<CloneOverallView> results = new ArrayList<>();
-        for(String aProjectId: projectList) {
+        for (String aProjectId : projectList) {
             String projectName = repoCommitMapper.getProjectNameByProjectId(aProjectId);
-            results.addAll(cloneLocationDao.getCloneOverall(repoCommitMapper.getRepoIdByProjectId(aProjectId), localDate.format(dtf), aProjectId, projectName));
+            results.addAll(cloneLocationDao.getCloneOverall(getRepoUuids(projectList, repoUuid), localDate.format(dtf), aProjectId, projectName));
         }
-        return results;
+            return results;
     }
 
     private List<String> getProjectIds(String projectId, String token) {
         List<String> projectIds = new ArrayList<>();
-        if(StringUtils.isEmpty(projectId)) {
+        if (StringUtils.isEmpty(projectId)) {
             List<Integer> temp = repoCommitMapper.getProjectIds();
             temp.forEach(a -> projectIds.add(a.toString()));
-        }else{
-            projectIds.add(projectId);
+        } else {
+            projectIds.addAll(Arrays.asList(projectId.split(",")));
         }
         List<Integer> projectsWithRightTemp = userUtil.getVisibleProjectByToken(token);
         List<String> projectsWithRight = new ArrayList<>();
-        if(!StringUtils.isEmpty(projectsWithRightTemp)) {
+        if (!StringUtils.isEmpty(projectsWithRightTemp)) {
             projectsWithRightTemp.forEach(a -> projectsWithRight.add(a.toString()));
         }
         return projectIds.stream().filter(projectsWithRight::contains).collect(Collectors.toList());
     }
 
+    private List<String> getRepoUuids(List<String> projectIds, String repoUuid) {
+        List<String> repoUuids = new ArrayList<>();
+        if (StringUtils.isEmpty(repoUuid)) {
+            if (projectIds.isEmpty()) {
+                List<Integer> temp = repoCommitMapper.getProjectIds();
+                temp.forEach(a -> projectIds.add(a.toString()));
+            }
+            for (String projectId : projectIds) {
+                repoUuids.addAll(repoCommitMapper.getRepoIdByProjectId(projectId));
+            }
+        } else {
+            repoUuids.addAll(Arrays.asList(repoUuid.split(",")));
+        }
+        return repoUuids;
+    }
+
     @Override
-    public List<CloneDetail> getCloneDetails(String projectId, String commitId, String token){
+    public List<CloneDetail> getCloneDetails(String projectId, String groupId, String commitId, String token) {
         List<String> projectList = getProjectIds(projectId, token);
         List<CloneDetail> results = new ArrayList<>();
-        for(String aProjectId: projectList) {
+        for (String aProjectId : projectList) {
             String projectName = repoCommitMapper.getProjectNameByProjectId(aProjectId);
             String repoId = repoCommitMapper.getRepoIdByCommitId(commitId);
-            cloneLocationDao.getCloneDetail(repoId, projectId, projectName, commitId);
-            results.addAll(cloneLocationDao.getCloneDetail(repoId, projectId, projectName, commitId));
+            cloneLocationDao.getCloneDetail(repoId, projectId, groupId, projectName, commitId);
+            results.addAll(cloneLocationDao.getCloneDetail(repoId, projectId, groupId, projectName, commitId));
         }
         return results;
-    };
+    }
+
+    @Override
+    public List<CloneDetailOverall> getCloneDetailOverall(String projectId, String commitId, String repoUuid, String until, String token) {
+        List<String> projectList = getProjectIds(projectId, token);
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDate localDate = LocalDate.parse(until, dtf);
+        List<CloneDetailOverall> results = new ArrayList<>();
+        for (String aProjectId : projectList) {
+            String projectName = repoCommitMapper.getProjectNameByProjectId(aProjectId);
+            results.addAll(cloneLocationDao.getCloneDetailOverall(aProjectId, projectName, getRepoUuids(projectList, repoUuid), commitId, localDate.format(dtf)));
+        }
+        return results;
+    }
 
     private List<LocalDate> getTimeList(String since, String until, String interval) {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");

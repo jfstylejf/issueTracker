@@ -7,23 +7,24 @@ import lombok.Getter;
 @Data
 @AllArgsConstructor
 @Getter
-public class CloneOverallView implements Comparable<CloneOverallView>{
+public class CloneDetailOverall implements Comparable<CloneDetailOverall>{
+    private String uuid;
     private String projectName;
     private String projectId;
-    private String date;
     private String repoUuid;
+    private String commitId;
+    private int groupId;
+    private int cloneType;
     private int caseSum;
     private int fileSum;
-    private int groupSum;
     private int codeLengthAverage;
-    private String commitId;
 
     @Override
-    public int compareTo(CloneOverallView o) {
+    public int compareTo(CloneDetailOverall o) {
         double thisValue;
         double objectValue;
-        thisValue = Integer.parseInt(this.projectId);
-        objectValue = Integer.parseInt(o.projectId);
+        thisValue = this.groupId;
+        objectValue = o.groupId;
         if(thisValue > objectValue){
             return 1;
         }else if(thisValue < objectValue){

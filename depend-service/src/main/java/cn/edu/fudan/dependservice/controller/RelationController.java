@@ -11,7 +11,6 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,9 +28,6 @@ public class RelationController {
     private static final String PARAMETER_IS_EMPTY = "parameter is empty";
     private static final String NO_SUCH_PROJECT = "no such project";
     private RelationService relationService;
-    @Value("sdfsd")
-    private String kkk;
-
     private static final String RESPONSE_STATUS_SUCCESS = "success";
 
     @Autowired
@@ -44,7 +40,7 @@ public class RelationController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "ps", value = "分页大小", dataType = "String", required = true,defaultValue = "10"),
             @ApiImplicitParam(name = "page", value = "第？页", dataType = "String", required = true, defaultValue = "1" ),
-            @ApiImplicitParam(name = "until", value = "时间点", dataType = "String", required = false, defaultValue = "now's datetime"),
+            @ApiImplicitParam(name = "scan_until", value = "时间点", dataType = "String", defaultValue = "now's datetime"),
             @ApiImplicitParam(name = "relation_type", value = "筛选的类型", dataType = "String", defaultValue =""),
             @ApiImplicitParam(name = "project_names", value = "筛选的项目名", dataType = "String", defaultValue ="")
     })
@@ -74,7 +70,7 @@ public class RelationController {
     @ApiOperation(value = "下载循环依赖关系", httpMethod = "GET", notes = "@return Map{\"code\": String, \"msg\": String, \"data\": RelationData}")
     @GetMapping(value = {"codewisdom/depend/relation/download"})
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "until", value = "时间点", dataType = "String", required = false, defaultValue = "now's datetime"),
+            @ApiImplicitParam(name = "scan_until", value = "时间点", dataType = "String", required = false, defaultValue = "now's datetime"),
             @ApiImplicitParam(name = "relation_type", value = "筛选的类型", dataType = "String", defaultValue =""),
             @ApiImplicitParam(name = "project_names", value = "筛选的项目名", dataType = "String", defaultValue ="")
     })

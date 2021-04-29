@@ -39,8 +39,8 @@ public class AccountRepositoryDao {
         accountRepositoryMapper.updateRepoProjectAR(accountUuid, oldProjectName, newProjectName, RepoUuid);
     }
 
-    public void deleteRepoAR(String accountUuid, String RepoUuid) {
-        accountRepositoryMapper.deleteRepoAR(accountUuid, RepoUuid);
+    public void deleteRepoAR(String accountUuid, String repoUuid) {
+        accountRepositoryMapper.deleteRepoAR(accountUuid, repoUuid);
     }
 
     public void deleteRelation(String subRepoUuid) {

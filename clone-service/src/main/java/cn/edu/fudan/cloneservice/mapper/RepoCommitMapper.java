@@ -86,4 +86,7 @@ public interface RepoCommitMapper {
 
     @Select("SELECT project_name FROM issueTracker.project where id = #{project_id};")
     String getProjectNameByProjectId(String projectId);
+
+    @Select("SELECT id FROM issueTracker.project where project_name = #{project_name};")
+    String getProjectIdByProjectName(String projectName);
 }

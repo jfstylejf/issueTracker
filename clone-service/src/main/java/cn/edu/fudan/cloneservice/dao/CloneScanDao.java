@@ -5,6 +5,8 @@ import cn.edu.fudan.cloneservice.mapper.CloneScanMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import static org.reflections.Reflections.log;
+
 /**
  * @author zyh
  * @date 2020/5/26
@@ -25,6 +27,7 @@ public class CloneScanDao {
 
     public boolean isScanned(String repoId, String commitId, String type){
         Integer count = cloneScanMapper.getScanCountByCommitIdAndType(repoId, commitId, type);
+        log.info(commitId+" commitId count:" + count);
         return count != null && count > 0;
     }
 
