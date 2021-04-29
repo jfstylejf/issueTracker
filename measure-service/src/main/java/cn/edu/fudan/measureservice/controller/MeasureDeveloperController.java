@@ -453,6 +453,7 @@ public class MeasureDeveloperController {
             String token = request.getHeader("token");
             List<ProjectBigFileDetail> projectBigFileDetailList = measureDeveloperService.getHugeLocRemainedDetail(projectNameList,repoUuidList,token);
             projectBigFileDetailList.sort((o1, o2) -> o2.getCurrentModifyTime().compareTo(o1.getCurrentModifyTime()));
+            response.setContentType("application/vnd.ms-excel");
             response.setCharacterEncoding("utf-8");
             // 保证下载到本地文件名不乱码的
             String fileName = URLEncoder.encode("超大文件数",StandardCharsets.UTF_8.toString());
