@@ -1,5 +1,4 @@
 import cn.edu.fudan.dependservice.DependServiceApplication;
-import cn.edu.fudan.dependservice.controller.ScanController;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;

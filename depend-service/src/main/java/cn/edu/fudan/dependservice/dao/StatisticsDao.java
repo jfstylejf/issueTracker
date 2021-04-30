@@ -51,9 +51,11 @@ public class StatisticsDao implements PublicConstants {
         List<RepoUuidsInfo> repoInfo = locationMapper.getRepoUuids(projectName);
         List<RelationShip> relationShips = new ArrayList<>();
         boolean noScan=true;
+        log.info("projectId: {}",projectId);
         for (RepoUuidsInfo repo : repoInfo) {
+            log.info("repouuid: {}",repo.getRepoUuid());
             List<Commit> scanedCommit =locationMapper.getScanedCommit(repo.getRepoUuid());
-
+            log.info("scanedCommit.size(): {}",scanedCommit.size());
             String latestCommittodate=getLatestCommit(scanedCommit,endDate);
             if(latestCommittodate==null){
                 continue;

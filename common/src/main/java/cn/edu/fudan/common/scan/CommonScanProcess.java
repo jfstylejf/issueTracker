@@ -135,8 +135,9 @@ public abstract class CommonScanProcess implements CommonScanService {
             if (StringUtils.isEmpty(beginCommit)) {
                 beginCommit = getLastedScannedCommit(repoUuid, tool);
             }
-            List<String> toScanCommitList = new JGitHelper(repoPath).getScanCommitListByBranchAndBeginCommit(branch, beginCommit, scannedCommitList);
-
+            JGitHelper jGitHelper = new JGitHelper(repoPath);
+            List<String> toScanCommitList = jGitHelper.getScanCommitListByBranchAndBeginCommit(branch, beginCommit, scannedCommitList);
+            jGitHelper.close();
 
             // 筛选出end commit
             if (!StringUtils.isEmpty(endCommit)) {

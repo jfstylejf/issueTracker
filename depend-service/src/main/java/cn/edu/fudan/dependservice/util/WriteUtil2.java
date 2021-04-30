@@ -62,8 +62,9 @@ public class WriteUtil2 {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
+        }finally {
+            f.exists();
         }
-
 
         return false;
 
