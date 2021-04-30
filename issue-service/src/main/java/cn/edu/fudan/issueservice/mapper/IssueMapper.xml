@@ -728,6 +728,7 @@
               OR
               (<![CDATA[ end_commit_date <= #{until} ]]> AND status = "Open")
           )
+          AND manual_status = 'Default'
     </select>
 
     <select id="getLivingIssueTendencyDetail" parameterType="String" resultType="java.util.HashMap">
@@ -757,6 +758,7 @@
               OR
               (<![CDATA[ end_commit_date <= #{until} ]]> AND status = "Open")
           )
+          AND manual_status = 'Default'
     </select>
 
     <select id="getIssueFilterList" parameterType="Map" resultType="java.util.HashMap">
