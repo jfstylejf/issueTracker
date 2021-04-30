@@ -182,7 +182,7 @@ public class ToolInvoker {
     @SneakyThrows
     private Boolean saveFileMeasureData(ScanCommitInfoDto scanCommitInfoDto,Objects objects,List<DiffEntry> diffEntries,List<String> filePaths) {
         if(filePaths.size()==0) {
-            log.warn("no js diffFile");
+            log.warn("no diffFile");
             return false;
         }
         List<FileMeasure> fileMeasureList = new ArrayList<>(filePaths.size());
@@ -197,11 +197,13 @@ public class ToolInvoker {
             }
             int ccn = 0;
             int totalLine = 0;
+            int absoluteLine = 0;
             String filePath = diffInfo.getFilePath();
             OObject oObject = oObjectMap.get(filePath);
             if (oObject != null) {
                 ccn = oObject.getCcn();
                 totalLine = oObject.getTotalLines();
+                absoluteLine = oObject.getAbsoluteLines();
             } else {
                 // fixme 少量情况下会判空 有时间在看
                 log.error("OObject is null, filePath is {}", filePath);
@@ -211,7 +213,8 @@ public class ToolInvoker {
             FileMeasure fileMeasure = FileMeasure.builder().uuid(UUID.randomUUID().toString()).repoUuid(scanCommitInfoDto.getRepoUuid())
                     .commitId(scanCommitInfoDto.getCommitId()).commitTime(scanCommitInfoDto.getCommitTime())
                     .addLine(addLines).deleteLine(deleteLines).totalLine(totalLine)
-                    .ccn(ccn).diffCcn(0).filePath(filePath).build();
+                    .ccn(ccn).diffCcn(0).filePath(filePath)
+                    .absoluteLine(absoluteLine).build();
             fileMeasureList.add(fileMeasure);
         }
 
