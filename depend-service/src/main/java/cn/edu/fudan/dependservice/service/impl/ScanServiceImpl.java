@@ -1,6 +1,7 @@
 package cn.edu.fudan.dependservice.service.impl;
 
 import cn.edu.fudan.dependservice.component.ScanProcessor;
+import cn.edu.fudan.dependservice.dao.ScanDao;
 import cn.edu.fudan.dependservice.dao.StatisticsDao;
 import cn.edu.fudan.dependservice.domain.RepoUuidsInfo;
 import cn.edu.fudan.dependservice.domain.ScanRepo;
@@ -22,6 +23,9 @@ import java.util.List;
 public class ScanServiceImpl implements ScanService {
     @Autowired
     StatisticsDao statisticsDao;
+
+    @Autowired
+    ScanDao scanDao;
 
     ApplicationContext applicationContext;
 
@@ -66,5 +70,10 @@ public class ScanServiceImpl implements ScanService {
         // scan
         scanProcessor.scan(scanRepos);
         return scanRepos;
+    }
+
+    @Override
+    public void canNotScan(ScanRepo scanRepo) {
+        scanDao.updateScan(scanRepo);
     }
 }

@@ -9,4 +9,5 @@ import cn.edu.fudan.dependservice.domain.ScanStatus;
  **/
 public interface StatusService {
     public ScanStatus getScanStatus(String repouuid);
+    public boolean canScan(String repouuid);
 }

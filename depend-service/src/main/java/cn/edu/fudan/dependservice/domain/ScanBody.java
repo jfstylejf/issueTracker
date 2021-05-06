@@ -4,8 +4,8 @@ import lombok.Data;
 
 @Data
 public class ScanBody {
-    private String repo_uuid;
-    private String begin_commit;
+    private String repoUuid;
+    private String beginCommit;
     private String branch;
     private String datetime;
 }
