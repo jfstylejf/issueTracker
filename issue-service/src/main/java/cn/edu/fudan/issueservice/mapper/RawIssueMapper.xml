@@ -134,11 +134,22 @@
     </select>
 
     <select id="getLastVersionRawIssue" resultMap="rawIssueForScan">
-        SELECT uuid, type, tool, detail, file_name, repo_uuid, commit_id, code_lines, scan_uuid,
-        issue_uuid, developer, version
+        SELECT uuid,
+               type,
+               tool,
+               detail,
+               file_name,
+               repo_uuid,
+               commit_id,
+               code_lines,
+               scan_uuid,
+               issue_uuid,
+               developer,
+               version
         FROM raw_issue
         WHERE issue_uuid = #{issueUuid}
-        ORDER BY version DESC LIMIT 1
+        ORDER BY version DESC
+        LIMIT 1
     </select>
 
     <select id="getRawIssueByUuids" resultType="java.util.Map">

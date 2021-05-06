@@ -148,9 +148,16 @@ public class IssueDao {
     }
 
     public List<String> getIssuesByFilesToolAndRepo(List<String> preFiles, String repoId, String toolName) {
-        if (preFiles.isEmpty()){
+        if (preFiles.isEmpty()) {
             return new ArrayList<>();
         }
         return issueMapper.getIssuesByFilesToolAndRepo(preFiles, repoId, toolName);
+    }
+
+    public void updateIssuesForIgnore(List<String> ignoreFiles, String repoUuid) {
+        if (ignoreFiles.isEmpty()) {
+            return;
+        }
+        issueMapper.updateIssuesForIgnore(ignoreFiles, repoUuid);
     }
 }

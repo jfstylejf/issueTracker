@@ -79,7 +79,7 @@ public class IssueScanController {
             @ApiImplicitParam(name = "repo_uuid", value = "代码库uuid", required = true)
     })
     @GetMapping(value = {"/issue/{tool}/scan-status"})
-    public ResponseBean<IssueRepo> scanStatus(@PathVariable(value = "tool")String tools, @RequestParam("repo_uuid") String repoUuid) {
+    public ResponseBean<IssueRepo> scanStatus(@PathVariable(value = "tool") String tools, @RequestParam("repo_uuid") String repoUuid) {
         String tool = restInterfaceManager.getToolByRepoUuid(repoUuid);
         try {
             IssueRepo issueRepo = issueScanService.getScanStatus(repoUuid, tool);

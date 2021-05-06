@@ -6,6 +6,7 @@ import cn.edu.fudan.issueservice.core.analyzer.EsLintBaseAnalyzer;
 import cn.edu.fudan.issueservice.dao.*;
 import cn.edu.fudan.issueservice.domain.dbo.*;
 import cn.edu.fudan.issueservice.domain.enums.IgnoreTypeEnum;
+import cn.edu.fudan.issueservice.domain.enums.ToolEnum;
 import cn.edu.fudan.issueservice.util.AstParserUtil;
 import cn.edu.fudan.issueservice.util.JGitHelper;
 import lombok.Getter;
@@ -15,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -83,10 +85,12 @@ public class IssueStatistics {
      */
     private List<String> usedIgnoreRecordsUuid = new ArrayList<>();
 
+    private List<String> ignoreFiles = new ArrayList<>();
+
     /**
      * 根据issueMatch中的信息做数据统计
      **/
-    public boolean doingStatisticalAnalysis(IssueMatcher issueMatcher, String repoUuid, String tool) {
+    public boolean doingStatisticalAnalysis(IssueMatcher issueMatcher, String repoUuid, String tool, String repoPath) {
 
         //0.get all data
         Map<String, Issue> newIssue = issueMatcher.getNewIssues();
@@ -97,6 +101,10 @@ public class IssueStatistics {
         //1.get ignore issues' uuid
         Map<String, String> issueUuidToRecord = new HashMap<>(16);
         List<String> ignoredIssueUuids = ignoreMatch(curAllRawIssues, repoUuid, issueUuidToRecord);
+
+        if (ToolEnum.ESLINT.getType().equals(tool)) {
+            ignoreFiles.addAll(readEsLintIgnoreFile(repoPath));
+        }
 
         //2.set ignore issues' manual status
         for (String ignoredIssueUuid : ignoredIssueUuids) {
@@ -153,6 +161,26 @@ public class IssueStatistics {
         this.issueMatcher = issueMatcher;
 
         return true;
+    }
+
+    private List<String> readEsLintIgnoreFile(String repoPath) {
+
+        List<String> fileList = new ArrayList<>();
+        File file = new File(repoPath + "/.eslintignore");
+
+        try (LineNumberReader reader = new LineNumberReader(new FileReader(file))) {
+            String s;
+            while ((s = reader.readLine()) != null) {
+                s = s.replaceAll("\\*", "%");
+                String temp = "\"%" + s + "%\"";
+                fileList.add(temp);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+
+        return fileList;
     }
 
     private List<String> ignoreMatch(List<RawIssue> curAllRawIssues, String repoUuid, Map<String, String> issueUuidToRecord) {
