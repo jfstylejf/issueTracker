@@ -53,9 +53,9 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
 
         try {
             File file = new File(repoPath + "/.eslintignore");
-            if (!file.exists()){
+            if (!file.exists()) {
                 boolean newFile = file.createNewFile();
-                if (!newFile){
+                if (!newFile) {
                     log.error("create .eslintignore failed!");
                     return false;
                 }
