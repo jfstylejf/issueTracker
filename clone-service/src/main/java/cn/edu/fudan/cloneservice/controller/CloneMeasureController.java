@@ -5,12 +5,15 @@ import cn.edu.fudan.cloneservice.mapper.RepoCommitMapper;
 import cn.edu.fudan.cloneservice.service.CloneMeasureService;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.text.SimpleDateFormat;
 import java.util.*;
+
+import static org.reflections.Reflections.log;
 
 /**
  * @author znj yp wgc
@@ -115,6 +118,7 @@ public class CloneMeasureController {
                 SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
                 until = simpleDateFormat.format(today);
             }
+            log.info("over-all view init success");
             List<CloneOverallView> cloneOverallViews = cloneMeasureService.getCloneOverallViews(projectIds, repoUuids, until, token);
 
             List<CloneOverallView> result = new ArrayList<>();
@@ -248,6 +252,7 @@ public class CloneMeasureController {
                 SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
                 end = simpleDateFormat.format(today);
             }
+            log.info("graph init success");
             List<CloneGroupSum> cloneGroupsSum = cloneMeasureService.getCloneGroupsSum(projectIds, start, end, interval, token);
 
                 return new ResponseBean<>(200, "success", cloneGroupsSum);
