@@ -5,21 +5,26 @@ import cn.edu.fudan.dependservice.domain.ScanBody;
 import cn.edu.fudan.dependservice.domain.ScanRepo;
 import cn.edu.fudan.dependservice.service.ScanService;
 import cn.edu.fudan.dependservice.util.TimeUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @RestController
-public class Scan {
+public class ScanController {
     ScanService scanService;
 
     @Autowired
     public void setTestService(ScanService scanService) {
         this.scanService = scanService;
     }
+
     @RequestMapping(value = {"depend/scanAllByDate"},method = RequestMethod.POST)
     public ResponseBean<List<ScanRepo>> oneTimePoint(@RequestBody ScanBody scanBody){
+        log.info(" in /depend/scanAllByDate");
+
         try {
             String date= scanBody.getDatetime();
             if(date==null){

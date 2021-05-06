@@ -68,7 +68,7 @@
         select  distinct(s.commit_id), s.repo_uuid, c.commit_time
         from  issueTracker.dependency_san  s left join issueTracker.commit c
         on s.commit_id=c.commit_id
-        where repo_uuid =#{repoUuid} and status="success"
+        where repo_uuid =#{repoUuid} and status="complete"
     </select>
 <!--    todo  Optimizing Query Statements-->
 <!--    <select id="getDependencyInfo" resultMap="relationship">-->

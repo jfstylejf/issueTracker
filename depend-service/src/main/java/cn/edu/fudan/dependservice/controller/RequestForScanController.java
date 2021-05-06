@@ -36,6 +36,7 @@ public class RequestForScanController {
     })
     @PostMapping(value = {"dependency/dependency"})
     public ResponseBean<String> scanByScan(@RequestBody ScanBody scanBody) {
+        log.info("/dependency/dependency" );
         ScanRepo scanRepo = initScanRepo(scanBody);
         new Thread(() -> scanOneRepo(scanRepo)).start();
         return new ResponseBean<>(200,"success",null);

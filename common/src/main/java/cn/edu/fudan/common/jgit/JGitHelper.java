@@ -152,7 +152,7 @@
 //    /**
 //     * 通用:关闭资源
 //     */
-//    @Override
+//
 //    public void close() {
 //        if (repository != null) {
 //            repository.close();
@@ -508,6 +508,13 @@ public class JGitHelper {
         return resCommit;
 
     }
+
+        public void close() {
+        if (repository != null) {
+            repository.close();
+        }
+    }
+
     /**
      * @param branch
      * @return commitid

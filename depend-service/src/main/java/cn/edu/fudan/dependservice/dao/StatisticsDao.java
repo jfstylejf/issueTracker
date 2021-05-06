@@ -49,20 +49,18 @@ public class StatisticsDao implements PublicConstants {
     public DependencyInfo getDependencyNum(String beginDate, String endDate, String projectId, String showDetail) {
         String projectName = locationMapper.getProjectName(projectId);
         List<RepoUuidsInfo> repoInfo = locationMapper.getRepoUuids(projectName);
-        log.info("projectName: "+projectName);
-        log.info("repoinfo.size(): "+repoInfo.size());
         List<RelationShip> relationShips = new ArrayList<>();
         boolean noScan=true;
+        log.info("projectId: {}",projectId);
         for (RepoUuidsInfo repo : repoInfo) {
-            log.info("repo: "+repo.getRepoUuid());
+            log.info("repouuid: {}",repo.getRepoUuid());
             List<Commit> scanedCommit =locationMapper.getScanedCommit(repo.getRepoUuid());
-
-            String latestCommittodate=getLatestCommit(scanedCommit,endDate,repo.getRepoUuid());
+            log.info("scanedCommit.size(): {}",scanedCommit.size());
+            String latestCommittodate=getLatestCommit(scanedCommit,endDate);
             if(latestCommittodate==null){
                 continue;
             }
             noScan=false;
-            log.info("latestCommitdate"+ latestCommittodate);
             relationShips.addAll(locationMapper.getFileByCommitId(repo.getRepoUuid(),latestCommittodate));
         }
         if(noScan){
@@ -81,21 +79,17 @@ public class StatisticsDao implements PublicConstants {
             res.setDate(endDate.split(" ")[0]);
             return res;
         }
-
         DependencyInfo res = getDependencyInfoFromRelationShips(relationShips, showDetail);
         res.setProjectId(projectId);
         res.setProjectName(projectName);
         res.setDate(endDate.split(" ")[0]);
-        System.out.println(res.getProjectName() +" "+ res.getNum());
         return res;
     }
 
-    private String getLatestCommit(List<Commit> scanedCommit, String date, String repouuid) {
-        log.info("date: " +date);
+    private String getLatestCommit(List<Commit> scanedCommit, String date) {
         String res=null;
         String latestDate="1000-00-10 00:00:00";
         for(Commit c:scanedCommit){
-            log.info("scan time: "+c.getCommitTime());
             if(c.getCommitTime()!=null){
                 if(c.getCommitTime().compareTo(date)<0){
                     if(c.getCommitTime().compareTo(latestDate)>0){
@@ -105,7 +99,6 @@ public class StatisticsDao implements PublicConstants {
                 }
             }
         }
-        log.info("latestDate: "+latestDate);
         return res;
     }
 

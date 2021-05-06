@@ -97,7 +97,7 @@ public class ToolScanImplPara extends ToolScan {
         log.info("The total cost of waiting for the sh results -> {}  second", (endTime - startTime) / 1000);
         for (ScanRepo scanRepo : scanRepos) {
             if(scanRepo.isGetResult()){
-                scanRepo.getScanStatus().setStatus("success");
+                scanRepo.getScanStatus().setStatus("complete");
                 Map<String, List> fileRes = null;
                 String[] ss=scanRepo.getCopyRepoPath().split("\\/");
                 String duplicateDirectoryName=ss[ss.length-1];
@@ -136,6 +136,7 @@ public class ToolScanImplPara extends ToolScan {
         log.info("---------------------detect--------------------");
         log.info("-----------------------------------------------");
         boolean res = true;
+        log.info("resultFileDir: "+resultFileDir);
         File dir = new File(resultFileDir);
         if (!dir.isDirectory()) {
             log.error("resultfileDir Wrong");
@@ -151,6 +152,7 @@ public class ToolScanImplPara extends ToolScan {
         for (ScanRepo scanRepo : scanRepos) {
             if (scanRepo.isCopyStatus()&&!scanRepo.isGetResult()) {
                 String fileName= scanRepo.getCopyRepoPath().substring(scanRepo.getCopyRepoPath().lastIndexOf("/")+1);
+                log.info("fileName: "+fileName);
                 for (String s : files) {
                     if (s.indexOf(fileName) != -1) {
                         scanRepo.setGetResult(true);

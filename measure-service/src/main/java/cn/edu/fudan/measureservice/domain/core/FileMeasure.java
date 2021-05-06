@@ -23,5 +23,12 @@ public class FileMeasure{
     int ccn;
     int addLine;
     int deleteLine;
+    /**
+     * 相对物理行（去除 注释，空白行）
+     */
     int totalLine;
+    /**
+     * 绝对物理行（包含 注释，空白行）
+     */
+    int absoluteLine;
 }

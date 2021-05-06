@@ -9,6 +9,6 @@ import java.util.List;
 public interface ScanService {
 
 
-    List<ScanRepo> scanAllRepoNearToOneDate(String toScanDate);
+    public List<ScanRepo> scanAllRepoNearToOneDate(String toScanDate);
 }
 

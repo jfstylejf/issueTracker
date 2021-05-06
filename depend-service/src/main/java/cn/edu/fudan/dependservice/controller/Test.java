@@ -6,6 +6,7 @@ package cn.edu.fudan.dependservice.controller;
  * @create 2021-04-26 11:00
  **/
 
+import cn.edu.fudan.dependservice.component.BatchProcessor;
 import cn.edu.fudan.dependservice.domain.ResponseBean;
 import cn.edu.fudan.dependservice.domain.ScanRepo;
 import cn.edu.fudan.dependservice.domain.ScanStatus;
@@ -21,6 +22,8 @@ import java.util.List;
 @Slf4j
 public class Test {
     @Autowired
+    BatchProcessor batchProcessor;
+    @Autowired
     ScanMapper scanMapper;
     //test  scanMapper.insert(scanRepo);
     @RequestMapping(value = {"depend/test"},method = RequestMethod.GET)
@@ -32,8 +35,7 @@ public class Test {
         scanStatus.setScanTime("100");
         scanRepo.setRepoUuid("test");
         scanRepo.setScanStatus(scanStatus);
-         int res=scanMapper.insert(scanRepo);
-         log.info("res = ->{}",res);
+        System.out.println("batchNum"+batchProcessor.getBatchNum());
             return new ResponseBean<>(200, msg, list);
     }
 

@@ -280,7 +280,7 @@ public class ProjectController {
             @ApiImplicitParam(name = "repo_uuid", value = "库uuid", dataType = "String", required = true)
     })
     @PutMapping(value = {"/repository/recycle"})
-    public ResponseBean updateRecycleStatus(HttpServletRequest request,
+    public ResponseBean<Integer> updateRecycleStatus(HttpServletRequest request,
                                             @RequestParam("repo_uuid") String repoUuid,
                                             @RequestParam("recycled") int recycled) {
         try {
@@ -288,8 +288,8 @@ public class ProjectController {
             if (repository == null) {
                 return new ResponseBean<>(412, "repo not exist", null);
             }
-            projectControl.updateRecycleStatus(request.getHeader(TOKEN), repoUuid, recycled);
-            return new ResponseBean<>(200, "update success", null);
+            Integer recycledStatus  = projectControl.updateRecycleStatus(request.getHeader(TOKEN), repoUuid, recycled);
+            return new ResponseBean<>(200, "update success", recycledStatus);
         } catch (Exception e) {
             return new ResponseBean<>(401, "update failed :" + e.getMessage(), null);
         }
@@ -301,7 +301,7 @@ public class ProjectController {
             @ApiImplicitParam(name = "repo_uuid", value = "库的uuid", dataType = "String", required = true)
     })
     @PutMapping(value = {"/repo"})
-    public ResponseBean updateRecycled(HttpServletRequest request,
+    public ResponseBean<Integer> updateRecycled(HttpServletRequest request,
                                             @RequestParam("repo_uuid") String repoUuid,
                                             @RequestParam("service_name") String serviceName) throws Exception {
         try {
@@ -312,13 +312,30 @@ public class ProjectController {
             if(serviceName == null){
                 return new ResponseBean<>(412, "please input service name!", null);
             }
-            projectControl.updateRecycled(request.getHeader(TOKEN), repoUuid, serviceName);
-            return new ResponseBean<>(200, "update success", null);
+            Integer recycledStatus = projectControl.updateRecycled(request.getHeader(TOKEN), repoUuid, serviceName);
+            return new ResponseBean<>(200, "update success", recycledStatus);
         } catch (Exception e) {
             return new ResponseBean<>(401, "update failed :" + e.getMessage(), null);
         }
     }
 
+    @ApiOperation(value = "硬删除project服务中的repo信息", httpMethod = "DELETE")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "repoUuid", value = "库的UUID", dataType = "String", required = true)
+    })
+    @DeleteMapping(value = {"/repo/project"})
+    public ResponseBean<Boolean> deleteRepoInfo(HttpServletRequest request,
+                                                @RequestParam("repo_uuid") String repoUuid) {
+        try {
+            Boolean result = projectControl.deleteRepoInfo(request.getHeader(TOKEN), repoUuid);
+            if(!result){
+                return new ResponseBean<>(412, "repo can not be delete!", null);
+            }
+            return new ResponseBean<>(200, "delete success", null);
+        } catch (Exception e) {
+            return new ResponseBean<>(401, "delete failed :" + e.getMessage(), null);
+        }
+    }
 
 
     @Autowired
