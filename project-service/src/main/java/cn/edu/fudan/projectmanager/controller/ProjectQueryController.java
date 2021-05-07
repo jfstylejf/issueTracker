@@ -61,7 +61,7 @@ public class ProjectQueryController {
         List<SubRepository> subRepositories = projectControl.query(userToken);
         List<RepositoryVO> repositoryVos = new ArrayList<>(subRepositories.size());
         subRepositories.stream()
-                .filter(s -> s.getRecycled() == recycled)
+                .filter(s -> (recycled == 0) == (s.getRecycled() == 0))
                 .forEach(s -> repositoryVos.add(new RepositoryVO(s)));
 
         return new ResponseBean<>(200, "success", repositoryVos);
