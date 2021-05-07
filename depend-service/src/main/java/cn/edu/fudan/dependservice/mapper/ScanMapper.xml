@@ -14,8 +14,8 @@
 
     <insert id="insert" parameterType="cn.edu.fudan.dependservice.domain.ScanRepo">
         insert into
-        issueTracker.dependency_san(repo_uuid,commit_id,status,start_time,end_time,scan_time)
-        values(#{repoUuid},#{scanCommit},#{scanStatus.status},#{scanStatus.startScanTime},#{scanStatus.endScanTime},#{scanStatus.scanTime})
+        issueTracker.dependency_san(repo_uuid,commit_id,status,start_time,end_time,scan_time,msg)
+        values(#{repoUuid},#{scanCommit},#{scanStatus.status},#{scanStatus.startScanTime},#{scanStatus.endScanTime},#{scanStatus.scanTime},#{scanStatus.msg})
     </insert>
     <select id="getScanStatus" resultMap="status">
         select * from issueTracker.dependency_san

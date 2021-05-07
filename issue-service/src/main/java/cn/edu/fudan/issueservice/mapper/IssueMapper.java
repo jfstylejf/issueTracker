@@ -271,4 +271,12 @@ public interface IssueMapper {
      * @return issues
      */
     List<String> getIssuesByFilesToolAndRepo(@Param("preFiles") List<String> preFiles, String repoId, String toolName);
+
+    /**
+     * eslint ignore
+     *
+     * @param ignoreFiles ignoreFiles
+     * @param repoUuid repoUuid
+     */
+    void updateIssuesForIgnore(List<String> ignoreFiles, String repoUuid);
 }

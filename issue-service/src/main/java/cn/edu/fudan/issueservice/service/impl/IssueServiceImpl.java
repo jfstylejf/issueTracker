@@ -331,11 +331,17 @@ public class IssueServiceImpl implements IssueService {
 
         IssueFilterSidebarVO javaSideBarVO = IssueFilterSidebarVO.builder()
                 .language("java")
-                .categories(new ArrayList<IssueFilterSidebarVO.IssueFilterSidebar>(){{add(codeSmellSidebar); add(bugSidebar);}})
+                .categories(new ArrayList<IssueFilterSidebarVO.IssueFilterSidebar>() {{
+                    add(codeSmellSidebar);
+                    add(bugSidebar);
+                }})
                 .build();
         IssueFilterSidebarVO jsSideBarVO = IssueFilterSidebarVO.builder()
                 .language("js")
-                .categories(new ArrayList<IssueFilterSidebarVO.IssueFilterSidebar>(){{add(warnSidebar); add(errorSidebar);}})
+                .categories(new ArrayList<IssueFilterSidebarVO.IssueFilterSidebar>() {{
+                    add(warnSidebar);
+                    add(errorSidebar);
+                }})
                 .build();
 
         result.add(javaSideBarVO);

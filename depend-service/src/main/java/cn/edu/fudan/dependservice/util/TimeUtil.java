@@ -30,4 +30,8 @@ public class TimeUtil {
         }
         return (int)(d.getTime()/1000);
     }
+    public static String getCurrentDate() {
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");//设置日期格式
+        return  df.format(new Date());// new Date()为获取当前系统时间
+    }
 }

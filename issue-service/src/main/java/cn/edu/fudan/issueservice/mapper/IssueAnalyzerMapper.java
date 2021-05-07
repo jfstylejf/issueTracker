@@ -26,10 +26,10 @@ public interface IssueAnalyzerMapper {
      *
      * @param repoUuid repoUuid
      * @param commitId commitId
-     * @param tool 工具名
+     * @param tool     工具名
      * @return IssueAnalyzer
      */
     IssueAnalyzer getIssueAnalyzeResultByRepoUuidCommitIdTool(@Param("repoUuid") String repoUuid,
-                                                          @Param("commitId") String commitId,
-                                                          @Param("tool") String tool);
+                                                              @Param("commitId") String commitId,
+                                                              @Param("tool") String tool);
 }

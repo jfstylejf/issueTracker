@@ -19,7 +19,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 @PowerMockRunnerDelegate(SpringRunner.class)
 @SpringBootTest(classes = IssueServiceApplication.class)
 @ActiveProfiles("test-fancying")
-@PowerMockIgnore({"javax.crypto.*","javax.management.*","com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*", "org.w3c.*",  "com.sun.org.apache.xalan.internal.xsltc.trax.*"})
+@PowerMockIgnore({"javax.crypto.*", "javax.management.*", "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*", "org.w3c.*", "com.sun.org.apache.xalan.internal.xsltc.trax.*"})
 public class IssueServiceApplicationTest {
 
     @Autowired

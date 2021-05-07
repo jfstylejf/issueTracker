@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import static org.reflections.Reflections.log;
+
 /**
  * @author zyh
  * @date 2020/5/27
@@ -33,7 +35,8 @@ public class CloneLocationDao {
         for (String repoUuid : repoUuids) {
             if (repoUuid != null) {
                 String commitId = cloneLocationMapper.getLatestCommitId(repoUuid, "", until);
-                if (commitId != null) {
+                log.info("repoUuid:".concat(repoUuid).concat(" commitId:").concat(commitId));
+                if (StringUtils.isEmpty(commitId)) {
                     res = res + cloneLocationMapper.getGroupCount(cloneLocationMapper.getLatestCommitId(repoUuid, "", until));
                 }
             }
@@ -44,7 +47,9 @@ public class CloneLocationDao {
     public List<CloneOverallView> getCloneOverall(List<String> repoUuids, String initDate, String projectId, String projectName) {
         List<CloneOverallView> result = new ArrayList<>();
         for (String repoUuid : repoUuids) {
-            if (repoUuid != null) {
+            log.info("repo_uuid:".concat(repoUuid));
+
+            if (StringUtils.isEmpty(repoUuid)) {
                 String commitId = cloneLocationMapper.getLatestCommitId(repoUuid, "", initDate);
                 if (commitId != null) {
                     int groupSum = cloneLocationMapper.getGroupCount(commitId);

@@ -16,7 +16,7 @@ public class StringsUtil {
 
     private static final Pattern P = Pattern.compile("[\r\n]");
 
-    public static String removeBr(String str){
+    public static String removeBr(String str) {
         Matcher matcher = P.matcher(str);
         return matcher.replaceAll("");
     }

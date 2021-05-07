@@ -17,7 +17,7 @@ public class ScanController {
     ScanService scanService;
 
     @Autowired
-    public void setTestService(ScanService scanService) {
+    public void setScanService(ScanService scanService) {
         this.scanService = scanService;
     }
 

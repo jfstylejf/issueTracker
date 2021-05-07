@@ -51,9 +51,9 @@ public class RequestForScanControllerTest {
     public void scanByScan() throws Exception {
         ObjectMapper om =new ObjectMapper();
         ScanBody scanBody=new ScanBody();
-        scanBody.setRepo_uuid("hh");
+        scanBody.setRepoUuid("ff");
         scanBody.setBranch("main");
-        scanBody.setBegin_commit("testCommit");
+        scanBody.setBeginCommit("testCommit");
         String s=om.writeValueAsString(scanBody);
         MvcResult mvcResult = mockMvc.perform(
                 MockMvcRequestBuilders.post("/dependency/dependency").contentType(MediaType.APPLICATION_JSON).content(s))

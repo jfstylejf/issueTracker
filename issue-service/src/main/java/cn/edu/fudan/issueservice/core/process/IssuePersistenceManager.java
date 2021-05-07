@@ -38,7 +38,7 @@ public class IssuePersistenceManager {
     private IssueIgnoreDao issueIgnoreDao;
 
     @Transactional(rollbackFor = Exception.class)
-    public void persistScanData(IssueStatistics issueStatistics) {
+    public void persistScanData(IssueStatistics issueStatistics, String repoUuid) {
 
         //0.get the issues infos
         IssueMatcher issueMatcher = issueStatistics.getIssueMatcher();
@@ -89,7 +89,10 @@ public class IssuePersistenceManager {
         insertRawIssueList.forEach(rawIssue -> locations.addAll(rawIssue.getLocations()));
         locationDao.insertLocationList(locations);
 
-        //6.scanResult persist
+        //6.handle eslint ignore file
+        issueDao.updateIssuesForIgnore(issueStatistics.getIgnoreFiles(), repoUuid);
+
+        //7.scanResult persist
         scanResultDao.addOneScanResult(issueStatistics.getScanResult());
     }
 

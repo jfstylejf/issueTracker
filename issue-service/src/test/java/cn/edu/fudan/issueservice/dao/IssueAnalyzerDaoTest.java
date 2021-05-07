@@ -34,8 +34,8 @@ public class IssueAnalyzerDaoTest extends IssueServiceApplicationTest {
     public void insertTest() {
         IssueAnalyzer issueAnalyzer = new IssueAnalyzer();
         JSONObject obj = new JSONObject();
-        obj.put("result","11");
-        obj.put("result2","1221");
+        obj.put("result", "11");
+        obj.put("result2", "1221");
         issueAnalyzer.setAnalyzeResult(obj);
         issueAnalyzer.setUuid("111");
         issueAnalyzer.setRepoUuid("11122");
@@ -54,7 +54,7 @@ public class IssueAnalyzerDaoTest extends IssueServiceApplicationTest {
         // 第二步：将数组转换成字符串
         String js = JSONObject.toJSONString(resArr, SerializerFeature.WriteClassName);
         // 第三步：将字符串转换成List集合
-        List<RawIssue> analyzeRawIssues = JSONArray.parseArray(resArr.toJSONString(), RawIssue.class) ;
+        List<RawIssue> analyzeRawIssues = JSONArray.parseArray(resArr.toJSONString(), RawIssue.class);
         System.out.println(1 + 1);
     }
 

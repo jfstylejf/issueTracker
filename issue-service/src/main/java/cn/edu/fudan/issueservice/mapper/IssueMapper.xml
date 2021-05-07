@@ -611,6 +611,7 @@
         SELECT uuid, type, status
         FROM issue
         WHERE producer = #{developer}
+          AND manual_status = 'Default'
     </select>
 
     <select id="getIssuesOverview" resultType="java.util.Map">
@@ -724,10 +725,10 @@
                 AND a.id = #{projectId}) as c
         WHERE i.repo_uuid = c.repoUuid
           AND (
-              (<![CDATA[ start_commit_date <= #{until} ]]> AND <![CDATA[ end_commit_date >= #{until} ]]>)
-              OR
-              (<![CDATA[ end_commit_date <= #{until} ]]> AND status = "Open")
-          )
+                (<![CDATA[start_commit_date <= #{until} ]]> AND <![CDATA[ end_commit_date >= #{until} ]]>)
+                OR
+                (<![CDATA[end_commit_date <= #{until} ]]> AND status = "Open")
+            )
           AND manual_status = 'Default'
     </select>
 
@@ -754,10 +755,10 @@
                 AND a.id = #{projectId}) as c
         WHERE i.repo_uuid = c.repoUuid
           AND (
-              (<![CDATA[ start_commit_date <= #{until} ]]> AND <![CDATA[ end_commit_date >= #{until} ]]>)
-              OR
-              (<![CDATA[ end_commit_date <= #{until} ]]> AND status = "Open")
-          )
+                (<![CDATA[start_commit_date <= #{until} ]]> AND <![CDATA[ end_commit_date >= #{until} ]]>)
+                OR
+                (<![CDATA[end_commit_date <= #{until} ]]> AND status = "Open")
+            )
           AND manual_status = 'Default'
     </select>
 
@@ -914,4 +915,15 @@
             </if>
         </trim>
     </select>
+
+    <update id="updateIssuesForIgnore">
+        UPDATE issue SET manual_status = 'Ignore'
+        WHERE repo_uuid = #{repoUuid}
+        <if test="ignoreFiles != null and ignoreFiles.size > 0">
+            AND
+            <foreach collection="ignoreFiles" separator="OR" open="(" close=")" item="ignoreFile">
+                file_name LIKE  #{ignoreFile}
+            </foreach>
+        </if>
+    </update>
 </mapper>

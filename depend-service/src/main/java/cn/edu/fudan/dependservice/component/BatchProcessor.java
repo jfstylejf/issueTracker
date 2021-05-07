@@ -15,7 +15,6 @@ import java.util.Queue;
 @Slf4j
 @Service
 public class BatchProcessor {
-//    @Value("${account.service.path}")
 
     @Value("${batchSize}")
     private int batchNum;
@@ -37,6 +36,7 @@ public class BatchProcessor {
 
     public List<ScanRepo> getScanList() {
         log.info("batchNum: "+batchNum);
+        log.info("scanRepo in queue:"+ scanQueue.size());
         synchronized (scanQueue) {
             while (inScanning.size() < batchNum && !scanQueue.isEmpty()) {
                 inScanning.add(scanQueue.poll());

@@ -56,7 +56,7 @@ public class LocationServiceImpl implements LocationService {
     public Integer getIssueCountsInMethod(String methodName, String filePath, String repoUuid, String tool) {
         //get latest scan commit
         IssueScan latestIssueScan = issueScanDao.getLatestIssueScanByRepoIdAndTool(repoUuid, tool);
-        if (latestIssueScan == null){
+        if (latestIssueScan == null) {
             return 0;
         }
         String commit = latestIssueScan.getCommitId();

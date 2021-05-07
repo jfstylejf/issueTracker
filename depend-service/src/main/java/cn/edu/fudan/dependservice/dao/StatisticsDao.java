@@ -5,11 +5,13 @@ import cn.edu.fudan.dependservice.codetrackermapper.FileMapperInCT;
 import cn.edu.fudan.dependservice.constants.PublicConstants;
 import cn.edu.fudan.dependservice.domain.*;
 import cn.edu.fudan.dependservice.mapper.LocationMapper;
+import cn.edu.fudan.dependservice.mapper.RepoMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author fancying
@@ -20,6 +22,7 @@ import java.util.*;
 public class StatisticsDao implements PublicConstants {
     private LocationMapper locationMapper;
     private FileMapperInCT fileMapperInCT;
+    private RepoMapper repoMapper;
 
     @Autowired
     public void fileMapperInCT(FileMapperInCT fileMapperInCT) {
@@ -45,10 +48,16 @@ public class StatisticsDao implements PublicConstants {
         return res;
 
     }
+    public String getLanguage(String repoUuid){
+        return repoMapper.getLanguage(repoUuid);
+
+    }
 
     public DependencyInfo getDependencyNum(String beginDate, String endDate, String projectId, String showDetail) {
         String projectName = locationMapper.getProjectName(projectId);
         List<RepoUuidsInfo> repoInfo = locationMapper.getRepoUuids(projectName);
+        //  to do
+        repoInfo=repoInfo.stream().filter((e)->e.getRepoUuid()!=null).collect(Collectors.toList());
         List<RelationShip> relationShips = new ArrayList<>();
         boolean noScan=true;
         log.info("projectId: {}",projectId);

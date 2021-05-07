@@ -20,4 +20,13 @@ public class StatusServiceImpl  implements StatusService {
 
         return scanDao.getScanStatus(repouuid);
     }
+    public boolean canScan(String repouuid) {
+
+        String language =scanDao.getRepoLanguage(repouuid);
+        if(language!=null&&(language.equals("Java")||language.equals("C++"))){
+            return true;
+        }else {
+            return false;
+        }
+    }
 }

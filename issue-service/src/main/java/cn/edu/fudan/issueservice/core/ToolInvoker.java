@@ -270,9 +270,8 @@ public class ToolInvoker {
             // 第一步：先获取jsonArray数组
             JSONArray resArr = analyzeCache.getJSONArray("result");
             // 第二步：将JSON字符串转换成List集合
-            analyzeRawIssues = JSONArray.parseArray(resArr.toJSONString(), RawIssue.class) ;
+            analyzeRawIssues = JSONArray.parseArray(resArr.toJSONString(), RawIssue.class);
         }
-
 
 
         //4. 缺陷匹配
@@ -290,7 +289,7 @@ public class ToolInvoker {
         issueStatistics.setCurrentCommitDate(DateTimeUtil.localToUtc(jGitInvoker.getCommitTime(commit)));
         issueStatistics.setAnalyzer(analyzer);
         issueStatistics.setJGitHelper(jGitInvoker);
-        boolean statisticalResult = issueStatistics.doingStatisticalAnalysis(issueMatcher, repoId, analyzer.getToolName());
+        boolean statisticalResult = issueStatistics.doingStatisticalAnalysis(issueMatcher, repoId, analyzer.getToolName(), repoPath);
         if (!statisticalResult) {
             log.error("statistical failed ! ");
             issueScan.setStatus(ScanStatusEnum.STATISTICAL_FAILED.getType());
@@ -300,7 +299,7 @@ public class ToolInvoker {
 
         //6. 持久化扫描结果
         try {
-            issuePersistenceManager.persistScanData(issueStatistics);
+            issuePersistenceManager.persistScanData(issueStatistics, repoId);
         } catch (Exception e) {
             e.printStackTrace();
             log.error("persist failed ! ");
