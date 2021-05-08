@@ -14,6 +14,7 @@ import cn.edu.fudan.dependservice.util.TimeUtil;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
@@ -41,8 +42,8 @@ public class ToolScanImplPara extends ToolScan {
     // where sh run
     String dependenceHome;
     String shName;
-    //unit second.it is 40 minutes
-    final long batchWaitTime = 2400;
+     long batchWaitTime;
+    final static long oneWaitTime=6 * 60;
     //unit second, it is 3 minutes
     final long detectInterval =3*60;
     String resultFileDir;
@@ -61,6 +62,11 @@ public class ToolScanImplPara extends ToolScan {
     @Autowired
     public void setApplicationContext(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
+    }
+    @Autowired
+    public void setbatchWaitTime(@Value("${batchSize}") Integer batchSize) {
+        this.batchWaitTime=(long) batchSize *oneWaitTime;
+        log.info("batchWaitTime"+batchWaitTime);
     }
 
     @Override
