@@ -125,10 +125,10 @@ public interface IssueMeasureInfoService {
     /**
      * 指定某些项目的留存缺陷数的趋势统计图数据
      *
-     * @param since since
-     * @param until until
+     * @param since      since
+     * @param until      until
      * @param projectIds 项目ids
-     * @param interval 时间粒度
+     * @param interval   时间粒度
      * @param showDetail 是否展示细节
      * @return 指定某些项目的留存缺陷数的趋势统计图数据
      */

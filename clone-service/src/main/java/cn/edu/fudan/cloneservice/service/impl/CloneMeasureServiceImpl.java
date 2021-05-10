@@ -397,6 +397,7 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
         List<LocalDate> timeList = getTimeList(since, until, interval);
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         List<CloneGroupSum> results = new ArrayList<>();
+        log.info("get project success");
         for (String aProjectId : projectList) {
             String projectName = repoCommitMapper.getProjectNameByProjectId(aProjectId);
             timeList.forEach(a -> results.add(new CloneGroupSum(projectName, aProjectId, a.format(dtf), cloneLocationDao.getCloneLocationGroupSum(repoCommitMapper.getRepoIdByProjectId(aProjectId), a.format(dtf)))));
@@ -410,6 +411,7 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         LocalDate localDate = LocalDate.parse(until, dtf);
         List<CloneOverallView> results = new ArrayList<>();
+        log.info("get project success");
         for (String aProjectId : projectList) {
             String projectName = repoCommitMapper.getProjectNameByProjectId(aProjectId);
             results.addAll(cloneLocationDao.getCloneOverall(getRepoUuids(projectList, repoUuid), localDate.format(dtf), aProjectId, projectName));
@@ -446,6 +448,7 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
         } else {
             repoUuids.addAll(Arrays.asList(repoUuid.split(",")));
         }
+        log.info("get repo_uuid success");
         return repoUuids;
     }
 

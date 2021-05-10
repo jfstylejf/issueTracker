@@ -536,7 +536,6 @@ public class ProjectControlServiceImpl implements ProjectControlService {
             return false;
         }
     }
-
     /**
      * setter
      */

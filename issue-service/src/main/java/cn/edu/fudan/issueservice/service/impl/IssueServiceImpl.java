@@ -81,6 +81,13 @@ public class IssueServiceImpl implements IssueService {
         issueRepoDao.delIssueRepo(repoUuid, null, tool);
         issueScanDao.deleteIssueScanByRepoIdAndTool(repoUuid, tool);
         scanResultDao.deleteScanResultsByRepoIdAndCategory(repoUuid, tool);
+
+        //check delete success
+        boolean success = issueDao.checkDeleteSuccess(repoUuid, tool);
+        if (success) {
+            restInterfaceManager.sendDeleteSuccessMessage(repoUuid);
+        }
+
         //完成删库
         logger.info("finish deleting issues -> repoUuid={} , tool={}", repoUuid, tool);
     }
@@ -331,11 +338,17 @@ public class IssueServiceImpl implements IssueService {
 
         IssueFilterSidebarVO javaSideBarVO = IssueFilterSidebarVO.builder()
                 .language("java")
-                .categories(new ArrayList<IssueFilterSidebarVO.IssueFilterSidebar>(){{add(codeSmellSidebar); add(bugSidebar);}})
+                .categories(new ArrayList<IssueFilterSidebarVO.IssueFilterSidebar>() {{
+                    add(codeSmellSidebar);
+                    add(bugSidebar);
+                }})
                 .build();
         IssueFilterSidebarVO jsSideBarVO = IssueFilterSidebarVO.builder()
                 .language("js")
-                .categories(new ArrayList<IssueFilterSidebarVO.IssueFilterSidebar>(){{add(warnSidebar); add(errorSidebar);}})
+                .categories(new ArrayList<IssueFilterSidebarVO.IssueFilterSidebar>() {{
+                    add(warnSidebar);
+                    add(errorSidebar);
+                }})
                 .build();
 
         result.add(javaSideBarVO);

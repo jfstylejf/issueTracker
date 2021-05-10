@@ -256,15 +256,16 @@ public class RestInterfaceManager {
         jsonObject.put("repoUuid",repoId);
         jsonObject.put("branch",branch);
         jsonObject.put("beginCommit",beginCommit);
-        log.debug("params: " + jsonObject.toJSONString());
+        log.info("Scan params: " + jsonObject.toJSONString());
         // toolName 和 toolType 都来自于 Tool表
         String servicePath = getServicePathByToolType(toolType) + "/" + toolType + "/" + toolName;
-        log.debug("servicePath is :" + servicePath);
+        log.info("Scan servicePath is :" + servicePath);
         try {
             JSONObject requestResult = restTemplate.postForObject(servicePath, jsonObject, JSONObject.class);
             if(requestResult != null){
                 int code = requestResult.getInteger("code");
                 if(code == HttpStatus.OK.value()){
+                    log.info("Success invoke tool to scan! Tool is {}, RepoId is {}", toolType, repoId);
                     result = true;
                 }
             }

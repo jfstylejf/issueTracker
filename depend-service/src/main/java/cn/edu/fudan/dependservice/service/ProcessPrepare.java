@@ -41,6 +41,7 @@ public class ProcessPrepare{
         int timeStamp=getTimeStamp(date);
 
         try {
+            log.info("to scan repo uuid"+scanRepo.getRepoUuid());
             repoPath = baseRepoRestManager.getCodeServiceRepo(scanRepo.getRepoUuid());
         }catch (Exception e){
             log.info("Exception: "+ e.getMessage());
@@ -56,6 +57,7 @@ public class ProcessPrepare{
         try {
             JGitHelper jGitHelper=new JGitHelper(repoPath);
             String toScanCommit=jGitHelper.gettoScanCommit(scanRepo.getBranch(),timeStamp);
+
             if(toScanCommit==null){
                 scanRepo.setCopyStatus(false);
                 scanRepo.getScanStatus().setStatus("fail");
@@ -79,7 +81,7 @@ public class ProcessPrepare{
                 copyFail(scanRepo);
                 return ;
             }
-
+            jGitHelper.close();
         } catch (Exception e) {
             log.info("Exception:"+e.getMessage());
             scanRepo.getScanStatus().setStatus("fail");

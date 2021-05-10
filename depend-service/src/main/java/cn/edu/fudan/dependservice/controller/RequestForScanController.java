@@ -2,6 +2,7 @@ package cn.edu.fudan.dependservice.controller;
 
 import cn.edu.fudan.dependservice.component.ScanProcessor;
 import cn.edu.fudan.dependservice.domain.*;
+import cn.edu.fudan.dependservice.service.ScanService;
 import cn.edu.fudan.dependservice.service.StatusService;
 import cn.edu.fudan.dependservice.util.TimeUtil;
 import io.swagger.annotations.ApiImplicitParam;
@@ -21,6 +22,14 @@ import java.util.Vector;
 @EnableAsync
 public class RequestForScanController {
 
+    ScanService scanService;
+
+    @Autowired
+    public void setScanService(ScanService scanService) {
+        this.scanService = scanService;
+    }
+
+
     @Autowired
     ScanProcessor scanProcessor;
     @Autowired
@@ -36,10 +45,39 @@ public class RequestForScanController {
     })
     @PostMapping(value = {"dependency/dependency"})
     public ResponseBean<String> scanByScan(@RequestBody ScanBody scanBody) {
-        ScanRepo scanRepo = initScanRepo(scanBody);
-        new Thread(() -> scanOneRepo(scanRepo)).start();
-        return new ResponseBean<>(200,"success",null);
+        log.info("scan by scan" );
+        log.info("scanBody.getRepo_uuid():"+scanBody.getRepoUuid());
+        if(canInvoke(scanBody.getRepoUuid())){
+            ScanRepo scanRepo = initScanRepo(scanBody);
+            new Thread(() -> scanOneRepo(scanRepo)).start();
+            String data ="invoke success";
+            return new ResponseBean<>(200,"success",data);
+        }else {
+            String data ="invoke fail";
+            return new ResponseBean<>(200,"success",data);
+        }
+       
     }
+    public boolean canInvoke(String repouuid){
+        if(statusService.canScan(repouuid)){
+            return true;
+        }else{
+            ScanRepo scanRepo =new ScanRepo();
+            scanRepo.setRepoUuid(repouuid);
+            ScanStatus scanStatus=new ScanStatus();
+            scanStatus.setStatus("fail");
+            scanStatus.setTs_start(0);
+            scanStatus.setTs_end(0);
+            scanStatus.setScanTime("0");
+            scanStatus.setMsg("CAN NOT SCAN");
+            scanStatus.setEndScanTime(TimeUtil.getCurrentDateTime());
+            scanRepo.setScanStatus(scanStatus);
+            scanService.canNotScan(scanRepo);
+            return false;
+        }
+    }
+
+    // todo if not java in
     //todo why can not async
 //    @Async("taskExecutor")
     public void scanOneRepo(ScanRepo scanRepo){
@@ -79,6 +117,7 @@ public class RequestForScanController {
         }
         //go to database for status
         scanStatus=statusService.getScanStatus(repoUuid);
+        log.info("scanStatus-> {}",scanStatus.getStatus());
 
         return new ResponseBean<>(200,"success",scanStatus);
     }
@@ -93,8 +132,9 @@ public class RequestForScanController {
     public ScanRepo initScanRepo(ScanBody scanBody){
         ScanRepo scanRepo=new ScanRepo();
         scanRepo.setBranch(scanBody.getBranch());
-        scanRepo.setRepoUuid(scanBody.getRepo_uuid());
+        scanRepo.setRepoUuid(scanBody.getRepoUuid());
         ScanStatus scanStatus =new ScanStatus();
+        scanRepo.setToScanDate(TimeUtil.getCurrentDate());
         scanStatus.setStartScanTime(TimeUtil.getCurrentDateTime());
         scanStatus.setTs_start(System.currentTimeMillis());
         scanRepo.setScanStatus(scanStatus);

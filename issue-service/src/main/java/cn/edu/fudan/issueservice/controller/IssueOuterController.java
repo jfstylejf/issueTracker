@@ -58,7 +58,7 @@ public class IssueOuterController {
     })
     @GetMapping(value = {"/issue/issue-types"})
     public ResponseBean<List<String>> getExistIssueTypes(@RequestParam(name = "tool", defaultValue = "sonarqube") String tool) {
-        if (!ToolEnum.toolIsLegal(tool)){
+        if (!ToolEnum.toolIsLegal(tool)) {
             return new ResponseBean<>(400, FAILED + "tool is illegal!", null);
         }
         try {
@@ -227,20 +227,20 @@ public class IssueOuterController {
             @ApiImplicitParam(name = "producer", value = "issue引入者\n传null默认查询所有引入者"),
             @ApiImplicitParam(name = "priority", value = "优先级", allowableValues = "Low , Urgent , Normal , High , Immediate"),
             @ApiImplicitParam(name = "issue_uuids", value = "多个issue的uuid\n用英文逗号,作为分隔符"),
-            @ApiImplicitParam(name = "manual_status", value = "manual status", allowableValues = "Ignore , Default")
+            @ApiImplicitParam(name = "manual_status", value = "manual status", defaultValue = "Default", allowableValues = "Ignore , Default")
     })
     @GetMapping(value = "issue/filter/sidebar")
     public ResponseBean<List<IssueFilterSidebarVO>> getIssueFilterSidebar(@RequestParam(value = "project_names", required = false) String projectNames,
-                                                                    @RequestParam(value = "repo_uuids", required = false) String repoUuids,
-                                                                    @RequestParam(value = "tools", required = false, defaultValue = "sonarqube,ESLint") String tools,
-                                                                    @RequestParam(value = "since", required = false) String since,
-                                                                    @RequestParam(value = "until", required = false) String until,
-                                                                    @RequestParam(value = "status", required = false) String status,
-                                                                    @RequestParam(value = "manual_status", required = false) String manualStatus,
-                                                                    @RequestParam(value = "priority", required = false) String priority,
-                                                                    @RequestParam(value = "introducer", required = false) String introducer,
-                                                                    @RequestParam(value = "issue_uuids", required = false) String issueUuids,
-                                                                    HttpServletRequest httpServletRequest) throws UrlException {
+                                                                          @RequestParam(value = "repo_uuids", required = false) String repoUuids,
+                                                                          @RequestParam(value = "tools", required = false, defaultValue = "sonarqube,ESLint") String tools,
+                                                                          @RequestParam(value = "since", required = false) String since,
+                                                                          @RequestParam(value = "until", required = false) String until,
+                                                                          @RequestParam(value = "status", required = false) String status,
+                                                                          @RequestParam(value = "manual_status", required = false, defaultValue = "Default") String manualStatus,
+                                                                          @RequestParam(value = "priority", required = false) String priority,
+                                                                          @RequestParam(value = "introducer", required = false) String introducer,
+                                                                          @RequestParam(value = "issue_uuids", required = false) String issueUuids,
+                                                                          HttpServletRequest httpServletRequest) throws UrlException {
         Map<String, Object> query = new HashMap<>(16);
         if (TIME_FORMAT_ERROR.equals(DateTimeUtil.timeFormatIsLegal(since, false)) || TIME_FORMAT_ERROR.equals(DateTimeUtil.timeFormatIsLegal(until, true))) {
             return new ResponseBean<>(400, TIME_FORMAT_ERROR, null);
@@ -310,7 +310,7 @@ public class IssueOuterController {
             @ApiImplicitParam(name = "status", value = "issue状态\n传null默认查询所有状态", allowableValues = "Open , Solved , Misinformation , To_Review , Ignore"),
             @ApiImplicitParam(name = "producer", value = "issue引入者\n传null默认查询所有引入者"),
             @ApiImplicitParam(name = "priority", value = "优先级", allowableValues = "Low , Urgent , Normal , High , Immediate"),
-            @ApiImplicitParam(name = "type", value = "issue种类"),
+            @ApiImplicitParam(name = "types", value = "issue种类"),
             @ApiImplicitParam(name = "manual_status", value = "manual status", allowableValues = "Ignore , Default"),
     })
     @GetMapping("/issue/filter/download")

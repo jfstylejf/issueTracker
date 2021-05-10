@@ -33,7 +33,7 @@ import java.util.*;
  * @author fancying
  * create: 4/20/2021
  **/
-@PrepareForTest({ AstParserUtil.class })
+@PrepareForTest({AstParserUtil.class})
 public class IssueMatcherTestNormalMatch extends IssueServiceApplicationTest {
 
     @Autowired
@@ -42,7 +42,7 @@ public class IssueMatcherTestNormalMatch extends IssueServiceApplicationTest {
     @Value("${test.repo.java.path}")
     private String REPO_PATH;
 
-    private JGitHelper jGitHelper ;
+    private JGitHelper jGitHelper;
 
     @Before
     public void setUp() {

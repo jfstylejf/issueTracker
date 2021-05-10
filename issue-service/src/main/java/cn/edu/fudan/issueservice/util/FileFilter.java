@@ -34,8 +34,8 @@ public final class FileFilter {
 
     public static boolean jsFileFilter(String path) {
         String[] strs = path.split("/");
-        String str = strs[strs.length-1].toLowerCase();
-        return  !str.endsWith(".js") ||
+        String str = strs[strs.length - 1].toLowerCase();
+        return !str.endsWith(".js") ||
                 path.toLowerCase().contains("/test/") ||
                 path.toLowerCase().contains("/.mvn/") ||
                 path.toLowerCase().contains("lib/") ||

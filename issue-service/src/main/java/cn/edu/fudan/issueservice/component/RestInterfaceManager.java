@@ -141,7 +141,7 @@ public class RestInterfaceManager {
         List<String> result = new ArrayList<>();
         JSONObject allRepo = getAllRepo(userToken);
         for (String projectName : allRepo.keySet()) {
-            if (projectNames.contains(projectName)){
+            if (projectNames.contains(projectName)) {
                 JSONArray repoList = allRepo.getJSONArray(projectName);
                 for (Object value : repoList) {
                     JSONObject o = (JSONObject) value;
@@ -220,6 +220,9 @@ public class RestInterfaceManager {
         return ToolEnum.getToolByLanguage(language);
     }
 
+    public void sendDeleteSuccessMessage(String repoUuid) {
+        restTemplate.put(projectServicePath + "service_name=ISSUE&repo_uuid=" + repoUuid,null);
+    }
 
     //---------------------------------------------commit service------------------------------------------------------
 

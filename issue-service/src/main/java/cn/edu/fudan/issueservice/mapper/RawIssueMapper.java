@@ -2,6 +2,7 @@ package cn.edu.fudan.issueservice.mapper;
 
 import cn.edu.fudan.issueservice.domain.dbo.RawIssue;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -67,4 +68,13 @@ public interface RawIssueMapper {
      * @return rawIssue uuids
      */
     List<String> getLatestVersionRawIssueUuids(@Param("issueUuids") List<String> issueUuids);
+
+    /**
+     * raw issue count
+     * @param repoUuid repoUuid
+     * @param tool tool
+     * @return count
+     */
+    @Select("select count(*) from raw_issue where repo_uuid = #{repoUuid} and tool = #{tool}")
+    int getRawIssueCount(String repoUuid, String tool);
 }

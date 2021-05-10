@@ -4,6 +4,7 @@ import cn.edu.fudan.dependservice.domain.ScanRepo;
 import cn.edu.fudan.dependservice.domain.ScanStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -15,9 +16,13 @@ import java.util.Queue;
 @Service
 public class BatchProcessor {
 
-    private static final int batchNum = 10;
+    @Value("${batchSize}")
+    private int batchNum;
     Queue<ScanRepo> scanQueue;
     List<ScanRepo> inScanning;
+    public int getBatchNum(){
+        return this.batchNum;
+    }
 
     @Autowired
     public void setScanQueue() {
@@ -30,6 +35,8 @@ public class BatchProcessor {
     }
 
     public List<ScanRepo> getScanList() {
+        log.info("batchNum: "+batchNum);
+        log.info("scanRepo in queue:"+ scanQueue.size());
         synchronized (scanQueue) {
             while (inScanning.size() < batchNum && !scanQueue.isEmpty()) {
                 inScanning.add(scanQueue.poll());

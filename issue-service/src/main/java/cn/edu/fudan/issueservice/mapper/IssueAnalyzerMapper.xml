@@ -8,7 +8,8 @@
         <result property="repoUuid" column="repo_uuid"/>
         <result property="commitId" column="commit_id"/>
         <result property="invokeResult" column="invoke_result"/>
-        <result property="analyzeResult" column="analyze_result" javaType="com.alibaba.fastjson.JSONObject" typeHandler="cn.edu.fudan.issueservice.handler.JsonTypeHandler"/>
+        <result property="analyzeResult" column="analyze_result" javaType="com.alibaba.fastjson.JSONObject"
+                typeHandler="cn.edu.fudan.issueservice.handler.JsonTypeHandler"/>
         <result property="tool" column="tool"/>
     </resultMap>
 
@@ -40,7 +41,7 @@
         SELECT uuid, repo_uuid, commit_id, analyze_result, invoke_result, tool
         FROM issue_analyzer
         WHERE repo_uuid = #{repoUuid}
-        AND commit_id = #{commitId}
-        AND tool = #{tool}
+          AND commit_id = #{commitId}
+          AND tool = #{tool}
     </select>
 </mapper>

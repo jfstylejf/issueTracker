@@ -342,15 +342,15 @@ public class IssueMeasurementController {
     })
     @GetMapping(value = {"/codewisdom/issue/living-issue-tendency"})
     public ResponseBean<Object> getCcnMethodNum(@RequestParam(value = "since") String since,
-                                                                   @RequestParam(value = "until") String until,
-                                                                   @RequestParam(value = "projectIds", required = false) String projectIds,
-                                                                   @RequestParam(value = "interval", required = false, defaultValue = "week") String interval,
-                                                                   @RequestParam(value = "showDetail", required = false, defaultValue = "false") String showDetail) {
+                                                @RequestParam(value = "until") String until,
+                                                @RequestParam(value = "projectIds", required = false) String projectIds,
+                                                @RequestParam(value = "interval", required = false, defaultValue = "week") String interval,
+                                                @RequestParam(value = "showDetail", required = false, defaultValue = "false") String showDetail) {
         try {
             if (since.isEmpty() || until.isEmpty()) {
                 return new ResponseBean<>(412, PARAMETER_IS_EMPTY, null);
             }
-            if(TIME_FORMAT_ERROR.equals(DateTimeUtil.timeFormatIsLegal(since, false)) || TIME_FORMAT_ERROR.equals(DateTimeUtil.timeFormatIsLegal(until, false))){
+            if (TIME_FORMAT_ERROR.equals(DateTimeUtil.timeFormatIsLegal(since, false)) || TIME_FORMAT_ERROR.equals(DateTimeUtil.timeFormatIsLegal(until, false))) {
                 return new ResponseBean<>(400, TIME_ERROR_MESSAGE, null);
             }
             return new ResponseBean<>(200, SUCCESS, issueMeasureInfoService.getLivingIssueTendency(since, until, projectIds, interval, showDetail));
