@@ -16,6 +16,9 @@ public class RepoMeasure {
 
     private String uuid;
     private int files;
+    /**
+     * 有效代码行 （去除注释、空白行）
+     */
     private int ncss;
     private int classes;
     private int functions;
@@ -38,6 +41,9 @@ public class RepoMeasure {
     private String commit_message;
     private String first_parent_commit_id;
     private String second_parent_commit_id;
-
+    /**
+     * 全部代码行（包含注释、空白行）
+     */
+    private int absoluteLines;
 
 }

@@ -35,10 +35,14 @@ public class FileUtil {
         if(!IS_WINDOWS && source.contains(WINDOWS_SEPARATOR)) {
             return source.replace(WINDOWS_SEPARATOR,LINUX_SEPARATOR);
         }
-        if (IS_WINDOWS && source.contains(LINUX_SEPARATOR)) {
+        if(!IS_WINDOWS && source.contains(SINGLE_WINDOWS_SEPARATOR)) {
+            return source.replace(SINGLE_WINDOWS_SEPARATOR,LINUX_SEPARATOR);
+        }
+
+        if (IS_WINDOWS && !source.contains(WINDOWS_SEPARATOR) && source.contains(LINUX_SEPARATOR)) {
             return source.replace(LINUX_SEPARATOR,WINDOWS_SEPARATOR);
         }
-        if(IS_WINDOWS && source.contains(SINGLE_WINDOWS_SEPARATOR)) {
+        if(IS_WINDOWS && !source.contains(WINDOWS_SEPARATOR) && source.contains(SINGLE_WINDOWS_SEPARATOR)) {
             return source.replace(SINGLE_WINDOWS_SEPARATOR,WINDOWS_SEPARATOR);
         }
         return source;

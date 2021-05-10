@@ -130,7 +130,8 @@ public class ToolInvoker {
                 .single_comment_lines(total.getSingleCommentLines()).multi_comment_lines(total.getMultiCommentLines())
                 .commit_id(scanCommitInfoDto.getCommitId()).commit_time(scanCommitInfoDto.getCommitTime()).repo_id(scanCommitInfoDto.getRepoUuid())
                 .developer_name(scanCommitInfoDto.getDeveloperName())
-                .commit_message(revCommit.getShortMessage()).build();
+                .commit_message(revCommit.getShortMessage())
+                .absoluteLines(total.getAbsoluteLines()).build();
 
         repoMeasure.set_merge(jGitHelper.isMerge(revCommit));
 
@@ -336,7 +337,7 @@ public class ToolInvoker {
             }
             int addLines = addSize - diffInfo.getAddCommentLines() - diffInfo.getAddWhiteLines();
             int delLines = subSize - diffInfo.getDelCommentLines() - diffInfo.getDelWhiteLines();
-            diffInfo.setFilePath(filePath);
+            diffInfo.setFilePath(FileUtil.systemAvailablePath(filePath));
             diffInfo.setAddLines(addLines);
             diffInfo.setDelLines(delLines);
             diffInfos.add(diffInfo);

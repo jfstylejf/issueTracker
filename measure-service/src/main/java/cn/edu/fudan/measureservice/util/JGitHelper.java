@@ -483,11 +483,11 @@ public class JGitHelper {
             List<String> pathList = result.get(entry.getChangeType());
             df.format(entry);
             if (entry.getChangeType().equals(DiffEntry.ChangeType.DELETE) && entry.getOldPath() != null) {
-                pathList.add(entry.getOldPath());
+                pathList.add(FileUtil.systemAvailablePath(entry.getOldPath()));
                 continue;
             }
             if (entry.getNewPath() != null) {
-                pathList.add(entry.getNewPath());
+                pathList.add(FileUtil.systemAvailablePath(entry.getNewPath()));
             }
         }
         return result;
