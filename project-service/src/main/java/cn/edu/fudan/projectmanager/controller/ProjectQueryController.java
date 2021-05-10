@@ -56,12 +56,12 @@ public class ProjectQueryController {
     })
     @GetMapping(value = {"/project"})
     public ResponseBean<List<RepositoryVO>> query(HttpServletRequest request,
-                                                   @RequestParam(name = "recycled", required = false, defaultValue = "0") int recycled) {
+                                                   @RequestParam(name = "recycle_status", required = false, defaultValue = "false") Boolean recycleStatus) {
         String userToken = request.getHeader(TOKEN);
         List<SubRepository> subRepositories = projectControl.query(userToken);
         List<RepositoryVO> repositoryVos = new ArrayList<>(subRepositories.size());
         subRepositories.stream()
-                .filter(s -> s.getRecycled() == recycled)
+                .filter(s -> !recycleStatus == (s.getRecycled() == 0))
                 .forEach(s -> repositoryVos.add(new RepositoryVO(s)));
 
         return new ResponseBean<>(200, "success", repositoryVos);

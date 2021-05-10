@@ -220,6 +220,9 @@ public class RestInterfaceManager {
         return ToolEnum.getToolByLanguage(language);
     }
 
+    public void sendDeleteSuccessMessage(String repoUuid) {
+        restTemplate.put(projectServicePath + "service_name=ISSUE&repo_uuid=" + repoUuid,null);
+    }
 
     //---------------------------------------------commit service------------------------------------------------------
 

@@ -28,6 +28,7 @@ public class RepositoryVO implements Serializable {
     private Date latestCommitTime;
     private String projectName;
     private Date scanStart;
+    private int recycled;
 
     private String repoName;
 
@@ -45,6 +46,7 @@ public class RepositoryVO implements Serializable {
         latestCommitTime = repository.getLatestCommitTime();
         projectName = repository.getProjectName();
         scanStart = repository.getScanStart();
+        recycled = repository.getRecycled();
 
         // NOTE：repoName 默认就是URL后面几位 不允许修改
         //        repoName = StringUtils.isEmpty(repository.getRepoName()) ?

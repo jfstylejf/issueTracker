@@ -310,7 +310,7 @@ public class IssueOuterController {
             @ApiImplicitParam(name = "status", value = "issue状态\n传null默认查询所有状态", allowableValues = "Open , Solved , Misinformation , To_Review , Ignore"),
             @ApiImplicitParam(name = "producer", value = "issue引入者\n传null默认查询所有引入者"),
             @ApiImplicitParam(name = "priority", value = "优先级", allowableValues = "Low , Urgent , Normal , High , Immediate"),
-            @ApiImplicitParam(name = "type", value = "issue种类"),
+            @ApiImplicitParam(name = "types", value = "issue种类"),
             @ApiImplicitParam(name = "manual_status", value = "manual status", allowableValues = "Ignore , Default"),
     })
     @GetMapping("/issue/filter/download")

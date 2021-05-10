@@ -1,7 +1,8 @@
 package cn.edu.fudan.issueservice.dao;
 
 import cn.edu.fudan.issueservice.domain.dbo.Issue;
-import cn.edu.fudan.issueservice.mapper.IssueMapper;
+import cn.edu.fudan.issueservice.domain.dbo.Location;
+import cn.edu.fudan.issueservice.mapper.*;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -15,6 +16,12 @@ import java.util.*;
 public class IssueDao {
 
     private IssueMapper issueMapper;
+    private RawIssueMapper rawIssueMapper;
+
+    @Autowired
+    public void setRawIssueMapper(RawIssueMapper rawIssueMapper) {
+        this.rawIssueMapper = rawIssueMapper;
+    }
 
     @Autowired
     public void setIssueMapper(IssueMapper issueMapper) {
@@ -159,5 +166,11 @@ public class IssueDao {
             return;
         }
         issueMapper.updateIssuesForIgnore(ignoreFiles, repoUuid);
+    }
+
+    public boolean checkDeleteSuccess(String repoUuid, String tool) {
+        int issueCount = issueMapper.getIssueCount(repoUuid, tool);
+        int rawIssueCount = rawIssueMapper.getRawIssueCount(repoUuid, tool);
+        return issueCount == 0 && rawIssueCount == 0;
     }
 }
