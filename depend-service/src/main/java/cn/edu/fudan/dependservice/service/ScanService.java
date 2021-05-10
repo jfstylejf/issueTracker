@@ -10,5 +10,6 @@ public interface ScanService {
 
 
     public List<ScanRepo> scanAllRepoNearToOneDate(String toScanDate);
+    public void canNotScan(ScanRepo scanRepo);
 }
 
