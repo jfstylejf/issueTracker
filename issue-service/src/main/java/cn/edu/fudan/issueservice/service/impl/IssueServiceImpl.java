@@ -81,6 +81,13 @@ public class IssueServiceImpl implements IssueService {
         issueRepoDao.delIssueRepo(repoUuid, null, tool);
         issueScanDao.deleteIssueScanByRepoIdAndTool(repoUuid, tool);
         scanResultDao.deleteScanResultsByRepoIdAndCategory(repoUuid, tool);
+
+        //check delete success
+        boolean success = issueDao.checkDeleteSuccess(repoUuid, tool);
+        if (success) {
+            restInterfaceManager.sendDeleteSuccessMessage(repoUuid);
+        }
+
         //完成删库
         logger.info("finish deleting issues -> repoUuid={} , tool={}", repoUuid, tool);
     }
