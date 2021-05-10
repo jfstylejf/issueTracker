@@ -21,10 +21,10 @@
     </properties>
 
     <repositories>
-        <repository>
-            <id>sx</id>
-            <url>file:C:/Users/admin/.m2/repository/</url>
-        </repository>
+<!--        <repository>-->
+<!--            <id>sx</id>-->
+<!--            <url>file:C:/Users/admin/.m2/repository/</url>-->
+<!--        </repository>-->
 
     </repositories>
 

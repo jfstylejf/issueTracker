@@ -2,6 +2,7 @@ package cn.edu.fudan.dependservice.component;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,6 +25,7 @@ import java.util.concurrent.TimeUnit;
  * @version 1.0
  **/
 @Component
+@Slf4j
 public class RestInterfaceManager {
 
     private static final Logger logger = LoggerFactory.getLogger(RestInterfaceManager.class);
@@ -62,8 +64,10 @@ public class RestInterfaceManager {
 
     public void userAuth(String userToken) throws AuthException {
         JSONObject result = restTemplate.getForObject(accountServicePath + "/user/auth/" + userToken, JSONObject.class);
+        log.info("result: ");
+        log.info(result.toJSONString());
         if (result == null || result.getIntValue("code") != 200) {
-            throw new AuthException("auth failed!");
+            new AuthException("auth failed!").printStackTrace();
         }
     }
 
