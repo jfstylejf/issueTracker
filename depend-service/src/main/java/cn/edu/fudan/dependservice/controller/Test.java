@@ -10,6 +10,7 @@ import cn.edu.fudan.dependservice.component.BatchProcessor;
 import cn.edu.fudan.dependservice.domain.ResponseBean;
 import cn.edu.fudan.dependservice.domain.ScanRepo;
 import cn.edu.fudan.dependservice.domain.ScanStatus;
+import cn.edu.fudan.dependservice.mapper.GroupMapper;
 import cn.edu.fudan.dependservice.mapper.ScanMapper;
 import cn.edu.fudan.dependservice.service.impl.ToolScanImplPara;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +24,8 @@ import java.util.List;
 @Slf4j
 public class Test {
     @Autowired
+    GroupMapper groupMapper;
+    @Autowired
     ToolScanImplPara toolScanImplPara;
     @Autowired
     BatchProcessor batchProcessor;
@@ -30,7 +33,7 @@ public class Test {
     ScanMapper scanMapper;
     //test  scanMapper.insert(scanRepo);
 
-    @RequestMapping(value = {"depend/test"},method = RequestMethod.GET)
+//    @RequestMapping(value = {"depend/test"},method = RequestMethod.GET)
     public ResponseBean<List<ScanRepo>> test(){
         String msg ="test ";
         List<ScanRepo> list =new ArrayList<>();
@@ -42,6 +45,12 @@ public class Test {
         System.out.println("batchNum"+batchProcessor.getBatchNum());
         System.out.println("batchWaitTime"+toolScanImplPara.getBatchWaitTime());
         return new ResponseBean<>(200, msg, list);
+    }
+    @RequestMapping(value = {"depend/test"},method = RequestMethod.GET)
+    public ResponseBean<List<ScanRepo>> test1(){
+        int res=groupMapper.getCountByRepoUuid("52bb4f90-225d-11eb-8610-491d2d684483");
+        log.info("count: "+ res);
+        return new ResponseBean<>(200, "msg", null);
     }
 
 }

@@ -201,6 +201,15 @@ public class RestInterfaceManager {
         }
         return repoUuids;
     }
+    public boolean deleteRecall(String repoId, String token) {
+        String path =  projectServicePath + "/repo?service_name=DEPENDENCY&repo_uuid=" + repoId;
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("token", token);
+        HttpEntity<HttpHeaders> request = new HttpEntity<>(headers);
+        ResponseEntity<JSONObject> responseEntity = restTemplate.exchange(path, HttpMethod.PUT, request, JSONObject.class);
+        log.info(responseEntity.toString());
+        return Objects.requireNonNull(responseEntity.getBody()).getIntValue("code") == 200;
+    }
 
     //---------------------------------------------commit service------------------------------------------------------
 

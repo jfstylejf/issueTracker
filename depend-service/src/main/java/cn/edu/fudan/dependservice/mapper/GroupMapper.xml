@@ -13,6 +13,9 @@
         insert into dependency(commit_id,repo_uuid,group_id,cycle_num)
         values(#{commit_id},#{repo_uuid},#{group_id},#{cycle_num})
     </insert>
+    <delete id="deleteByRepoUuidLimit100" parameterType="String">
+        delete from issueTracker.dependency where repo_uuid=#{repoUuid} limit 100;
+    </delete>
 
 
 <!--    <select id="getScannedCommitList" resultType="cn.edu.fudan.dependservice.domain.Group">-->

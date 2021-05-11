@@ -14,6 +14,10 @@
         <id property="relationType" column="depend_details"/>
     </resultMap>
 
+    <delete id="deleteByRepoUuidLimit100" parameterType="String">
+        delete from issueTracker.dependency_detail where repo_uuid=#{repoUuid} limit 100;
+    </delete>
+
     <insert id="add">
         insert into dependency_detail(commit_id,repo_uuid,group_id,file,depend_on,depend_details)
         values(#{commit_id},#{repo_uuid},#{group_id},#{file},#{depend_on},#{depend_details})
