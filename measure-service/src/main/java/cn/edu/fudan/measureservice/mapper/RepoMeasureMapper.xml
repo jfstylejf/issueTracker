@@ -25,6 +25,7 @@
         <result property="commit_message" column="commit_message"/>
         <result property="first_parent_commit_id" column="first_parent_commit_id"/>
         <result property="second_parent_commit_id" column="second_parent_commit_id"/>
+        <result property="absoluteLines" column="absolute_lines"/>
     </resultMap>
 
     <resultMap id="repoMeasureWithDate" type="RepoMeasure">
@@ -112,7 +113,8 @@
                is_merge,
                commit_message,
                first_parent_commit_id,
-               second_parent_commit_id
+               second_parent_commit_id,
+               absolute_lines
             )
         values
            (
@@ -139,7 +141,8 @@
               #{is_merge},
               #{commit_message},
               #{first_parent_commit_id},
-              #{second_parent_commit_id}
+              #{second_parent_commit_id},
+              #{absoluteLines}
 
            )
     </insert>

@@ -5,6 +5,7 @@ import cn.edu.fudan.measureservice.domain.Objects;
 import cn.edu.fudan.measureservice.domain.Package;
 import cn.edu.fudan.measureservice.util.DirExplorer;
 import cn.edu.fudan.measureservice.util.FileFilter;
+import cn.edu.fudan.measureservice.util.FileUtil;
 import cn.edu.fudan.measureservice.util.JavaFileFilter;
 import javancss.FunctionMetric;
 import javancss.Javancss;
@@ -98,7 +99,7 @@ public class JavaNcss {
         total.setFiles(files.size());
 
         Packages packages = getPackages(javancss);
-        Objects objects = getObjects(files, repoPath.replace('\\','/'));
+        Objects objects = getObjects(files, FileUtil.systemAvailablePath(repoPath));
         Functions functions = getFunctions(javancss) ;
 
 
@@ -149,7 +150,8 @@ public class JavaNcss {
                 classes += packageMetric.classes;
             }
 
-            String path = f.getPath().replace('\\','/').replaceFirst(repoPath + '/',"");
+            // 存入相对路径
+            String path = FileUtil.getRelativePath(repoPath,FileUtil.systemAvailablePath(f.getPath()));
             int ncss = javancss.getNcss();
             int functions = javancss.getFunctions().size();
             int javaDocs = javancss.getJvdc();
@@ -212,6 +214,7 @@ public class JavaNcss {
         int javaDocsLines = 0;
         int singleCommentLines = 0;
         int multiCommentLines = 0;
+        int absoluteLine = javancss.getLOC();
 
         for (PackageMetric packageMetric : javancss.getPackageMetrics()) {
             classes += packageMetric.classes;
@@ -220,7 +223,7 @@ public class JavaNcss {
             singleCommentLines += packageMetric.singleLn;
             multiCommentLines += packageMetric.multiLn;
         }
-        return new Total(files, classes, functions, ncss, javaDocs, javaDocsLines, singleCommentLines, multiCommentLines);
+        return new Total(files, classes, functions, ncss, javaDocs, javaDocsLines, singleCommentLines, multiCommentLines,absoluteLine);
     }
 
 }
