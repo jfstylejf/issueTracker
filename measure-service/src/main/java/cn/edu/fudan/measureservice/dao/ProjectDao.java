@@ -191,7 +191,6 @@ public class ProjectDao {
         return repoUuidList;
     }
 
-
     /**
      * 根据参与项目名，获得对应的库信息
      * @param projectName 项目名
@@ -477,16 +476,7 @@ public class ProjectDao {
     @SneakyThrows
     public List<String> getVisibleRepoListByProjectNameAndRepo(String projectNameList, String repoUuidList, String token) {
         List<String> visibleProjectInvolvedRepoList;
-        // Case 1 : 若查询项目列表不为空，则查询项目权限内可看库
-        if(projectNameList!=null && !"".equals(projectNameList)) {
-            visibleProjectInvolvedRepoList = new ArrayList<>();
-            String[] projects = projectNameList.split(split);
-            for (String projectName : projects) {
-                visibleProjectInvolvedRepoList.addAll(getProjectRepoList(projectName,token));
-            }
-        }else {  // Case 2 : 若查询项目列表为空，则查询权限内可见所有项目的库列表
-            visibleProjectInvolvedRepoList = involvedRepoProcess(null,token);
-        }
+        visibleProjectInvolvedRepoList = getVisibleRepoListByProjectName(projectNameList,token);
         List<String> visibleRepoList;
         // Case 1 : 若给定了查询库列表， 则根据查询库列表对 visibleProjectInvolvedRepoList 进行过滤，只取交集
         if (repoUuidList!=null && !"".equals(repoUuidList)) {
@@ -498,6 +488,26 @@ public class ProjectDao {
         return visibleRepoList;
     }
 
+    /**
+     * 通过项目列表查询可看库列表
+     * @param projectNameList 项目列表
+     * @param token 查询权限
+     * @return 项目列表可查询库列表
+     */
+    public List<String> getVisibleRepoListByProjectName(String projectNameList, String token) {
+        List<String> visibleProjectInvolvedRepoList;
+        // Case 1 : 若查询项目列表不为空，则查询项目权限内可看库
+        if(projectNameList!=null && !"".equals(projectNameList)) {
+            visibleProjectInvolvedRepoList = new ArrayList<>();
+            String[] projects = projectNameList.split(split);
+            for (String projectName : projects) {
+                visibleProjectInvolvedRepoList.addAll(getProjectRepoList(projectName,token));
+            }
+        }else {  // Case 2 : 若查询项目列表为空，则查询权限内可见所有项目的库列表
+            visibleProjectInvolvedRepoList = involvedRepoProcess(null,token);
+        }
+        return visibleProjectInvolvedRepoList;
+    }
 
     /**
      * 根据 projectIds 获取可查询的项目列表
@@ -558,8 +568,15 @@ public class ProjectDao {
     }
 
 
-
-
+    /**
+     * 获取开发者选定时间段内可见库列表
+     * @param projectVisibleRepoList 项目可见库列表
+     * @return
+     */
+    public List<String> getDeveloperVisibleRepo(List<String> projectVisibleRepoList,String developer, String since, String until) {
+        List<String> developerRepoList = projectMapper.getDeveloperRepoList(developer,since,until);
+        return mergeBetweenRepo(developerRepoList,projectVisibleRepoList);
+    }
 
     @Autowired
     public void setRestInterface(RestInterfaceManager restInterface) {

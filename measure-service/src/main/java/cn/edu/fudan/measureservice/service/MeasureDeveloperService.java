@@ -1161,6 +1161,33 @@ public class MeasureDeveloperService {
          return result;
      }
 
+     @SneakyThrows
+     public Object getDeveloperDataCcn(String projectNameList, String developers, String token , String since, String until) {
+        List<DeveloperProjectCcn> developerProjectCcnList = new ArrayList<>();
+        List<String> visibleRepoList = projectDao.getVisibleRepoListByProjectName(projectNameList,token);
+        List<String> developerList = Arrays.asList(developers.split(split));
+        for (String developer : developerList) {
+            List<String> developerRepoList = projectDao.getDeveloperVisibleRepo(visibleRepoList,developer,since,until);
+            for (String repoUuid : developerRepoList) {
+                if (!projectDao.getRepoInfoMap().containsKey(repoUuid)) {
+                    projectDao.insertProjectInfo(token);
+                }
+                RepoInfo repoInfo = projectDao.getRepoInfoMap().get(repoUuid);
+                String projectName = repoInfo.getProjectName();
+
+            }
+        }
+        return developerProjectCcnList;
+     }
+
+    /**
+     * 判断该 repo 信息是否被初始化
+     * @param repoUuid 查询库
+     * @return 若已初始化则返回 true
+     */
+     private boolean isInit(String repoUuid) {
+        return projectDao.getRepoInfoMap().containsKey(repoUuid);
+     }
 
     @Autowired
     public void setMeasureDeveloperServiceImpl(MeasureDeveloperService measureDeveloperServiceImpl) {

@@ -26,6 +26,8 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class JsCodeAnalyzer extends BaseAnalyzer{
 
+
+    @Value("${jsResultFileHome}")
     private String jsResultFileHome = FileUtil.systemAvailablePath("/home/fdse/codeWisdom/service/measure/log/JsResultLog");
     private static final String jsCcnLog = "jsCcn.log";
     private static final String jsLineLog = "jsLine.log";
@@ -33,6 +35,9 @@ public class JsCodeAnalyzer extends BaseAnalyzer{
     private static final String jsComplexity = FileUtil.systemAvailablePath("Js/tool/complexity.js");
     private static final String jsLine = FileUtil.systemAvailablePath("Js/tool/line.js");
     private static final String jsScan = "excuteJsScan.sh";
+
+
+
 
     @SneakyThrows
     @Override

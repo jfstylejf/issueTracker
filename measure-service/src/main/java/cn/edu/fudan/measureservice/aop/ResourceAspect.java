@@ -38,7 +38,8 @@ public class ResourceAspect {
             if (o instanceof RepoResourceDTO) {
                 RepoResourceDTO repoResourceDTO = (RepoResourceDTO)o;
                 //String repoPath = "E:\\Lab\\scanProject\\IssueTracker-Master";
-                String repoPath = restInvoker.getRepoPath (repoResourceDTO.getRepoUuid(), null);
+                String repoPath = "C:\\test\\IssueTracker-Master-test";
+                //String repoPath = restInvoker.getRepoPath (repoResourceDTO.getRepoUuid(), null);
                 repoResourceDTO.setRepoPath (repoPath);
                 log.info("get repo:{}, path:{}", repoResourceDTO.getRepoUuid(), repoResourceDTO.getRepoPath());
                 return;

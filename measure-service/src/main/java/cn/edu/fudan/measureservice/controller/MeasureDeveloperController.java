@@ -464,7 +464,20 @@ public class MeasureDeveloperController {
         }
     }
 
+    @GetMapping("/developer/data/ccn")
+    public ResponseBean<> getDeveloperDataCcn(@RequestParam(value = "project_names",required = false) String projectNameList,
+                                              @RequestParam(value = "developers",required = true) String developerList,
+                                              @RequestParam(value = "since" , required = false) String since,
+                                              @RequestParam(value = "until",required = false) String until,
+                                              HttpServletRequest request )
+    {
+        try {
 
+        }catch (Exception e) {
+            e.getMessage();
+        }
+        return new ResponseBean<>(401,"failed",null);
+    }
 
 
     @ApiOperation(value = "返回用户画像页面得代码行数数据，包括所有项目和单个项目的 To codeTracker", notes = "@return Map<String,Object>", httpMethod = "GET")
