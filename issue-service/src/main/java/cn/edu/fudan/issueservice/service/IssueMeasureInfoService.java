@@ -1,6 +1,8 @@
 package cn.edu.fudan.issueservice.service;
 
+import cn.edu.fudan.issueservice.domain.vo.DeveloperLivingIssueVO;
 import cn.edu.fudan.issueservice.domain.vo.IssueTopVO;
+import cn.edu.fudan.issueservice.domain.vo.PagedGridResult;
 import com.alibaba.fastjson.JSONObject;
 
 import java.util.List;
@@ -133,4 +135,15 @@ public interface IssueMeasureInfoService {
      * @return 指定某些项目的留存缺陷数的趋势统计图数据
      */
     Object getLivingIssueTendency(String since, String until, String projectIds, String interval, String showDetail);
+
+    /**
+     * get developer list living issue count
+     *
+     * @param since since
+     * @param until until
+     * @param projectNames projectNames
+     * @param developers developers
+     * @return living issue count
+     */
+    PagedGridResult<DeveloperLivingIssueVO> getDeveloperListLivingIssue(String since, String until, String projectNames, List<String> developers);
 }

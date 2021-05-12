@@ -30,8 +30,8 @@ public class IssueIgnoreController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "tool", value = "工具名", dataType = "String", required = true, allowableValues = "sonarqube"),
     })
-    @PutMapping(value = "issue/ignore/{tool}")
-    public ResponseBean<String> ignoreIssues(@PathVariable("tool") String tool, @RequestBody List<IgnoreRecord> ignoreRecords) {
+    @PutMapping(value = "issue/ignore/list")
+    public ResponseBean<String> ignoreIssues(@RequestBody List<IgnoreRecord> ignoreRecords) {
         if (ignoreRecords.isEmpty()) {
             return new ResponseBean<>(200, SUCCESS, null);
         }
@@ -39,9 +39,6 @@ public class IssueIgnoreController {
             for (IgnoreRecord ignoreRecord : ignoreRecords) {
                 if (!IgnoreTypeEnum.isStatusRight(ignoreRecord.getTag())) {
                     return new ResponseBean<>(400, "issue tag error!", null);
-                }
-                if (!ignoreRecord.getTool().equals(tool)) {
-                    return new ResponseBean<>(400, FAILED, "tool in url path or tool in record error!");
                 }
                 ignoreRecord.setUuid(UUID.randomUUID().toString());
                 ignoreRecord.setIgnoreTime(ignoreRecord.getIgnoreTime());
