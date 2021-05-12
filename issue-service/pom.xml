@@ -189,8 +189,6 @@
         <dependency>
             <groupId>cn.edu.fudan</groupId>
             <artifactId>code-tracker</artifactId>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/code-tracker-1.0.1.jar</systemPath>
             <version>1.0.1</version>
             <exclusions>
                 <exclusion>

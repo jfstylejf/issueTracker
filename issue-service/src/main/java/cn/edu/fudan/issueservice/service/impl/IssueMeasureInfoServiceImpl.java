@@ -7,11 +7,12 @@ import cn.edu.fudan.issueservice.domain.dbo.Issue;
 import cn.edu.fudan.issueservice.domain.enums.IgnoreTypeEnum;
 import cn.edu.fudan.issueservice.domain.enums.JavaIssuePriorityEnum;
 import cn.edu.fudan.issueservice.domain.enums.*;
+import cn.edu.fudan.issueservice.domain.vo.DeveloperLivingIssueVO;
 import cn.edu.fudan.issueservice.domain.vo.IssueTopVO;
 import cn.edu.fudan.issueservice.service.IssueMeasureInfoService;
 import cn.edu.fudan.issueservice.util.DateTimeUtil;
 import cn.edu.fudan.issueservice.util.JGitHelper;
-import cn.edu.fudan.issueservice.util.PagedGridResult;
+import cn.edu.fudan.issueservice.domain.vo.PagedGridResult;
 import cn.edu.fudan.issueservice.util.StringsUtil;
 import com.alibaba.druid.util.StringUtils;
 import com.alibaba.fastjson.JSONObject;
@@ -437,6 +438,12 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
         }
 
         return issueTop5List.subList(0, Math.min(issueTop5List.size(), 5));
+    }
+
+    @Override
+    public PagedGridResult<DeveloperLivingIssueVO> getDeveloperListLivingIssue(String since, String until, String projectNames, List<String> developers) {
+        issueDao.getDeveloperListLivingIssue(since, until, projectNames, developers);
+        return null;
     }
 
     @Autowired
