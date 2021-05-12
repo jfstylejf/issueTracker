@@ -31,12 +31,11 @@
      where d.commit_id in (
         select
         c.commit_id from
-        (select s.commit_id, s.repo_uuid, max(c.commit_time)
-        from  issueTracker.dependency_san  s left join issueTracker.commit c
-        on s.commit_id=c.commit_id
-        where commit_time &lt; #{date}
-        group by repo_uuid)  c
-    );
+        (select  s.commit_time, s.commit_id,rl.repo_uuid,rl.`MAX(commit_time)`
+        from depend_scan_with_committime s left join repo_latest rl
+        on s.repo_uuid = rl.repo_uuid  and s.commit_time=rl.`MAX(commit_time)`
+        where s.repo_uuid is not null and rl.`MAX(commit_time)` is not null)  c
+        );
     </select>
 
 

@@ -11,6 +11,7 @@ import cn.edu.fudan.dependservice.mapper.GroupMapper;
 import cn.edu.fudan.dependservice.mapper.RelationshipMapper;
 import cn.edu.fudan.dependservice.util.ReadUtill;
 import cn.edu.fudan.dependservice.util.TimeUtil;
+import cn.edu.fudan.dependservice.util.WriteUtil2;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -32,9 +34,6 @@ import java.util.Map;
  * create: 2021-04-06 21:06
  **/
 
-/**
- * c
- */
 @Slf4j
 @Service
 @Data
@@ -45,8 +44,11 @@ public class ToolScanImplPara extends ToolScan {
      long batchWaitTime;
     final static long oneWaitTime=6 * 60;
     //unit second, it is 3 minutes
-    final long detectInterval =3*60;
+    // todo set a   appropriate detectInterval
+    final long detectInterval =2*60;
     String resultFileDir;
+//    String configFile;
+    boolean beforedetectRes;
     List<ScanRepo> scanRepos;
     ApplicationContext applicationContext;
 
@@ -71,6 +73,12 @@ public class ToolScanImplPara extends ToolScan {
 
     @Override
     public boolean scanOneCommit(String commit) {
+        //may do not need start scan.sh
+        if(beforedetectRes){
+            log.info("all have result , do not need star scan.sh ");
+            putBatchData();
+            return true;
+        }
         ShThread shRunner = new ShThread();
         shRunner.setShName(shName);
         shRunner.setDependenceHome(dependenceHome);
@@ -78,10 +86,9 @@ public class ToolScanImplPara extends ToolScan {
 
         Thread shThread = new Thread(shRunner);
         shThread.start();
-        log.info("sh1 start time: " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
+        log.info("scan.sh start time: " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
         long startTime = System.currentTimeMillis();
         boolean continuedetect = true;
-        log.info("wait for sh result");
 
         while (continuedetect) {
             if ((System.currentTimeMillis() - startTime) / 1000 > batchWaitTime) {
@@ -94,13 +101,18 @@ public class ToolScanImplPara extends ToolScan {
             try {
                 Thread.sleep(detectInterval*1000);
             } catch (Exception e) {
-                log.error("exception ms:" + e.getMessage());
+                log.error("exception msg in sleep:" + e.getMessage());
                 return false;
             }
 
         }
         long endTime = System.currentTimeMillis();
         log.info("The total cost of waiting for the sh results -> {}  second", (endTime - startTime) / 1000);
+        putBatchData();
+
+        return true;
+    }
+    public void putBatchData(){
         for (ScanRepo scanRepo : scanRepos) {
             if(scanRepo.isGetResult()){
                 scanRepo.getScanStatus().setStatus("complete");
@@ -113,7 +125,6 @@ public class ToolScanImplPara extends ToolScan {
                 } catch (Exception e) {
                     e.printStackTrace();
                     log.error("deal result file error");
-                    return false;
                 }
                 if (fileRes.size() > 0) {
                     put2DataBase(fileRes);
@@ -124,7 +135,7 @@ public class ToolScanImplPara extends ToolScan {
             }
             setScanResult(scanRepo);
         }
-        return true;
+
     }
 
     private void setScanResult(ScanRepo scanRepo) {
@@ -140,9 +151,7 @@ public class ToolScanImplPara extends ToolScan {
         log.info(" one result detect  every ->{} seconds " ,detectInterval);
         log.info("-----------------------------------------------");
         log.info("---------------------detect--------------------");
-        log.info("-----------------------------------------------");
         boolean res = true;
-        log.info("resultFileDir: "+resultFileDir);
         File dir = new File(resultFileDir);
         if (!dir.isDirectory()) {
             log.error("resultfileDir Wrong");
@@ -158,7 +167,6 @@ public class ToolScanImplPara extends ToolScan {
         for (ScanRepo scanRepo : scanRepos) {
             if (scanRepo.isCopyStatus()&&!scanRepo.isGetResult()) {
                 String fileName= scanRepo.getCopyRepoPath().substring(scanRepo.getCopyRepoPath().lastIndexOf("/")+1);
-                log.info("fileName: "+fileName);
                 for (String s : files) {
                     if (s.indexOf(fileName) != -1) {
                         scanRepo.setGetResult(true);
@@ -185,20 +193,35 @@ public class ToolScanImplPara extends ToolScan {
 
     @Override
     public void prepareForScan() {
-
-        //  this.dependenceHome = applicationContext.getBean(ShHomeConfig.class).getDependenceHome();
         this.setDependenceHome(applicationContext.getBean(ShHomeConfig.class).getDependenceHome());
         this.setShName(applicationContext.getBean(ShHomeConfig.class).getShName());
         this.setResultFileDir(applicationContext.getBean(ShHomeConfig.class).getResultFileDir());
-        //make config file
-        String configFile = this.resultFileDir + "source-project-conf.json";
-        log.info("configFile :" + configFile);
-//        WriteUtill.writeProjecConf(configFile, this.getScanData().getRepoPath());
     }
 
     @Override
     public void prepareForOneScan(String commit) {
         // check out to commit
+        // write config
+        log.info("before detect:");
+        beforedetectRes=resultFileDetect();
+        if(!beforedetectRes){
+            // write config
+            List<String> repoDirs =new ArrayList<>();
+            for(ScanRepo scanRepo:scanRepos){
+                if(scanRepo.toString()==null) scanRepo.setToScanDate(TimeUtil.getCurrentDateTime());
+                    if(scanRepo.isCopyStatus()&&!scanRepo.isGetResult()){
+                        repoDirs.add(scanRepo.getCopyRepoPath());
+                    }
+            }
+            // scan
+            //todo not all project is java
+//            String configFile =null;
+            String configFile = this.resultFileDir + "source-project-conf.json";
+
+            WriteUtil2.writeProjecConf(configFile,repoDirs);
+
+        }
+
 
     }
 
@@ -242,7 +265,5 @@ public class ToolScanImplPara extends ToolScan {
             }
 
         }
-
-
     }
 }

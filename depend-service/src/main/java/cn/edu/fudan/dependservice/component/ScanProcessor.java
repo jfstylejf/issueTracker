@@ -79,28 +79,10 @@ public class ScanProcessor extends Thread {
                 // todo prepare
                 List<ScanRepo> scanRepos =batchProcessor.getScanList();
                 log.info("in one scanOneBatch, size ="+scanRepos.size());
-                /*
-                try {
-                    log.info(" batch batchProcessing.......");
-                    Thread.sleep(30*1000);
-
-                }catch (Exception e){
-                    e.printStackTrace();
-                }
-
-                 */
-
-                List<String> repoDirs=new ArrayList<>();
                 for(ScanRepo scanRepo:scanRepos){
                     if(scanRepo.toString()==null) scanRepo.setToScanDate(TimeUtil.getCurrentDateTime());
                     processPrepare.prepareFile(scanRepo.getToScanDate(),scanRepo);
-                    if(scanRepo.isCopyStatus()){
-                        repoDirs.add(scanRepo.getCopyRepoPath());
-                    }
                 }
-                // scan
-                //todo not all project is java
-                WriteUtil2.writeProjecConf(configFile,repoDirs);
                 scanProcess.beginScan(scanRepos,null);
                 log.info("end of a batch");
                 batchProcessor.inScanning.clear();
