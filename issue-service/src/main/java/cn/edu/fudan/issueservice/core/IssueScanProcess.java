@@ -7,6 +7,7 @@ import cn.edu.fudan.issueservice.component.RestInterfaceManager;
 import cn.edu.fudan.issueservice.dao.IssueScanDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +16,7 @@ import java.util.List;
  * @author beethoven
  * @date 2021-04-25 13:51:11
  */
+@Component
 public class IssueScanProcess extends CommonScanProcess {
 
     private IssueScanDao issueScanDao;

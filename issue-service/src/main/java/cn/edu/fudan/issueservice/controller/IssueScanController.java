@@ -30,9 +30,9 @@ public class IssueScanController {
 
     private IssueScanService issueScanService;
 
-    private RestInterfaceManager restInterfaceManager;
-
     private ApplicationContext applicationContext;
+
+    private RestInterfaceManager restInterfaceManager;
 
     private static final String SUCCESS = "success";
     private static final String FAILED = "failed ";
@@ -50,7 +50,7 @@ public class IssueScanController {
         String beginCommit = scanRequestDTO.getBeginCommit();
         String endCommit = scanRequestDTO.getEndCommit();
         try {
-            IssueScanProcess issueScanProcess = new IssueScanProcess(applicationContext);
+            IssueScanProcess issueScanProcess = applicationContext.getBean(IssueScanProcess.class);
             issueScanProcess.scan(repoUuid, branch, beginCommit, endCommit);
             return new ResponseBean<>(200, "success!", null);
         } catch (Exception e) {

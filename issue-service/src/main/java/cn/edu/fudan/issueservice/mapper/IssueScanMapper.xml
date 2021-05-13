@@ -30,7 +30,7 @@
                 #{tool},
                 #{startTime},
                 #{endTime},
-                #{repoId},
+                #{repoUuid},
                 #{status},
                 #{commitId},
                 #{commitTime},

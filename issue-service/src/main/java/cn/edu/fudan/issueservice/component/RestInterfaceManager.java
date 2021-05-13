@@ -1,5 +1,6 @@
 package cn.edu.fudan.issueservice.component;
 
+import cn.edu.fudan.common.component.BaseRepoRestManager;
 import cn.edu.fudan.issueservice.domain.enums.ToolEnum;
 import cn.edu.fudan.issueservice.exception.AuthException;
 import cn.edu.fudan.issueservice.util.StringsUtil;
@@ -26,7 +27,7 @@ import java.util.concurrent.TimeUnit;
  * @version 1.0
  **/
 @Component
-public class RestInterfaceManager {
+public class RestInterfaceManager extends BaseRepoRestManager {
 
     private static final Logger logger = LoggerFactory.getLogger(RestInterfaceManager.class);
 
@@ -46,7 +47,6 @@ public class RestInterfaceManager {
     private String codeTrackerServicePath;
     @Value("${test.repo.path}")
     private String testProjectPath;
-    private final RestTemplate restTemplate;
 
     private static final String PROJECT_NAME = "projectName";
     private static final String REPO_NAME = "repoName";
@@ -57,9 +57,10 @@ public class RestInterfaceManager {
     private static final String REPO_ID = "repo_id";
     private static final String PROJECT_URL = "/inner/project?repo_uuid=";
 
-    public RestInterfaceManager(RestTemplate restTemplate) {
-        this.restTemplate = restTemplate;
+    public RestInterfaceManager(RestTemplate restTemplate, @Value("${code.service.path}") String codeServiceRepoPath) {
+        super(restTemplate, codeServiceRepoPath);
     }
+
 
     //------------------------------------------------account service-----------------------------------------------------------
 

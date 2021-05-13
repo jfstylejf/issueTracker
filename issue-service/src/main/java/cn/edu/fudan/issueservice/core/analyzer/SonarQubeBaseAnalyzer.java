@@ -15,6 +15,7 @@ import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -31,6 +32,7 @@ import java.util.concurrent.TimeUnit;
  **/
 @Slf4j
 @Component
+@Scope("prototype")
 public class SonarQubeBaseAnalyzer extends BaseAnalyzer {
 
     private CommitDao commitDao;
