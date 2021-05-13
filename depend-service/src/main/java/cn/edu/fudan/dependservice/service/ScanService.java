@@ -9,7 +9,8 @@ import java.util.List;
 public interface ScanService {
 
 
-    public List<ScanRepo> scanAllRepoNearToOneDate(String toScanDate);
-    public void canNotScan(ScanRepo scanRepo);
+    List<ScanRepo> scanAllRepoNearToOneDate(String toScanDate);
+    void canNotScan(ScanRepo scanRepo);
+    void scanOneRepo(ScanRepo scanRepo, List<ScanRepo> toScanList);
 }
 

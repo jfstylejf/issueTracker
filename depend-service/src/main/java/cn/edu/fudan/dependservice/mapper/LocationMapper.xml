@@ -38,10 +38,10 @@
     <resultMap id="relationship" type="cn.edu.fudan.dependservice.domain.RelationShip">
         <id property="repo_uuid" column="repo_uuid"/>
         <id property="commit_id" column="commit_id"/>
-<!--        <id property="id" column="repo_uuid"/>-->
+        <!--        <id property="id" column="repo_uuid"/>-->
         <result property="file" column="file"/>
         <result property="depend_on" column="depend_on"/>
-<!--        <result property="branch" column="branch"/>-->
+        <!--        <result property="branch" column="branch"/>-->
     </resultMap>
 
     <resultMap id="commit" type="cn.edu.fudan.dependservice.domain.Commit">
@@ -54,29 +54,32 @@
 
 
     <select id="getDependencyInfo" resultMap="relationship">
-        select commit_id, repo_uuid, file,depend_on
+        select commit_id, repo_uuid, file, depend_on
         from dependency_detail
-        where repo_uuid =#{repoUuid}
+        where repo_uuid = #{repoUuid}
     </select>
     <select id="getFileByCommitId" resultMap="relationship">
-        select commit_id, repo_uuid, file,depend_on
+        select commit_id, repo_uuid, file, depend_on
         from dependency_detail
-        where repo_uuid =#{repoUuid} and commit_id=#{commitid}
+        where repo_uuid = #{repoUuid}
+          and commit_id = #{commitid}
     </select>
 
     <select id="getScanedCommit" resultMap="commit">
-        select  distinct(s.commit_id), s.repo_uuid, c.commit_time
-        from  issueTracker.dependency_san  s left join issueTracker.commit c
-        on s.commit_id=c.commit_id
-        where repo_uuid =#{repoUuid} and status="complete"
+        select distinct(s.commit_id), s.repo_uuid, c.commit_time
+        from issueTracker.dependency_san s
+                 left join issueTracker.commit c
+                           on s.commit_id = c.commit_id
+        where repo_uuid = #{repoUuid}
+          and s.status = 'complete'
     </select>
-<!--    todo  Optimizing Query Statements-->
-<!--    <select id="getDependencyInfo" resultMap="relationship">-->
-<!--        select commit_id, repo_uuid, file,depend_on-->
-<!--        from dependency_detail-->
-<!--        where repo_uuid =#{repoUuid}-->
-<!--         and-->
-<!--        commit_id =( select max(commit_id) from dependency_detail);-->
-<!--    </select>-->
+    <!--    todo  Optimizing Query Statements-->
+    <!--    <select id="getDependencyInfo" resultMap="relationship">-->
+    <!--        select commit_id, repo_uuid, file,depend_on-->
+    <!--        from dependency_detail-->
+    <!--        where repo_uuid =#{repoUuid}-->
+    <!--         and-->
+    <!--        commit_id =( select max(commit_id) from dependency_detail);-->
+    <!--    </select>-->
 
 </mapper>

@@ -13,6 +13,7 @@ import cn.edu.fudan.dependservice.util.TimeUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -75,5 +76,26 @@ public class ScanServiceImpl implements ScanService {
     @Override
     public void canNotScan(ScanRepo scanRepo) {
         scanDao.updateScan(scanRepo);
+    }
+
+    @Override
+    @Async("taskExecutor")
+    public void scanOneRepo(ScanRepo scanRepo, List<ScanRepo> toScanList) {
+        try {
+            toScanList.add(scanRepo);
+            int size =toScanList.size();
+            //many thread have a same wait time
+            Thread.sleep(10*1000);
+            if(toScanList.size()==size){
+                List<ScanRepo> scanRepoList=new ArrayList<>(toScanList);
+                toScanList.clear();
+                scanProcessor.scan(scanRepoList);
+            }
+
+        }catch (InterruptedException e){
+            e.printStackTrace();
+        }
+
+
     }
 }

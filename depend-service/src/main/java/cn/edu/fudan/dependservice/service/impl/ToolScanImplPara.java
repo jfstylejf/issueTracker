@@ -89,13 +89,14 @@ public class ToolScanImplPara extends ToolScan {
         log.info("scan.sh start time: " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
         long startTime = System.currentTimeMillis();
         boolean continuedetect = true;
+        log.info("batchWaitTime: "+batchWaitTime);
 
         while (continuedetect) {
-            if ((System.currentTimeMillis() - startTime) / 1000 > batchWaitTime) {
-                log.error("wait for sh result time too long");
+            if (resultFileDetect()) {
                 break;
             }
-            if (resultFileDetect()) {
+            if ((System.currentTimeMillis() - startTime) / 1000 > batchWaitTime) {
+                log.error("wait for sh result time too long");
                 break;
             }
             try {
@@ -132,6 +133,12 @@ public class ToolScanImplPara extends ToolScan {
 
             }else {
                 scanRepo.getScanStatus().setStatus("fail");
+                if(scanRepo.isCopyStatus()&&!scanRepo.isGetResult()){
+                    scanRepo.getScanStatus().setMsg("tool fail,too long time");
+                }
+                if(!scanRepo.isCopyStatus()){
+                    scanRepo.getScanStatus().setMsg("copy fail");
+                }
             }
             setScanResult(scanRepo);
         }
