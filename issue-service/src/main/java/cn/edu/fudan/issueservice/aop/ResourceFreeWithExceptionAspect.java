@@ -3,7 +3,6 @@ package cn.edu.fudan.issueservice.aop;
 import cn.edu.fudan.issueservice.component.RestInterfaceManager;
 import cn.edu.fudan.issueservice.domain.dto.RepoResourceDTO;
 import lombok.extern.slf4j.Slf4j;
-import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,14 +29,14 @@ public class ResourceFreeWithExceptionAspect {
         for (Object o : point.getArgs()) {
             if (o instanceof RepoResourceDTO) {
                 RepoResourceDTO repoResourceDTO = (RepoResourceDTO) o;
-                String repoPath = restInvoker.getRepoPath(repoResourceDTO.getRepoId());
+                String repoPath = restInvoker.getRepoPath(repoResourceDTO.getRepoUuid());
                 repoResourceDTO.setRepoPath(repoPath);
-                log.info("get repo:{}, path:{}", repoResourceDTO.getRepoId(), repoResourceDTO.getRepoPath());
+                log.info("get repo:{}, path:{}", repoResourceDTO.getRepoUuid(), repoResourceDTO.getRepoPath());
                 try {
                     point.proceed();
                 } finally {
-                    log.info("free repo:{}, path:{}", repoResourceDTO.getRepoId(), repoResourceDTO.getRepoPath());
-                    restInvoker.freeRepoPath(repoResourceDTO.getRepoId(), repoResourceDTO.getRepoPath());
+                    log.info("free repo:{}, path:{}", repoResourceDTO.getRepoUuid(), repoResourceDTO.getRepoPath());
+                    restInvoker.freeRepoPath(repoResourceDTO.getRepoUuid(), repoResourceDTO.getRepoPath());
                 }
                 return;
             }

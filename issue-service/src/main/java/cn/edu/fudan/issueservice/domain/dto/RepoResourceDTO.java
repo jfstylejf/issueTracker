@@ -14,11 +14,11 @@ import lombok.Data;
 @Builder
 @AllArgsConstructor
 public class RepoResourceDTO {
-    String repoId;
+    String repoUuid;
     String repoPath;
 
     public RepoResourceDTO() {
-        repoId = "";
+        repoUuid = "";
         repoPath = "";
     }
 

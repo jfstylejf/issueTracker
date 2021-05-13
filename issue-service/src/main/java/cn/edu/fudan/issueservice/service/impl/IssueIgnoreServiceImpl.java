@@ -19,8 +19,6 @@ import java.util.List;
 @Slf4j
 public class IssueIgnoreServiceImpl implements IssueIgnoreService {
 
-    private final Logger logger = LoggerFactory.getLogger(IssueIgnoreServiceImpl.class);
-
     private IssueIgnoreDao issueIgnoreDao;
 
     private IssueDao issueDao;
@@ -42,7 +40,7 @@ public class IssueIgnoreServiceImpl implements IssueIgnoreService {
 
     private boolean updateIssueManualStatus(String repoUuid, String issueUuid, String manualStatus, String issueType, String tool, String ignoreTime) {
         if (manualStatus == null || manualStatus.isEmpty()) {
-            logger.error("manualStatus shouldn't be null!");
+            log.error("manualStatus shouldn't be null!");
             return false;
         }
         issueDao.updateIssueManualStatus(repoUuid, issueUuid, manualStatus, issueType, tool, ignoreTime);

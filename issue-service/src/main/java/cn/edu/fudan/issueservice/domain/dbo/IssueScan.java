@@ -1,7 +1,6 @@
 package cn.edu.fudan.issueservice.domain.dbo;
 
 import cn.edu.fudan.issueservice.domain.enums.ScanStatusEnum;
-import com.alibaba.fastjson.JSONObject;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -26,7 +25,7 @@ public class IssueScan {
     private Date startTime;
     private Date endTime;
     private String status;
-    private String repoId;
+    private String repoUuid;
     private String commitId;
     private Date commitTime;
     private String resultSummary;
@@ -37,7 +36,7 @@ public class IssueScan {
         issueScan.setTool(toolName);
         issueScan.setStartTime(new Date());
         issueScan.setStatus(ScanStatusEnum.DOING.getType());
-        issueScan.setRepoId(repoId);
+        issueScan.setRepoUuid(repoId);
         issueScan.setCommitId(commitId);
         issueScan.setCommitTime(commitTime);
         return issueScan;
