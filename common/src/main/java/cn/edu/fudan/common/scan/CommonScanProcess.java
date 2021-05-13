@@ -5,6 +5,7 @@ import cn.edu.fudan.common.domain.ScanInfo;
 import cn.edu.fudan.common.domain.po.scan.RepoScan;
 import cn.edu.fudan.common.jgit.JGitHelper;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -20,6 +21,7 @@ import java.util.stream.Collectors;
  * @author beethoven
  */
 @Getter
+@NoArgsConstructor
 public abstract class CommonScanProcess implements CommonScanService {
     private static final Logger log = LoggerFactory.getLogger(CommonScanProcess.class);
     private static final String KEY_DELIMITER = "-";
@@ -38,6 +40,7 @@ public abstract class CommonScanProcess implements CommonScanService {
         baseRepoRestManager = applicationContext.getBean(BaseRepoRestManager.class);
     }
 
+    @Async("taskExecutor")
     public void scan(String repoUuid, String branch, String beginCommit, String endCommit) {
         // todo 查询repository表 来查看repo 所包含的语言 让后决定采用什么工具来调用
         String[] tools = getToolsByRepo(repoUuid);
@@ -101,7 +104,6 @@ public abstract class CommonScanProcess implements CommonScanService {
         checkAfterScan(repoUuid, branch, tool, endCommit);
     }
 
-    @Async("taskExecutor")
     void beginScan(String repoUuid, String branch, String beginCommit, String tool, String endCommit) {
         Thread curThread = Thread.currentThread();
         String threadName = generateKey(repoUuid, tool);

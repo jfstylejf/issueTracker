@@ -350,6 +350,7 @@ package cn.edu.fudan.common.jgit;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.xmlbeans.impl.xb.xsdschema.Public;
 import org.eclipse.jgit.api.CheckoutCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ResetCommand;
@@ -729,7 +730,7 @@ public class JGitHelper {
     }
 
     @SneakyThrows
-    private List<DiffEntry> getDiffEntry(RevCommit parentCommit, RevCommit currCommit, int score) {
+    public List<DiffEntry> getDiffEntry(RevCommit parentCommit, RevCommit currCommit, int score) {
         // 不可少 否则parentCommit的 tree为null
         parentCommit = revWalk.parseCommit(ObjectId.fromString(parentCommit.getName()));
         TreeWalk tw = new TreeWalk(repository);
