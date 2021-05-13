@@ -3,7 +3,7 @@ package cn.edu.fudan.issueservice.core.process;
 import cn.edu.fudan.issueservice.component.RestInterfaceManager;
 import cn.edu.fudan.issueservice.dao.IssueIgnoreDao;
 import cn.edu.fudan.issueservice.domain.dbo.RawIssue;
-import cn.edu.fudan.issueservice.util.JGitHelper;
+import cn.edu.fudan.common.jgit.JGitHelper;
 import com.alibaba.fastjson.JSONArray;
 import org.junit.Before;
 import org.junit.Test;

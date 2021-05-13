@@ -32,9 +32,9 @@ public class ResourceGetAspect {
         for (Object o : joinPoint.getArgs()) {
             if (o instanceof RepoResourceDTO) {
                 RepoResourceDTO repoResourceDTO = (RepoResourceDTO) o;
-                String repoPath = restInvoker.getRepoPath(repoResourceDTO.getRepoId());
+                String repoPath = restInvoker.getRepoPath(repoResourceDTO.getRepoUuid());
                 repoResourceDTO.setRepoPath(repoPath);
-                log.info("get repo:{}, path:{}", repoResourceDTO.getRepoId(), repoResourceDTO.getRepoPath());
+                log.info("get repo:{}, path:{}", repoResourceDTO.getRepoUuid(), repoResourceDTO.getRepoPath());
                 return;
             }
         }

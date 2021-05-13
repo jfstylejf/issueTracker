@@ -11,17 +11,6 @@ import java.util.Map;
 public interface IssueScanService {
 
     /**
-     * 准备扫描
-     *
-     * @param repoResourceDTO repoResourceDTO
-     * @param branch          branch
-     * @param beginCommit     beginCommit
-     * @param toolName        toolName
-     * @return String
-     */
-    String prepareForScan(RepoResourceDTO repoResourceDTO, String branch, String beginCommit, String toolName);
-
-    /**
      * 停止扫描
      *
      * @param repoId   repoId
