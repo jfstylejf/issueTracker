@@ -1,18 +1,15 @@
 package cn.edu.fudan.dependservice.component;
 
-import cn.edu.fudan.dependservice.config.ShHomeConfig;
 import cn.edu.fudan.dependservice.domain.ScanRepo;
 import cn.edu.fudan.dependservice.domain.ScanStatus;
 import cn.edu.fudan.dependservice.service.ProcessPrepare;
 import cn.edu.fudan.dependservice.service.ScanProcess;
 import cn.edu.fudan.dependservice.util.TimeUtil;
-import cn.edu.fudan.dependservice.util.WriteUtil2;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -73,7 +70,6 @@ public class ScanProcessor extends Thread {
 
      public void scanOneBatch(){
         synchronized(lock){
-            String configFile = applicationContext.getBean(ShHomeConfig.class).getResultFileDir()+ "source-project-conf.json";
             //todo not all project is java
             while (batchProcessor.continueScan()){
                 // todo prepare

@@ -20,6 +20,12 @@
         where repo_uuid = #{repoUuid}
         limit 100;
     </delete>
+    <delete id="deleteByRepoUuidAndCommitId" parameterType="String">
+        delete
+        from issueTracker.dependency_detail
+        where repo_uuid = #{repoUuid}
+          and commit_id = #{commitId}
+    </delete>
 
     <insert id="add">
         insert into dependency_detail(commit_id, repo_uuid, group_id, file, depend_on, depend_details)

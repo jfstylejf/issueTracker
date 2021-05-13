@@ -7,13 +7,16 @@ import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Data
-public class ShThread2 implements Runnable {
+public class EndScanRunner implements Runnable {
 
-    String reslutFile;
-    String repoPath;
 
     String dependenceHome;
     String shName;
+    String command;
+
+    public void  setCommand(String dependenceHome,String shName){
+
+    }
 
 
     @Override
@@ -26,7 +29,7 @@ public class ShThread2 implements Runnable {
             Runtime rt = Runtime.getRuntime();
 
             String command = "sh " + dependenceHome + shName;
-            log.info("command2 -> {}", command);
+            log.info("end sh -> {}", command);
             Process process = rt.exec(command);
             boolean timeout = process.waitFor(300L, TimeUnit.SECONDS);
             if (!timeout) {

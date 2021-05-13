@@ -24,6 +24,8 @@ public class ScanController {
     @RequestMapping(value = {"depend/scanAllByDate"},method = RequestMethod.POST)
     public ResponseBean<List<ScanRepo>> oneTimePoint(@RequestBody ScanBody scanBody){
         log.info(" in /depend/scanAllByDate");
+        //yyyy-MM-dd HH:mm:ss
+        // 2021-05-10 00:00:00
 
         try {
             String date= scanBody.getDatetime();

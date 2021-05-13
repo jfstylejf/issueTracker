@@ -9,7 +9,7 @@ import java.util.List;
 
 @Repository
 public interface GroupMapper{
-    public int add(Group group);
+    int add(Group group);
 
     @Select("SELECT distinct(commit_id) FROM dependency " +
             "WHERE repo_uuid = #{repo_uuid};")

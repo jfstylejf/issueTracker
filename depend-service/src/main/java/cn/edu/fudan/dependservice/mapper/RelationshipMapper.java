@@ -11,6 +11,7 @@ import java.util.List;
 @Repository
 public interface RelationshipMapper {
     // todo get certain commit  use where commit in
+    // todo may one commit but many
     List<RelationView> getRelationBydate(String date);
     int add(RelationShip relationship);
     @Select("SELECT  count(*) FROM issueTracker.dependency_detail " +
@@ -18,5 +19,7 @@ public interface RelationshipMapper {
     int getCountByRepoUuid(String repoUuid);
 
     void deleteByRepoUuidLimit100(@Param("repoUuid") String repoUuid);
-
+    void deleteByRepoUuidAndCommitId(@Param("repoUuid") String repoUuid,
+                                     @Param("commitId") String commitId
+                                     );
 }

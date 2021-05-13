@@ -1,5 +1,6 @@
 package cn.edu.fudan.dependservice.dao;
 
+import cn.edu.fudan.common.domain.po.scan.RepoScan;
 import cn.edu.fudan.dependservice.domain.*;
 import cn.edu.fudan.dependservice.mapper.GroupMapper;
 import cn.edu.fudan.dependservice.mapper.RelationshipMapper;
@@ -28,10 +29,13 @@ public class ScanDao {
         return repoMapper.getLanguage(repoUuid);
     }
 
-    public int addRelation(RelationShip entity1) {
-
+    public void clearLastScan(ScanRepo scanRepo){
+        relationshipMapper.deleteByRepoUuidAndCommitId(scanRepo.getRepoUuid(),scanRepo.getScanCommit());
+    }
+    public int addRelation(RelationShip relationShip) {
+        // todo clear relation
         int rows = 0;
-        rows = relationshipMapper.add(entity1);
+        rows = relationshipMapper.add(relationShip);
         return rows;
     }
     public int updateScan(ScanRepo scanRepo){
@@ -48,7 +52,8 @@ public class ScanDao {
     public int addGroup(Group entity) {
 
         int rows = 0;
-        rows = groupMapper.add(entity);
+        // todo now do not need group
+//        rows = groupMapper.add(entity);
         return rows;
     }
 

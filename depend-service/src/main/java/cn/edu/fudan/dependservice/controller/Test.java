@@ -7,6 +7,7 @@ package cn.edu.fudan.dependservice.controller;
  **/
 
 import cn.edu.fudan.dependservice.component.BatchProcessor;
+import cn.edu.fudan.dependservice.component.ShRunner;
 import cn.edu.fudan.dependservice.domain.ResponseBean;
 import cn.edu.fudan.dependservice.domain.ScanRepo;
 import cn.edu.fudan.dependservice.domain.ScanStatus;
@@ -23,6 +24,8 @@ import java.util.List;
 @RestController
 @Slf4j
 public class Test {
+    @Autowired
+    ShRunner shRunner;
     @Autowired
     GroupMapper groupMapper;
     @Autowired
@@ -48,8 +51,13 @@ public class Test {
     }
     @RequestMapping(value = {"depend/test"},method = RequestMethod.GET)
     public ResponseBean<List<ScanRepo>> test1(){
-        int res=groupMapper.getCountByRepoUuid("52bb4f90-225d-11eb-8610-491d2d684483");
-        log.info("count: "+ res);
+        shRunner.initCommand("test/","test");
+        try {
+            shRunner.runSh();
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
         return new ResponseBean<>(200, "msg", null);
     }
 

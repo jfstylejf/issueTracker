@@ -8,9 +8,6 @@ import java.util.concurrent.TimeUnit;
 @Data
 public class ShThread implements Runnable {
 
-    String reslutFile;
-    String repoPath;
-
     String dependenceHome;
     String shName;
     final static long timeout = 1800;
