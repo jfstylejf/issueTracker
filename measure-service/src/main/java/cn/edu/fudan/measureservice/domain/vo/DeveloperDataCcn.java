@@ -1,6 +1,10 @@
 package cn.edu.fudan.measureservice.domain.vo;
 
 import cn.edu.fudan.measureservice.domain.bo.DeveloperProjectCcn;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
@@ -10,7 +14,10 @@ import java.util.List;
  * @Author wjzho
  * @Date 2021/5/12
  */
-
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class DeveloperDataCcn {
     /**
      * 开发者姓名

@@ -6,6 +6,7 @@ import cn.edu.fudan.measureservice.component.RestInterfaceManager;
 import cn.edu.fudan.measureservice.dao.JiraDao;
 import cn.edu.fudan.measureservice.dao.MeasureDao;
 import cn.edu.fudan.measureservice.dao.ProjectDao;
+import cn.edu.fudan.measureservice.domain.Developer;
 import cn.edu.fudan.measureservice.domain.Granularity;
 import cn.edu.fudan.measureservice.domain.bo.*;
 import cn.edu.fudan.measureservice.domain.bo.DeveloperPortrait;
@@ -14,10 +15,8 @@ import cn.edu.fudan.measureservice.domain.dto.ProjectPair;
 import cn.edu.fudan.measureservice.domain.dto.Query;
 import cn.edu.fudan.measureservice.domain.dto.RepoInfo;
 import cn.edu.fudan.measureservice.domain.enums.GranularityEnum;
-import cn.edu.fudan.measureservice.domain.vo.ProjectBigFileDetail;
-import cn.edu.fudan.measureservice.domain.vo.ProjectBigFileTrendChart;
-import cn.edu.fudan.measureservice.domain.vo.ProjectCommitStandardDetail;
-import cn.edu.fudan.measureservice.domain.vo.ProjectCommitStandardTrendChart;
+import cn.edu.fudan.measureservice.domain.enums.LevelEnum;
+import cn.edu.fudan.measureservice.domain.vo.*;
 import cn.edu.fudan.measureservice.mapper.RepoMeasureMapper;
 import cn.edu.fudan.measureservice.portrait.*;
 import cn.edu.fudan.measureservice.portrait2.Contribution;
@@ -1163,21 +1162,47 @@ public class MeasureDeveloperService {
 
      @SneakyThrows
      public Object getDeveloperDataCcn(String projectNameList, String developers, String token , String since, String until) {
-        List<DeveloperProjectCcn> developerProjectCcnList = new ArrayList<>();
+        List<DeveloperDataCcn> developerDataCcnList = new ArrayList<>();
         List<String> visibleRepoList = projectDao.getVisibleRepoListByProjectName(projectNameList,token);
-        List<String> developerList = Arrays.asList(developers.split(split));
+        String[] developerList = developers.split(split);
         for (String developer : developerList) {
+            List<DeveloperProjectCcn> developerProjectCcnList = new ArrayList<>();
             List<String> developerRepoList = projectDao.getDeveloperVisibleRepo(visibleRepoList,developer,since,until);
+            // 暂存该开发者 项目 与 库下圈复杂度变化的匹配关系
+            Map<String,List<DeveloperRepoCcn>> map = new HashMap<>();
             for (String repoUuid : developerRepoList) {
-                if (!projectDao.getRepoInfoMap().containsKey(repoUuid)) {
+                if (!projectDao.getRepoInfoMap().containsKey(           repoUuid)) {
                     projectDao.insertProjectInfo(token);
                 }
                 RepoInfo repoInfo = projectDao.getRepoInfoMap().get(repoUuid);
                 String projectName = repoInfo.getProjectName();
-
+                String repoName = repoInfo.getRepoName();
+                if (!map.containsKey(projectName)) {
+                    map.put(projectName,new ArrayList<>());
+                }
+                // todo 查询 repoDiffCcn
+                int developerRepoDiffCcn = 0;
+                map.get(projectName).add(new DeveloperRepoCcn(developer,since,until,projectName,repoUuid,repoName,developerRepoDiffCcn));
             }
+            for (String projectName : map.keySet()) {
+                DeveloperProjectCcn developerProjectCcn = DeveloperProjectCcn.builder()
+                                        .developerName(developer)
+                                        .developerRepoCcnList(map.get(projectName))
+                                        .projectName(projectName)
+                                        .since(since).until(until)
+                                        .projectDiffCcn(0).build();
+                //todo 对 projectDiffCcn 初始化计算
+                developerProjectCcnList.add(developerProjectCcn);
+            }
+            // todo totalDiffCCn的计算
+            developerDataCcnList.add(DeveloperDataCcn.builder()
+                    .developerName(developer)
+                    .developerProjectCcnList(developerProjectCcnList)
+                    .since(since).until(until)
+                    .totalDiffCcn(0)
+                    .level(LevelEnum.Medium.getType()).build());
         }
-        return developerProjectCcnList;
+        return developerDataCcnList;
      }
 
     /**

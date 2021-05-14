@@ -1,5 +1,10 @@
 package cn.edu.fudan.measureservice.domain.bo;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.util.List;
 
 /**
@@ -8,7 +13,10 @@ import java.util.List;
  * @Author wjzho
  * @Date 2021/5/12
  */
-
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class DeveloperRepoCcn {
 
     /**
@@ -31,6 +39,10 @@ public class DeveloperRepoCcn {
      * 参与库
      */
     private String repoUuid;
+    /**
+     * 参与库名
+     */
+    private String repoName;
     /**
      * 开发者在该项目的总修改圈复杂度
      */

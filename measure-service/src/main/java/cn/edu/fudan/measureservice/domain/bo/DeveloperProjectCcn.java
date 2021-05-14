@@ -37,7 +37,7 @@ public class DeveloperProjectCcn {
     /**
      * 参与项目库
      */
-    private List<String> involvedRepoList;
+    private List<DeveloperRepoCcn> developerRepoCcnList;
     /**
      * 开发者在该项目的总修改圈复杂度
      */

@@ -143,4 +143,8 @@
             commit_time desc
     </select>
 
+    <select id="getDeveloperDiffCcn" resultType="int">
+
+    </select>
+
 </mapper>

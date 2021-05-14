@@ -465,7 +465,7 @@ public class MeasureDeveloperController {
     }
 
     @GetMapping("/developer/data/ccn")
-    public ResponseBean<> getDeveloperDataCcn(@RequestParam(value = "project_names",required = false) String projectNameList,
+    public ResponseBean<Object> getDeveloperDataCcn(@RequestParam(value = "project_names",required = false) String projectNameList,
                                               @RequestParam(value = "developers",required = true) String developerList,
                                               @RequestParam(value = "since" , required = false) String since,
                                               @RequestParam(value = "until",required = false) String until,
