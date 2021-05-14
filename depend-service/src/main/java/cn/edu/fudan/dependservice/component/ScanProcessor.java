@@ -24,8 +24,6 @@ public class ScanProcessor extends Thread {
     @Autowired
     BatchProcessor batchProcessor;
 
-
-
     @Autowired
     ProcessPrepare processPrepare;
 

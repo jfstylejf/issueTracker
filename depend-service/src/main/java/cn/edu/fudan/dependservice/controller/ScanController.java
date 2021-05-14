@@ -36,6 +36,7 @@ public class ScanController {
             List<ScanRepo> data = scanService.scanAllRepoNearToOneDate(date);
             long costTime =(System.currentTimeMillis()-scanStartTime)/1000;
             String msg= "scan cost "+ costTime+" seconds";
+            log.info(msg);
             return new ResponseBean<>(200, msg, data);
         }catch (Exception e){
             return new ResponseBean<>(500,e.getMessage(),null);
