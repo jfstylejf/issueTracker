@@ -62,6 +62,7 @@ public class StatisticsDao implements PublicConstants {
         boolean noScan=true;
         log.info("projectId: {}",projectId);
         for (RepoUuidsInfo repo : repoInfo) {
+            System.out.println(" repoName : "+repo.getRepoName());
             log.info("repouuid: {}",repo.getRepoUuid());
             List<Commit> scanedCommit =locationMapper.getScanedCommit(repo.getRepoUuid());
             log.info("scanedCommit.size(): {}",scanedCommit.size());

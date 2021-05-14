@@ -3,6 +3,7 @@ package cn.edu.fudan.issueservice.mapper;
 import cn.edu.fudan.issueservice.domain.dbo.Issue;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -279,4 +280,13 @@ public interface IssueMapper {
      * @param repoUuid repoUuid
      */
     void updateIssuesForIgnore(List<String> ignoreFiles, String repoUuid);
+
+    /**
+     * issue count
+     * @param repoUuid repoUuid
+     * @param tool tool
+     * @return count
+     */
+    @Select("select count(*) from issue where repo_uuid = #{repoUuid} and tool = #{tool}")
+    int getIssueCount(String repoUuid, String tool);
 }

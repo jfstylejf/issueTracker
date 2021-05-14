@@ -7,8 +7,10 @@ import cn.edu.fudan.measureservice.mapper.FileMeasureMapper;
 import cn.edu.fudan.measureservice.mapper.MeasureMapper;
 import cn.edu.fudan.measureservice.mapper.ProjectMapper;
 import cn.edu.fudan.measureservice.util.DateTimeUtil;
+import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.Assert;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -87,6 +89,13 @@ public class MeasureDao {
         }
         return projectBigFileDetailList;
     }
+
+    @SneakyThrows
+    public int getDeveloperDiffCcn(String repoUuid,String since,String until,String developer) {
+        Objects.requireNonNull(developer,"开发者不可为空");
+        return fileMeasureMapper.getDeveloperDiffCcn(repoUuid,developer,since,until);
+    }
+
 
     @Autowired
     public void setMeasureMapper(MeasureMapper measureMapper){

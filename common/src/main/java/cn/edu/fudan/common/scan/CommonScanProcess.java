@@ -5,6 +5,7 @@ import cn.edu.fudan.common.domain.ScanInfo;
 import cn.edu.fudan.common.domain.po.scan.RepoScan;
 import cn.edu.fudan.common.jgit.JGitHelper;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -13,13 +14,14 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 /**
  * @author beethoven
  */
 @Getter
+@NoArgsConstructor
 public abstract class CommonScanProcess implements CommonScanService {
     private static final Logger log = LoggerFactory.getLogger(CommonScanProcess.class);
     private static final String KEY_DELIMITER = "-";
@@ -27,17 +29,18 @@ public abstract class CommonScanProcess implements CommonScanService {
     /**
      * key repoUuid
      * value true/false true 代表还需要更新扫描一次
-     **/
+     */
     private final ConcurrentHashMap<String, Boolean> scanStatusMap = new ConcurrentHashMap<>();
     protected BaseRepoRestManager baseRepoRestManager;
     protected ApplicationContext applicationContext;
-    private static final Short LOCK = 1;
+    private static final Object LOCK = new Object();
 
-    public CommonScanProcess(ApplicationContext applicationContext){
+    public CommonScanProcess(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
         baseRepoRestManager = applicationContext.getBean(BaseRepoRestManager.class);
     }
 
+    @Async("taskExecutor")
     public void scan(String repoUuid, String branch, String beginCommit, String endCommit) {
         // todo 查询repository表 来查看repo 所包含的语言 让后决定采用什么工具来调用
         String[] tools = getToolsByRepo(repoUuid);
@@ -45,7 +48,7 @@ public abstract class CommonScanProcess implements CommonScanService {
         for (String tool : tools) {
             RepoScan scanInfo = getRepoScanStatus(repoUuid, tool);
 
-            boolean isFirstScan = beginCommit != null && !"".equals(beginCommit);
+            boolean isFirstScan = !StringUtils.isEmpty(beginCommit);
             boolean isScanned = scanInfo != null;
 
             // 扫描过并且是第一次扫描说明该请求已经处理过
@@ -101,12 +104,11 @@ public abstract class CommonScanProcess implements CommonScanService {
         checkAfterScan(repoUuid, branch, tool, endCommit);
     }
 
-    @Async("taskExecutor")
     void beginScan(String repoUuid, String branch, String beginCommit, String tool, String endCommit) {
         Thread curThread = Thread.currentThread();
         String threadName = generateKey(repoUuid, tool);
         curThread.setName(threadName);
-
+        //获取tool scan
         ToolScan specificTool = getToolScan(tool);
 
         // 获取repo所在路径
@@ -178,10 +180,9 @@ public abstract class CommonScanProcess implements CommonScanService {
                     log.warn("thread:{} stopped", threadName);
                     break;
                 }
-                scannedCommitCount = scannedCommitCount + 1  ;
+                scannedCommitCount = scannedCommitCount + 1;
             }
             specificTool.cleanUpForScan();
-
 
             repoScan.setStatus(success ? ScanInfo.Status.COMPLETE.getStatus() : ScanInfo.Status.FAILED.getStatus());
             repoScan.setEndScanTime(new Date());
@@ -196,26 +197,46 @@ public abstract class CommonScanProcess implements CommonScanService {
 
     }
 
+    /**
+     * 获取ToolScan
+     *
+     * @param tool tool
+     * @return
+     */
     protected abstract ToolScan getToolScan(String tool);
 
     /**
-     * 根据repoUuid 和 tool 代码库的地址决定需要调用的工具列表
-     **/
+     * 根据repoUuid tool 代码库的地址决定需要调用的工具列表
+     *
+     * @param repoUuid repoUuid
+     * @param tool     tool
+     * @return
+     */
     protected abstract List<String> getScannedCommitList(String repoUuid, String tool);
 
     /**
      * 根据表中的记录得到最新扫描的commit id
-     **/
+     *
+     * @param repoUuid repoUuid
+     * @param tool     tool
+     * @return
+     */
     protected abstract String getLastedScannedCommit(String repoUuid, String tool);
 
     /**
-     * 根据uuid 和 代码库的地址决定需要调用的工具列表
-     **/
+     * 根据uuid和代码库的地址决定需要调用的工具列表
+     *
+     * @param repoUuid repoUuid
+     * @return
+     */
     protected abstract String[] getToolsByRepo(String repoUuid);
 
+
     /**
-     * 插入当前repo的 扫描信息
-     **/
+     * 插入当前repo的扫描信息
+     *
+     * @param repoScan repoScan
+     */
     protected abstract void insertRepoScan(RepoScan repoScan);
 
 

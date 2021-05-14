@@ -7,6 +7,7 @@ import cn.edu.fudan.measureservice.domain.dto.MethodInfo;
 import cn.edu.fudan.measureservice.domain.dto.TextInfo;
 import cn.edu.fudan.measureservice.util.FileFilter;
 import cn.edu.fudan.measureservice.util.FileUtil;
+import cn.edu.fudan.measureservice.util.GETPropertiesUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import lombok.SneakyThrows;
@@ -26,13 +27,19 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class JsCodeAnalyzer extends BaseAnalyzer{
 
-    private String jsResultFileHome = FileUtil.systemAvailablePath("/home/fdse/codeWisdom/service/measure/log/JsResultLog");
     private static final String jsCcnLog = "jsCcn.log";
     private static final String jsLineLog = "jsLine.log";
     public static final String jsScanLog = "jsScan.log";
     private static final String jsComplexity = FileUtil.systemAvailablePath("Js/tool/complexity.js");
     private static final String jsLine = FileUtil.systemAvailablePath("Js/tool/line.js");
     private static final String jsScan = "excuteJsScan.sh";
+    /**
+     * 根据配置文件写入地址 （由于对象是new出来的，无法直接由Spring 注入）
+     */
+    private String jsResultFileHome = GETPropertiesUtil.getJsResultFileHome();
+
+
+
 
     @SneakyThrows
     @Override
@@ -332,6 +339,7 @@ public class JsCodeAnalyzer extends BaseAnalyzer{
     public void setJsResultFileHome(String jsResultFileHome) {
         this.jsResultFileHome = jsResultFileHome;
     }
+
 
     public static void main(String[] args) {
         String filePath = "C:\\\\Users\\\\wjzho\\\\Desktop\\\\js_test\\\\fortestjs-davidtest_duplicate_fdse-0";

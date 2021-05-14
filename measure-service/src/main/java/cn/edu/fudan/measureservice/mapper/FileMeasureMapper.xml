@@ -134,13 +134,40 @@
                     and <![CDATA[ commit_time <= #{until} ]]>
                 </if>
 
-                and total_lines >= 1000
+                and absolute_lines >= 1000
             </trim>
         </where>
         GROUP BY
             file_path
         ORDER BY
             commit_time desc
+    </select>
+
+    <select id="getDeveloperDiffCcn" resultType="int">
+        SELECT sum(f.diff_ccn)
+        FROM issueTracker.file_measure AS f INNER JOIN issueTracker.commit_view AS c on c.commit_id = f.commit_id
+        <where>
+            <trim prefixOverrides="and">
+
+                <if test="repoUuid != null and repoUuid != '' ">
+                    and f.repo_id = #{repoUuid}
+                </if>
+
+                <if test="developer != null and developer != '' ">
+                    and c.developer_unique_name = #{developer}
+                </if>
+
+                <if test="since != null and since != '' ">
+                    and <![CDATA[ f.commit_time >= #{since} ]]>
+                </if>
+
+                <if test="until != null and until != '' ">
+                    and <![CDATA[ f.commit_time <= #{until} ]]>
+                </if>
+
+            </trim>
+        </where>
+
     </select>
 
 </mapper>

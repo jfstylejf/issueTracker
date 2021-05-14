@@ -90,12 +90,12 @@ public class DirExplorer {
         if (needToDeleteFiles == null) {
             return;
         }
-        for (int i = 0; i < needToDeleteFiles.length; i++) {
-            if (needToDeleteFiles[i].isDirectory()) {
-                deleteAllByPath(needToDeleteFiles[i]);
+        for (File needToDeleteFile : needToDeleteFiles) {
+            if (needToDeleteFile.isDirectory()) {
+                deleteAllByPath(needToDeleteFile);
             }
             try {
-                Files.delete(needToDeleteFiles[i].toPath());
+                Files.delete(needToDeleteFile.toPath());
             } catch (IOException e) {
                 System.out.println("Delete temp directory or file failed." + e.getMessage());
             }

@@ -15,6 +15,7 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.aspectj.weaver.patterns.IToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -464,7 +465,27 @@ public class MeasureDeveloperController {
         }
     }
 
-
+    @GetMapping("/developer/data/ccn")
+    public ResponseBean<Object> getDeveloperDataCcn(@RequestParam(value = "project_names",required = false) String projectNameList,
+                                              @RequestParam(value = "developers",required = true) String developerList,
+                                              @RequestParam(value = "since" , required = false) String since,
+                                              @RequestParam(value = "until",required = false) String until,
+                                              @RequestParam(required = false, defaultValue = "1")int page,
+                                              @RequestParam(required = false, defaultValue = "10")int ps,
+                                              HttpServletRequest request )
+    {
+        try {
+            String token = request.getHeader("token");
+            List<DeveloperDataCcn> developerDataCcnList = measureDeveloperService.getDeveloperDataCcn(projectNameList,developerList,token,since,until);
+            int totalPage = developerDataCcnList.size() % ps == 0 ? developerDataCcnList.size()/ps : developerDataCcnList.size()/ps + 1;
+            List<DeveloperDataCcn> selectedDeveloperDataCcnList = developerDataCcnList.subList(ps*(page-1), Math.min(ps * page, developerDataCcnList.size()));
+            ProjectFrontEnd<DeveloperDataCcn> developerDtaCcnProjectFrontEnd = new ProjectFrontEnd<>(page,totalPage,developerDataCcnList.size(),selectedDeveloperDataCcnList);
+            return new ResponseBean<>(200,"success",developerDtaCcnProjectFrontEnd);
+        }catch (Exception e) {
+            e.getMessage();
+        }
+        return new ResponseBean<>(401,"failed",null);
+    }
 
 
     @ApiOperation(value = "返回用户画像页面得代码行数数据，包括所有项目和单个项目的 To codeTracker", notes = "@return Map<String,Object>", httpMethod = "GET")

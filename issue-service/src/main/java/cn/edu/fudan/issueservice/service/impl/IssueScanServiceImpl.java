@@ -1,20 +1,14 @@
 package cn.edu.fudan.issueservice.service.impl;
 
-import cn.edu.fudan.issueservice.annotation.GetResource;
-import cn.edu.fudan.issueservice.component.RestInterfaceManager;
 import cn.edu.fudan.issueservice.config.ScanThreadExecutorConfig;
-import cn.edu.fudan.issueservice.core.ScanManagementAsync;
 import cn.edu.fudan.issueservice.dao.CommitDao;
 import cn.edu.fudan.issueservice.dao.IssueRepoDao;
 import cn.edu.fudan.issueservice.dao.IssueScanDao;
 import cn.edu.fudan.issueservice.domain.dbo.Commit;
 import cn.edu.fudan.issueservice.domain.dbo.IssueRepo;
-import cn.edu.fudan.issueservice.domain.dbo.IssueScan;
-import cn.edu.fudan.issueservice.domain.dto.RepoResourceDTO;
 import cn.edu.fudan.issueservice.domain.dto.ScanCommitInfoDTO;
 import cn.edu.fudan.issueservice.domain.enums.RepoNatureEnum;
 import cn.edu.fudan.issueservice.service.IssueScanService;
-import cn.edu.fudan.issueservice.util.JGitHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -36,95 +30,10 @@ public class IssueScanServiceImpl implements IssueScanService {
     private BlockingQueue<ScanCommitInfoDTO> scanCommitInfoDTOBlockingQueue;
     private StringRedisTemplate stringRedisTemplate;
     private IssueScanDao issueScanDao;
-    private ScanManagementAsync scanManagementAsync;
     private IssueRepoDao issueRepoDao;
-    private RestInterfaceManager restInvoker;
     private CommitDao commitDao;
 
     private static final String TOTAL = "total";
-
-    @GetResource
-    @Override
-    public String prepareForScan(RepoResourceDTO repoResourceDTO, String branch, String beginCommit, String toolName) {
-        String repoPath;
-        try {
-            String repoId = repoResourceDTO.getRepoId();
-            repoPath = repoResourceDTO.getRepoPath();
-            if (repoPath == null) {
-                throw new RuntimeException("can't get repo path!");
-            }
-            boolean isUpdate = false;
-
-            ScanCommitInfoDTO scanCommitInfoDTO = ScanCommitInfoDTO.builder()
-                    .repoId(repoId).branch(branch).toolName(toolName).isUpdate(false).build();
-
-            if (beginCommit == null) {
-                isUpdate = true;
-            }
-
-            //再次验证项目是否已经扫描过，避免因scan服务发送重复的请求导致数据库数据重复。
-            if (beginCommit != null) {
-                List<IssueScan> issueScans = issueScanDao.getScannedCommitsByRepoIdAndTool(repoId, toolName, null, null);
-                if (issueScans != null && !issueScans.isEmpty()) {
-                    isUpdate = true;
-                }
-            }
-
-            // todo 如果更新接口与初次扫描接口分离的话 ，还需验证是否已经扫描过，且是否已经更新至最新
-            //第一步，先判断是否在扫描队列中等待扫描 , 实现equals方法，如果repo id 相同，则认为是同一个ScanCommitInfoDTO
-            if (scanCommitInfoDTOBlockingQueue.contains(scanCommitInfoDTO)) {
-                return "scanning";
-            }
-
-            JGitHelper jGitInvoker = new JGitHelper(repoPath);
-
-            //第二步判断是否已经在扫描  todo 逻辑比较乱， 后面需要重构
-            String redisValue = stringRedisTemplate.opsForValue().get(repoId + "-" + toolName);
-            boolean isCorrectThreadName = false;
-            if (redisValue != null) {
-                isCorrectThreadName = redisValue.matches("^async-issue-scan.*");
-            }
-            if (isCorrectThreadName) {
-                ScanThreadExecutorConfig.updateScannedRepoStatus(repoId, toolName);
-                return "scanning";
-            } else {
-                stringRedisTemplate.opsForValue().getOperations().delete(repoId);
-            }
-
-            //第三步，判断是第一次扫描还是更新扫描,并更新scanCommitInfoDTO
-            if (isUpdate) {
-                IssueScan issueScan = issueScanDao.getLatestIssueScanByRepoIdAndTool(repoId, toolName);
-                if (issueScan == null) {
-                    // todo 需返回提示，该项目未扫描，请提供 begin Commit ，此时应该报错，给scan服务调用失败的提示，这样scan就可以根据此情况，重新发送begin commit
-                    return "please provide begin commit !";
-                }
-                String startCommit = issueScanDao.getStartCommitByRepoUuid(repoId);
-                List<String> scannedCommits = new ArrayList<>(issueScanDao.getScannedCommitList(repoId, toolName));
-                List<String> commitIds = jGitInvoker.getScanCommitListByBranchAndBeginCommit(branch, startCommit, scannedCommits);
-                //因为必定不为null，所以不做此判断
-                if (commitIds.isEmpty()) {
-                    return "scanned";
-                }
-                beginCommit = commitIds.get(0);
-                scanCommitInfoDTO.setIsUpdate(true);
-            }
-            scanCommitInfoDTO.setCommitId(beginCommit);
-
-            //第四步，加入扫描池队列中
-            scanManagementAsync.addProjectToScanQueue(scanCommitInfoDTO);
-
-            //判断 扫描消费线程池 正在运行的线程是否少于10
-            if (ScanThreadExecutorConfig.getConsumerThreadPoolAliveThreadCounts() < 10) {
-                scanManagementAsync.getProjectFromScanQueue();
-            }
-
-            return "start scanning";
-        } finally {
-            log.info("free repo:{}, path:{}", repoResourceDTO.getRepoId(), repoResourceDTO.getRepoPath());
-            restInvoker.freeRepoPath(repoResourceDTO.getRepoId(), repoResourceDTO.getRepoPath());
-        }
-
-    }
 
     @Override
     public void stopScan(String repoId, String toolName) {
@@ -248,18 +157,8 @@ public class IssueScanServiceImpl implements IssueScanService {
     }
 
     @Autowired
-    public void setScanManagementAsync(ScanManagementAsync scanManagementAsync) {
-        this.scanManagementAsync = scanManagementAsync;
-    }
-
-    @Autowired
     public void setIssueRepoDao(IssueRepoDao issueRepoDao) {
         this.issueRepoDao = issueRepoDao;
-    }
-
-    @Autowired
-    public void setRestInvoker(RestInterfaceManager restInvoker) {
-        this.restInvoker = restInvoker;
     }
 
     @Autowired

@@ -13,11 +13,11 @@ import java.util.concurrent.ThreadPoolExecutor;
 @EnableAsync
 public class AsyncConfig {
 
-    private static final int corePoolSize = 3;
-    private static final int maxPoolSize = 5;
-    private static final int queueCapacity = 30;
+    private static final int corePoolSize = 5;
+    private static final int maxPoolSize = 7;
+    private static final int queueCapacity = 5;
     private static final int keepAliveSeconds = 300;
-    private static final String threadNamePrefix = "async-task-thread-pool-";
+    private static final String threadNamePrefix = "async-task-dependservice-";
     private RejectedExecutionHandler rejectedExecutionHandler = new ThreadPoolExecutor.DiscardPolicy();
 
     @Bean("taskExecutor")

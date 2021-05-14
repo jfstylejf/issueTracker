@@ -140,7 +140,6 @@
                     and <![CDATA[ commit_time <= #{until} ]]>
                 </if>
             </trim>
-            and repo_uuid in (SELECT distinct repo_uuid FROM sub_repository)
         </where>
 
     </select>

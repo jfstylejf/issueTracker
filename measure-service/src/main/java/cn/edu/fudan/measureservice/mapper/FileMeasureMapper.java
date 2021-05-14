@@ -39,6 +39,16 @@ public interface FileMeasureMapper {
     int sameFileMeasureOfOneCommit(@Param("repo_id")String repoUuid,@Param("commit_id")String commitId);
 
     /**
+     * 获取当前开发者在指定时间内查询库下的修改圈Σ复杂度
+     * @param repoUuid 查询库
+     * @param developer 查询开发者
+     * @param since 起始时间
+     * @param until 截止时间
+     * @return Σ 修改圈复杂度
+     */
+    int getDeveloperDiffCcn(@Param("repoUuid") String repoUuid,@Param("developer") String developer, @Param("since") String since, @Param("until") String until);
+
+    /**
      * 查询库下所有大文件最新信息
      * @param repoUuidList 查询库列表
      * @return key: file_path, total_lines, currentModifyTime, repo_id

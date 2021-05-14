@@ -61,7 +61,7 @@ public interface ProjectMapper {
 
 
     /**
-     * 获取开发者参与库列表（且在sub_repository下）
+     * 获取开发者参与库列表
      * @param developer 开发者姓名
      * @param since 查询起始时间
      * @param until 查询结束时间

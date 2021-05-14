@@ -21,10 +21,10 @@
     </properties>
 
     <repositories>
-        <repository>
-            <id>sx</id>
-            <url>file:C:/Users/admin/.m2/repository/</url>
-        </repository>
+<!--        <repository>-->
+<!--            <id>sx</id>-->
+<!--            <url>file:C:/Users/admin/.m2/repository/</url>-->
+<!--        </repository>-->
 
     </repositories>
 
@@ -58,6 +58,12 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>
@@ -119,8 +125,15 @@
         <dependency>
             <groupId>cn.edu.fudan</groupId>
             <artifactId>common</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+            </exclusions>
 
             <version>1.0.1</version>
+
 <!--            <scope>compile</scope>-->
 <!--            <scope>system</scope>-->
 <!--            <systemPath>${project.basedir}/lib/common-1.0-SNAPSHOT.jar</systemPath>-->

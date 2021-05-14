@@ -36,7 +36,7 @@ public class BatchProcessor {
 
     public List<ScanRepo> getScanList() {
         log.info("batchNum: "+batchNum);
-        log.info("scanRepo in queue:"+ scanQueue.size());
+        log.info("in queue:"+ scanQueue.size());
         synchronized (scanQueue) {
             while (inScanning.size() < batchNum && !scanQueue.isEmpty()) {
                 inScanning.add(scanQueue.poll());

@@ -6,6 +6,7 @@ import cn.edu.fudan.measureservice.component.RestInterfaceManager;
 import cn.edu.fudan.measureservice.dao.JiraDao;
 import cn.edu.fudan.measureservice.dao.MeasureDao;
 import cn.edu.fudan.measureservice.dao.ProjectDao;
+import cn.edu.fudan.measureservice.domain.Developer;
 import cn.edu.fudan.measureservice.domain.Granularity;
 import cn.edu.fudan.measureservice.domain.bo.*;
 import cn.edu.fudan.measureservice.domain.bo.DeveloperPortrait;
@@ -14,10 +15,8 @@ import cn.edu.fudan.measureservice.domain.dto.ProjectPair;
 import cn.edu.fudan.measureservice.domain.dto.Query;
 import cn.edu.fudan.measureservice.domain.dto.RepoInfo;
 import cn.edu.fudan.measureservice.domain.enums.GranularityEnum;
-import cn.edu.fudan.measureservice.domain.vo.ProjectBigFileDetail;
-import cn.edu.fudan.measureservice.domain.vo.ProjectBigFileTrendChart;
-import cn.edu.fudan.measureservice.domain.vo.ProjectCommitStandardDetail;
-import cn.edu.fudan.measureservice.domain.vo.ProjectCommitStandardTrendChart;
+import cn.edu.fudan.measureservice.domain.enums.LevelEnum;
+import cn.edu.fudan.measureservice.domain.vo.*;
 import cn.edu.fudan.measureservice.mapper.RepoMeasureMapper;
 import cn.edu.fudan.measureservice.portrait.*;
 import cn.edu.fudan.measureservice.portrait2.Contribution;
@@ -1075,12 +1074,12 @@ public class MeasureDeveloperService {
 
 
     /**
-     *
-     * @param projectIds
-     * @param since
-     * @param until
-     * @param token
-     * @param interval
+     * 获取超大文件数趋势图
+     * @param projectIds 查询项目id列表
+     * @param since 起始时间
+     * @param until 截止时间
+     * @param token 查询权限
+     * @param interval 间隔
      * @return
      */
      public List<ProjectBigFileTrendChart> getHugeLocRemainedFile(String projectIds,String since,String until,String token,String interval) {
@@ -1132,10 +1131,10 @@ public class MeasureDeveloperService {
      }
 
     /**
-     *
-     * @param projectNameList
-     * @param repoUuidList
-     * @param token
+     * 获取超大文件数明细
+     * @param projectNameList 查询项目列表
+     * @param repoUuidList 查询库列表
+     * @param token 查询权限
      * @return
      */
     @SneakyThrows
@@ -1161,6 +1160,62 @@ public class MeasureDeveloperService {
          return result;
      }
 
+     @SneakyThrows
+     public  List<DeveloperDataCcn> getDeveloperDataCcn(String projectNameList, String developers, String token , String since, String until) {
+        List<DeveloperDataCcn> developerDataCcnList = new ArrayList<>();
+        List<String> visibleRepoList = projectDao.getVisibleRepoListByProjectName(projectNameList,token);
+        String[] developerList = developers.split(split);
+        for (String developer : developerList) {
+            List<DeveloperProjectCcn> developerProjectCcnList = new ArrayList<>();
+            List<String> developerRepoList = projectDao.getDeveloperVisibleRepo(visibleRepoList,developer,since,until);
+            // 暂存该开发者 项目 与 库下圈复杂度变化的匹配关系
+            Map<String,List<DeveloperRepoCcn>> map = new HashMap<>();
+            for (String repoUuid : developerRepoList) {
+                if (!projectDao.getRepoInfoMap().containsKey(           repoUuid)) {
+                    projectDao.insertProjectInfo(token);
+                }
+                RepoInfo repoInfo = projectDao.getRepoInfoMap().get(repoUuid);
+                String projectName = repoInfo.getProjectName();
+                String repoName = repoInfo.getRepoName();
+                if (!map.containsKey(projectName)) {
+                    map.put(projectName,new ArrayList<>());
+                }
+                // 查询开发者指定时间库下的修改圈复杂度
+                int developerRepoDiffCcn = measureDao.getDeveloperDiffCcn(repoUuid,since,until,developer);
+                map.get(projectName).add(new DeveloperRepoCcn(developer,since,until,projectName,repoUuid,repoName,developerRepoDiffCcn));
+            }
+            for (String projectName : map.keySet()) {
+                DeveloperProjectCcn developerProjectCcn = DeveloperProjectCcn.builder()
+                                        .developerName(developer)
+                                        .developerRepoCcnList(map.get(projectName))
+                                        .projectName(projectName)
+                                        .since(since).until(until)
+                                        .projectDiffCcn(0).build();
+                // 对 projectDiffCcn 初始化计算
+                developerProjectCcn.cal();
+                developerProjectCcnList.add(developerProjectCcn);
+            }
+            // totalDiffCCn的计算
+            DeveloperDataCcn developerDataCcn = DeveloperDataCcn.builder()
+                            .developerName(developer)
+                            .developerProjectCcnList(developerProjectCcnList)
+                            .since(since).until(until)
+                            .totalDiffCcn(0)
+                            .level(LevelEnum.Medium.getType()).build();
+            developerDataCcn.cal();
+            developerDataCcnList.add(developerDataCcn);
+        }
+        return developerDataCcnList;
+     }
+
+    /**
+     * 判断该 repo 信息是否被初始化
+     * @param repoUuid 查询库
+     * @return 若已初始化则返回 true
+     */
+     private boolean isInit(String repoUuid) {
+        return projectDao.getRepoInfoMap().containsKey(repoUuid);
+     }
 
     @Autowired
     public void setMeasureDeveloperServiceImpl(MeasureDeveloperService measureDeveloperServiceImpl) {

@@ -24,6 +24,8 @@ public class ScanController {
     @RequestMapping(value = {"depend/scanAllByDate"},method = RequestMethod.POST)
     public ResponseBean<List<ScanRepo>> oneTimePoint(@RequestBody ScanBody scanBody){
         log.info(" in /depend/scanAllByDate");
+        //yyyy-MM-dd HH:mm:ss
+        // 2021-05-10 00:00:00
 
         try {
             String date= scanBody.getDatetime();
@@ -34,6 +36,7 @@ public class ScanController {
             List<ScanRepo> data = scanService.scanAllRepoNearToOneDate(date);
             long costTime =(System.currentTimeMillis()-scanStartTime)/1000;
             String msg= "scan cost "+ costTime+" seconds";
+            log.info(msg);
             return new ResponseBean<>(200, msg, data);
         }catch (Exception e){
             return new ResponseBean<>(500,e.getMessage(),null);

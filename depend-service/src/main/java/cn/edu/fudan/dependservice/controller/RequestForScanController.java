@@ -44,19 +44,19 @@ public class RequestForScanController {
             @ApiImplicitParam(name = "scanBody", value = "开发人员信息列表", dataType = "ScanBody", required = true)
     })
     @PostMapping(value = {"dependency/dependency"})
-    public ResponseBean<String> scanByScan(@RequestBody ScanBody scanBody) {
+    public ResponseBean<String> scantest(@RequestBody ScanBody scanBody) {
         log.info("scan by scan" );
         log.info("scanBody.getRepo_uuid():"+scanBody.getRepoUuid());
         if(canInvoke(scanBody.getRepoUuid())){
             ScanRepo scanRepo = initScanRepo(scanBody);
-            new Thread(() -> scanOneRepo(scanRepo)).start();
+            scanService.scanOneRepo(scanRepo,toScanList);
             String data ="invoke success";
             return new ResponseBean<>(200,"success",data);
         }else {
             String data ="invoke fail";
             return new ResponseBean<>(200,"success",data);
         }
-       
+
     }
     public boolean canInvoke(String repouuid){
         if(statusService.canScan(repouuid)){
@@ -77,25 +77,6 @@ public class RequestForScanController {
         }
     }
 
-    // todo if not java in
-    //todo why can not async
-//    @Async("taskExecutor")
-    public void scanOneRepo(ScanRepo scanRepo){
-        try {
-            toScanList.add(scanRepo);
-            int size =toScanList.size();
-            //many thread have a same wait time
-            Thread.sleep(10*1000);
-            if(toScanList.size()==size){
-                List<ScanRepo> scanRepoList=new ArrayList<>(toScanList);
-                toScanList.clear();
-                scanProcessor.scan(scanRepoList);
-            }
-
-        }catch (InterruptedException e){
-            e.printStackTrace();
-        }
-    }
     @ApiOperation(value = "获取扫描状态", httpMethod = "GET", notes = "@return Map{\"code\": String, \"msg\": String, \"data\":ScanStatus}")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "repo_uuid", value = "repouuid", dataType = "String", required = true)

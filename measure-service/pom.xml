@@ -5,7 +5,7 @@
 
 
     <artifactId>measure-service</artifactId>
-    <version>1.0.2</version>
+    <version>1.0.1</version>
     <name>measure-service</name>
     <description>measure service</description>
 
@@ -14,7 +14,7 @@
         <groupId>cn.edu.fudan</groupId>
         <artifactId>issueTracker</artifactId>
 
-        <version>1.0.2</version>
+        <version>1.0.1</version>
     </parent>
 
     <properties>
