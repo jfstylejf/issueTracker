@@ -52,8 +52,10 @@ public class RawIssueServiceImpl implements RawIssueService {
         //get change or add rawIssues' detail
         List<Map<String, Object>> rawIssueList = rawIssueDao.getRawIssueByUuids(rawIssuesUuid);
         //get locations
-        rawIssueList.forEach(rawIssue ->
-                rawIssue.put("location", locationDao.getLocationsByRawIssueUuid((String) rawIssue.get(UUID))));
+        rawIssueList.forEach(rawIssue -> {
+            rawIssue.put("message", commitDao.getCommitMessageByCommitIdAndRepoUuid((String) rawIssue.get("commitId"), (String) rawIssue.get("repoUuid")));
+            rawIssue.put("location", locationDao.getLocationsByRawIssueUuid((String) rawIssue.get(UUID)));
+        });
         //add rawIssues to result
         List<Map<String, Object>> result = new ArrayList<>(rawIssueList);
         //add status to result
