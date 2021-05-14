@@ -44,4 +44,10 @@ public class DeveloperDataCcn {
      * 开发者圈复杂度评级
      */
    private String level;
+
+   public void cal() {
+       for (DeveloperProjectCcn developerProjectCcn : developerProjectCcnList) {
+           totalDiffCcn += developerProjectCcn.getProjectDiffCcn();
+       }
+   }
 }

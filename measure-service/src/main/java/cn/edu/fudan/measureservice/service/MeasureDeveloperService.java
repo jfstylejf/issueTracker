@@ -1074,12 +1074,12 @@ public class MeasureDeveloperService {
 
 
     /**
-     *
-     * @param projectIds
-     * @param since
-     * @param until
-     * @param token
-     * @param interval
+     * 获取超大文件数趋势图
+     * @param projectIds 查询项目id列表
+     * @param since 起始时间
+     * @param until 截止时间
+     * @param token 查询权限
+     * @param interval 间隔
      * @return
      */
      public List<ProjectBigFileTrendChart> getHugeLocRemainedFile(String projectIds,String since,String until,String token,String interval) {
@@ -1131,10 +1131,10 @@ public class MeasureDeveloperService {
      }
 
     /**
-     *
-     * @param projectNameList
-     * @param repoUuidList
-     * @param token
+     * 获取超大文件数明细
+     * @param projectNameList 查询项目列表
+     * @param repoUuidList 查询库列表
+     * @param token 查询权限
      * @return
      */
     @SneakyThrows
@@ -1161,7 +1161,7 @@ public class MeasureDeveloperService {
      }
 
      @SneakyThrows
-     public Object getDeveloperDataCcn(String projectNameList, String developers, String token , String since, String until) {
+     public  List<DeveloperDataCcn> getDeveloperDataCcn(String projectNameList, String developers, String token , String since, String until) {
         List<DeveloperDataCcn> developerDataCcnList = new ArrayList<>();
         List<String> visibleRepoList = projectDao.getVisibleRepoListByProjectName(projectNameList,token);
         String[] developerList = developers.split(split);
@@ -1180,8 +1180,8 @@ public class MeasureDeveloperService {
                 if (!map.containsKey(projectName)) {
                     map.put(projectName,new ArrayList<>());
                 }
-                // todo 查询 repoDiffCcn
-                int developerRepoDiffCcn = 0;
+                // 查询开发者指定时间库下的修改圈复杂度
+                int developerRepoDiffCcn = measureDao.getDeveloperDiffCcn(repoUuid,since,until,developer);
                 map.get(projectName).add(new DeveloperRepoCcn(developer,since,until,projectName,repoUuid,repoName,developerRepoDiffCcn));
             }
             for (String projectName : map.keySet()) {
@@ -1191,16 +1191,19 @@ public class MeasureDeveloperService {
                                         .projectName(projectName)
                                         .since(since).until(until)
                                         .projectDiffCcn(0).build();
-                //todo 对 projectDiffCcn 初始化计算
+                // 对 projectDiffCcn 初始化计算
+                developerProjectCcn.cal();
                 developerProjectCcnList.add(developerProjectCcn);
             }
-            // todo totalDiffCCn的计算
-            developerDataCcnList.add(DeveloperDataCcn.builder()
-                    .developerName(developer)
-                    .developerProjectCcnList(developerProjectCcnList)
-                    .since(since).until(until)
-                    .totalDiffCcn(0)
-                    .level(LevelEnum.Medium.getType()).build());
+            // totalDiffCCn的计算
+            DeveloperDataCcn developerDataCcn = DeveloperDataCcn.builder()
+                            .developerName(developer)
+                            .developerProjectCcnList(developerProjectCcnList)
+                            .since(since).until(until)
+                            .totalDiffCcn(0)
+                            .level(LevelEnum.Medium.getType()).build();
+            developerDataCcn.cal();
+            developerDataCcnList.add(developerDataCcn);
         }
         return developerDataCcnList;
      }

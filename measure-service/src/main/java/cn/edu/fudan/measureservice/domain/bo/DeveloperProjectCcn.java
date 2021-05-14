@@ -42,4 +42,12 @@ public class DeveloperProjectCcn {
      * 开发者在该项目的总修改圈复杂度
      */
     private int projectDiffCcn;
+    /**
+     * 计算项目修改圈复杂度总和
+     */
+    public void cal() {
+        for (DeveloperRepoCcn developerRepoCcn : developerRepoCcnList) {
+            projectDiffCcn += developerRepoCcn.getRepoDiffCcn();
+        }
+    }
 }
