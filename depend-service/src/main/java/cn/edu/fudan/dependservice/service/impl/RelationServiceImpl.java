@@ -85,6 +85,7 @@ public class RelationServiceImpl implements RelationService {
 
     @Override
     public RelationData getRelationShips(String ps, String page, String project_names,  String relation_type, String scan_until, String order) {
+        log.info("projectName: ",project_names);
 
         if(scan_until==null||scan_until.length()==0){
             scan_until= TimeUtil.getCurrentDateTime();

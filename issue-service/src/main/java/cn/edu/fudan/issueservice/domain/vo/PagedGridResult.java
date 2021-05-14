@@ -1,4 +1,4 @@
-package cn.edu.fudan.issueservice.util;
+package cn.edu.fudan.issueservice.domain.vo;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -11,7 +11,7 @@ import java.util.List;
  * @author Beethoven
  */
 @Data
-public class PagedGridResult {
+public class PagedGridResult<T> {
     /**
      * page:页
      * total:总页数
@@ -24,7 +24,7 @@ public class PagedGridResult {
 
     private long records;
 
-    private List<?> rows;
+    private List<T> rows;
 
     public static void handlePageHelper(int page, int ps, String order, Boolean isAsc) {
         if (StringUtils.isEmpty(order)) {
@@ -39,15 +39,5 @@ public class PagedGridResult {
             }
             PageHelper.startPage(page, ps, orderBy);
         }
-    }
-
-    public static PagedGridResult setterPagedGrid(List<?> list, Integer page) {
-        PageInfo<?> pageList = new PageInfo<>(list);
-        PagedGridResult grid = new PagedGridResult();
-        grid.setPage(page);
-        grid.setRows(list);
-        grid.setTotal(pageList.getPages());
-        grid.setRecords(pageList.getTotal());
-        return grid;
     }
 }

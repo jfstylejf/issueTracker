@@ -350,6 +350,7 @@ package cn.edu.fudan.common.jgit;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.xmlbeans.impl.xb.xsdschema.Public;
 import org.eclipse.jgit.api.CheckoutCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ResetCommand;
@@ -594,7 +595,7 @@ public class JGitHelper {
         return scanCommitQueue;
     }
 
-    private Long getLongCommitTime(String version) {
+    public Long getLongCommitTime(String version) {
         try {
             RevCommit revCommit = revWalk.parseCommit(ObjectId.fromString(version));
             return revCommit.getCommitTime() * TO_MILLISECOND;
@@ -670,11 +671,13 @@ public class JGitHelper {
     /**
      * 根据两个commit id 来diff两个
      *
-     * @param preCommitId 前一个版本的commit id
-     * @param commitId    当前版本的commit id
+     * @param preCommitId      前一个版本的commit id
+     * @param commitId         当前版本的commit id
+     * @param curFileToPreFile curFileToPreFile
+     * @param preFileToCurFile preFileToCurFile
      * @return add : ,a delete: a,   change a,a   英文逗号 ， 区分 add delete change
      */
-    public List<String> getDiffFilePair(String preCommitId, String commitId) {
+    public List<String> getDiffFilePair(String preCommitId, String commitId, Map<String, String> preFileToCurFile, Map<String, String> curFileToPreFile) {
         //new result list
         List<String> result = new ArrayList<>();
         //init git diff
@@ -697,6 +700,8 @@ public class JGitHelper {
                         break;
                     default:
                         result.add(diff.getOldPath() + separation + diff.getNewPath());
+                        preFileToCurFile.put(diff.getOldPath(), diff.getNewPath());
+                        curFileToPreFile.put(diff.getNewPath(), diff.getOldPath());
                 }
             }
         } catch (Exception e) {
@@ -732,7 +737,7 @@ public class JGitHelper {
     }
 
     @SneakyThrows
-    private List<DiffEntry> getDiffEntry(RevCommit parentCommit, RevCommit currCommit, int score) {
+    public List<DiffEntry> getDiffEntry(RevCommit parentCommit, RevCommit currCommit, int score) {
         // 不可少 否则parentCommit的 tree为null
         parentCommit = revWalk.parseCommit(ObjectId.fromString(parentCommit.getName()));
         TreeWalk tw = new TreeWalk(repository);

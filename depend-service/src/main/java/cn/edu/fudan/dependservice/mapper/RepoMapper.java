@@ -13,5 +13,5 @@ import org.springframework.stereotype.Repository;
 public interface RepoMapper {
     @Select("SELECT language FROM issueTracker.sub_repository " +
             "WHERE repo_uuid = #{repo_uuid};")
-    public String getLanguage(String repoUid);
+    String getLanguage(String repoUid);
 }

@@ -5,7 +5,6 @@ import cn.edu.fudan.common.component.BaseRepoRestManager;
 import cn.edu.fudan.common.jgit.JGitHelper;
 import cn.edu.fudan.common.scan.CommonScanProcess;
 
-import cn.edu.fudan.dependservice.config.ShHomeConfig;
 import cn.edu.fudan.dependservice.domain.ScanRepo;
 import cn.edu.fudan.dependservice.util.DirClone;
 import cn.edu.fudan.dependservice.util.TimeUtil;
@@ -13,6 +12,7 @@ import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import java.io.File;
@@ -24,16 +24,16 @@ public class ProcessPrepare{
 
     protected BaseRepoRestManager baseRepoRestManager;
     protected ApplicationContext applicationContext;
-    private String repoDir;
     private String targetDir;
     private String toScanDate;
+
+    @Value("${repoDir}")
+    private String repoDir;
 
     @Autowired
     public ProcessPrepare(ApplicationContext applicationContext){
         this.applicationContext = applicationContext;
         baseRepoRestManager = applicationContext.getBean(BaseRepoRestManager.class);
-        this.repoDir = applicationContext.getBean(ShHomeConfig.class).getRepoDir();
-
     }
 
     public void prepareFile(String date,ScanRepo scanRepo) {

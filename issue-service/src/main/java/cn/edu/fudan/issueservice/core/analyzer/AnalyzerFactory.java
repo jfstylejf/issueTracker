@@ -1,6 +1,5 @@
 package cn.edu.fudan.issueservice.core.analyzer;
 
-import cn.edu.fudan.issueservice.component.ApplicationContextGetBeanHelper;
 import cn.edu.fudan.issueservice.domain.enums.ToolEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,13 +29,11 @@ public class AnalyzerFactory {
     }
 
     private BaseAnalyzer createSonarQubeBaseAnalyzer() {
-        ApplicationContextGetBeanHelper.addBean(SonarQubeBaseAnalyzer.class, Thread.currentThread().getName() + "-" + ToolEnum.SONAR.getType());
-        return (BaseAnalyzer) applicationContext.getBean(Thread.currentThread().getName() + "-" + ToolEnum.SONAR.getType());
+        return applicationContext.getBean(SonarQubeBaseAnalyzer.class);
     }
 
     private BaseAnalyzer createEsLintBaseAnalyzer() {
-        ApplicationContextGetBeanHelper.addBean(EsLintBaseAnalyzer.class, Thread.currentThread().getName() + "-" + ToolEnum.ESLINT.getType());
-        return (BaseAnalyzer) applicationContext.getBean(Thread.currentThread().getName() + "-" + ToolEnum.ESLINT.getType());
+        return applicationContext.getBean(EsLintBaseAnalyzer.class);
     }
 
     @Autowired

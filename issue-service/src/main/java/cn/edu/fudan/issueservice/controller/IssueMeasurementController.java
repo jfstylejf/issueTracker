@@ -2,7 +2,9 @@ package cn.edu.fudan.issueservice.controller;
 
 import cn.edu.fudan.issueservice.component.RestInterfaceManager;
 import cn.edu.fudan.issueservice.domain.ResponseBean;
+import cn.edu.fudan.issueservice.domain.vo.DeveloperLivingIssueVO;
 import cn.edu.fudan.issueservice.domain.vo.IssueTopVO;
+import cn.edu.fudan.issueservice.domain.vo.PagedGridResult;
 import cn.edu.fudan.issueservice.service.IssueMeasureInfoService;
 import cn.edu.fudan.issueservice.util.DateTimeUtil;
 import cn.edu.fudan.issueservice.util.StringsUtil;
@@ -25,7 +27,7 @@ import java.util.*;
  * @author fancying
  * create 2019-04-08 16:55
  **/
-@Api(value = "issue measurement", tags = {"用于统计issue数量的相关接口"})
+@Api(value = "issue measurement", tags = {"用于统计issue数量的相关接口" })
 @RestController
 public class IssueMeasurementController {
 
@@ -205,7 +207,7 @@ public class IssueMeasurementController {
             @ApiImplicitParam(name = "asc", value = "是否需要排序"),
             @ApiImplicitParam(name = "all", value = "是否需要all字段", defaultValue = "true")
     })
-    @GetMapping(value = {"/codewisdom/issue/developer/code-quality"})
+    @GetMapping(value = {"/codewisdom/issue/developer/code-quality" })
     public ResponseBean<Object> getDeveloperCodeQuality(@RequestParam(value = "repo_uuids", required = false) String repoList,
                                                         @RequestParam(value = "developers", required = false) String developer,
                                                         @RequestParam(value = "tool", required = false, defaultValue = "sonarqube") String tool,
@@ -270,7 +272,7 @@ public class IssueMeasurementController {
             @ApiImplicitParam(name = "asc", value = "是否升序：1表示升序，0表示降序"),
             @ApiImplicitParam(name = "tool", value = "工具名", allowableValues = "sonarqube", defaultValue = "sonarqube"),
     })
-    @GetMapping(value = {"/codewisdom/issue/developer-data/living-issue-count/self"})
+    @GetMapping(value = {"/codewisdom/issue/developer-data/living-issue-count/self" })
     public ResponseBean<Object> getDeveloperLivingIssueCount(@RequestParam(value = "repo_uuids", required = false) String repoUuids,
                                                              @RequestParam(value = "developers", required = false) String developers,
                                                              @RequestParam(value = "tool", required = false, defaultValue = "sonarqube") String tool,
@@ -340,7 +342,7 @@ public class IssueMeasurementController {
             @ApiImplicitParam(name = "interval", value = "间隔类型", dataType = "String", defaultValue = "week"),
             @ApiImplicitParam(name = "showDetail", value = "是否展示detail", dataType = "String", defaultValue = "false")
     })
-    @GetMapping(value = {"/codewisdom/issue/living-issue-tendency"})
+    @GetMapping(value = {"/codewisdom/issue/living-issue-tendency" })
     public ResponseBean<Object> getCcnMethodNum(@RequestParam(value = "since") String since,
                                                 @RequestParam(value = "until") String until,
                                                 @RequestParam(value = "projectIds", required = false) String projectIds,
@@ -355,7 +357,21 @@ public class IssueMeasurementController {
             }
             return new ResponseBean<>(200, SUCCESS, issueMeasureInfoService.getLivingIssueTendency(since, until, projectIds, interval, showDetail));
         } catch (Exception e) {
-            return new ResponseBean<>(401, FAILED + e.getMessage(), null);
+            return new ResponseBean<>(500, FAILED + e.getMessage(), null);
+        }
+    }
+
+    @GetMapping("/developer/data/living-issue")
+    public ResponseBean<PagedGridResult<DeveloperLivingIssueVO>> getDeveloperListLivingIssue(@RequestParam(value = "since") String since,
+                                                                                            @RequestParam(value = "until") String until,
+                                                                                            @RequestParam(value = "project_names") String projectNames,
+                                                                                            @RequestParam(value = "developers") String developers) {
+        try {
+            PagedGridResult<DeveloperLivingIssueVO> result = issueMeasureInfoService.getDeveloperListLivingIssue(since, until, projectNames, StringsUtil.splitStringList(developers));
+            return new ResponseBean<>(200, SUCCESS, result);
+        } catch (Exception e){
+            e.printStackTrace();
+            return new ResponseBean<>(500, e.getMessage(), null);
         }
     }
 

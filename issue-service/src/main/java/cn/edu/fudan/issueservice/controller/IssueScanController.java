@@ -1,9 +1,9 @@
 package cn.edu.fudan.issueservice.controller;
 
 import cn.edu.fudan.issueservice.component.RestInterfaceManager;
+import cn.edu.fudan.issueservice.core.IssueScanProcess;
 import cn.edu.fudan.issueservice.domain.ResponseBean;
 import cn.edu.fudan.issueservice.domain.dbo.IssueRepo;
-import cn.edu.fudan.issueservice.domain.dto.RepoResourceDTO;
 import cn.edu.fudan.issueservice.domain.dto.ScanRequestDTO;
 import cn.edu.fudan.issueservice.service.IssueScanService;
 import io.swagger.annotations.Api;
@@ -12,6 +12,7 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -29,6 +30,8 @@ public class IssueScanController {
 
     private IssueScanService issueScanService;
 
+    private ApplicationContext applicationContext;
+
     private RestInterfaceManager restInterfaceManager;
 
     private static final String SUCCESS = "success";
@@ -45,15 +48,11 @@ public class IssueScanController {
         String repoUuid = scanRequestDTO.getRepoUuid();
         String branch = scanRequestDTO.getBranch();
         String beginCommit = scanRequestDTO.getBeginCommit();
-        //get tool
-        String tool = restInterfaceManager.getToolByRepoUuid(repoUuid);
-        if (tool == null) {
-            return new ResponseBean<>(400, "failed!", "can't analyze this language");
-        }
+        String endCommit = scanRequestDTO.getEndCommit();
         try {
-            RepoResourceDTO repoResourceDTO = RepoResourceDTO.builder().repoId(repoUuid).build();
-            String result = issueScanService.prepareForScan(repoResourceDTO, branch, beginCommit, tool);
-            return new ResponseBean<>(200, "success!", result);
+            IssueScanProcess issueScanProcess = applicationContext.getBean(IssueScanProcess.class);
+            issueScanProcess.scan(repoUuid, branch, beginCommit, endCommit);
+            return new ResponseBean<>(200, "success!", null);
         } catch (Exception e) {
             e.printStackTrace();
             return new ResponseBean<>(500, "invoke tool failed!", e.getMessage());
@@ -145,5 +144,10 @@ public class IssueScanController {
     @Autowired
     public void setRestInterfaceManager(RestInterfaceManager restInterfaceManager) {
         this.restInterfaceManager = restInterfaceManager;
+    }
+
+    @Autowired
+    public void setApplicationContext(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
     }
 }

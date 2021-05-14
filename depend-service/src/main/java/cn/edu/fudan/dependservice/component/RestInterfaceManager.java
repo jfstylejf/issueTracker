@@ -2,6 +2,7 @@ package cn.edu.fudan.dependservice.component;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,6 +25,7 @@ import java.util.concurrent.TimeUnit;
  * @version 1.0
  **/
 @Component
+@Slf4j
 public class RestInterfaceManager {
 
     private static final Logger logger = LoggerFactory.getLogger(RestInterfaceManager.class);
@@ -62,8 +64,10 @@ public class RestInterfaceManager {
 
     public void userAuth(String userToken) throws AuthException {
         JSONObject result = restTemplate.getForObject(accountServicePath + "/user/auth/" + userToken, JSONObject.class);
+        log.info("result: ");
+        log.info(result.toJSONString());
         if (result == null || result.getIntValue("code") != 200) {
-            throw new AuthException("auth failed!");
+            new AuthException("auth failed!").printStackTrace();
         }
     }
 
@@ -196,6 +200,15 @@ public class RestInterfaceManager {
             }
         }
         return repoUuids;
+    }
+    public boolean deleteRecall(String repoId, String token) {
+        String path =  projectServicePath + "/repo?service_name=DEPENDENCY&repo_uuid=" + repoId;
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("token", token);
+        HttpEntity<HttpHeaders> request = new HttpEntity<>(headers);
+        ResponseEntity<JSONObject> responseEntity = restTemplate.exchange(path, HttpMethod.PUT, request, JSONObject.class);
+        log.info(responseEntity.toString());
+        return Objects.requireNonNull(responseEntity.getBody()).getIntValue("code") == 200;
     }
 
     //---------------------------------------------commit service------------------------------------------------------

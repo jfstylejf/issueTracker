@@ -32,6 +32,8 @@ public class ScanProcess implements CommonScanService {
     private static final String KEY_DELIMITER = "-";
     RepoScan repoScan;
 
+    private String  configFile;
+
     ApplicationContext applicationContext;
 
 
@@ -57,7 +59,7 @@ public class ScanProcess implements CommonScanService {
     }
 
 
-    public void beginScan(List<ScanRepo> scanRepos, String tool) {
+    public void  beginScan(List<ScanRepo> scanRepos, String tool) {
         ToolScanImplPara specificTool = getToolScan(tool);
         try {
 

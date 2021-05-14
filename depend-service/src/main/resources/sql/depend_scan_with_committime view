@@ -1,0 +1,3 @@
+create view depend_scan_with_committime as
+select repo_uuid,s.commit_id,status,start_time,end_time,scan_time,msg,commit_time
+from dependency_san s left join commit c on s.commit_id = c.commit_id;

@@ -6,7 +6,7 @@
     <resultMap id="issueScan" type="cn.edu.fudan.issueservice.domain.dbo.IssueScan">
         <id property="uuid" column="uuid"/>
         <result property="tool" column="tool"/>
-        <result property="repoId" column="repo_uuid"/>
+        <result property="repoUuid" column="repo_uuid"/>
         <result property="commitId" column="commit_id"/>
         <result property="status" column="status"/>
         <result property="startTime" column="start_time"/>
@@ -30,7 +30,7 @@
                 #{tool},
                 #{startTime},
                 #{endTime},
-                #{repoId},
+                #{repoUuid},
                 #{status},
                 #{commitId},
                 #{commitTime},

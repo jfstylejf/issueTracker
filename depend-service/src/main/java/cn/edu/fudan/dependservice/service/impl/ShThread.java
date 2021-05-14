@@ -8,9 +8,6 @@ import java.util.concurrent.TimeUnit;
 @Data
 public class ShThread implements Runnable {
 
-    String reslutFile;
-    String repoPath;
-
     String dependenceHome;
     String shName;
     final static long timeout = 1800;
@@ -30,7 +27,7 @@ public class ShThread implements Runnable {
             boolean timeout = process.waitFor(ShThread.timeout, TimeUnit.SECONDS);
             if (!timeout) {
                 process.destroy();
-                log.error("invoke tool timeout ! (1800s)");
+                log.error(shName," invoke tool timeout ! (1800s)");
                 return false;
             }
             log.info("end of scan.sh");

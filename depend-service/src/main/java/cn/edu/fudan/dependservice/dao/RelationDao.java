@@ -1,6 +1,7 @@
 package cn.edu.fudan.dependservice.dao;
 
 import cn.edu.fudan.dependservice.domain.RelationView;
+import cn.edu.fudan.dependservice.mapper.GroupMapper;
 import cn.edu.fudan.dependservice.mapper.RelationshipMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -11,6 +12,10 @@ import java.util.List;
 public class RelationDao {
     @Autowired
     RelationshipMapper relationshipMapper;
+
+    @Autowired
+    GroupMapper groupMapper;
+
     public  List<RelationView> getRelationBydate(String date){
          return relationshipMapper.getRelationBydate(date);
 

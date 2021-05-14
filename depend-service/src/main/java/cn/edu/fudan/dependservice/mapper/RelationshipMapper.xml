@@ -14,25 +14,48 @@
         <id property="relationType" column="depend_details"/>
     </resultMap>
 
+    <delete id="deleteByRepoUuidLimit100" parameterType="String">
+        delete
+        from issueTracker.dependency_detail
+        where repo_uuid = #{repoUuid}
+        limit 100;
+    </delete>
+    <delete id="deleteByRepoUuidAndCommitId" parameterType="String">
+        delete
+        from issueTracker.dependency_detail
+        where repo_uuid = #{repoUuid}
+          and commit_id = #{commitId}
+    </delete>
+
     <insert id="add">
-        insert into dependency_detail(commit_id,repo_uuid,group_id,file,depend_on,depend_details)
-        values(#{commit_id},#{repo_uuid},#{group_id},#{file},#{depend_on},#{depend_details})
+        insert into dependency_detail(commit_id, repo_uuid, group_id, file, depend_on, depend_details)
+        values (#{commit_id}, #{repo_uuid}, #{group_id}, #{file}, #{depend_on}, #{depend_details})
     </insert>
 
     <select id="getRelationBydate" resultMap="RelationView">
-     select distinct d.id, d.file,d.depend_on,d.repo_uuid,d.group_id,d.depend_details,s.project_name,s.repo_name
-     from issueTracker.dependency_detail d
-     left join issueTracker.sub_repository  s
-     on d.repo_uuid= s.repo_uuid
-     where d.commit_id in (
-        select
-        c.commit_id from
-        (select s.commit_id, s.repo_uuid, max(c.commit_time)
-        from  issueTracker.dependency_san  s left join issueTracker.commit c
-        on s.commit_id=c.commit_id
-        where commit_time &lt; #{date}
-        group by repo_uuid)  c
-    );
+        select distinct d.id,
+                        d.file,
+                        d.depend_on,
+                        d.repo_uuid,
+                        d.group_id,
+                        d.depend_details,
+                        s.project_name,
+                        s.repo_name
+        from issueTracker.dependency_detail d
+                 left join issueTracker.sub_repository s
+                           on d.repo_uuid = s.repo_uuid
+        where d.commit_id in (
+            select s.commit_id
+            from depend_scan_with_committime s
+                     left join(
+                select repo_uuid, max(commit_time) mxtime
+                from depend_scan_with_committime
+                where depend_scan_with_committime.commit_time &lt; #{date}
+                group by repo_uuid) rl
+                              on s.repo_uuid = rl.repo_uuid and s.commit_time = rl.mxtime
+            where s.repo_uuid is not null
+              and rl.mxtime is not null
+        );
     </select>
 
 

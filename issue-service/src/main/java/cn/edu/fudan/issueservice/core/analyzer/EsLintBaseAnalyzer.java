@@ -160,12 +160,18 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
         String fileName = FileUtil.handleFileNameToRelativePath(filePath);
         //get the rawIssues
         for (Object issue : rawIssueList) {
-            rawIssues.add(getRawIssue(repoPath, (JSONObject) issue, repoUuid, commit, fileName, filePath, jsTree));
+            RawIssue rawIssue = getRawIssue(repoPath, (JSONObject) issue, repoUuid, commit, fileName, filePath, jsTree);
+            if (rawIssue != null) {
+                rawIssues.add(rawIssue);
+            }
         }
         return rawIssues;
     }
 
     private RawIssue getRawIssue(String repoPath, JSONObject issue, String repoUuid, String commit, String fileName, String filePath, JsTree jsTree) {
+        if (issue.getString("ruleId") == null){
+            return null;
+        }
         RawIssue rawIssue = new RawIssue();
         rawIssue.setTool("ESLint");
         rawIssue.setUuid(UUID.randomUUID().toString());

@@ -173,4 +173,8 @@ public class IssueDao {
         int rawIssueCount = rawIssueMapper.getRawIssueCount(repoUuid, tool);
         return issueCount == 0 && rawIssueCount == 0;
     }
+
+    public void getDeveloperListLivingIssue(String since, String until, String projectNames, List<String> developers) {
+
+    }
 }

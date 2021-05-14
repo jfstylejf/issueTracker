@@ -1,4 +1,4 @@
-package cn.edu.fudan.dependservice.config;
+package cn.edu.fudan.issueservice.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,31 +13,23 @@ import java.util.concurrent.ThreadPoolExecutor;
 @EnableAsync
 public class AsyncConfig {
 
-    private static final int corePoolSize = 5;
-    private static final int maxPoolSize = 7;
-    private static final int queueCapacity = 5;
-    private static final int keepAliveSeconds = 300;
-    private static final String threadNamePrefix = "async-task-dependservice-";
+    private static final int CORE_POOL_SIZE = 3;
+    private static final int MAX_POOL_SIZE = 5;
+    private static final int QUEUE_CAPACITY = 30;
+    private static final int KEEP_ALIVE_SECONDS = 300;
+    private static final String THREAD_NAME_PREFIX = "async-task-thread-pool-";
     private RejectedExecutionHandler rejectedExecutionHandler = new ThreadPoolExecutor.DiscardPolicy();
 
     @Bean("taskExecutor")
     public TaskExecutor customizationTaskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        //设置核心线程数
-        executor.setCorePoolSize(corePoolSize);
-        //设置最大线程数
-        executor.setMaxPoolSize(maxPoolSize);
-        //设置队列容量
-        executor.setQueueCapacity(queueCapacity);
-        //设置线程活跃时间
-        executor.setKeepAliveSeconds(keepAliveSeconds);
-        //设置线程默认名称
-        executor.setThreadNamePrefix(threadNamePrefix);
-        //设置拒绝策略，pool已满，直接丢弃之后任务，待商榷
+        executor.setCorePoolSize(CORE_POOL_SIZE);
+        executor.setMaxPoolSize(MAX_POOL_SIZE);
+        executor.setQueueCapacity(QUEUE_CAPACITY);
+        executor.setKeepAliveSeconds(KEEP_ALIVE_SECONDS);
+        executor.setThreadNamePrefix(THREAD_NAME_PREFIX);
         executor.setRejectedExecutionHandler(rejectedExecutionHandler);
-        //待任务都运行完再关闭
         executor.setWaitForTasksToCompleteOnShutdown(true);
-        //执行初始化
         executor.initialize();
         return executor;
     }

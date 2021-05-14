@@ -1,18 +1,15 @@
 package cn.edu.fudan.dependservice.component;
 
-import cn.edu.fudan.dependservice.config.ShHomeConfig;
 import cn.edu.fudan.dependservice.domain.ScanRepo;
 import cn.edu.fudan.dependservice.domain.ScanStatus;
 import cn.edu.fudan.dependservice.service.ProcessPrepare;
 import cn.edu.fudan.dependservice.service.ScanProcess;
 import cn.edu.fudan.dependservice.util.TimeUtil;
-import cn.edu.fudan.dependservice.util.WriteUtil2;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -73,34 +70,15 @@ public class ScanProcessor extends Thread {
 
      public void scanOneBatch(){
         synchronized(lock){
-            String configFile = applicationContext.getBean(ShHomeConfig.class).getResultFileDir()+ "source-project-conf.json";
             //todo not all project is java
             while (batchProcessor.continueScan()){
                 // todo prepare
                 List<ScanRepo> scanRepos =batchProcessor.getScanList();
                 log.info("in one scanOneBatch, size ="+scanRepos.size());
-                /*
-                try {
-                    log.info(" batch batchProcessing.......");
-                    Thread.sleep(30*1000);
-
-                }catch (Exception e){
-                    e.printStackTrace();
-                }
-
-                 */
-
-                List<String> repoDirs=new ArrayList<>();
                 for(ScanRepo scanRepo:scanRepos){
                     if(scanRepo.toString()==null) scanRepo.setToScanDate(TimeUtil.getCurrentDateTime());
                     processPrepare.prepareFile(scanRepo.getToScanDate(),scanRepo);
-                    if(scanRepo.isCopyStatus()){
-                        repoDirs.add(scanRepo.getCopyRepoPath());
-                    }
                 }
-                // scan
-                //todo not all project is java
-                WriteUtil2.writeProjecConf(configFile,repoDirs);
                 scanProcess.beginScan(scanRepos,null);
                 log.info("end of a batch");
                 batchProcessor.inScanning.clear();
