@@ -2,6 +2,7 @@ package cn.edu.fudan.issueservice.mapper;
 
 import cn.edu.fudan.issueservice.domain.dbo.Commit;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 import org.springframework.stereotype.Repository;
 
 import java.util.LinkedList;
@@ -66,4 +67,13 @@ public interface CommitViewMapper {
      * @return developer name
      */
     String getDeveloperByCommitId(String commitId);
+
+    /**
+     * get commit message
+     * @param commitId commitId
+     * @param repoUuid repoUuid
+     * @return commit message
+     */
+    @Select("SELECT message FROM commit_view WHERE commit_id = #{commitId} AND repo_uuid = #{repoUuid}")
+    String getCommitMessageByCommitIdAndRepoUuid(String commitId, String repoUuid);
 }
