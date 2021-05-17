@@ -179,8 +179,6 @@ public class ToolScanImpl extends ToolScan {
         issueScan.setStatus(ScanStatusEnum.DONE.getType());
     }
 
-
-
     private void initIssueStatistics(String commit, BaseAnalyzer analyzer, JGitHelper jGitHelper) {
         issueStatistics.setCommitId(commit);
         issueStatistics.setCurrentCommitDate(DateTimeUtil.localToUtc(jGitHelper.getCommitTime(commit)));
