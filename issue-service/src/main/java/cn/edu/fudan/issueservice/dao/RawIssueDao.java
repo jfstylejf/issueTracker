@@ -64,6 +64,9 @@ public class RawIssueDao {
     }
 
     public List<Map<String, Object>> getRawIssueByUuids(List<String> rawIssuesUuid) {
+        if (rawIssuesUuid.isEmpty()) {
+            return new ArrayList<>();
+        }
         List<Map<String, Object>> rawIssues = rawIssueMapper.getRawIssueByUuids(rawIssuesUuid);
         return rawIssues == null ? new ArrayList<>() : rawIssues;
     }
