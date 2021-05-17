@@ -18,6 +18,7 @@ import com.alibaba.druid.util.StringUtils;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.maven.model.Developer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
@@ -57,6 +58,7 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
     private static final String SOLVED = "solved";
     private static final String OPEN = "open";
     private static final String DATE_FORMAT = "yyyy-MM-dd";
+    private static final String PRODUCER = "producer";
 
     @Override
     public List<Map.Entry<String, JSONObject>> getNotSolvedIssueCountByToolAndRepoUuid(List<String> repoUuids, String tool, String order) {
@@ -441,9 +443,38 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
     }
 
     @Override
-    public PagedGridResult<DeveloperLivingIssueVO> getDeveloperListLivingIssue(String since, String until, String projectNames, List<String> developers) {
-        issueDao.getDeveloperListLivingIssue(since, until, projectNames, developers);
-        return null;
+    public PagedGridResult<DeveloperLivingIssueVO> getDeveloperListLivingIssue(String since, String until, List<String> repoUuids, List<String> developers, int page, int ps) {
+        PagedGridResult.handlePageHelper(page, ps, PRODUCER, true);
+
+        List<Map<String, Object>> developersDetail = issueDao.getDeveloperListLivingIssue(since, until, repoUuids, developers);
+
+//        Map<String, Long> developerIssueCount = new HashMap<>(32);
+//        for (Map<String, Object> developerDetail : developersDetail) {
+//            developerIssueCount.put((String) developerDetail.get(PRODUCER), (Long) developerDetail.get(ISSUE_COUNT));
+//        }
+//        Map<String, Integer> sortMap = new HashMap<>();
+//        developerIssueCount.entrySet().stream()
+//                .sorted(Map.Entry.comparingByValue())
+//                .forEachOrdered(b -> sortMap.put(b.getKey(), Math.toIntExact(b.getValue())));
+
+        List<DeveloperLivingIssueVO> developerListLivingIssue = new ArrayList<>();
+        for (String developer : developers) {
+            long issueCount = 0;
+            for (Map<String, Object> developerDetail : developersDetail) {
+                if (developerDetail.get(PRODUCER).equals(developer)) {
+                    issueCount = (long) developerDetail.get(ISSUE_COUNT);
+                }
+            }
+
+            DeveloperLivingIssueVO developerLivingIssueVO = DeveloperLivingIssueVO.builder()
+                    .developerName(developer)
+                    .num(issueCount)
+                    .build();
+            developerListLivingIssue.add(developerLivingIssueVO);
+        }
+
+        PagedGridResult<DeveloperLivingIssueVO> pagedGridResult = new PagedGridResult<>();
+        return pagedGridResult.setterPagedGrid(developerListLivingIssue, page);
     }
 
     @Autowired
