@@ -9,6 +9,7 @@ import cn.edu.fudan.issueservice.core.process.IssuePersistenceManager;
 import cn.edu.fudan.issueservice.core.process.IssueStatistics;
 import cn.edu.fudan.issueservice.dao.IssueAnalyzerDao;
 import cn.edu.fudan.issueservice.dao.IssueScanDao;
+import cn.edu.fudan.issueservice.domain.dbo.IssueAnalyzer;
 import cn.edu.fudan.issueservice.domain.dbo.IssueScan;
 import cn.edu.fudan.issueservice.domain.dbo.RawIssue;
 import cn.edu.fudan.issueservice.domain.enums.ScanStatusEnum;
@@ -41,7 +42,7 @@ public class ToolScanImpl extends ToolScan {
 
     private IssueStatistics issueStatistics;
 
-    private IssuePersistenceManager issueScanTransactionManager;
+    private IssuePersistenceManager issuePersistenceManager;
 
     @Override
     public boolean scanOneCommit(String commit) {
@@ -55,16 +56,17 @@ public class ToolScanImpl extends ToolScan {
             //1 init IssueScan
             Date commitTime = jGitHelper.getCommitDateTime(commit);
             IssueScan issueScan = IssueScan.initIssueScan(scanData.getRepoUuid(), commit, scanData.getRepoScan().getTool(), commitTime);
+            IssueAnalyzer issueAnalyzer = IssueAnalyzer.initIssueAnalyze(scanData.getRepoUuid(), commit, scanData.getRepoScan().getTool());
 
             //2 checkout
             jGitHelper.checkout(commit);
 
             //3 execute scan
-            scan(issueScan, scanData.getRepoPath(), analyzer, jGitHelper, issueMatcher, issueStatistics, issueScanTransactionManager);
+            scan(issueAnalyzer, issueScan, scanData.getRepoPath(), analyzer, jGitHelper);
 
             //4 update issue scan end time and persistence
             issueScan.setEndTime(new Date());
-            boolean scanPersistenceResult = issueScanPersistence(issueScan);
+            boolean scanPersistenceResult = afterOneCommitScanPersist(issueScan, issueAnalyzer);
             if (!scanPersistenceResult) {
                 log.error(" issue scan result  persist failed! commit id --> {}", commit);
             }
@@ -79,9 +81,10 @@ public class ToolScanImpl extends ToolScan {
         return true;
     }
 
-    private boolean issueScanPersistence(IssueScan issueScan) {
+    private boolean afterOneCommitScanPersist(IssueScan issueScan, IssueAnalyzer issueAnalyzer) {
         try {
             issueScanDao.insertOneIssueScan(issueScan);
+            issueAnalyzerDao.insertIssueAnalyzer(issueAnalyzer);
         } catch (Exception e) {
             e.printStackTrace();
             return false;
@@ -89,8 +92,7 @@ public class ToolScanImpl extends ToolScan {
         return true;
     }
 
-    public void scan(IssueScan issueScan, String repoPath, BaseAnalyzer analyzer, JGitHelper jGitHelper,
-                     IssueMatcher issueMatcher, IssueStatistics issueStatistics, IssuePersistenceManager issuePersistenceManager) throws InterruptedException {
+    public void scan(IssueAnalyzer issueAnalyzer, IssueScan issueScan, String repoPath, BaseAnalyzer analyzer, JGitHelper jGitHelper) throws InterruptedException {
 
         String repoUuid = issueScan.getRepoUuid();
         String commit = issueScan.getCommitId();
@@ -133,6 +135,8 @@ public class ToolScanImpl extends ToolScan {
             }
             long analyzeToolTime = System.currentTimeMillis();
             log.info("analyze raw issues use {} s, analyze success!", (analyzeToolTime - invokeToolTime) / 1000);
+
+            issueAnalyzer.updateIssueAnalyzeStatus(analyzer.getResultRawIssues());
         } else {
             log.info("analyze raw issues in this commit:{} before, go ahead to mapping issue!", commit);
             JSONArray resArr = analyzeCache.getJSONArray("result");
@@ -174,6 +178,8 @@ public class ToolScanImpl extends ToolScan {
         log.info("issue persistence use {} s,issue persistence!", (System.currentTimeMillis() - issueStatisticsTime) / 1000);
         issueScan.setStatus(ScanStatusEnum.DONE.getType());
     }
+
+
 
     private void initIssueStatistics(String commit, BaseAnalyzer analyzer, JGitHelper jGitHelper) {
         issueStatistics.setCommitId(commit);
@@ -223,8 +229,8 @@ public class ToolScanImpl extends ToolScan {
     }
 
     @Autowired
-    public void setIssueScanTransactionManager(IssuePersistenceManager issueScanTransactionManager) {
-        this.issueScanTransactionManager = issueScanTransactionManager;
+    public void setIssuePersistenceManager(IssuePersistenceManager issuePersistenceManager) {
+        this.issuePersistenceManager = issuePersistenceManager;
     }
 
     @Autowired

@@ -6,8 +6,6 @@ import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-
 /**
  * @author beethoven
  */
@@ -21,8 +19,10 @@ public class IssueAnalyzerDao {
         this.issueAnalyzerMapper = issueAnalyzerMapper;
     }
 
-    public void insertIssueAnalyzer(List<IssueAnalyzer> issueAnalyzerList) {
-        issueAnalyzerMapper.insertIssueAnalyzerRecords(issueAnalyzerList);
+    public void insertIssueAnalyzer(IssueAnalyzer issueAnalyzer) {
+        if (issueAnalyzerMapper.getIssueAnalyzeResultByRepoUuidCommitIdTool(issueAnalyzer.getRepoUuid(), issueAnalyzer.getCommitId(), issueAnalyzer.getTool()) == null) {
+            issueAnalyzerMapper.insertIssueAnalyzerRecords(issueAnalyzer);
+        }
     }
 
     public JSONObject getAnalyzeResultByRepoUuidCommitIdTool(String repoUuid, String commitId, String tool) {

@@ -132,6 +132,7 @@ public abstract class CommonScanProcess implements CommonScanService {
                 .scannedCommitCount(scannedCommitCount)
                 .startScanTime(new Date())
                 .endScanTime(new Date())
+                .scanTime(0)
                 .build();
         try {
             if (StringUtils.isEmpty(beginCommit)) {
@@ -162,7 +163,6 @@ public abstract class CommonScanProcess implements CommonScanService {
             log.info("commit size : {}", toScanCommitList.size());
 
             insertRepoScan(repoScan);
-            boolean success = false;
 
             // loadData 用于传输扫描的信息
             specificTool.loadData(repoUuid, branch, repoPath, initialScan, toScanCommitList, repoScan, scannedCommitCount);
@@ -171,7 +171,7 @@ public abstract class CommonScanProcess implements CommonScanService {
             for (String commit : toScanCommitList) {
                 log.info("begin scan {}", commit);
                 specificTool.prepareForOneScan(commit);
-                success = specificTool.scanOneCommit(commit);
+                specificTool.scanOneCommit(commit);
                 specificTool.cleanUpForOneScan(commit);
                 if (curThread.isInterrupted()) {
                     synchronized (LOCK) {
@@ -180,16 +180,18 @@ public abstract class CommonScanProcess implements CommonScanService {
                     log.warn("thread:{} stopped", threadName);
                     break;
                 }
-                scannedCommitCount = scannedCommitCount + 1;
+                repoScan.setEndScanTime(new Date());
+                repoScan.setScannedCommitCount(++scannedCommitCount);
+                repoScan.setScanTime((repoScan.getEndScanTime().getTime() - repoScan.getStartScanTime().getTime()) / 1000);
+                updateRepoScan(repoScan);
             }
+            repoScan.setStatus(ScanInfo.Status.COMPLETE.getStatus());
             specificTool.cleanUpForScan();
-
-            repoScan.setStatus(success ? ScanInfo.Status.COMPLETE.getStatus() : ScanInfo.Status.FAILED.getStatus());
-            repoScan.setEndScanTime(new Date());
-            updateRepoScan(repoScan);
         } catch (Exception e) {
             e.printStackTrace();
             repoScan.setStatus(ScanInfo.Status.FAILED.getStatus());
+            repoScan.setEndScanTime(new Date());
+            repoScan.setScanTime((repoScan.getEndScanTime().getTime() - repoScan.getStartScanTime().getTime()) / 1000);
             updateRepoScan(repoScan);
         } finally {
             baseRepoRestManager.freeRepo(repoUuid, repoPath);

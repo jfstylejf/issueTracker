@@ -18,7 +18,7 @@ public interface IssueAnalyzerMapper {
      *
      * @param issueAnalyzer issueAnalyzer
      */
-    void insertIssueAnalyzerRecords(List<IssueAnalyzer> issueAnalyzer);
+    void insertIssueAnalyzerRecords(IssueAnalyzer issueAnalyzer);
 
 
     /**
