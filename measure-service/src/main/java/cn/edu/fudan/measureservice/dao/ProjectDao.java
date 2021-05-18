@@ -243,11 +243,13 @@ public class ProjectDao {
     /**
      * 获取开发者参与库的合法提交信息（去除Merge）
      * @param query 查询条件
-     * @return List<Map<String,Object>> key : developer_unique_name , commit_time , commit_id , message
+     * @return List<Map<String,Object>> key : developer , commit_time , commit_id , message
      */
-    public List<Map<String,String>> getValidCommitMsg(Query query) {
-        return new ArrayList<>();
-        //return projectMapper.getValidCommitMsg(query.getRepoUuidList(),query.getSince(),query.getUntil(),query.getDeveloper());
+    public List<Map<String,String>> getDeveloperValidCommitMsg(Query query) {
+        List<String> developerGitNameList = accountMapper.getDeveloperAccountGitNameList(query.getDeveloper());
+        List<Map<String,String>> developerCommitMsgList = projectMapper.getDeveloperCommitMsg(query.getRepoUuidList(),query.getSince(),query.getUntil(),developerGitNameList);
+        developerCommitMsgList.removeIf(commitMap -> isMerge(commitMap.get("commit_id")));
+        return developerCommitMsgList;
     }
 
     /**

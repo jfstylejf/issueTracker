@@ -72,14 +72,14 @@ public interface ProjectMapper {
 
 
     /**
-     * 获取开发者参与库的提交信息（去除Merge）
+     * 获取开发者参与库的提交信息
      * @param repoUuidList 查询库列表
      * @param since 查询起始时间
      * @param until 查询结束时间
-     * @param developer 开发者姓名
-     * @return  List<Map<String,Object>> key : developer , commit_time , commit_id , message
+     * @param accountGitNameList 开发者姓名
+     * @return  List<Map<String,Object>> key : repo_id, developer, commit_time , commit_id , message
      */
-    List<Map<String,String>> getDeveloperCommitMsg(@Param("repoUuidList")List<String> repoUuidList,@Param("since")String since,@Param("until")String until,@Param("developer")String developer);
+    List<Map<String,String>> getDeveloperCommitMsg(@Param("repoUuidList")List<String> repoUuidList,@Param("since")String since,@Param("until")String until,@Param("accountGitNameList")List<String> accountGitNameList);
 
     /**
      * 获取项目下包含库的提交信息

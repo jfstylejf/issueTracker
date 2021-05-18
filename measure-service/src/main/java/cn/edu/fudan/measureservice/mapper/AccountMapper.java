@@ -28,7 +28,7 @@ public interface AccountMapper {
      * @param accountName 聚合后名
      * @return account_gitName
      */
-    String getAccountGitName(@Param("accountName") String accountName);
+    List<String> getDeveloperAccountGitNameList(@Param("accountName") String accountName);
 
     /**
      * 获取多个开发者的 gitName

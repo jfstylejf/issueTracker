@@ -861,9 +861,9 @@ public class MeasureDeveloperService {
         }
         for(String developer : developerList) {
             query.setDeveloper(developer);
-            // fixme validCommitMsg 判断是否是Merge应该通过父节点来判断
-            List<Map<String,String>> developerValidCommitInfo = projectDao.getValidCommitMsg(query);
-
+            // 获取开发者对应的合法提交信息
+            List<Map<String,String>> developerValidCommitInfo = projectDao.getDeveloperValidCommitMsg(query);
+            // 封装 DeveloperCommitStandard
             DeveloperCommitStandard developerCommitStandard = new DeveloperCommitStandard();
             developerCommitStandard.setDeveloperName(developer);
             developerCommitStandard.setDeveloperValidCommitCount(developerValidCommitInfo.size());
@@ -988,20 +988,12 @@ public class MeasureDeveloperService {
     @SneakyThrows
     public synchronized List<ProjectCommitStandardDetail> getCommitStandardDetailIntegratedByProject(String projectNameList,String repoUuidList,String committer,String since,String until,String token) {
         List<ProjectCommitStandardDetail> projectCommitStandardDetailList = new ArrayList<>();
+        // 获取可见库列表
         List<String> visibleRepoList = projectDao.getVisibleRepoListByProjectNameAndRepo(projectNameList,repoUuidList,token);
-        for (String repoUuid : visibleRepoList) {
-            Query query = new Query(token,since,until,committer,Collections.singletonList(repoUuid));
-            if (!projectDao.getRepoInfoMap().containsKey(repoUuid)) {
-                projectDao.insertProjectInfo(token);
-            }
-            RepoInfo repoInfo = projectDao.getRepoInfoMap().get(repoUuid);
-            String projectName = repoInfo.getProjectName();
-            String repoName = repoInfo.getRepoName();
-            int projectId = projectDao.getProjectIdByName(projectName);
-            List<DeveloperCommitStandard> developerCommitStandardList = getCommitStandard(query,null);
-            for (DeveloperCommitStandard developerCommitStandard : developerCommitStandardList) {
-                projectCommitStandardDetailList.addAll(dealWithDeveloperCommitStandardDetail(developerCommitStandard,projectName,projectId,repoUuid,repoName));
-            }
+        Query query = new Query(token,since,until,committer,visibleRepoList);
+        List<DeveloperCommitStandard> developerCommitStandardList = getCommitStandard(query,null);
+        for (DeveloperCommitStandard developerCommitStandard : developerCommitStandardList) {
+            projectCommitStandardDetailList.addAll(dealWithDeveloperCommitStandardDetail(developerCommitStandard,token));
         }
         return projectCommitStandardDetailList;
      }
@@ -1011,20 +1003,16 @@ public class MeasureDeveloperService {
      * @see DeveloperCommitStandard
      * @see ProjectCommitStandardDetail
      * @param developerCommitStandard 开发者提交规范性明细
-     * @param projectName 项目名
-     * @param projectId 项目id
-     * @param repoUuid 库id
-     * @param repoName 库名称
      * @return new ArrayList<{@link ProjectCommitStandardDetail}>
      */
-     private List<ProjectCommitStandardDetail> dealWithDeveloperCommitStandardDetail(DeveloperCommitStandard developerCommitStandard,String projectName, int projectId,String repoUuid,String repoName) {
+     private List<ProjectCommitStandardDetail> dealWithDeveloperCommitStandardDetail(DeveloperCommitStandard developerCommitStandard,String token) {
          List<ProjectCommitStandardDetail> projectCommitStandardDetailList = new ArrayList<>();
          List<Map<String,String>> developerJiraCommitInfo = developerCommitStandard.getDeveloperJiraCommitInfo();
          List<Map<String,String>> developerInvalidCommitInfo = developerCommitStandard.getDeveloperInvalidCommitInfo();
          // 添加项目规范提交明细
-         projectCommitStandardDetailList.addAll(commitInfoToProjectCommitStandardDetail(developerJiraCommitInfo,projectName,projectId,repoUuid,repoName,true));
+         projectCommitStandardDetailList.addAll(commitInfoToProjectCommitStandardDetail(developerCommitStandard.getDeveloperName(),developerJiraCommitInfo,token,true));
          // 添加项目不规范提交明细
-         projectCommitStandardDetailList.addAll(commitInfoToProjectCommitStandardDetail(developerInvalidCommitInfo,projectName,projectId,repoUuid,repoName,false));
+         projectCommitStandardDetailList.addAll(commitInfoToProjectCommitStandardDetail(developerCommitStandard.getDeveloperName(),developerInvalidCommitInfo,token,false));
          return projectCommitStandardDetailList;
      }
 
@@ -1032,21 +1020,23 @@ public class MeasureDeveloperService {
      * 提交信息 转换为 项目提交明细
      * @see ProjectCommitStandardDetail
      * @param commitInfo 提交明细
-     * @param projectName 项目名
-     * @param projectId 项目id
-     * @param repoUuid 库id
-     * @param repoName 库名
      * @param isValid 是否规范
      * @return List<ProjectCommitStandardDetail>
      */
-     private List<ProjectCommitStandardDetail> commitInfoToProjectCommitStandardDetail(List<Map<String,String>> commitInfo,String projectName, int projectId,String repoUuid,String repoName,boolean isValid) {
+     private List<ProjectCommitStandardDetail> commitInfoToProjectCommitStandardDetail(String developerName, List<Map<String,String>> commitInfo,String token, boolean isValid) {
          List<ProjectCommitStandardDetail> projectCommitStandardDetailList = new ArrayList<>();
          for (Map<String, String> stringStringMap : commitInfo) {
+             String repoUuid = stringStringMap.get("repo_id");
+             if (!projectDao.getRepoInfoMap().containsKey(repoUuid)) {
+                 projectDao.insertProjectInfo(token);
+             }
+             RepoInfo repoInfo = projectDao.getRepoInfoMap().get(repoUuid);
+             String projectName = repoInfo.getProjectName();
+             String repoName = repoInfo.getRepoName();
+             int projectId = projectDao.getProjectIdByName(projectName);
              String message = stringStringMap.get("message");
              String commitTime = stringStringMap.get("commit_time");
              String commitId = stringStringMap.get("commit_id");
-             String developerName;
-             developerName = stringStringMap.getOrDefault("developer_unique_name", "");
              ProjectCommitStandardDetail projectCommitStandardDetail = ProjectCommitStandardDetail.builder()
                      .committer(developerName)
                      .commitId(commitId)

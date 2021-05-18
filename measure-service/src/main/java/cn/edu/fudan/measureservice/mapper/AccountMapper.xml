@@ -20,7 +20,7 @@
         </where>
     </select>
 
-    <select id="getAccountGitName" parameterType="String" resultType="String">
+    <select id="getDeveloperAccountGitNameList" parameterType="String" resultType="String">
         select distinct (account_gitname) FROM issueTracker.account_author
         where account_name = #{accountName}
     </select>
