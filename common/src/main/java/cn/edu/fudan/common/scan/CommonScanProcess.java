@@ -193,8 +193,8 @@ public abstract class CommonScanProcess implements CommonScanService {
             repoScan.setStatus(ScanInfo.Status.FAILED.getStatus());
             repoScan.setEndScanTime(new Date());
             repoScan.setScanTime((repoScan.getEndScanTime().getTime() - repoScan.getStartScanTime().getTime()) / 1000);
-            updateRepoScan(repoScan);
         } finally {
+            updateRepoScan(repoScan);
             baseRepoRestManager.freeRepo(repoUuid, repoPath);
         }
 
