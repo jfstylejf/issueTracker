@@ -4,6 +4,7 @@ import cn.edu.fudan.measureservice.component.RestInterfaceManager;
 import cn.edu.fudan.measureservice.domain.bo.DeveloperLevel;
 import cn.edu.fudan.measureservice.domain.dto.*;
 import cn.edu.fudan.measureservice.domain.enums.ToolEnum;
+import cn.edu.fudan.measureservice.mapper.AccountMapper;
 import cn.edu.fudan.measureservice.mapper.MeasureMapper;
 import cn.edu.fudan.measureservice.mapper.ProjectMapper;
 import lombok.Getter;
@@ -31,6 +32,8 @@ public class ProjectDao {
 
     private MeasureMapper measureMapper;
 
+    private AccountMapper accountMapper;
+
     private static final String split = ",";
     private static final String JAVA = "Java";
     private static final String JAVASCRIPT = "JavaScript";
@@ -46,20 +49,15 @@ public class ProjectDao {
 
 
     /**
-     * 返回所参与repo下的所有开发者列表，若为 null,则返回 “”
+     * 返回所参与repo下的所有开发者列表，若为 null,则删除
      *  @param query 查询条件
      * @return List<String> 返回开发者人员信息
      */
     public List<String> getDeveloperList(Query query) {
-        List<String> list = new ArrayList<>();
-        List<String> developerList =  projectMapper.getDeveloperList(query.getRepoUuidList(),query.getSince(),query.getUntil());
-        for (String developer : developerList) {
-            if (developer == null) {
-                list.add("");
-            }else {
-                list.add(developer);
-            }
-        }
+        List<String> list;
+        List<String> developerGitNameList =  projectMapper.getDeveloperGitNameList(query.getRepoUuidList(),query.getSince(),query.getUntil());
+        list = accountMapper.getAccountNameList(developerGitNameList);
+        list.removeIf(Objects::isNull);
         return list;
     }
 
@@ -81,6 +79,8 @@ public class ProjectDao {
             if(!repoInfoMap.containsKey(repoUuid)) {
                 insertProjectInfo(query.getToken());
             }
+            // 获取开发者的 gitName 列表
+            List<String> developerGitNameList = getDeveloperList(new Query(query.getToken(),query.getSince(),query.getUntil(),null,Collections.singletonList(repoUuid)));
             List<Map<String,String>> developerRepoInfoList = projectMapper.getDeveloperRepoInfoList(repoUuid,query.getSince(),query.getUntil());
             repoInfoMap.get(repoUuid).setInvolvedDeveloperNumber(developerRepoInfoList.size());
             for(Map<String,String> map : developerRepoInfoList) {
@@ -96,6 +96,7 @@ public class ProjectDao {
         }
         return developerRepoInfos;
     }
+
 
     /**
      * 获取开发者在职状态
@@ -245,9 +246,30 @@ public class ProjectDao {
      * @return List<Map<String,Object>> key : developer_unique_name , commit_time , commit_id , message
      */
     public List<Map<String,String>> getValidCommitMsg(Query query) {
-        return projectMapper.getValidCommitMsg(query.getRepoUuidList(),query.getSince(),query.getUntil(),query.getDeveloper());
+        return new ArrayList<>();
+        //return projectMapper.getValidCommitMsg(query.getRepoUuidList(),query.getSince(),query.getUntil(),query.getDeveloper());
     }
 
+    /**
+     * 获取项目包含库的合法提交信息（去除Merge）
+     * @param query 查询条件
+     * @return List<Map<String,Object>> key : developer , repo_id, commit_time , commit_id , message
+     */
+    public List<Map<String,String>> getProjectValidCommitMsg(Query query) {
+        List<Map<String,String>> projectCommitMsgList = projectMapper.getProjectCommitMsg(query.getRepoUuidList(),query.getSince(),query.getUntil());
+        projectCommitMsgList.removeIf(commitMap -> isMerge(commitMap.get("commit_id")));
+        return projectCommitMsgList;
+    }
+
+    /**
+     * 判断此次提交是否是 Merge 的情况
+     * @param commitId 查询 commit
+     * @return 若为 Merge，则返回 true
+     */
+    public boolean isMerge(String commitId) {
+        String parentCommit = projectMapper.getParentCommit(commitId);
+        return parentCommit.contains(split);
+    }
 
     /**
      * 获取查询repoUuid的库名
@@ -459,7 +481,7 @@ public class ProjectDao {
         return null;
     }
 
-
+    //fixme
     @SneakyThrows
     public String getDeveloperFirstCommitDate(String developer,String since ,String until, String repoUuid) {
         Map<String, String> map = projectMapper.getDeveloperFirstCommitDate(repoUuid, since, until, developer);
@@ -591,5 +613,10 @@ public class ProjectDao {
     @Autowired
     public void setMeasureMapper(MeasureMapper measureMapper) {
         this.measureMapper = measureMapper;
+    }
+
+    @Autowired
+    public void setAccountMapper(AccountMapper accountMapper) {
+        this.accountMapper = accountMapper;
     }
 }

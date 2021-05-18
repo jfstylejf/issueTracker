@@ -38,10 +38,6 @@ public class ProjectCommitStandardTrendChart {
      * 趋势图节点对应比值
      */
     private double num;
-    /**
-     * 数据明细
-     */
-    private List<DeveloperCommitStandard> detail;
 
     /**
      * 可选参数，用于描述上一行数据字段

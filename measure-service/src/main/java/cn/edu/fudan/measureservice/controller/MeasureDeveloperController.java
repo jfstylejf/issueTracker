@@ -298,7 +298,7 @@ public class MeasureDeveloperController {
         try {
             until = timeProcess(until);
             String token = request.getHeader("token");
-            return new ResponseBean<>(200,"success",measureDeveloperService.getCommitStandardTrendChartIntegratedByProject(projectIds,since,until,token,interval,showDetail));
+            return new ResponseBean<>(200,"success",measureDeveloperService.getCommitStandardTrendChartIntegratedByProject(projectIds,since,until,token,interval));
         }catch (Exception e) {
             e.getMessage();
         }

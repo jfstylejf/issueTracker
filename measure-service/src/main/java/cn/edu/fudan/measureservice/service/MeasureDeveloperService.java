@@ -840,17 +840,22 @@ public class MeasureDeveloperService {
         return new ArrayList<>();
     }
 
-
+    /**
+     * 获取开发者聚合后的提交规范性
+     * @param query 查询条件
+     * @param developerAccountNames 查询人列表，此为聚合后的名字
+     * @return
+     */
     @SuppressWarnings("unchecked")
     @Cacheable(cacheNames = {"commitStandard"})
-    public List<DeveloperCommitStandard> getCommitStandard(Query query , List<String> developers) {
+    public List<DeveloperCommitStandard> getCommitStandard(Query query , List<String> developerAccountNames) {
         List<DeveloperCommitStandard> developerCommitStandardList = new ArrayList<>();
         List<String> developerList = new ArrayList<>();
         // 根据查询条件对 查询人列表 处理
         if(query.getDeveloper()!=null && !"".equals(query.getDeveloper())) {
             developerList.add(query.getDeveloper());
-        }else if(developers!=null && developers.size()>0) {
-            developerList = developers;
+        }else if(developerAccountNames!=null && developerAccountNames.size()>0) {
+            developerList = developerAccountNames;
         }else {
             developerList = projectDao.getDeveloperList(query);
         }
@@ -889,11 +894,10 @@ public class MeasureDeveloperService {
      * @param since 查询起始时间
      * @param until 查询截止时间
      * @param interval 聚合间隔
-     * @param showDetail 是否展示明细
      * @return new ArrayList<{@link ProjectCommitStandardTrendChart}>
      */
     @SneakyThrows
-    public synchronized List<ProjectCommitStandardTrendChart> getCommitStandardTrendChartIntegratedByProject(String projectIds,String since,String until,String token,String interval,boolean showDetail) {
+    public synchronized List<ProjectCommitStandardTrendChart> getCommitStandardTrendChartIntegratedByProject(String projectIds,String since,String until,String token,String interval) {
         List<ProjectCommitStandardTrendChart> results = new ArrayList<>();
         // 由传入的 projectIds 获取可查询库列表
         List<ProjectPair> projectPairList = projectDao.getVisibleProjectPairListByProjectIds(projectIds,token);
@@ -929,10 +933,9 @@ public class MeasureDeveloperService {
                     repoUuidList.add(repoInfo.getRepoUuid());
                 }
                 Query query = new Query(token,beginTime.format(dtf),tempTime.format(dtf),null,repoUuidList);
-                List<DeveloperCommitStandard> developerCommitStandardList = getCommitStandard(query,null);
                 // 构造项目提交规范性类
                 int projectId = projectPair.getProjectId();
-                ProjectCommitStandardTrendChart projectCommitStandardTrendChart = listDeveloperCommandStandardToProjectCommitStandardTrendChart(developerCommitStandardList,showDetail);
+                ProjectCommitStandardTrendChart projectCommitStandardTrendChart = getSingleProjectCommitStandardChart(query);
                 projectCommitStandardTrendChart.setProjectId(String.valueOf(projectId));
                 projectCommitStandardTrendChart.setProjectName(projectPair.getProjectName());
                 projectCommitStandardTrendChart.setDate(tempTime.format(dtf));
@@ -944,21 +947,23 @@ public class MeasureDeveloperService {
         return results;
     }
 
-
-
-
     /**
-     * 由 List<{@link DeveloperCommitStandard}> 封装为 {@link ProjectCommitStandardTrendChart}
-     * @param developerCommitStandardList 开发者提交规范性列表
+     * 封装单个项目合法提交信息为 {@link ProjectCommitStandardTrendChart}
+     * @param query 查询信息
      * @return ProjectCommitStandardTrendChart 项目提交规范性
      */
-    private ProjectCommitStandardTrendChart listDeveloperCommandStandardToProjectCommitStandardTrendChart(List<DeveloperCommitStandard> developerCommitStandardList,boolean showDetail) {
+    private ProjectCommitStandardTrendChart getSingleProjectCommitStandardChart(Query query) {
         ProjectCommitStandardTrendChart projectCommitStandardTrendChart = new ProjectCommitStandardTrendChart();
+        // 获取项目合法提交信息
+        List<Map<String,String>> projectValidCommitMsgList = projectDao.getProjectValidCommitMsg(query);
         // validCommitCountNum : 不含Merge的总提交次数 ， jiraCommitCountNum 包含Jira单号的总提交次数
-        long validCommitCountNum = 0, jiraCommitCountNum = 0;
-        for (DeveloperCommitStandard developerCommitStandard : developerCommitStandardList) {
-            validCommitCountNum += developerCommitStandard.getDeveloperValidCommitCount();
-            jiraCommitCountNum += developerCommitStandard.getDeveloperJiraCommitCount();
+        long validCommitCountNum = projectValidCommitMsgList.size(), jiraCommitCountNum = 0;
+        for (int i = 0; i < projectValidCommitMsgList.size(); i++) {
+            Map<String,String> commitMsg = projectValidCommitMsgList.get(i);
+            String message = commitMsg.get("message");
+            if (!"noJiraID".equals(jiraDao.getJiraIDFromCommitMsg(message))) {
+                jiraCommitCountNum++;
+            }
         }
         double num = 0.0;
         // 当不含Merge的总提交次数为 0 时，提交规范性特判为 0
@@ -968,9 +973,6 @@ public class MeasureDeveloperService {
         // 提交规范性比率保留三位小数
         projectCommitStandardTrendChart.setNum(Double.parseDouble(df.format(num)));
         projectCommitStandardTrendChart.setOption(jiraCommitCountNum,validCommitCountNum);
-        if (showDetail) {
-            projectCommitStandardTrendChart.setDetail(developerCommitStandardList);
-        }
         return projectCommitStandardTrendChart;
     }
 
