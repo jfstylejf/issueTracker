@@ -1,5 +1,6 @@
 package cn.edu.fudan.projectmanager.controller;
 
+import cn.edu.fudan.projectmanager.ProjectServiceApplicationTest;
 import cn.edu.fudan.projectmanager.component.RestInterfaceManager;
 import cn.edu.fudan.projectmanager.dao.SubRepositoryDao;
 import cn.edu.fudan.projectmanager.domain.Account;
@@ -55,7 +56,7 @@ import java.sql.Statement;
 
 @Transactional
 @Rollback() // 事务自动回滚，默认是true
-public class RepoDeleteTest1 {
+public class RepoDeleteTest1 extends ProjectServiceApplicationTest {
 
     /**
      * 1.测试正常删除库功能

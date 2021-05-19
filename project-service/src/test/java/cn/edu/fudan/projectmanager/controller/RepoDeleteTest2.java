@@ -1,5 +1,6 @@
 package cn.edu.fudan.projectmanager.controller;
 
+import cn.edu.fudan.projectmanager.ProjectServiceApplicationTest;
 import cn.edu.fudan.projectmanager.component.RestInterfaceManager;
 import cn.edu.fudan.projectmanager.dao.SubRepositoryDao;
 import cn.edu.fudan.projectmanager.domain.Account;
@@ -46,7 +47,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 @Transactional
 @Rollback() // 事务自动回滚，默认是true
-public class RepoDeleteTest2 {
+public class RepoDeleteTest2 extends ProjectServiceApplicationTest {
 
     /**
      * 2.测试某服务未回调时的删除库功能
