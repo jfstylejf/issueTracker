@@ -7,6 +7,7 @@ import cn.edu.fudan.projectmanager.service.impl.ProjectControlServiceImpl;
 import cn.edu.fudan.projectmanager.util.JDBCUtil;
 import com.alibaba.fastjson.JSONObject;
 import org.junit.*;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.mockito.Mock;

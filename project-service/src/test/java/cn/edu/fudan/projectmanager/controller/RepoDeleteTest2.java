@@ -138,7 +138,6 @@ public class RepoDeleteTest2 {
                 .andExpect(MockMvcResultMatchers.status().is(200))
                 .andDo(MockMvcResultHandlers.print())
                 .andReturn();
-
     }
 
     @Test
@@ -165,48 +164,6 @@ public class RepoDeleteTest2 {
         Integer recycledStatus1 = jsonObject1.getIntValue("data");
         char[] deleteStatus1 = String.valueOf(recycledStatus1).toCharArray();
         Assert.assertEquals('1',deleteStatus1[0]);
-
-
-//        //回调接口 mock DEPENDENCY服务回调  2
-//        MvcResult recallResult2 = mockMvc.perform(MockMvcRequestBuilders
-//                .put("/repo")
-//                .accept(MediaType.APPLICATION_JSON_UTF8)
-//                .param("repo_uuid", repoUuid)
-//                .param("service_name", serviceName[1])
-//                .header("token", token)
-//                .session(session)
-//        )
-//                .andExpect(MockMvcResultMatchers.status().is(200))
-//                .andDo(MockMvcResultHandlers.print())
-//                .andReturn();
-//
-//        //将返回值转换成json，拿到data中的recycled的值
-//        JSONObject jsonObject2 = JSONObject.parseObject(recallResult2.getResponse().getContentAsString());
-//
-//        Integer recycledStatus2 = jsonObject2.getIntValue("data");
-//        char[] deleteStatus2 = String.valueOf(recycledStatus2).toCharArray();
-//        Assert.assertEquals('1',deleteStatus2[1]);
-
-
-//        //回调接口 mock CLONE服务回调  3
-//        MvcResult recallResult3 = mockMvc.perform(MockMvcRequestBuilders
-//                .put("/repo")
-//                .accept(MediaType.APPLICATION_JSON_UTF8)
-//                .param("repo_uuid", repoUuid)
-//                .param("service_name", serviceName[2])
-//                .header("token", token)
-//                .session(session)
-//        )
-//                .andExpect(MockMvcResultMatchers.status().is(200))
-//                .andDo(MockMvcResultHandlers.print())
-//                .andReturn();
-//
-//        //将返回值转换成json，拿到data中的recycled的值
-//        JSONObject jsonObject3 = JSONObject.parseObject(recallResult3.getResponse().getContentAsString());
-//
-//        Integer recycledStatus3 = jsonObject3.getIntValue("data");
-//        char[] deleteStatus3 = String.valueOf(recycledStatus3).toCharArray();
-//        Assert.assertEquals('1',deleteStatus3[2]);
 
 
         //回调接口 mock MEASURE服务回调  4
