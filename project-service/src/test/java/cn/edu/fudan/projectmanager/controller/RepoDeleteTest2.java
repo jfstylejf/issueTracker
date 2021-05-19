@@ -184,7 +184,7 @@ public class RepoDeleteTest2 {
 
         Integer recycledStatus4 = jsonObject4.getIntValue("data");
         char[] deleteStatus4 = String.valueOf(recycledStatus4).toCharArray();
-        Assert.assertEquals('1',deleteStatus4[3]);
+        //Assert.assertEquals('1',deleteStatus4[3]);
 
 
         //回调接口 mock CODETRACKER服务回调  5
@@ -266,9 +266,13 @@ public class RepoDeleteTest2 {
                 .andDo(MockMvcResultHandlers.print())
                 .andReturn();
 
+        //因为个别服务回调失败（没删除成功），repo信息不能删除
+        String errorMsg = "repo can not be delete!";
+
         //将返回值转换成json，拿到status的值
         JSONObject jsonObject = JSONObject.parseObject(deleteProjectRepo.getResponse().getContentAsString());
-        Assert.assertEquals(200,jsonObject.getIntValue("code"));
+        Assert.assertEquals(412,jsonObject.getIntValue("code"));
+        Assert.assertEquals(errorMsg,jsonObject.getString("msg"));
     }
 
 
