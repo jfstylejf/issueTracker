@@ -173,7 +173,7 @@ public class IssueMeasurementController {
                 assert developers != null;
                 developers.forEach(producer -> {
                     query.put("producer", producer);
-                    developersLifecycle.add(new HashMap<String, JSONObject>(2) {{
+                    developersLifecycle.add(new HashMap<>(2) {{
                         put(producer, issueMeasureInfoService.getIssuesLifeCycle(status, target, query));
                     }});
                 });

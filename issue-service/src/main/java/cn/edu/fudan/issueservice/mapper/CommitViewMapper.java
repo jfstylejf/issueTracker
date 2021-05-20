@@ -70,6 +70,7 @@ public interface CommitViewMapper {
 
     /**
      * get commit message
+     *
      * @param commitId commitId
      * @param repoUuid repoUuid
      * @return commit message

@@ -17,14 +17,14 @@ public interface IssueRepoMapper {
     /**
      * 插入issueRepo
      *
-     * @param issueRepo     issueRepo
+     * @param issueRepo issueRepo
      */
     void insertOneIssueRepo(@Param("issueRepo") RepoScan issueRepo);
 
     /**
      * 更新issueRepo
      *
-     * @param issueRepo     issueRepo
+     * @param issueRepo issueRepo
      */
     void updateIssueRepo(@Param("issueRepo") RepoScan issueRepo);
 
