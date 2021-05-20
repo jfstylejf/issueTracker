@@ -72,23 +72,23 @@ public interface ProjectMapper {
 
 
     /**
-     * 获取开发者参与库的提交信息
+     * 获取开发者参与库的合法提交信息（不含Merge）
      * @param repoUuidList 查询库列表
      * @param since 查询起始时间
      * @param until 查询结束时间
      * @param accountGitNameList 开发者姓名
      * @return  List<Map<String,Object>> key : repo_id, developer, commit_time , commit_id , message
      */
-    List<Map<String,String>> getDeveloperCommitMsg(@Param("repoUuidList")List<String> repoUuidList,@Param("since")String since,@Param("until")String until,@Param("accountGitNameList")List<String> accountGitNameList);
+    List<Map<String,String>> getDeveloperValidCommitMsg(@Param("repoUuidList")List<String> repoUuidList,@Param("since")String since,@Param("until")String until,@Param("accountGitNameList")List<String> accountGitNameList);
 
     /**
-     * 获取项目下包含库的提交信息
+     * 获取项目下包含库的合法提交信息 （不含Merge）
      * @param repoUuidList 查询库列表
      * @param since 查询起始时间
      * @param until 查询结束时间
      * @return List<Map<String,Object>> key : repo_id , developer, commit_time , commit_id , message
      */
-    List<Map<String,String>> getProjectCommitMsg(@Param("repoUuidList")List<String> repoUuidList,@Param("since")String since,@Param("until")String until);
+    List<Map<String,String>> getProjectValidCommitMsg(@Param("repoUuidList")List<String> repoUuidList,@Param("since")String since,@Param("until")String until);
 
     /**
      * 获取查询库列表中前3位提交次数最多的开发者
@@ -170,10 +170,4 @@ public interface ProjectMapper {
      */
     Integer getProjectIdByName(@Param("projectName") String projectName);
 
-    /**
-     * 获取查询 commit 的父节点
-     * @param commitId 查询 commit
-     * @return parentCommit
-     */
-    String getParentCommit(@Param("commitId") String commitId);
 }

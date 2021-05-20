@@ -26,6 +26,7 @@ import com.alibaba.fastjson.JSONObject;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jgit.util.StringUtils;
+import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -897,6 +898,7 @@ public class MeasureDeveloperService {
      * @return new ArrayList<{@link ProjectCommitStandardTrendChart}>
      */
     @SneakyThrows
+    @MethodMeasureAnnotation
     public synchronized List<ProjectCommitStandardTrendChart> getCommitStandardTrendChartIntegratedByProject(String projectIds,String since,String until,String token,String interval) {
         List<ProjectCommitStandardTrendChart> results = new ArrayList<>();
         // 由传入的 projectIds 获取可查询库列表
@@ -928,14 +930,15 @@ public class MeasureDeveloperService {
             }
             for (ProjectPair projectPair : projectPairList) {
                 List<String> repoUuidList = new ArrayList<>();
-                List<RepoInfo> repoInfoList = projectDao.getProjectInvolvedRepoInfo(projectPair.getProjectName(),token);
+                    List<RepoInfo> repoInfoList = projectDao.getProjectInvolvedRepoInfo(projectPair.getProjectName(),token);
                 for (RepoInfo repoInfo : repoInfoList) {
                     repoUuidList.add(repoInfo.getRepoUuid());
                 }
                 Query query = new Query(token,beginTime.format(dtf),tempTime.format(dtf),null,repoUuidList);
                 // 构造项目提交规范性类
                 int projectId = projectPair.getProjectId();
-                ProjectCommitStandardTrendChart projectCommitStandardTrendChart = getSingleProjectCommitStandardChart(query);
+                // note 内部调用需要使用代理使缓存生效
+                ProjectCommitStandardTrendChart projectCommitStandardTrendChart = ((MeasureDeveloperService) AopContext.currentProxy()).getSingleProjectCommitStandardChart(query,projectPair);
                 projectCommitStandardTrendChart.setProjectId(String.valueOf(projectId));
                 projectCommitStandardTrendChart.setProjectName(projectPair.getProjectName());
                 projectCommitStandardTrendChart.setDate(tempTime.format(dtf));
@@ -947,12 +950,14 @@ public class MeasureDeveloperService {
         return results;
     }
 
+
     /**
      * 封装单个项目合法提交信息为 {@link ProjectCommitStandardTrendChart}
      * @param query 查询信息
      * @return ProjectCommitStandardTrendChart 项目提交规范性
      */
-    private ProjectCommitStandardTrendChart getSingleProjectCommitStandardChart(Query query) {
+    @Cacheable(value = "projectCommitStandardChart", key = "#projectPair.projectName+'_'+#query.until")
+    public ProjectCommitStandardTrendChart getSingleProjectCommitStandardChart(Query query,ProjectPair projectPair) {
         ProjectCommitStandardTrendChart projectCommitStandardTrendChart = new ProjectCommitStandardTrendChart();
         // 获取项目合法提交信息
         List<Map<String,String>> projectValidCommitMsgList = projectDao.getProjectValidCommitMsg(query);
@@ -974,6 +979,12 @@ public class MeasureDeveloperService {
         projectCommitStandardTrendChart.setNum(Double.parseDouble(df.format(num)));
         projectCommitStandardTrendChart.setOption(jiraCommitCountNum,validCommitCountNum);
         return projectCommitStandardTrendChart;
+    }
+
+
+    @CacheEvict(value = "projectCommitStandardChart", key = "#projectPair.projectName+'_'+#query.until")
+    public void deleteSingleProjectCommitStandardChart(Query query, ProjectPair projectPair) {
+
     }
 
     /**
@@ -1233,5 +1244,7 @@ public class MeasureDeveloperService {
     public void clearCache() {
         log.info("Successfully clear redis cache in db6.");
     }
+
+
 
 }

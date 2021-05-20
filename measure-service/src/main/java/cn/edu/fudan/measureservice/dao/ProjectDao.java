@@ -10,7 +10,9 @@ import cn.edu.fudan.measureservice.mapper.ProjectMapper;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
@@ -247,9 +249,7 @@ public class ProjectDao {
      */
     public List<Map<String,String>> getDeveloperValidCommitMsg(Query query) {
         List<String> developerGitNameList = accountMapper.getDeveloperAccountGitNameList(query.getDeveloper());
-        List<Map<String,String>> developerCommitMsgList = projectMapper.getDeveloperCommitMsg(query.getRepoUuidList(),query.getSince(),query.getUntil(),developerGitNameList);
-        developerCommitMsgList.removeIf(commitMap -> isMerge(commitMap.get("commit_id")));
-        return developerCommitMsgList;
+        return projectMapper.getDeveloperValidCommitMsg(query.getRepoUuidList(),query.getSince(),query.getUntil(),developerGitNameList);
     }
 
     /**
@@ -258,20 +258,9 @@ public class ProjectDao {
      * @return List<Map<String,Object>> key : developer , repo_id, commit_time , commit_id , message
      */
     public List<Map<String,String>> getProjectValidCommitMsg(Query query) {
-        List<Map<String,String>> projectCommitMsgList = projectMapper.getProjectCommitMsg(query.getRepoUuidList(),query.getSince(),query.getUntil());
-        projectCommitMsgList.removeIf(commitMap -> isMerge(commitMap.get("commit_id")));
-        return projectCommitMsgList;
+        return projectMapper.getProjectValidCommitMsg(query.getRepoUuidList(),query.getSince(),query.getUntil());
     }
 
-    /**
-     * 判断此次提交是否是 Merge 的情况
-     * @param commitId 查询 commit
-     * @return 若为 Merge，则返回 true
-     */
-    public boolean isMerge(String commitId) {
-        String parentCommit = projectMapper.getParentCommit(commitId);
-        return parentCommit.contains(split);
-    }
 
     /**
      * 获取查询repoUuid的库名
@@ -343,6 +332,7 @@ public class ProjectDao {
      * @return projectList
      */
     @SuppressWarnings("unchecked")
+    @Cacheable(value = "visibleProjectByToken",key = "'visibleProject_'+#token")
     public List<String> getVisibleProjectByToken(String token) {
         UserInfoDTO userInfoDTO = null;
         try {
@@ -543,7 +533,8 @@ public class ProjectDao {
     public List<ProjectPair> getVisibleProjectPairListByProjectIds(String projectIds, String token) {
         List<ProjectPair> projectPairList = new ArrayList<>();
         Map<String,Integer> queryProjectMap = getProjectNameById(projectIds);
-        List<String> visibleProjectList = getVisibleProjectByToken(token);
+        // 内部调用走代理，否则缓存失效
+        List<String> visibleProjectList = ((ProjectDao) AopContext.currentProxy()).getVisibleProjectByToken(token);
         List<String> checkedProjectList = mergeBetweenProject(new ArrayList<>(queryProjectMap.keySet()),visibleProjectList);
         for (String projectName : checkedProjectList) {
             projectPairList.add(new ProjectPair(projectName,queryProjectMap.get(projectName)));
