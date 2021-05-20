@@ -472,6 +472,7 @@ public class MeasureDeveloperController {
         try {
             String token = request.getHeader("token");
             List<DeveloperDataCcn> developerDataCcnList = measureDeveloperService.getDeveloperDataCcn(projectNameList,developerList,token,since,until);
+            developerDataCcnList.sort(((o1, o2) -> o2.getTotalDiffCcn() - o1.getTotalDiffCcn()));
             int totalPage = developerDataCcnList.size() % ps == 0 ? developerDataCcnList.size()/ps : developerDataCcnList.size()/ps + 1;
             List<DeveloperDataCcn> selectedDeveloperDataCcnList = developerDataCcnList.subList(ps*(page-1), Math.min(ps * page, developerDataCcnList.size()));
             ProjectFrontEnd<DeveloperDataCcn> developerDtaCcnProjectFrontEnd = new ProjectFrontEnd<>(page,totalPage,developerDataCcnList.size(),selectedDeveloperDataCcnList);
