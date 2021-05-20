@@ -52,6 +52,7 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
     public boolean invoke(String repoUuid, String repoPath, String commit) {
 
         try {
+            //eslint ignore
             File file = new File(repoPath + "/.eslintignore");
             if (!file.exists()) {
                 boolean newFile = file.createNewFile();
@@ -60,9 +61,15 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
                     return false;
                 }
             }
+            //find src dir
+            String srcDir = FileUtil.findSrcDir(repoPath);
+            if (srcDir == null) {
+                log.error("can't find this repo src path");
+                return false;
+            }
             Runtime rt = Runtime.getRuntime();
             //ESLint exe command
-            String command = binHome + "executeESLint.sh " + repoPath + " " + repoUuid + "_" + commit;
+            String command = binHome + "executeESLint.sh " + repoPath + " " + repoUuid + "_" + commit + " " + srcDir;
             log.info("command -> {}", command);
             Process process = rt.exec(command);
             //wait command 200s,if time > 200,invoke tool failed
