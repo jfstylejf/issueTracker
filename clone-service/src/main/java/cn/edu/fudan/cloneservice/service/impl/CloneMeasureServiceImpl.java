@@ -9,11 +9,13 @@ import cn.edu.fudan.cloneservice.mapper.CloneInfoMapper;
 import cn.edu.fudan.cloneservice.mapper.CloneMeasureMapper;
 import cn.edu.fudan.cloneservice.mapper.RepoCommitMapper;
 import cn.edu.fudan.cloneservice.service.CloneMeasureService;
+import cn.edu.fudan.cloneservice.service.ScanService;
 import cn.edu.fudan.cloneservice.thread.ForkJoinRecursiveTask;
 import cn.edu.fudan.cloneservice.util.ComputeUtil;
 import cn.edu.fudan.cloneservice.util.DateTimeUtil;
 import cn.edu.fudan.cloneservice.util.JGitUtil;
 import cn.edu.fudan.cloneservice.util.UserUtil;
+import com.github.pagehelper.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -43,8 +45,7 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
     private final UserUtil userUtil;
 
     @Override
-    public List<CloneMessage> getCloneMeasure(String repositoryId, String developers, String start, String end, String page, String size, Boolean isAsc, String order) {
-
+    public List<CloneMessage> getCloneMeasure(String repositoryId, String developers, String start, String end) {
         List<CloneMessage> cloneMessages = new ArrayList<>();
         if (StringUtils.isEmpty(developers)) {
             if (StringUtils.isEmpty(repositoryId)) {
@@ -53,9 +54,7 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
             }
             List<String> repoIds = split(repositoryId);
             // 单个repo 维度 存放的是用户的git accountName
-            List<String> developerList = new ArrayList<>();
-            log.info("begin:" + System.currentTimeMillis() / 1000);
-            repoIds.forEach(repoId -> developerList.addAll(cloneMeasureMapper.getAllDeveloper(repoId, start, end)));
+            List<String> developerList = getDeveloperList(start, end, "", repoIds);
             log.info("after get all developer:" + System.currentTimeMillis() / 1000);
             // 聚合 key gitName value trueName
             Map<String, String> trueNameGitName = getName(developerList);
@@ -86,6 +85,16 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
             }
         }
         return cloneMessages;
+    }
+
+    private List<String> getDeveloperList(String start, String end, String developers, List<String> repoIds) {
+        List<String> developerList = new ArrayList<>();
+        if (!StringUtil.isEmpty(developers)) {
+            return split(developers);
+        } else {
+            repoIds.forEach(repoId -> developerList.addAll(cloneMeasureMapper.getAllDeveloper(repoId, start, end)));
+            return developerList;
+        }
     }
 
     /**
@@ -416,7 +425,7 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
             String projectName = repoCommitMapper.getProjectNameByProjectId(aProjectId);
             results.addAll(cloneLocationDao.getCloneOverall(getRepoUuids(projectList, repoUuid), localDate.format(dtf), aProjectId, projectName));
         }
-            return results;
+        return results;
     }
 
     private List<String> getProjectIds(String projectId, String token) {
@@ -507,6 +516,48 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
             beginTime = tempTime;
         }
         return time;
+    }
+
+    @Override
+    public List<CloneMessage> getCloneLine(String projectId, String repoUuid, String developers, String since, String until, String token) {
+
+        List<String> repoIds = getRepoUuids(getProjectIds(projectId, token), repoUuid);
+        int newCloneLines = 0;
+        int deleteCloneLines = 0;
+        int addLines = 0;
+        List<CloneMessage> result = new ArrayList<>();
+        List<String> developerList = split(developers);
+        for(String developer:developerList) {
+            for (String repoId : repoIds) {
+                List<CloneMeasure> cloneMeasures = cloneMeasureDao.getCloneMeasureByDeveloperAndDuration(repoId, developer, since, until);
+                log.info("after get clone measure:" + System.currentTimeMillis() / 1000);
+
+                int preCloneLines = 0;
+                for (CloneMeasure cloneMeasure1 : cloneMeasures) {
+                    //计算个人
+                    newCloneLines += cloneMeasure1.getNewCloneLines();
+                    if (preCloneLines > cloneMeasure1.getCloneLines()) {
+                        deleteCloneLines += preCloneLines - cloneMeasure1.getCloneLines();
+                    }
+                }
+
+                log.info("after compute:" + System.currentTimeMillis() / 1000);
+                addLines += restInterfaceManager.getAddLines(repoId, since, until, developer);
+                log.info("after rest get add lines:" + System.currentTimeMillis() / 1000);
+            }
+
+            CloneMessage cloneMessage = new CloneMessage();
+
+            if (!StringUtils.isEmpty(developer)) {
+                cloneMessage.setDeveloperName(developer);
+            }
+            cloneMessage.setRepoUuid(repoUuid);
+            cloneMessage.setIncreasedCloneLines(newCloneLines);
+            cloneMessage.setAddLines(addLines);
+            cloneMessage.setEliminateCloneLines(deleteCloneLines);
+            result.add(cloneMessage);
+        }
+        return result;
     }
 }
 

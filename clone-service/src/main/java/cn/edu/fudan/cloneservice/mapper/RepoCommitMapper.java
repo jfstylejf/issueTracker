@@ -49,6 +49,10 @@ public interface RepoCommitMapper {
             "AND commit_time >= #{start} AND commit_time <= #{end} and length(parent_commit) < 50 ORDER BY commit_time;")
     List<String> getAuthorCommitList(String repoId, String author, String start, String end);
 
+    @Select("SELECT distinct(commit_id) FROM issueTracker.commit_view " +
+            "WHERE repo_uuid = #{repoId} AND developer_unique_name = #{author}" +
+            "AND commit_time >= #{start} AND commit_time <= #{end} and length(parent_commit) < 50 ORDER BY commit_time;")
+    List<String> getCommitListByUniqueName(String repoId, String author, String start, String end);
 
     /**
      * description
@@ -83,6 +87,9 @@ public interface RepoCommitMapper {
 
     @Select("SELECT repo_uuid from issueTracker.commit_view where commit_id = #{commit_id} limit 1;")
     String getRepoIdByCommitId(String commit_id);
+
+    @Select("SELECT commit_time from issueTracker.commit_view where commit_id = #{commit_id} limit 1;")
+    String getCommitTimeByCommitId(String commit_id);
 
     @Select("SELECT project_name FROM issueTracker.project where id = #{project_id};")
     String getProjectNameByProjectId(String projectId);

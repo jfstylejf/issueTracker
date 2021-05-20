@@ -6,6 +6,10 @@ import cn.edu.fudan.cloneservice.domain.ResponseBean;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import lombok.extern.slf4j.Slf4j;
@@ -92,6 +96,17 @@ public class RestInterfaceManager {
     public JSONObject getRepoById(String repoId){
         return restTemplate.getForObject(repoServicePath + "/" + repoId, JSONObject.class);
     }
+
+    public boolean deleteRecall(String repoId, String token) {
+        String path =  projectServicePath + "/repo?service_name=CLONE&repo_uuid=" + repoId;
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("token", token);
+        HttpEntity<HttpHeaders> request = new HttpEntity<>(headers);
+        ResponseEntity<JSONObject> responseEntity = restTemplate.exchange(path, HttpMethod.PUT, request, JSONObject.class);
+        log.info(responseEntity.toString());
+        return Objects.requireNonNull(responseEntity.getBody()).getIntValue("code") == 200;
+    }
+
 
     public String getRepoPath1(String repoId) {
         JSONObject jsonObject = restTemplate.getForObject(codeServicePath + "?repo_id=" + repoId, JSONObject.class);

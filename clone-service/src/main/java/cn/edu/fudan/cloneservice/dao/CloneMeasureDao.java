@@ -31,6 +31,11 @@ public class CloneMeasureDao {
         return cloneMeasureMap.get(repoId);
     }
 
+    public List<CloneMeasure> getCloneMeasureByDeveloperAndDuration(String repoId, String developer, String start, String end){
+        List<CloneMeasure> cloneMeasures = cloneMeasureMapper.getCloneMeasuresByDeveloperAndDuration(repoId, developer, start, end);
+        return cloneMeasures;
+    }
+
     @Autowired
     public void setCloneMeasureMapper(CloneMeasureMapper cloneMeasureMapper){
         this.cloneMeasureMapper = cloneMeasureMapper;

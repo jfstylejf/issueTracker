@@ -31,7 +31,8 @@
         method_name,
         code,
         category,
-        clone_num
+        clone_num,
+        commit_time
         )
         VALUES
         <foreach collection="list" item="item" index="index" separator=",">
@@ -47,7 +48,8 @@
             #{item.methodName},
             #{item.code},
             #{item.category},
-            #{item.num}
+            #{item.num},
+            #{item.commitTime}
             )
         </foreach>
     </insert>
@@ -72,21 +74,24 @@
         delete from clone_location where repo_id=#{repo_id}
     </delete>
 
+    <delete id="deleteCloneLocationByCommitId" parameterType="String">
+        delete from clone_location where commit_id=#{commit_id}
+    </delete>
+
     <select id="getCloneLocationsTest" parameterType="String" resultMap="cloneLocation">
         select * from issueTrackerTest.clone_location where repo_id=#{repo_id} and commit_id=#{commit_id}
     </select>
 
     <select id="getLatestCommitId" parameterType="String" resultType="String">
         SELECT commit_id
-        from issueTracker.commit_view
+        from issueTracker.clone_location
         <where>
-            <if test="repo_uuid != null and repo_uuid != '' ">
-                and repo_uuid = #{repo_uuid}
+            <if test="repo_id != null and repo_id != '' ">
+                and repo_id = #{repo_id}
             </if>
             <if test="until != null and until != '' ">
                 and <![CDATA[ commit_time <= #{until} ]]>
             </if>
-            and message NOT LIKE '%Merge%'
         </where>
         ORDER By commit_time desc limit 1
     </select>
