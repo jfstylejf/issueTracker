@@ -7,6 +7,7 @@ import cn.edu.fudan.measureservice.domain.RepoMeasure;
 import cn.edu.fudan.measureservice.domain.ResponseBean;
 import cn.edu.fudan.measureservice.domain.dto.Query;
 import cn.edu.fudan.measureservice.service.MeasureRepoService;
+import cn.edu.fudan.measureservice.util.DateTimeUtil;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
@@ -26,16 +27,9 @@ import java.util.concurrent.*;
 @RestController
 public class MeasureRepoController {
 
-    @Resource(name = "myThreadPool")
-    private ExecutorService threadPool;
-
     private MeasureRepoService measureRepoService;
 
     private ProjectDao projectDao;
-
-
-    private static final String split = ",";
-    private static DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
 
     @ApiOperation(value = "获取一个项目在某个时间段特定时间单位的项目级别的所有度量信息", notes = "@return List<RepoMeasure>", httpMethod = "GET")
@@ -55,7 +49,7 @@ public class MeasureRepoController {
 
         try{
             if(until==null || "".equals(until)) {
-                until = dtf.format(LocalDate.now().plusDays(1));
+                until = DateTimeUtil.dtf.format(LocalDate.now().plusDays(1));
             }
             return new ResponseBean<>(HttpStatus.OK.value(),"success", measureRepoService.getRepoMeasureByRepoUuid(repoUuid,since,until,granularity));
         }catch (Exception e){
@@ -83,7 +77,7 @@ public class MeasureRepoController {
 
         try{
             if(until==null || "".equals(until)) {
-                until = dtf.format(LocalDate.now().plusDays(1));
+                until = DateTimeUtil.dtf.format(LocalDate.now().plusDays(1));
             }
             return new ResponseBean<>(HttpStatus.OK.value(),"success",measureRepoService.getCommitBaseInformationByDuration(repoUuid, since, until, developerName));
         }catch (Exception e){
@@ -113,9 +107,9 @@ public class MeasureRepoController {
         try{
             String token = request.getHeader("token");
             if(until==null || "".equals(until)) {
-                until = dtf.format(LocalDate.now().plusDays(1));
+                until = DateTimeUtil.dtf.format(LocalDate.now().plusDays(1));
             }else {
-                until = dtf.format(LocalDate.parse(until,dtf).plusDays(1));
+                until = DateTimeUtil.dtf.format(LocalDate.parse(until,DateTimeUtil.dtf).plusDays(1));
             }
             List<String> repoUuidList;
             if(projectName!=null && !"".equals(projectName)) {
@@ -151,9 +145,9 @@ public class MeasureRepoController {
         try{
             String token = request.getHeader("token");
             if(until==null || "".equals(until)) {
-                until = dtf.format(LocalDate.now().plusDays(1));
+                until = DateTimeUtil.dtf.format(LocalDate.now().plusDays(1));
             }else {
-                until = dtf.format(LocalDate.parse(until,dtf).plusDays(1));
+                until = DateTimeUtil.dtf.format(LocalDate.parse(until,DateTimeUtil.dtf).plusDays(1));
             }
             List<String> repoUuidList;
             if(projectName!=null && !"".equals(projectName)) {
@@ -187,7 +181,7 @@ public class MeasureRepoController {
 
         try{
             String token = request.getHeader("token");
-            until = timeProcess(until);
+            until = DateTimeUtil.processUntil(until);
             List<String> repoUuidList;
             if(projectName!=null && !"".equals(projectName)) {
                 repoUuidList = projectDao.getProjectRepoList(projectName,token);
@@ -222,24 +216,6 @@ public class MeasureRepoController {
         }
     }
 
-    /**
-     * 查询时间统一处理加一天
-     * @param until 查询截止时间
-     * @return String until
-     */
-    private String timeProcess(String until) {
-        try {
-            if(until!=null && !"".equals(until)) {
-                until = dtf.format(LocalDate.parse(until,dtf).plusDays(1));
-            }else {
-                until = dtf.format(LocalDate.now().plusDays(1));
-            }
-            return until;
-        }catch (Exception e) {
-            e.getMessage();
-        }
-        return null;
-    }
 
     @Autowired
     public MeasureRepoController(MeasureRepoService measureRepoService) {

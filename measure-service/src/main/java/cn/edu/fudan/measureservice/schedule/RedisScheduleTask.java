@@ -54,6 +54,7 @@ public class RedisScheduleTask {
      * 缓存的过期时间配置为24小时
      * 每天凌晨两点刷新数据
      * fixme 存在问题之后改
+     * todo 添加每日删除developerValidMsg相关信息
      */
     @Scheduled(cron = "0 0 2 * * ?")
     private void configureTasks() throws ParseException {

@@ -55,7 +55,7 @@
         </where>
     </select>
 
-    <select id="getDeveloperGitNameList"  resultType="String">
+    <select id="getCommitGitNameList"  resultType="String">
         SELECT DISTINCT developer FROM issueTracker.commit
         <where>
             <trim prefixOverrides="and">

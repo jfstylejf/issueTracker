@@ -10,13 +10,14 @@ import cn.edu.fudan.measureservice.domain.vo.*;
 import cn.edu.fudan.measureservice.portrait.DeveloperMetrics;
 import cn.edu.fudan.measureservice.domain.bo.DeveloperPortrait;
 import cn.edu.fudan.measureservice.service.MeasureDeveloperService;
+import cn.edu.fudan.measureservice.util.DateTimeUtil;
 import com.alibaba.excel.EasyExcel;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.aspectj.weaver.patterns.IToken;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -39,10 +40,6 @@ public class MeasureDeveloperController {
     private final MeasureDeveloperService measureDeveloperService;
 
     private ProjectDao projectDao;
-
-    private final static String split = ",";
-
-    private final static DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     public MeasureDeveloperController(MeasureDeveloperService measureDeveloperService) {
         this.measureDeveloperService = measureDeveloperService;
@@ -86,7 +83,7 @@ public class MeasureDeveloperController {
             HttpServletRequest request
     ){
         try{
-            until = timeProcess(until);
+            until = DateTimeUtil.processUntil(until);
             String token = request.getHeader("token");
             List<String> repoUuidList;
             if(token==null || "".equals(token)) {
@@ -141,9 +138,7 @@ public class MeasureDeveloperController {
                                                       @RequestParam(value = "tool", required = false, defaultValue = "sonarqube")String tool,
                                                       HttpServletRequest request){
         try{
-            if(until==null || "".equals(until)) {
-                until = dtf.format(LocalDate.now().plusDays(1));
-            }
+            until = DateTimeUtil.processUntil(until);
             String token = request.getHeader("token");
             List<String> repoUuidList = projectDao.involvedRepoProcess(repoUuid,token);
             Query query = new Query(token,since,until,developer,repoUuidList);
@@ -171,7 +166,7 @@ public class MeasureDeveloperController {
                                                                 HttpServletRequest request){
 
         try{
-            until = timeProcess(until);
+            until = DateTimeUtil.processUntil(until);
             String token = request.getHeader("token");
             List<String> repoUuidList;
             if(projectName!=null && !"".equals(projectName)) {
@@ -210,9 +205,7 @@ public class MeasureDeveloperController {
                                               HttpServletRequest request){
 
         try{
-            if(until==null || "".equals(until)) {
-                until = dtf.format(LocalDate.now().plusDays(1));
-            }
+            until = DateTimeUtil.processUntil(until);
             String token = request.getHeader("token");
             return new ResponseBean<>(HttpStatus.OK.value(),"success",(List<cn.edu.fudan.measureservice.portrait2.DeveloperPortrait>) measureDeveloperService.getPortraitCompetence(developer,repoUuidList,since,until,token));
         }catch (Exception e){
@@ -249,7 +242,7 @@ public class MeasureDeveloperController {
                                           HttpServletRequest request){
 
         try{
-            until = timeProcess(until);
+            until = DateTimeUtil.processUntil(until);
             String token = request.getHeader("token");
             List<String> repoUuidList;
             if(projectName!=null && !"".equals(projectName)) {
@@ -296,7 +289,7 @@ public class MeasureDeveloperController {
                                                                                            @RequestParam(value = "show_detail",required = false, defaultValue = "false") boolean showDetail,
                                                                                            HttpServletRequest request) {
         try {
-            until = timeProcess(until);
+            until = DateTimeUtil.processUntil(until);
             String token = request.getHeader("token");
             return new ResponseBean<>(HttpStatus.OK.value(),"success",measureDeveloperService.getCommitStandardTrendChartIntegratedByProject(projectIds,since,until,token,interval));
         }catch (Exception e) {
@@ -321,7 +314,7 @@ public class MeasureDeveloperController {
                                                         @RequestParam(required = false, defaultValue = "") String order,
                                                         HttpServletRequest request) {
         try { //todo 增加更具开发者查询功能
-            until = timeProcess(until);
+            until = DateTimeUtil.processUntil(until);
             String token = request.getHeader("token");
             List<ProjectCommitStandardDetail> projectCommitStandardDetailList = measureDeveloperService.getCommitStandardDetailIntegratedByProject(projectNameList,repoUuidList,committer,since,until,token);
             if (is_valid) {
@@ -355,7 +348,7 @@ public class MeasureDeveloperController {
                                          HttpServletResponse response,
                                          HttpServletRequest request)  {
         try {
-            until = timeProcess(until);
+            until = DateTimeUtil.processUntil(until);
             String token = request.getHeader("token");
             List<ProjectCommitStandardDetail> projectCommitStandardDetailList = measureDeveloperService.getCommitStandardDetailIntegratedByProject(projectNameList,repoUuidList,null,since,until,token);
             projectCommitStandardDetailList.sort((o1, o2) -> o2.getCommitTime().compareTo(o1.getCommitTime()));
@@ -396,7 +389,7 @@ public class MeasureDeveloperController {
                                                                  @RequestParam(required = false, defaultValue = "week") String interval,
                                                                  HttpServletRequest request) {
         try {
-            until = timeProcess(until);
+            until = DateTimeUtil.processUntil(until);
             String token = request.getHeader("token");
             return new ResponseBean<>(HttpStatus.OK.value(),"success",measureDeveloperService.getHugeLocRemainedFile(projectIds,since,until,token,interval));
         }catch (Exception e) {
@@ -505,9 +498,7 @@ public class MeasureDeveloperController {
                                                 @RequestParam(value = "until", required = false)String until){
 
         try{
-            if(until!=null && !"".equals(until)) {
-                until = dtf.format(LocalDate.now().plusDays(1));
-            }
+            until = DateTimeUtil.processUntil(until);
             return new ResponseBean<>(HttpStatus.OK.value(),"success",(Map<String,Object>) measureDeveloperService.getStatementByCondition(repUuidList,developer,since,until));
         }catch (Exception e){
             e.printStackTrace();
@@ -533,9 +524,7 @@ public class MeasureDeveloperController {
                                                @RequestParam(value = "until", required = false)String until){
 
         try{
-            if(until!=null && !"".equals(until)) {
-                until = dtf.format(LocalDate.now().plusDays(1));
-            }
+            until = DateTimeUtil.processUntil(until);
             return new ResponseBean<>(HttpStatus.OK.value(),"success",(List<Map<String, Object>>)measureDeveloperService.getDeveloperRecentNews(repoUuidList,developer,since,until));
         }catch (Exception e){
             e.printStackTrace();
@@ -562,7 +551,7 @@ public class MeasureDeveloperController {
                                                                     @RequestParam(required = false, defaultValue = "true")boolean asc ,
                                                                     HttpServletRequest request){
         try{
-            until = timeProcess(until);
+            until = DateTimeUtil.processUntil(until);
             String token = request.getHeader("token");
             List<String> repoUuidList;
             if(token==null || "".equals(token)) {
@@ -581,24 +570,6 @@ public class MeasureDeveloperController {
         }
     }
 
-    /**
-     * 查询时间统一处理加一天
-     * @param until 查询截止时间
-     * @return String until
-     */
-    private String timeProcess(String until) {
-        try {
-            if(until!=null && !"".equals(until)) {
-                until = dtf.format(LocalDate.parse(until,dtf).plusDays(1));
-            }else {
-                until = dtf.format(LocalDate.now().plusDays(1));
-            }
-            return until;
-        }catch (Exception e) {
-            e.getMessage();
-        }
-        return null;
-    }
 
     @Autowired
     public void setProjectDao(ProjectDao projectDao) {this.projectDao = projectDao;}

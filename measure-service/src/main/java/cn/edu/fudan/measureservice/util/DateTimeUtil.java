@@ -185,4 +185,25 @@ public class DateTimeUtil {
             return null;
         }
     }
+
+    /**
+     * 查询时间统一处理加一天
+     * @param until 查询截止时间
+     * @return String until
+     */
+    public static String processUntil(String until) {
+        try {
+            if(until!=null && !"".equals(until)) {
+                until = DateTimeUtil.dtf.format(LocalDate.parse(until,DateTimeUtil.dtf).plusDays(1));
+            }else {
+                until = DateTimeUtil.dtf.format(LocalDate.now().plusDays(1));
+            }
+            return until;
+        }catch (Exception e) {
+            e.getMessage();
+        }
+        return null;
+    }
+
+
 }

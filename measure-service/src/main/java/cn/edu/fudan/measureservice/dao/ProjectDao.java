@@ -55,7 +55,7 @@ public class ProjectDao {
      */
     public List<String> getDeveloperList(Query query) {
         List<String> list;
-        List<String> developerGitNameList =  projectMapper.getDeveloperGitNameList(query.getRepoUuidList(),query.getSince(),query.getUntil());
+        List<String> developerGitNameList =  projectMapper.getCommitGitNameList(query.getRepoUuidList(),query.getSince(),query.getUntil());
         list = accountMapper.getAccountNameList(developerGitNameList);
         list.removeIf(Objects::isNull);
         return list;
@@ -245,8 +245,9 @@ public class ProjectDao {
      * @param query 查询条件
      * @return List<Map<String,Object>> key : developer , commit_time , commit_id , message
      */
+    @Cacheable(value = "developerValidCommitMsg",key = "#query.developer+'_'+#query.since+'~'+#query.until")
     public List<Map<String,String>> getDeveloperValidCommitMsg(Query query) {
-        List<String> developerGitNameList = accountMapper.getDeveloperAccountGitNameList(query.getDeveloper());
+        List<String> developerGitNameList = ((ProjectDao) AopContext.currentProxy()).getDeveloperGitNameList(query.getDeveloper());
         return projectMapper.getDeveloperValidCommitMsg(query.getRepoUuidList(),query.getSince(),query.getUntil(),developerGitNameList);
     }
 
@@ -259,6 +260,15 @@ public class ProjectDao {
         return projectMapper.getProjectValidCommitMsg(query.getRepoUuidList(),query.getSince(),query.getUntil());
     }
 
+    /**
+     * 获取开发者的gitName列表
+     * @param developer 开发者聚合后名
+     * @return 包含 gitName 列表
+     */
+    @Cacheable(value = "developerGitNameList",key = "#developer")
+    public List<String> getDeveloperGitNameList(String developer) {
+        return accountMapper.getDeveloperAccountGitNameList(developer);
+    }
 
     /**
      * 获取查询repoUuid的库名
@@ -552,6 +562,7 @@ public class ProjectDao {
      * @return int projectId
      */
     @SneakyThrows
+    @Cacheable(value = "projectIdByName", key = "#projectName")
     public int getProjectIdByName(String projectName) {
         Integer name = projectMapper.getProjectIdByName(projectName);
         if(name!=null) {

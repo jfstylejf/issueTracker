@@ -21,7 +21,7 @@ public interface ProjectMapper {
      * @param until 查询结束时间
      * @return List<String> 开发者列表信息
      */
-    List<String> getDeveloperGitNameList(@Param("repoUuidList") List<String> repoUuidList, @Param("since")String since, @Param("until")String until);
+    List<String> getCommitGitNameList(@Param("repoUuidList") List<String> repoUuidList, @Param("since")String since, @Param("until")String until);
 
     /**
      * 返回开发者在参与库中的信息

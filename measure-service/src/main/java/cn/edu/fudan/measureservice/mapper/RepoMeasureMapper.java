@@ -11,9 +11,15 @@ import java.util.List;
 import java.util.Map;
 
 @Repository
+// fixme 删除前代无用代码，补全javaDoc
 public interface RepoMeasureMapper {
 
-    int sameRepoMeasureOfOneCommit(@Param("repo_id")String repo_id,@Param("commit_id")String commit_id);
+    /**
+     * 查询 repo_measure 中是否存在这条 commit 信息
+     * @param commitId 查询 commit_id
+     * @return 存在的记录数
+     */
+    int containCommitIdOrNot(@Param("commit_id")String commitId);
 
     RepoMeasure getRepoMeasureByCommit(@Param("repo_id")String repo_id,@Param("commit_id")String commit_id);
 

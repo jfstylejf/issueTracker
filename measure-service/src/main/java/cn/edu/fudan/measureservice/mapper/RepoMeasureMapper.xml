@@ -147,8 +147,9 @@
            )
     </insert>
 
-    <select id="sameRepoMeasureOfOneCommit" resultType="int">
-        select count(*) from issueTracker.repo_measure where repo_id = #{repo_id} and commit_id = #{commit_id}
+    <select id="containCommitIdOrNot" resultType="int">
+        select count(uuid) from issueTracker.repo_measure
+        where  commit_id = #{commit_id}
     </select>
 
     <select id="getRepoMeasureByCommit" resultMap="repoMeasure">

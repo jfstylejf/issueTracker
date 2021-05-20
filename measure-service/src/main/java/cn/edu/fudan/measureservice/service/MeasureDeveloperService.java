@@ -848,7 +848,6 @@ public class MeasureDeveloperService {
      * @return
      */
     @SuppressWarnings("unchecked")
-    @Cacheable(cacheNames = {"commitStandard"})
     public List<DeveloperCommitStandard> getCommitStandard(Query query , List<String> developerAccountNames) {
         List<DeveloperCommitStandard> developerCommitStandardList = new ArrayList<>();
         List<String> developerList = new ArrayList<>();
@@ -1002,9 +1001,9 @@ public class MeasureDeveloperService {
         // 获取可见库列表
         List<String> visibleRepoList = projectDao.getVisibleRepoListByProjectNameAndRepo(projectNameList,repoUuidList,token);
         Query query = new Query(token,since,until,committer,visibleRepoList);
-        List<DeveloperCommitStandard> developerCommitStandardList = getCommitStandard(query,null);
+        List<DeveloperCommitStandard> developerCommitStandardList = ((MeasureDeveloperService) AopContext.currentProxy()).getCommitStandard(query,null);
         for (DeveloperCommitStandard developerCommitStandard : developerCommitStandardList) {
-            projectCommitStandardDetailList.addAll(dealWithDeveloperCommitStandardDetail(developerCommitStandard,token));
+            projectCommitStandardDetailList.addAll(((MeasureDeveloperService) AopContext.currentProxy()).dealWithDeveloperCommitStandardDetail(developerCommitStandard,token));
         }
         return projectCommitStandardDetailList;
      }
@@ -1016,7 +1015,7 @@ public class MeasureDeveloperService {
      * @param developerCommitStandard 开发者提交规范性明细
      * @return new ArrayList<{@link ProjectCommitStandardDetail}>
      */
-     private List<ProjectCommitStandardDetail> dealWithDeveloperCommitStandardDetail(DeveloperCommitStandard developerCommitStandard,String token) {
+     public List<ProjectCommitStandardDetail> dealWithDeveloperCommitStandardDetail(DeveloperCommitStandard developerCommitStandard,String token) {
          List<ProjectCommitStandardDetail> projectCommitStandardDetailList = new ArrayList<>();
          List<Map<String,String>> developerJiraCommitInfo = developerCommitStandard.getDeveloperJiraCommitInfo();
          List<Map<String,String>> developerInvalidCommitInfo = developerCommitStandard.getDeveloperInvalidCommitInfo();
