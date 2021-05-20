@@ -13,6 +13,7 @@ public interface RelationshipMapper {
     // todo get certain commit  use where commit in
     // todo may one commit but many
     List<RelationView> getRelationBydate(String date);
+    List<RelationView> getRelationBydateAndProjectIds(String date,String repoUuids);
     int add(RelationShip relationship);
     @Select("SELECT  count(*) FROM issueTracker.dependency_detail " +
             "WHERE repo_uuid = #{repoUuid};")

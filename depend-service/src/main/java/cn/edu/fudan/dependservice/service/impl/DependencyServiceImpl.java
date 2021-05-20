@@ -42,6 +42,82 @@ public class DependencyServiceImpl implements DependencyService {
     public void setApplicationContext(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
     }
+//    todo  one sql
+    public List<DependencyInfo> getDependencyNum2(String beginDate, String endDate, String projectIds, String interval, String showDetail, String level) {
+        List<DependencyInfo> numInfo = new ArrayList<>();
+        String time1 = " 00:00:00";
+        String time2 = " 24:00:00";
+        // todo
+        if (projectIds==null||projectIds.isEmpty()||projectIds.equals("\"\"")) {
+            projectIds = statisticsDao.getAllProjectIds();
+        }
+        // to do  make projectid is ok for next sql
+            if (projectIds.length() != 0) {
+                String tempDateBegin = beginDate.split(" ")[0] + time1;
+                String tempDateEnd;
+                switch (interval) {
+                    case "day":
+                        tempDateEnd = beginDate.split(" ")[0] + time2;
+                        while (tempDateBegin.compareTo(endDate) < 1) {
+                            numInfo.addAll(statisticsDao.getDependencyNum2(tempDateEnd,projectIds, showDetail));
+                            tempDateBegin = datePlus(tempDateBegin.split(" ")[0]) + time1;
+                            tempDateEnd = tempDateBegin.split(" ")[0] + time2;
+                        }
+                        break;
+                    case "month":
+                        while (tempDateBegin.compareTo(endDate) < 1) {
+                            tempDateEnd = tempDateBegin;
+                            int year = Integer.parseInt(tempDateEnd.split(" ")[0].split("-")[0]);
+                            int month = Integer.parseInt(tempDateEnd.split(" ")[0].split("-")[1]);
+                            tempDateEnd = lastDayOfMonth(year, month) + time2;
+                            numInfo.addAll(statisticsDao.getDependencyNum2(tempDateEnd,projectIds, showDetail));
+
+                            tempDateBegin = datePlus(tempDateEnd).split(" ")[0] + time1;
+                        }
+                        break;
+                    case "year":
+                        while (tempDateBegin.compareTo(endDate) < 1) {
+                            tempDateEnd = tempDateBegin;
+                            int year = Integer.parseInt(tempDateEnd.split(" ")[0].split("-")[0]);
+                            tempDateEnd = lastDayOfMonth(year, 12) + time2;
+                            numInfo.addAll(statisticsDao.getDependencyNum2(tempDateEnd,projectIds, showDetail));
+
+                            tempDateBegin = datePlus(tempDateEnd).split(" ")[0] + time1;
+                        }
+                        break;
+                    default:
+                        while (tempDateBegin.compareTo(endDate) < 1) {
+                            tempDateEnd = tempDateBegin;
+                            try {
+                                SimpleDateFormat sdf = new SimpleDateFormat(PublicConstants.TIME_FORMAT);
+                                Calendar cal = Calendar.getInstance();
+                                Date time = sdf.parse(tempDateEnd.split(" ")[0]);
+                                cal.setTime(time);
+                                int dayWeek = cal.get(Calendar.DAY_OF_WEEK);
+                                if (1 == dayWeek) {
+                                    cal.add(Calendar.DAY_OF_MONTH, -1);
+                                }
+                                cal.setFirstDayOfWeek(Calendar.MONDAY);
+                                int day = cal.get(Calendar.DAY_OF_WEEK);
+                                cal.add(Calendar.DATE, cal.getFirstDayOfWeek() - day);
+                                cal.add(Calendar.DATE, 6);
+                                tempDateEnd = sdf.format(cal.getTime()) + time2;
+                            } catch (ParseException e) {
+                                e.printStackTrace();
+                            }
+                            numInfo.addAll(statisticsDao.getDependencyNum2(tempDateEnd,projectIds, showDetail));
+
+                            tempDateBegin = datePlus(tempDateEnd).split(" ")[0] + time1;
+                        }
+                        break;
+                }
+            }
+
+
+
+        return numInfo;
+
+    }
 
     public List<DependencyInfo> getDependencyNumWithDate(String beginDate, String endDate, String projectIds, String interval, String showDetail, String level) {
         List<DependencyInfo> numInfo = new ArrayList<>();
@@ -51,7 +127,6 @@ public class DependencyServiceImpl implements DependencyService {
         if (projectIds==null||projectIds.isEmpty()||projectIds.equals("\"\"")) {
             projectIds = statisticsDao.getAllProjectIds();
         }
-        log.info("projectIds : "+projectIds);
         for (String projectId : projectIds.split(",")) {
             if (projectId.length() != 0) {
                 String tempDateBegin = beginDate.split(" ")[0] + time1;

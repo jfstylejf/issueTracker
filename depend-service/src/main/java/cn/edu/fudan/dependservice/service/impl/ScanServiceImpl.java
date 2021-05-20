@@ -3,7 +3,7 @@ package cn.edu.fudan.dependservice.service.impl;
 import cn.edu.fudan.dependservice.component.ScanProcessor;
 import cn.edu.fudan.dependservice.dao.ScanDao;
 import cn.edu.fudan.dependservice.dao.StatisticsDao;
-import cn.edu.fudan.dependservice.domain.RepoUuidsInfo;
+import cn.edu.fudan.dependservice.domain.RepoInfo;
 import cn.edu.fudan.dependservice.domain.ScanRepo;
 import cn.edu.fudan.dependservice.domain.ScanStatus;
 import cn.edu.fudan.dependservice.service.ScanService;
@@ -31,15 +31,15 @@ public class ScanServiceImpl implements ScanService {
     @Override
     public List<ScanRepo> scanAllRepoNearToOneDate(String toScanDate) {
         // todo change here
-        List<RepoUuidsInfo> repoUuidsInfos = statisticsDao.getallRepoUuid();
-        List<RepoUuidsInfo> repoUuidsInfosThatNeedScan = new ArrayList<>();
-        for (RepoUuidsInfo repoUuidsInfo : repoUuidsInfos) {
-            if (repoUuidsInfo.getLanguage() != null && (repoUuidsInfo.getLanguage().equals("Java") || repoUuidsInfo.getLanguage().equals("C++"))) {
-                repoUuidsInfosThatNeedScan.add(repoUuidsInfo);
+        List<RepoInfo> repoInfos = statisticsDao.getallRepoUuid();
+        List<RepoInfo> repoInfosThatNeedScan = new ArrayList<>();
+        for (RepoInfo repoInfo : repoInfos) {
+            if (repoInfo.getLanguage() != null && (repoInfo.getLanguage().equals("Java") || repoInfo.getLanguage().equals("C++"))) {
+                repoInfosThatNeedScan.add(repoInfo);
             }
         }
         List<ScanRepo> scanRepos = new ArrayList<>();
-        for (RepoUuidsInfo re : repoUuidsInfosThatNeedScan) {
+        for (RepoInfo re : repoInfosThatNeedScan) {
             // todo set scanstatus
             ScanRepo scanRepo = new ScanRepo();
             scanRepo.setRepoUuid(re.getRepoUuid());

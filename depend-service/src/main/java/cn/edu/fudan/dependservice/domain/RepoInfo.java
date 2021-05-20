@@ -7,13 +7,13 @@ import java.io.Serializable;
 
 @Getter
 @Setter
-public class RepoUuidsInfo implements Serializable {
+public class RepoInfo implements Serializable {
     private String repoUuid;
     private String repoName;
     private String language;
     private String branch;
 
-    public RepoUuidsInfo() {
+    public RepoInfo() {
 
     }
 

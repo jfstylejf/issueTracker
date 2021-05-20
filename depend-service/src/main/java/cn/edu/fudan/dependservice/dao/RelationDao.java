@@ -20,4 +20,7 @@ public class RelationDao {
          return relationshipMapper.getRelationBydate(date);
 
     }
+    public  List<RelationView> getRelationBydateAndProjectIds(String date,String repoUuids){
+        return relationshipMapper.getRelationBydateAndProjectIds(date,repoUuids);
+    }
 }

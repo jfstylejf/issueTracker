@@ -3,7 +3,6 @@ package cn.edu.fudan.dependservice.mapper;
 
 import cn.edu.fudan.dependservice.domain.*;
 import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -24,7 +23,7 @@ public interface LocationMapper {
     List<RelationShip> getDependencyInfo(@Param("repoUuid") String repoUuid);
     List<RelationShip> getFileByCommitId(@Param("repoUuid") String repoUuid,@Param("commitid") String commitid);
 
-    List<RepoUuidsInfo> getRepoUuids(@Param("projectName") String projectName);
+    List<RepoInfo> getRepoUuids(@Param("projectName") String projectName);
 
     /**
      * 获取所有projectId
@@ -35,4 +34,7 @@ public interface LocationMapper {
 
     List<Commit> getScanedCommit(@Param("repoUuid") String repoUuid);
 
+    List<RepoInfo> getReposbyProjectIds(String projectIds);
+
+    List<Project> getAllProjects();
 }

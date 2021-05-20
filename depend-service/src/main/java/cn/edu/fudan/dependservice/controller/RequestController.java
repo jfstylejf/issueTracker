@@ -36,9 +36,10 @@ public class RequestController {
             @ApiImplicitParam(name = "interval", value = "间隔类型", dataType = "String", defaultValue = "week"),
             @ApiImplicitParam(name = "detail", value = "是否展示detail", dataType = "String", defaultValue = "false")
     })
-    @GetMapping(value = {"/dependency"})
+    @GetMapping(value = {"/dependency/test"})
     @CrossOrigin
-    public ResponseBean<List<DependencyInfo>> getCycleNum(@RequestParam(value = "since") String beginDate,
+    @Deprecated
+    public ResponseBean<List<DependencyInfo>> getFileNumInCycle(@RequestParam(value = "since") String beginDate,
                                                               @RequestParam(value = "until") String endDate,
                                                               @RequestParam(value = "project_ids", required = false) String project_ids,
                                                               @RequestParam(value = "interval", required = false) String interval,
@@ -57,6 +58,46 @@ public class RequestController {
             }
             List<String> dates = DateHandler.handleParamDate(beginDate, endDate);
             List<DependencyInfo> data = dependencyService.getDependencyNumWithDate(dates.get(0), dates.get(1), projectIds, interval, showDetail, "method");
+
+            if (data.get(0).getProjectName() == null) {
+                return new ResponseBean<>(412, NO_SUCH_PROJECT, null);
+            }
+            return new ResponseBean<>(200, RESPONSE_STATUS_SUCCESS, data);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseBean<>(401, e.getMessage(), null);
+        }
+
+    }
+    @ApiOperation(value = "获取在循环依赖中文件的数量", httpMethod = "GET", notes = "@return Map{\"code\": String, \"msg\": String, \"data\": List<Map>}")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "since", value = "起始时间(yyyy-MM-dd)", required = true, dataType = "String"),
+            @ApiImplicitParam(name = "until", value = "截止时间(yyyy-MM-dd)", required = true, dataType = "String"),
+            @ApiImplicitParam(name = "project_ids", value = "项目id, 以逗号间隔", dataType = "String",defaultValue = "所有的project"),
+            @ApiImplicitParam(name = "interval", value = "间隔类型", dataType = "String", defaultValue = "week"),
+            @ApiImplicitParam(name = "detail", value = "是否展示detail", dataType = "String", defaultValue = "false")
+    })
+    @GetMapping(value = {"/dependency"})
+    @CrossOrigin
+    public ResponseBean<List<DependencyInfo>> getFileNumInCycle2(@RequestParam(value = "since") String beginDate,
+                                                                @RequestParam(value = "until") String endDate,
+                                                                @RequestParam(value = "project_ids", required = false) String project_ids,
+                                                                @RequestParam(value = "interval", required = false) String interval,
+                                                                @RequestParam(value = "detail", required = false) String showDetail) {
+        String projectIds=project_ids;
+
+        try {
+            if (beginDate.isEmpty() || endDate.isEmpty()) {
+                return new ResponseBean<>(412, PARAMETER_IS_EMPTY, null);
+            }
+            if (interval == null) {
+                interval = "week";
+            }
+            if (showDetail == null) {
+                showDetail = "false";
+            }
+            List<String> dates = DateHandler.handleParamDate(beginDate, endDate);
+            List<DependencyInfo> data = dependencyService.getDependencyNum2(dates.get(0), dates.get(1), projectIds, interval, showDetail, "method");
 
             if (data.get(0).getProjectName() == null) {
                 return new ResponseBean<>(412, NO_SUCH_PROJECT, null);

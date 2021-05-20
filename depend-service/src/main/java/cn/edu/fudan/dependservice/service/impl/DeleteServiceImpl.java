@@ -30,7 +30,7 @@ public class DeleteServiceImpl implements DeleteService {
             if(recallres){
                 log.info(" recall ok");
             }else {
-                log.info(" recall false");
+                log.error(" recall fail");
             }
         }
 
