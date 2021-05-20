@@ -1,14 +1,9 @@
 package cn.edu.fudan.dependservice.service;
 
-import cn.edu.fudan.common.component.BaseRepoRestManager;
-import cn.edu.fudan.common.domain.ScanInfo;
 import cn.edu.fudan.common.domain.po.scan.RepoScan;
-import cn.edu.fudan.common.jgit.JGitHelper;
 import cn.edu.fudan.common.scan.CommonScanProcess;
 import cn.edu.fudan.common.scan.CommonScanService;
-import cn.edu.fudan.common.scan.ToolScan;
 import cn.edu.fudan.dependservice.domain.ScanRepo;
-import cn.edu.fudan.dependservice.mapper.GroupMapper;
 import cn.edu.fudan.dependservice.service.impl.ToolScanImplPara;
 import lombok.Data;
 import org.slf4j.Logger;
@@ -16,13 +11,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
 
-import java.util.Date;
 import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 @Data
 @Service

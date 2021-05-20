@@ -3,7 +3,6 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.edu.fudan.dependservice.mapper.LocationMapper">
 
-
     <resultMap id="projectString" type="String">
         <result property="projectName" column="project_name"/>
     </resultMap>

@@ -2,6 +2,7 @@ package cn.edu.fudan.issueservice.core.analyzer;
 
 import cn.edu.fudan.issueservice.domain.dbo.RawIssue;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.util.*;
 
@@ -12,6 +13,7 @@ import java.util.*;
  * create: 2020-05-20 15:53
  **/
 @Getter
+@Setter
 public abstract class BaseAnalyzer {
 
     protected List<RawIssue> resultRawIssues = new ArrayList<>();
@@ -53,10 +55,6 @@ public abstract class BaseAnalyzer {
      * @return 缺陷优先级
      */
     public abstract Integer getPriorityByRawIssue(RawIssue rawIssue);
-
-    public List<RawIssue> getResultRawIssues() {
-        return resultRawIssues;
-    }
 
     public void emptyAnalyzeRawIssues() {
         resultRawIssues.clear();

@@ -49,11 +49,9 @@ public class ToolScanImplPara extends ToolScan {
     private String shName;
 
     long batchWaitTime;
-    final static long oneWaitTime = 6 * 60;
     //unit second, it is 3 minutes
     // todo set a   appropriate detectInterval
     final long detectInterval = 2 * 60;
-    //    String configFile;
     boolean beforedetectRes;
     List<ScanRepo> scanRepos;
     ApplicationContext applicationContext;
@@ -76,9 +74,10 @@ public class ToolScanImplPara extends ToolScan {
     }
 
     @Autowired
-    public void setbatchWaitTime(@Value("${batchSize}") Integer batchSize) {
-        this.batchWaitTime = (long) batchSize * oneWaitTime;
-        log.info("batchWaitTime" + batchWaitTime);
+    public void setbatchWaitTime(@Value("${batchSize}") Integer batchSize,
+                                 @Value("${oneWaitTime}") Integer oneWaitTime) {
+        this.batchWaitTime = (long) batchSize * oneWaitTime * 60;
+        log.info("batchWaitTime {} seconds", batchWaitTime);
     }
 
     @Override
@@ -115,7 +114,6 @@ public class ToolScanImplPara extends ToolScan {
         long endTime = System.currentTimeMillis();
         log.info("The total cost of waiting for the sh results -> {}  second", (endTime - startTime) / 1000);
         putBatchData();
-
         return true;
     }
 
@@ -161,9 +159,8 @@ public class ToolScanImplPara extends ToolScan {
     }
 
     public boolean resultFileDetect() {
-        log.info(" one result detect  every ->{} seconds ", detectInterval);
-        log.info("-----------------------------------------------");
-        log.info("---------------------detect--------------------");
+        log.info(" detectInterval: {} seconds", detectInterval);
+        log.info("------one detect--------------------");
         boolean res = true;
         File dir = new File(resultFileDir);
         if (!dir.isDirectory()) {
@@ -197,10 +194,7 @@ public class ToolScanImplPara extends ToolScan {
                 haveResult++;
             }
         }
-        log.info("detectResult:");
-        log.info("needScan: " + needScan);
-        log.info("haveResult: " + haveResult);
-        log.info("haveNotResult: " + haveNotResult);
+        log.info("Need: " + needScan+ " OK: " +haveResult+" Not: "+haveNotResult);
         return res;
     }
 

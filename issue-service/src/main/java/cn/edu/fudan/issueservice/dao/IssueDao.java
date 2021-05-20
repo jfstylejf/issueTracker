@@ -2,6 +2,7 @@ package cn.edu.fudan.issueservice.dao;
 
 import cn.edu.fudan.issueservice.domain.dbo.Issue;
 import cn.edu.fudan.issueservice.domain.dbo.Location;
+import cn.edu.fudan.issueservice.domain.vo.DeveloperLivingIssueVO;
 import cn.edu.fudan.issueservice.mapper.*;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -174,7 +175,7 @@ public class IssueDao {
         return issueCount == 0 && rawIssueCount == 0;
     }
 
-    public void getDeveloperListLivingIssue(String since, String until, String projectNames, List<String> developers) {
-
+    public List<Map<String, Object>> getDeveloperListLivingIssue(String since, String until, List<String> repoUuids, List<String> developers) {
+        return issueMapper.getDeveloperListLivingIssue(since, until, repoUuids, developers);
     }
 }

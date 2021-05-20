@@ -1,5 +1,6 @@
 package cn.edu.fudan.issueservice.domain.vo;
 
+import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 
@@ -8,10 +9,11 @@ import lombok.Getter;
  * @date 2021-05-12 15:40:18
  */
 @Data
+@Builder
 public class DeveloperLivingIssueVO {
 
     private String developerName;
-    private Integer num;
+    private Long num;
     private String level;
 
     @Getter

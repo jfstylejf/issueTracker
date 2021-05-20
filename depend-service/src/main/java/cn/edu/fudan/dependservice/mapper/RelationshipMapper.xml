@@ -20,7 +20,7 @@
         where repo_uuid = #{repoUuid}
         limit 100;
     </delete>
-    <delete id="deleteByRepoUuidAndCommitId" parameterType="String">
+    <delete id="deleteByRepoUuidAqqndCommitId" parameterType="String">
         delete
         from issueTracker.dependency_detail
         where repo_uuid = #{repoUuid}

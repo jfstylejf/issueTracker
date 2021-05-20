@@ -1,18 +1,17 @@
 package cn.edu.fudan.issueservice.domain.dbo;
 
 import com.alibaba.fastjson.JSONObject;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
  * @author Jeff
  */
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
+@Getter
+@Builder
 public class IssueAnalyzer {
     private String uuid;
     private String repoUuid;
@@ -21,13 +20,36 @@ public class IssueAnalyzer {
     private JSONObject analyzeResult;
     private String tool;
 
-    public static IssueAnalyzer initIssueAnalyzer(String repoId, String commitId, String toolName) {
-        IssueAnalyzer issueAnalyzer = new IssueAnalyzer();
-        issueAnalyzer.setUuid(UUID.randomUUID().toString());
-        issueAnalyzer.setTool(toolName);
-        issueAnalyzer.setRepoUuid(repoId);
-        issueAnalyzer.setCommitId(commitId);
-        return issueAnalyzer;
+    @Getter
+    public enum InvokeResult {
+        /**
+         * issue analyzer 状态
+         */
+        SUCCESS(1),
+        FAILED(0);
+
+        private final int status;
+
+        InvokeResult(int status) {
+            this.status = status;
+        }
     }
 
+    public void updateIssueAnalyzeStatus(List<RawIssue> resultRawIssues) {
+        JSONObject result = new JSONObject();
+        result.put("result", resultRawIssues);
+        this.setInvokeResult(InvokeResult.SUCCESS.getStatus());
+        this.setAnalyzeResult(result);
+    }
+
+    public static IssueAnalyzer initIssueAnalyze(String repoUuid, String commitId, String tool) {
+        return IssueAnalyzer.builder()
+                .uuid(UUID.randomUUID().toString())
+                .repoUuid(repoUuid)
+                .commitId(commitId)
+                .invokeResult(InvokeResult.FAILED.getStatus())
+                .analyzeResult(new JSONObject())
+                .tool(tool)
+                .build();
+    }
 }

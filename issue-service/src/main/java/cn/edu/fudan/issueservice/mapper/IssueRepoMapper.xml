@@ -19,61 +19,38 @@
         <result property="endScanTime" column="end_scan_time"/>
     </resultMap>
 
-    <insert id="insertOneIssueRepo" parameterType="cn.edu.fudan.issueservice.domain.dbo.IssueRepo">
+    <insert id="insertOneIssueRepo">
         insert into issue_repo
-        (uuid,
-         repo_uuid,
+        (repo_uuid,
          branch,
          tool,
          start_commit,
-         end_commit,
          total_commit_count,
-         scanned_commit_count,
          scan_time,
+         scanned_commit_count,
          status,
-         nature,
          start_scan_time,
          end_scan_time)
-        VALUES (#{uuid},
-                #{repoId},
-                #{branch},
-                #{tool},
-                #{startCommit},
-                #{endCommit},
-                #{totalCommitCount},
-                #{scannedCommitCount},
-                #{scanTime},
-                #{status},
-                #{nature},
-                #{startScanTime},
-                #{endScanTime})
+        VALUES (#{issueRepo.repoUuid},
+                #{issueRepo.branch},
+                #{issueRepo.tool},
+                #{issueRepo.startCommit},
+                #{issueRepo.totalCommitCount},
+                #{issueRepo.scanTime},
+                #{issueRepo.scannedCommitCount},
+                #{issueRepo.status},
+                #{issueRepo.startScanTime},
+                #{issueRepo.endScanTime})
     </insert>
 
-    <update id="updateIssueRepo" parameterType="cn.edu.fudan.issueservice.domain.dbo.IssueRepo">
-        update issue_repo
-        <trim prefix="set" suffixOverrides=",">
-            <if test="totalCommitCount != null and totalCommitCount != ''">
-                total_commit_count = #{totalCommitCount},
-            </if>
-            <if test="status != null and status != ''">
-                status = #{status},
-            </if>
-            <if test="scannedCommitCount != null and scannedCommitCount != ''">
-                scanned_commit_count = #{scannedCommitCount},
-            </if>
-            <if test="endCommit != null and endCommit != ''">
-                end_commit = #{endCommit},
-            </if>
-            <if test="scanTime != null and scanTime != ''">
-                scan_time = #{scanTime},
-            </if>
-            <if test="endScanTime != null">
-                end_scan_time = #{endScanTime},
-            </if>
-        </trim>
-        <where>
-            uuid = #{uuid}
-        </where>
+    <update id="updateIssueRepo">
+        UPDATE issue_repo
+        SET end_scan_time        = #{issueRepo.endScanTime},
+            scanned_commit_count = #{issueRepo.scannedCommitCount},
+            scan_time            = #{issueRepo.scanTime}
+        WHERE repo_uuid = #{issueRepo.repoUuid}
+          AND branch = #{issueRepo.branch}
+
     </update>
 
     <delete id="deleteIssueRepoByCondition" parameterType="String">

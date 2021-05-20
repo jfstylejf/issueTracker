@@ -40,4 +40,14 @@ public class PagedGridResult<T> {
             PageHelper.startPage(page, ps, orderBy);
         }
     }
+
+    public PagedGridResult<T> setterPagedGrid(List<T> list, Integer page) {
+        PageInfo<?> pageList = new PageInfo<>(list);
+        PagedGridResult<T> grid = new PagedGridResult<>();
+        grid.setPage(page);
+        grid.setRows(list);
+        grid.setTotal(pageList.getPages());
+        grid.setRecords(pageList.getTotal());
+        return grid;
+    }
 }

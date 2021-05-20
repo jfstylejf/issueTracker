@@ -3,6 +3,7 @@ package cn.edu.fudan.common.scan;
 import cn.edu.fudan.common.component.BaseRepoRestManager;
 import cn.edu.fudan.common.domain.ScanInfo;
 import cn.edu.fudan.common.domain.po.scan.RepoScan;
+import cn.edu.fudan.common.exception.CodePathGetFailedException;
 import cn.edu.fudan.common.jgit.JGitHelper;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -41,7 +42,7 @@ public abstract class CommonScanProcess implements CommonScanService {
     }
 
     @Async("taskExecutor")
-    public void scan(String repoUuid, String branch, String beginCommit, String endCommit) {
+    public void scan(String repoUuid, String branch, String beginCommit, String endCommit) throws CodePathGetFailedException {
         // todo 查询repository表 来查看repo 所包含的语言 让后决定采用什么工具来调用
         String[] tools = getToolsByRepo(repoUuid);
 
@@ -75,7 +76,7 @@ public abstract class CommonScanProcess implements CommonScanService {
     /**
      * 设置同步状态 处理接口请求 判断扫描是否需要更新
      **/
-    public void scan(String repoUuid, String branch, String beginCommit) {
+    public void scan(String repoUuid, String branch, String beginCommit) throws CodePathGetFailedException {
         scan(repoUuid, branch, beginCommit, null);
     }
 
@@ -86,7 +87,7 @@ public abstract class CommonScanProcess implements CommonScanService {
     /**
      * 一个 commitList 扫描完成之后再次检查 查看是否有更新扫描的请求
      **/
-    private void checkAfterScan(String repoUuid, String branch, String tool, String endCommit) {
+    private void checkAfterScan(String repoUuid, String branch, String tool, String endCommit) throws CodePathGetFailedException {
         String key = generateKey(repoUuid, tool);
         if (!scanStatusMap.containsKey(key)) {
             log.error("{} : not in cn.edu.fudan.common.scan scanStatusMap", repoUuid);
@@ -104,7 +105,7 @@ public abstract class CommonScanProcess implements CommonScanService {
         checkAfterScan(repoUuid, branch, tool, endCommit);
     }
 
-    void beginScan(String repoUuid, String branch, String beginCommit, String tool, String endCommit) {
+    void beginScan(String repoUuid, String branch, String beginCommit, String tool, String endCommit) throws CodePathGetFailedException {
         Thread curThread = Thread.currentThread();
         String threadName = generateKey(repoUuid, tool);
         curThread.setName(threadName);
@@ -116,7 +117,7 @@ public abstract class CommonScanProcess implements CommonScanService {
         String repoPath = baseRepoRestManager.getCodeServiceRepo(repoUuid);
         if (repoPath == null) {
             log.error("{} : can't get repoPath", repoUuid);
-            return;
+            throw new CodePathGetFailedException("can't get repo path");
         }
         List<String> scannedCommitList = getScannedCommitList(repoUuid, tool);
 
@@ -132,6 +133,7 @@ public abstract class CommonScanProcess implements CommonScanService {
                 .scannedCommitCount(scannedCommitCount)
                 .startScanTime(new Date())
                 .endScanTime(new Date())
+                .scanTime(0)
                 .build();
         try {
             if (StringUtils.isEmpty(beginCommit)) {
@@ -162,7 +164,6 @@ public abstract class CommonScanProcess implements CommonScanService {
             log.info("commit size : {}", toScanCommitList.size());
 
             insertRepoScan(repoScan);
-            boolean success = false;
 
             // loadData 用于传输扫描的信息
             specificTool.loadData(repoUuid, branch, repoPath, initialScan, toScanCommitList, repoScan, scannedCommitCount);
@@ -171,7 +172,7 @@ public abstract class CommonScanProcess implements CommonScanService {
             for (String commit : toScanCommitList) {
                 log.info("begin scan {}", commit);
                 specificTool.prepareForOneScan(commit);
-                success = specificTool.scanOneCommit(commit);
+                specificTool.scanOneCommit(commit);
                 specificTool.cleanUpForOneScan(commit);
                 if (curThread.isInterrupted()) {
                     synchronized (LOCK) {
@@ -180,18 +181,20 @@ public abstract class CommonScanProcess implements CommonScanService {
                     log.warn("thread:{} stopped", threadName);
                     break;
                 }
-                scannedCommitCount = scannedCommitCount + 1;
+                repoScan.setEndScanTime(new Date());
+                repoScan.setScannedCommitCount(++scannedCommitCount);
+                repoScan.setScanTime((repoScan.getEndScanTime().getTime() - repoScan.getStartScanTime().getTime()) / 1000);
+                updateRepoScan(repoScan);
             }
+            repoScan.setStatus(ScanInfo.Status.COMPLETE.getStatus());
             specificTool.cleanUpForScan();
-
-            repoScan.setStatus(success ? ScanInfo.Status.COMPLETE.getStatus() : ScanInfo.Status.FAILED.getStatus());
-            repoScan.setEndScanTime(new Date());
-            updateRepoScan(repoScan);
         } catch (Exception e) {
             e.printStackTrace();
             repoScan.setStatus(ScanInfo.Status.FAILED.getStatus());
-            updateRepoScan(repoScan);
+            repoScan.setEndScanTime(new Date());
+            repoScan.setScanTime((repoScan.getEndScanTime().getTime() - repoScan.getStartScanTime().getTime()) / 1000);
         } finally {
+            updateRepoScan(repoScan);
             baseRepoRestManager.freeRepo(repoUuid, repoPath);
         }
 
