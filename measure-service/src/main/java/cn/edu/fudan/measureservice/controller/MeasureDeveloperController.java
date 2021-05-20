@@ -459,12 +459,14 @@ public class MeasureDeveloperController {
     }
 
     @GetMapping("/developer/data/ccn")
-    public ResponseBean<Object> getDeveloperDataCcn(@RequestParam(value = "project_names",required = false) String projectNameList,
+    public ResponseBean<ProjectFrontEnd> getDeveloperDataCcn(@RequestParam(value = "project_names",required = false) String projectNameList,
                                               @RequestParam(value = "developers",required = true) String developerList,
                                               @RequestParam(value = "since" , required = false) String since,
                                               @RequestParam(value = "until",required = false) String until,
                                               @RequestParam(required = false, defaultValue = "1")int page,
                                               @RequestParam(required = false, defaultValue = "10")int ps,
+                                              @RequestParam(required = false, defaultValue = "") String order,
+                                              @RequestParam(required = false, defaultValue = "") String asc,
                                               HttpServletRequest request )
     {
         try {
@@ -480,6 +482,30 @@ public class MeasureDeveloperController {
         return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(),"failed",null);
     }
 
+    @GetMapping("/developer/data/commit-standard")
+    public ResponseBean<ProjectFrontEnd> getDeveloperDataCommitStandard(@RequestParam(value = "project_names",required = false) String projectNameList,
+                                                               @RequestParam(value = "developers",required = true) String developerList,
+                                                               @RequestParam(value = "since" , required = false) String since,
+                                                               @RequestParam(value = "until",required = false) String until,
+                                                               @RequestParam(required = false, defaultValue = "1")int page,
+                                                               @RequestParam(required = false, defaultValue = "10")int ps,
+                                                               @RequestParam(required = false, defaultValue = "") String order,
+                                                               @RequestParam(required = false, defaultValue = "") String asc,
+                                                               HttpServletRequest request )
+    {
+        try {
+            String token = request.getHeader("token");
+            List<DeveloperDataCommitStandard> developerDataCommitStandardList = measureDeveloperService.getDeveloperDataCommitStandard(projectNameList,developerList,token,since,until);
+            developerDataCommitStandardList.sort((o1, o2) -> Double.compare(o2.getCommitStandard(), o1.getCommitStandard()));
+            int totalPage = developerDataCommitStandardList.size() % ps == 0 ? developerDataCommitStandardList.size()/ps : developerDataCommitStandardList.size()/ps + 1;
+            List<DeveloperDataCommitStandard> selectedDeveloperDataCommitStandardList = developerDataCommitStandardList.subList(ps*(page-1), Math.min(ps * page, developerDataCommitStandardList.size()));
+            ProjectFrontEnd<DeveloperDataCommitStandard> developerDtaCommitStandardProjectFrontEnd = new ProjectFrontEnd<>(page,totalPage,developerDataCommitStandardList.size(),selectedDeveloperDataCommitStandardList);
+            return new ResponseBean<>(HttpStatus.OK.value(),"success",developerDtaCommitStandardProjectFrontEnd);
+        }catch (Exception e) {
+            e.getMessage();
+        }
+        return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(),"failed",null);
+    }
 
     @ApiOperation(value = "返回用户画像页面得代码行数数据，包括所有项目和单个项目的 To codeTracker", notes = "@return Map<String,Object>", httpMethod = "GET")
     @ApiImplicitParams({

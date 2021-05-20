@@ -1162,6 +1162,15 @@ public class MeasureDeveloperService {
          return result;
      }
 
+    /**
+     * 获取开发者修改圈复杂度，并按照项目聚合
+     * @param projectNameList 查询项目列表
+     * @param developers 查询开发者
+     * @param token 查询权限
+     * @param since 起始时间
+     * @param until 截止时间
+     * @return 开发者按照项目为单位聚合后 修改圈复杂度
+     */
      @SneakyThrows
      public  List<DeveloperDataCcn> getDeveloperDataCcn(String projectNameList, String developers, String token , String since, String until) {
         List<DeveloperDataCcn> developerDataCcnList = new ArrayList<>();
@@ -1173,7 +1182,7 @@ public class MeasureDeveloperService {
             // 暂存该开发者 项目 与 库下圈复杂度变化的匹配关系
             Map<String,List<DeveloperRepoCcn>> map = new HashMap<>();
             for (String repoUuid : developerRepoList) {
-                if (!projectDao.getRepoInfoMap().containsKey(           repoUuid)) {
+                if (!projectDao.getRepoInfoMap().containsKey(repoUuid)) {
                     projectDao.insertProjectInfo(token);
                 }
                 RepoInfo repoInfo = projectDao.getRepoInfoMap().get(repoUuid);
@@ -1209,6 +1218,40 @@ public class MeasureDeveloperService {
         }
         return developerDataCcnList;
      }
+
+    /**
+     * 获得开发者人员总览等级及相应数值
+     * @param projectNameList 查询项目列表
+     * @param developers 查询开发者
+     * @param token 查询权限
+     * @param since 起始时间
+     * @param until 截止时间
+     * @return
+     */
+     @SneakyThrows
+     public List<DeveloperDataCommitStandard> getDeveloperDataCommitStandard(String projectNameList, String developers, String token , String since, String until) {
+         List<DeveloperDataCommitStandard> developerDataCommitStandardList = new ArrayList<>();
+         // 获取开发者查询项目下可看库
+         List<String> visibleRepoList = projectDao.getVisibleRepoListByProjectName(projectNameList,token);
+         // 获取开发者提交规范列表
+         Query query = new Query(token,since,until,null,visibleRepoList);
+         List<DeveloperCommitStandard> developerCommitStandardList = getCommitStandard(query,Arrays.asList(developers.split(split)));
+         // 构建人员总览提交规范性类
+         for (DeveloperCommitStandard developerCommitStandard : developerCommitStandardList) {
+             DeveloperDataCommitStandard developerDataCommitStandard = DeveloperDataCommitStandard.builder()
+                     .developerName(developerCommitStandard.getDeveloperName())
+                     .since(since)
+                     .until(until)
+                     .developerJiraCommitCount(developerCommitStandard.getDeveloperJiraCommitCount())
+                     .developerValidCommitCount(developerCommitStandard.getDeveloperValidCommitCount())
+                     .commitStandard(developerCommitStandard.getCommitStandard())
+                     .detail(null)
+                     .level(LevelEnum.Medium.getType()).build();
+             developerDataCommitStandardList.add(developerDataCommitStandard);
+         }
+         return developerDataCommitStandardList;
+     }
+
 
     /**
      * 判断该 repo 信息是否被初始化
