@@ -52,7 +52,7 @@ public interface CloneMeasureMapper {
      */
     void deleteCloneMeasureByRepoIdAndCommitId(@Param("repo_id") String repoId, @Param("commit_id") String commitId);
 
-
+    List<CloneMeasure> getCloneMeasuresByDeveloperAndDuration(@Param("repo_id") String repoId,@Param("developer") String developer, @Param("start") String start, @Param("end") String end);
     /**
      * 获取对应的clone measure次数，用于检测对应repoId， commitId是否扫描过了
      * @param repoId repo id
@@ -77,4 +77,5 @@ public interface CloneMeasureMapper {
     List<String> getAllDeveloper(@Param("repositoryId") String repositoryId, @Param("start") String start, @Param("end") String end);
 
     List<Integer> getProjectByAccountId(@Param("account_uuid") String accountUuid);
+
 }

@@ -5,6 +5,7 @@ import cn.edu.fudan.cloneservice.domain.CloneDetailOverall;
 import cn.edu.fudan.cloneservice.domain.CloneOverallView;
 import cn.edu.fudan.cloneservice.domain.clone.CloneLocation;
 import cn.edu.fudan.cloneservice.mapper.CloneLocationMapper;
+import com.github.pagehelper.util.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
@@ -33,11 +34,11 @@ public class CloneLocationDao {
     public int getCloneLocationGroupSum(List<String> repoUuids, String until) {
         int res = 0;
         for (String repoUuid : repoUuids) {
-            if (repoUuid != null) {
+            if (!StringUtil.isEmpty(repoUuid)) {
+                log.info(repoUuid.concat(" start"));
                 String commitId = cloneLocationMapper.getLatestCommitId(repoUuid, "", until);
-                log.info("repoUuid:".concat(repoUuid).concat(" commitId:").concat(commitId));
-                if (StringUtils.isEmpty(commitId)) {
-                    res = res + cloneLocationMapper.getGroupCount(cloneLocationMapper.getLatestCommitId(repoUuid, "", until));
+                if (!StringUtils.isEmpty(commitId)) {
+                    res = res + cloneLocationMapper.getGroupCount(commitId);
                 }
             }
         }
@@ -49,7 +50,7 @@ public class CloneLocationDao {
         for (String repoUuid : repoUuids) {
             log.info("repo_uuid:".concat(repoUuid));
 
-            if (StringUtils.isEmpty(repoUuid)) {
+            if (!StringUtils.isEmpty(repoUuid)) {
                 String commitId = cloneLocationMapper.getLatestCommitId(repoUuid, "", initDate);
                 if (commitId != null) {
                     int groupSum = cloneLocationMapper.getGroupCount(commitId);
@@ -102,7 +103,7 @@ public class CloneLocationDao {
                 CloneDetailOverall cloneDetailOverall = new CloneDetailOverall(uuid, projectName, projectId, repoUuid, commitId, Integer.parseInt(groupId), cloneType, caseSum, fileSum, codeLengthsAverage);
                 result.add(cloneDetailOverall);
             }
-        }else {
+        } else {
             if (!repoUuids.isEmpty()) {
                 for (String repoUuid : repoUuids) {
                     String commitId1 = cloneLocationMapper.getLatestCommitId(repoUuid, "", initDate);
@@ -168,6 +169,10 @@ public class CloneLocationDao {
 
     public List<CloneLocation> getCloneLocationsTest(String repoId, String commitId) {
         return cloneLocationMapper.getCloneLocationsTest(repoId, commitId);
+    }
+
+    public void deleteCloneLocationByCommitId(String commitId) {
+        cloneLocationMapper.deleteCloneLocationByCommitId(commitId);
     }
 
     public void deleteCloneLocations(String repoId) {

@@ -9,27 +9,21 @@ import cn.edu.fudan.cloneservice.service.ScanService;
 import cn.edu.fudan.cloneservice.task.ScanTask;
 import cn.edu.fudan.cloneservice.util.JGitHelper;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.api.errors.NoHeadException;
-import org.eclipse.jgit.internal.storage.file.FileRepository;
-import org.eclipse.jgit.lib.ObjectId;
-import org.eclipse.jgit.lib.PersonIdent;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static org.reflections.Reflections.log;
 
 /**
  * @author zyh
@@ -48,7 +42,8 @@ public class ScanServiceImpl implements ScanService {
     private RestInterfaceManager rest;
     private CloneLocationDao cloneLocationDao;
     private CloneMeasureService cloneMeasureService;
-
+    @Autowired
+    private RestInterfaceManager restInterfaceManager;
 
     private ConcurrentHashMap<String, Boolean> scanStatus = new ConcurrentHashMap<>();
     private final Short lock = 1;
@@ -107,6 +102,8 @@ public class ScanServiceImpl implements ScanService {
 
         //fixme beginScan if update,begin 1.
         List<String> commitList = jGitHelper.getCommitListByBranchAndBeginCommit(branch, beginCommit, isUpdate);
+        List<String> commitListWeekly = jGitHelper.getCommitListByBranchAndBeginCommitWeekly(branch, beginCommit, isUpdate);
+        log.info("commitListWeekly contains: "+ commitListWeekly.toString());
         int commitSize = commitList.size();
         int lastCommitIndex = commitSize - 1;
         log.info("commit size : " + commitSize);
@@ -124,6 +121,12 @@ public class ScanServiceImpl implements ScanService {
             jGitHelper.checkout(commitId);
             scanTask.runSynchronously(repoUuid, commitId, "snippet", repoPath);
             cloneMeasureService.insertCloneMeasure(repoUuid, commitId, repoPath);
+            if(!commitListWeekly.contains(commitId)){
+                cloneLocationDao.deleteCloneLocationByCommitId(commitId);
+                log.info("delete commit " + commitId + " success");
+            }else {
+                log.info("insert "+commitId+" success");
+            }
             cloneRepo.setScannedCommitCount(i + 1);
             cloneRepo.setEndScanTime(new Date());
             cloneRepo.setStatus(ScanStatus.COMPLETE);
@@ -140,7 +143,6 @@ public class ScanServiceImpl implements ScanService {
     private void executeLastCommit(String uuid, String repoUuid, List<String> commitList, String repoPath) throws IOException {
         String latestCommitId = commitList.get(commitList.size() - 1);
         scanTask.runSynchronously(repoUuid, latestCommitId, "snippet", repoPath);
-
         CloneRepo cloneRepo = initCloneRepo(repoUuid);
         cloneRepo.setUuid(uuid);
         cloneRepo.setStartScanTime(new Date());
@@ -179,12 +181,19 @@ public class ScanServiceImpl implements ScanService {
      * @param repoId
      */
     @Override
-    public void deleteCloneScan(String repoId) {
+    @Async("taskExecutor")
+    public void deleteCloneScan(String repoId, String token) {
         cloneScanDao.deleteCloneScan(repoId);
         cloneLocationDao.deleteCloneLocations(repoId);
         cloneMeasureDao.deleteCloneMeasureByRepoId(repoId);
         cloneInfoDao.deleteCloneInfo(repoId);
         cloneRepoDao.deleteCloneRepo(repoId);
+        boolean recallRes = restInterfaceManager.deleteRecall(repoId,token);
+        if(recallRes){
+            log.info(" recall ok");
+        }else {
+            log.info(" recall false");
+        }
     }
 
     @Override

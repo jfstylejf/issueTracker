@@ -27,6 +27,8 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Stream;
 
+import static org.reflections.Reflections.log;
+
 /**
  * Created by njzhan
  * <p>
@@ -429,7 +431,7 @@ public class JGitUtil {
     public static CommitChange getNewlyIncreasedLines(String repoPath, String commitId){
 
         CommitChange commitChange = new CommitChange();
-
+        log.info("diff commitId: " + commitId+"\n");
         //Map<String, String> map = new HashMap<>(512);
         FileRepositoryBuilder builder = new FileRepositoryBuilder();
         builder.setMustExist(true);

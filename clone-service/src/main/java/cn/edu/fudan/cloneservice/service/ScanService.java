@@ -23,7 +23,7 @@ public interface ScanService {
      * 删除对应repo id所属的所有clone信息
      * @param repoId
      */
-    void deleteCloneScan(String repoId);
+    void deleteCloneScan(String repoId, String token);
 
     /**
      * 获取最新的clone repo

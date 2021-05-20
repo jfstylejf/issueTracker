@@ -1,7 +1,13 @@
 package cn.edu.fudan.cloneservice.domain.clone;
 
 import cn.edu.fudan.cloneservice.domain.CloneDetailOverall;
+import lombok.Getter;
+import lombok.Setter;
 
+import java.util.Date;
+
+@Getter
+@Setter
 /**
  * @author zyh
  * @date 2020/5/25
@@ -22,7 +28,7 @@ public class CloneLocation implements Comparable<CloneLocation>{
      * 记录是方法级还是片段级
      */
     private String type;
-
+    private Date commitTime;
     private String className;
     private String methodName;
     /**
@@ -31,7 +37,6 @@ public class CloneLocation implements Comparable<CloneLocation>{
     private String num;
 
     private String code;
-
     @Override
     public int compareTo(CloneLocation o) {
         int thisValue;
@@ -65,99 +70,4 @@ public class CloneLocation implements Comparable<CloneLocation>{
     }
 
 
-    public String getUuid() {
-        return uuid;
-    }
-
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
-    }
-
-    public String getRepoId() {
-        return repoId;
-    }
-
-    public void setRepoId(String repoId) {
-        this.repoId = repoId;
-    }
-
-    public String getCommitId() {
-        return commitId;
-    }
-
-    public void setCommitId(String commitId) {
-        this.commitId = commitId;
-    }
-
-    public String getCategory() {
-        return category;
-    }
-
-    public void setCategory(String category) {
-        this.category = category;
-    }
-
-    public String getFilePath() {
-        return filePath;
-    }
-
-    public void setFilePath(String filePath) {
-        this.filePath = filePath;
-    }
-
-    public String getMethodLines() {
-        return methodLines;
-    }
-
-    public void setMethodLines(String methodLines) {
-        this.methodLines = methodLines;
-    }
-
-    public String getCloneLines() {
-        return cloneLines;
-    }
-
-    public void setCloneLines(String cloneLines) {
-        this.cloneLines = cloneLines;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public String getClassName() {
-        return className;
-    }
-
-    public void setClassName(String className) {
-        this.className = className;
-    }
-
-    public String getMethodName() {
-        return methodName;
-    }
-
-    public void setMethodName(String methodName) {
-        this.methodName = methodName;
-    }
-
-    public String getNum() {
-        return num;
-    }
-
-    public void setNum(String num) {
-        this.num = num;
-    }
-
-    public String getCode() {
-        return code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
-    }
 }

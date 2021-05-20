@@ -443,7 +443,7 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
     }
 
     @Override
-    public PagedGridResult<DeveloperLivingIssueVO> getDeveloperListLivingIssue(String since, String until, List<String> repoUuids, List<String> developers, int page, int ps) {
+    public PagedGridResult<DeveloperLivingIssueVO> getDeveloperListLivingIssue(String since, String until, List<String> repoUuids, List<String> developers, int page, int ps, Boolean asc) {
         PagedGridResult.handlePageHelper(page, ps, PRODUCER, true);
 
         List<Map<String, Object>> developersDetail = issueDao.getDeveloperListLivingIssue(since, until, repoUuids, developers);
@@ -471,6 +471,10 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
                     .num(issueCount)
                     .build();
             developerListLivingIssue.add(developerLivingIssueVO);
+        }
+
+        if (asc != null) {
+            developerListLivingIssue.sort((o1, o2) -> (int) (asc ? o1.getNum() - o2.getNum() : o2.getNum() - o1.getNum()));
         }
 
         PagedGridResult<DeveloperLivingIssueVO> pagedGridResult = new PagedGridResult<>();

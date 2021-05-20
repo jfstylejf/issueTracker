@@ -17,7 +17,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @SpringBootApplication(exclude = {DataSourceAutoConfiguration.class})
 @MapperScan("cn.edu.fudan.issueservice.mapper")
 @EnableTransactionManagement
-@EnableAsync(proxyTargetClass=true)
+@EnableAsync(proxyTargetClass = true)
 @EnableScheduling
 @EnableCaching
 @EnableSwagger2

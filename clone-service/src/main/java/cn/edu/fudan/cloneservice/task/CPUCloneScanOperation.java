@@ -13,8 +13,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import java.io.*;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 
@@ -157,6 +160,13 @@ public class CPUCloneScanOperation extends ScanOperationAdapter {
                     cloneLocation.setCloneLines(cloneLines);
                     //method or snippet
                     cloneLocation.setType(type);
+                    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                    String commitTime = repoCommitMapper.getCommitTimeByCommitId(commitId);
+                    if(StringUtils.isEmpty(commitTime)){
+                        commitTime = "2000-00-00";
+                    }
+                    log.info(commitTime);
+                    cloneLocation.setCommitTime(simpleDateFormat.parse(commitTime));
 //                    //类名 方法名
 //                    List<LocationInfo> classLocationInfos = getClassList(filePath, language);
 //                    List<LocationInfo> methodLocationInfos = getMethodList(filePath, language);
@@ -235,6 +245,7 @@ public class CPUCloneScanOperation extends ScanOperationAdapter {
     @Override
     public CloneScanResult doScan(CloneScanInitialInfo cloneScanInitialInfo) throws IOException {
         try {
+
             CloneScan cloneScan = cloneScanInitialInfo.getCloneScan();
             String repoId = cloneScan.getRepoId();
             String commitId = cloneScan.getCommitId();

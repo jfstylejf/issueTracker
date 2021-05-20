@@ -169,7 +169,7 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
     }
 
     private RawIssue getRawIssue(String repoPath, JSONObject issue, String repoUuid, String commit, String fileName, String filePath, JsTree jsTree) {
-        if (issue.getString("ruleId") == null){
+        if (issue.getString("ruleId") == null) {
             return null;
         }
         RawIssue rawIssue = new RawIssue();
