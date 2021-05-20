@@ -6,14 +6,13 @@ import cn.edu.fudan.issueservice.dao.RawIssueDao;
 import cn.edu.fudan.issueservice.dao.RawIssueMatchInfoDao;
 import cn.edu.fudan.issueservice.domain.dbo.RawIssueMatchInfo;
 import cn.edu.fudan.issueservice.service.RawIssueService;
+import cn.edu.fudan.issueservice.util.DateTimeUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.text.ParseException;
+import java.util.*;
 
 /**
  * @author WZY
@@ -34,6 +33,7 @@ public class RawIssueServiceImpl implements RawIssueService {
     private static final String CUR_RAW_ISSUE_UUID = "curRawIssueUuid";
     private static final String STATUS = "status";
     private static final String UUID = "uuid";
+    private static final String COMMIT_TIME = "commitTime";
 
     @Override
     public List<Map<String, Object>> getRawIssueByIssueUuid(String issueUuid) {
@@ -75,9 +75,18 @@ public class RawIssueServiceImpl implements RawIssueService {
                     put(STATUS, rawIssueMatchInfo.get(STATUS));
                     put("location", new ArrayList<>());
                     put("fileName", "");
-                    put("commitTime", commitDao.getCommitTimeByCommitId(rawIssueMatchInfo.get("curCommitId"), repoUuid));
+                    try {
+                        put(COMMIT_TIME, DateTimeUtil.parse(commitDao.getCommitTimeByCommitId(rawIssueMatchInfo.get("curCommitId"), repoUuid)));
+                    } catch (ParseException e) {
+                        put(COMMIT_TIME, "check the database, parse commit time error");
+                        e.printStackTrace();
+                    }
                 }}));
-
+        result.sort((o1, o2) -> {
+            Date commitTime1 = (Date) o1.get(COMMIT_TIME);
+            Date commitTime2 = (Date) o2.get(COMMIT_TIME);
+            return commitTime1.compareTo(commitTime2);
+        });
         return result;
     }
 
