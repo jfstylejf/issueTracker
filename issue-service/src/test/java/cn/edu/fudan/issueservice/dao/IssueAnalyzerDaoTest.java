@@ -41,16 +41,17 @@ public class IssueAnalyzerDaoTest extends IssueServiceApplicationTest {
         JSONObject obj = new JSONObject();
         obj.put("result", "11");
         obj.put("result2", "1221");
+        String commitId = UUID.randomUUID().toString();
         IssueAnalyzer issueAnalyzer = IssueAnalyzer.builder()
                 .analyzeResult(obj)
                 .uuid(UUID.randomUUID().toString())
                 .repoUuid("11122")
-                .commitId("11122333")
+                .commitId("test " + commitId)
                 .tool("sonarqube")
                 .invokeResult(IssueAnalyzer.InvokeResult.SUCCESS.getStatus())
                 .build();
         issueAnalyzerMapper.insertIssueAnalyzerRecords(issueAnalyzer);
-        JSONObject sonarqube = issueAnalyzerDao.getAnalyzeResultByRepoUuidCommitIdTool("11122", "11122333", "sonarqube");
+        JSONObject sonarqube = issueAnalyzerDao.getAnalyzeResultByRepoUuidCommitIdTool("11122", "test " + commitId, "sonarqube");
         Assert.assertNotNull(sonarqube);
     }
 
