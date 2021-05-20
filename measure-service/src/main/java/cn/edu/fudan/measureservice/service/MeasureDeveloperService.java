@@ -26,6 +26,7 @@ import com.alibaba.fastjson.JSONObject;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jgit.util.StringUtils;
+import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -840,25 +841,29 @@ public class MeasureDeveloperService {
         return new ArrayList<>();
     }
 
-
+    /**
+     * 获取开发者聚合后的提交规范性
+     * @param query 查询条件
+     * @param developerAccountNames 查询人列表，此为聚合后的名字
+     * @return
+     */
     @SuppressWarnings("unchecked")
-    @Cacheable(cacheNames = {"commitStandard"})
-    public List<DeveloperCommitStandard> getCommitStandard(Query query , List<String> developers) {
+    public List<DeveloperCommitStandard> getCommitStandard(Query query , List<String> developerAccountNames) {
         List<DeveloperCommitStandard> developerCommitStandardList = new ArrayList<>();
         List<String> developerList = new ArrayList<>();
         // 根据查询条件对 查询人列表 处理
         if(query.getDeveloper()!=null && !"".equals(query.getDeveloper())) {
             developerList.add(query.getDeveloper());
-        }else if(developers!=null && developers.size()>0) {
-            developerList = developers;
+        }else if(developerAccountNames!=null && developerAccountNames.size()>0) {
+            developerList = developerAccountNames;
         }else {
             developerList = projectDao.getDeveloperList(query);
         }
         for(String developer : developerList) {
             query.setDeveloper(developer);
-            // fixme validCommitMsg 判断是否是Merge应该通过父节点来判断
-            List<Map<String,String>> developerValidCommitInfo = projectDao.getValidCommitMsg(query);
-
+            // 获取开发者对应的合法提交信息
+            List<Map<String,String>> developerValidCommitInfo = projectDao.getDeveloperValidCommitMsg(query);
+            // 封装 DeveloperCommitStandard
             DeveloperCommitStandard developerCommitStandard = new DeveloperCommitStandard();
             developerCommitStandard.setDeveloperName(developer);
             developerCommitStandard.setDeveloperValidCommitCount(developerValidCommitInfo.size());
@@ -889,11 +894,11 @@ public class MeasureDeveloperService {
      * @param since 查询起始时间
      * @param until 查询截止时间
      * @param interval 聚合间隔
-     * @param showDetail 是否展示明细
      * @return new ArrayList<{@link ProjectCommitStandardTrendChart}>
      */
     @SneakyThrows
-    public synchronized List<ProjectCommitStandardTrendChart> getCommitStandardTrendChartIntegratedByProject(String projectIds,String since,String until,String token,String interval,boolean showDetail) {
+    @MethodMeasureAnnotation
+    public synchronized List<ProjectCommitStandardTrendChart> getCommitStandardTrendChartIntegratedByProject(String projectIds,String since,String until,String token,String interval) {
         List<ProjectCommitStandardTrendChart> results = new ArrayList<>();
         // 由传入的 projectIds 获取可查询库列表
         List<ProjectPair> projectPairList = projectDao.getVisibleProjectPairListByProjectIds(projectIds,token);
@@ -924,15 +929,15 @@ public class MeasureDeveloperService {
             }
             for (ProjectPair projectPair : projectPairList) {
                 List<String> repoUuidList = new ArrayList<>();
-                List<RepoInfo> repoInfoList = projectDao.getProjectInvolvedRepoInfo(projectPair.getProjectName(),token);
+                    List<RepoInfo> repoInfoList = projectDao.getProjectInvolvedRepoInfo(projectPair.getProjectName(),token);
                 for (RepoInfo repoInfo : repoInfoList) {
                     repoUuidList.add(repoInfo.getRepoUuid());
                 }
                 Query query = new Query(token,beginTime.format(dtf),tempTime.format(dtf),null,repoUuidList);
-                List<DeveloperCommitStandard> developerCommitStandardList = getCommitStandard(query,null);
                 // 构造项目提交规范性类
                 int projectId = projectPair.getProjectId();
-                ProjectCommitStandardTrendChart projectCommitStandardTrendChart = listDeveloperCommandStandardToProjectCommitStandardTrendChart(developerCommitStandardList,showDetail);
+                // note 内部调用需要使用代理使缓存生效
+                ProjectCommitStandardTrendChart projectCommitStandardTrendChart = ((MeasureDeveloperService) AopContext.currentProxy()).getSingleProjectCommitStandardChart(query,projectPair);
                 projectCommitStandardTrendChart.setProjectId(String.valueOf(projectId));
                 projectCommitStandardTrendChart.setProjectName(projectPair.getProjectName());
                 projectCommitStandardTrendChart.setDate(tempTime.format(dtf));
@@ -945,20 +950,24 @@ public class MeasureDeveloperService {
     }
 
 
-
-
     /**
-     * 由 List<{@link DeveloperCommitStandard}> 封装为 {@link ProjectCommitStandardTrendChart}
-     * @param developerCommitStandardList 开发者提交规范性列表
+     * 封装单个项目合法提交信息为 {@link ProjectCommitStandardTrendChart}
+     * @param query 查询信息
      * @return ProjectCommitStandardTrendChart 项目提交规范性
      */
-    private ProjectCommitStandardTrendChart listDeveloperCommandStandardToProjectCommitStandardTrendChart(List<DeveloperCommitStandard> developerCommitStandardList,boolean showDetail) {
+    @Cacheable(value = "projectCommitStandardChart", key = "#projectPair.projectName+'_'+#query.until")
+    public ProjectCommitStandardTrendChart getSingleProjectCommitStandardChart(Query query,ProjectPair projectPair) {
         ProjectCommitStandardTrendChart projectCommitStandardTrendChart = new ProjectCommitStandardTrendChart();
+        // 获取项目合法提交信息
+        List<Map<String,String>> projectValidCommitMsgList = projectDao.getProjectValidCommitMsg(query);
         // validCommitCountNum : 不含Merge的总提交次数 ， jiraCommitCountNum 包含Jira单号的总提交次数
-        long validCommitCountNum = 0, jiraCommitCountNum = 0;
-        for (DeveloperCommitStandard developerCommitStandard : developerCommitStandardList) {
-            validCommitCountNum += developerCommitStandard.getDeveloperValidCommitCount();
-            jiraCommitCountNum += developerCommitStandard.getDeveloperJiraCommitCount();
+        long validCommitCountNum = projectValidCommitMsgList.size(), jiraCommitCountNum = 0;
+        for (int i = 0; i < projectValidCommitMsgList.size(); i++) {
+            Map<String,String> commitMsg = projectValidCommitMsgList.get(i);
+            String message = commitMsg.get("message");
+            if (!"noJiraID".equals(jiraDao.getJiraIDFromCommitMsg(message))) {
+                jiraCommitCountNum++;
+            }
         }
         double num = 0.0;
         // 当不含Merge的总提交次数为 0 时，提交规范性特判为 0
@@ -968,10 +977,13 @@ public class MeasureDeveloperService {
         // 提交规范性比率保留三位小数
         projectCommitStandardTrendChart.setNum(Double.parseDouble(df.format(num)));
         projectCommitStandardTrendChart.setOption(jiraCommitCountNum,validCommitCountNum);
-        if (showDetail) {
-            projectCommitStandardTrendChart.setDetail(developerCommitStandardList);
-        }
         return projectCommitStandardTrendChart;
+    }
+
+
+    @CacheEvict(value = "projectCommitStandardChart", key = "#projectPair.projectName+'_'+#query.until")
+    public void deleteSingleProjectCommitStandardChart(Query query, ProjectPair projectPair) {
+
     }
 
     /**
@@ -986,20 +998,12 @@ public class MeasureDeveloperService {
     @SneakyThrows
     public synchronized List<ProjectCommitStandardDetail> getCommitStandardDetailIntegratedByProject(String projectNameList,String repoUuidList,String committer,String since,String until,String token) {
         List<ProjectCommitStandardDetail> projectCommitStandardDetailList = new ArrayList<>();
+        // 获取可见库列表
         List<String> visibleRepoList = projectDao.getVisibleRepoListByProjectNameAndRepo(projectNameList,repoUuidList,token);
-        for (String repoUuid : visibleRepoList) {
-            Query query = new Query(token,since,until,committer,Collections.singletonList(repoUuid));
-            if (!projectDao.getRepoInfoMap().containsKey(repoUuid)) {
-                projectDao.insertProjectInfo(token);
-            }
-            RepoInfo repoInfo = projectDao.getRepoInfoMap().get(repoUuid);
-            String projectName = repoInfo.getProjectName();
-            String repoName = repoInfo.getRepoName();
-            int projectId = projectDao.getProjectIdByName(projectName);
-            List<DeveloperCommitStandard> developerCommitStandardList = getCommitStandard(query,null);
-            for (DeveloperCommitStandard developerCommitStandard : developerCommitStandardList) {
-                projectCommitStandardDetailList.addAll(dealWithDeveloperCommitStandardDetail(developerCommitStandard,projectName,projectId,repoUuid,repoName));
-            }
+        Query query = new Query(token,since,until,committer,visibleRepoList);
+        List<DeveloperCommitStandard> developerCommitStandardList = ((MeasureDeveloperService) AopContext.currentProxy()).getCommitStandard(query,null);
+        for (DeveloperCommitStandard developerCommitStandard : developerCommitStandardList) {
+            projectCommitStandardDetailList.addAll(((MeasureDeveloperService) AopContext.currentProxy()).dealWithDeveloperCommitStandardDetail(developerCommitStandard,token));
         }
         return projectCommitStandardDetailList;
      }
@@ -1009,20 +1013,16 @@ public class MeasureDeveloperService {
      * @see DeveloperCommitStandard
      * @see ProjectCommitStandardDetail
      * @param developerCommitStandard 开发者提交规范性明细
-     * @param projectName 项目名
-     * @param projectId 项目id
-     * @param repoUuid 库id
-     * @param repoName 库名称
      * @return new ArrayList<{@link ProjectCommitStandardDetail}>
      */
-     private List<ProjectCommitStandardDetail> dealWithDeveloperCommitStandardDetail(DeveloperCommitStandard developerCommitStandard,String projectName, int projectId,String repoUuid,String repoName) {
+     public List<ProjectCommitStandardDetail> dealWithDeveloperCommitStandardDetail(DeveloperCommitStandard developerCommitStandard,String token) {
          List<ProjectCommitStandardDetail> projectCommitStandardDetailList = new ArrayList<>();
          List<Map<String,String>> developerJiraCommitInfo = developerCommitStandard.getDeveloperJiraCommitInfo();
          List<Map<String,String>> developerInvalidCommitInfo = developerCommitStandard.getDeveloperInvalidCommitInfo();
          // 添加项目规范提交明细
-         projectCommitStandardDetailList.addAll(commitInfoToProjectCommitStandardDetail(developerJiraCommitInfo,projectName,projectId,repoUuid,repoName,true));
+         projectCommitStandardDetailList.addAll(commitInfoToProjectCommitStandardDetail(developerCommitStandard.getDeveloperName(),developerJiraCommitInfo,token,true));
          // 添加项目不规范提交明细
-         projectCommitStandardDetailList.addAll(commitInfoToProjectCommitStandardDetail(developerInvalidCommitInfo,projectName,projectId,repoUuid,repoName,false));
+         projectCommitStandardDetailList.addAll(commitInfoToProjectCommitStandardDetail(developerCommitStandard.getDeveloperName(),developerInvalidCommitInfo,token,false));
          return projectCommitStandardDetailList;
      }
 
@@ -1030,21 +1030,23 @@ public class MeasureDeveloperService {
      * 提交信息 转换为 项目提交明细
      * @see ProjectCommitStandardDetail
      * @param commitInfo 提交明细
-     * @param projectName 项目名
-     * @param projectId 项目id
-     * @param repoUuid 库id
-     * @param repoName 库名
      * @param isValid 是否规范
      * @return List<ProjectCommitStandardDetail>
      */
-     private List<ProjectCommitStandardDetail> commitInfoToProjectCommitStandardDetail(List<Map<String,String>> commitInfo,String projectName, int projectId,String repoUuid,String repoName,boolean isValid) {
+     private List<ProjectCommitStandardDetail> commitInfoToProjectCommitStandardDetail(String developerName, List<Map<String,String>> commitInfo,String token, boolean isValid) {
          List<ProjectCommitStandardDetail> projectCommitStandardDetailList = new ArrayList<>();
          for (Map<String, String> stringStringMap : commitInfo) {
+             String repoUuid = stringStringMap.get("repo_id");
+             if (!projectDao.getRepoInfoMap().containsKey(repoUuid)) {
+                 projectDao.insertProjectInfo(token);
+             }
+             RepoInfo repoInfo = projectDao.getRepoInfoMap().get(repoUuid);
+             String projectName = repoInfo.getProjectName();
+             String repoName = repoInfo.getRepoName();
+             int projectId = projectDao.getProjectIdByName(projectName);
              String message = stringStringMap.get("message");
              String commitTime = stringStringMap.get("commit_time");
              String commitId = stringStringMap.get("commit_id");
-             String developerName;
-             developerName = stringStringMap.getOrDefault("developer_unique_name", "");
              ProjectCommitStandardDetail projectCommitStandardDetail = ProjectCommitStandardDetail.builder()
                      .committer(developerName)
                      .commitId(commitId)
@@ -1160,6 +1162,15 @@ public class MeasureDeveloperService {
          return result;
      }
 
+    /**
+     * 获取开发者修改圈复杂度，并按照项目聚合
+     * @param projectNameList 查询项目列表
+     * @param developers 查询开发者
+     * @param token 查询权限
+     * @param since 起始时间
+     * @param until 截止时间
+     * @return 开发者按照项目为单位聚合后 修改圈复杂度
+     */
      @SneakyThrows
      public  List<DeveloperDataCcn> getDeveloperDataCcn(String projectNameList, String developers, String token , String since, String until) {
         List<DeveloperDataCcn> developerDataCcnList = new ArrayList<>();
@@ -1171,7 +1182,7 @@ public class MeasureDeveloperService {
             // 暂存该开发者 项目 与 库下圈复杂度变化的匹配关系
             Map<String,List<DeveloperRepoCcn>> map = new HashMap<>();
             for (String repoUuid : developerRepoList) {
-                if (!projectDao.getRepoInfoMap().containsKey(           repoUuid)) {
+                if (!projectDao.getRepoInfoMap().containsKey(repoUuid)) {
                     projectDao.insertProjectInfo(token);
                 }
                 RepoInfo repoInfo = projectDao.getRepoInfoMap().get(repoUuid);
@@ -1209,6 +1220,40 @@ public class MeasureDeveloperService {
      }
 
     /**
+     * 获得开发者人员总览等级及相应数值
+     * @param projectNameList 查询项目列表
+     * @param developers 查询开发者
+     * @param token 查询权限
+     * @param since 起始时间
+     * @param until 截止时间
+     * @return
+     */
+     @SneakyThrows
+     public List<DeveloperDataCommitStandard> getDeveloperDataCommitStandard(String projectNameList, String developers, String token , String since, String until) {
+         List<DeveloperDataCommitStandard> developerDataCommitStandardList = new ArrayList<>();
+         // 获取开发者查询项目下可看库
+         List<String> visibleRepoList = projectDao.getVisibleRepoListByProjectName(projectNameList,token);
+         // 获取开发者提交规范列表
+         Query query = new Query(token,since,until,null,visibleRepoList);
+         List<DeveloperCommitStandard> developerCommitStandardList = getCommitStandard(query,Arrays.asList(developers.split(split)));
+         // 构建人员总览提交规范性类
+         for (DeveloperCommitStandard developerCommitStandard : developerCommitStandardList) {
+             DeveloperDataCommitStandard developerDataCommitStandard = DeveloperDataCommitStandard.builder()
+                     .developerName(developerCommitStandard.getDeveloperName())
+                     .since(since)
+                     .until(until)
+                     .developerJiraCommitCount(developerCommitStandard.getDeveloperJiraCommitCount())
+                     .developerValidCommitCount(developerCommitStandard.getDeveloperValidCommitCount())
+                     .commitStandard(developerCommitStandard.getCommitStandard())
+                     .detail(null)
+                     .level(LevelEnum.Medium.getType()).build();
+             developerDataCommitStandardList.add(developerDataCommitStandard);
+         }
+         return developerDataCommitStandardList;
+     }
+
+
+    /**
      * 判断该 repo 信息是否被初始化
      * @param repoUuid 查询库
      * @return 若已初始化则返回 true
@@ -1241,5 +1286,7 @@ public class MeasureDeveloperService {
     public void clearCache() {
         log.info("Successfully clear redis cache in db6.");
     }
+
+
 
 }

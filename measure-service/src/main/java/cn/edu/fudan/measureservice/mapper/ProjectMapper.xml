@@ -55,12 +55,12 @@
         </where>
     </select>
 
-    <select id="getDeveloperList"  resultType="String">
-        SELECT DISTINCT developer_unique_name FROM issueTracker.commit_view
+    <select id="getCommitGitNameList"  resultType="String">
+        SELECT DISTINCT developer FROM issueTracker.commit
         <where>
             <trim prefixOverrides="and">
                 <if test="repoUuidList != null and repoUuidList.size > 0">
-                    and repo_uuid in
+                    and repo_id in
                     <foreach collection="repoUuidList" separator="," open="(" close=")" item="repoUuid">
                         #{repoUuid}
                     </foreach>
@@ -78,11 +78,11 @@
     </select>
 
     <select id="getDeveloperRepoInfoList" resultType="java.util.HashMap">
-        SELECT developer_unique_name,repo_uuid,SUBSTRING(min(commit_time),1,10) AS firstCommitDate FROM issueTracker.commit_view
+        SELECT developer,repo_id,SUBSTRING(min(commit_time),1,10) AS firstCommitDate FROM issueTracker.commit
         <where>
             <trim prefixOverrides="and">
                 <if test="repoUuid != null and repoUuid !='' ">
-                    and repo_uuid = #{repoUuid}
+                    and repo_id = #{repoUuid}
                 </if>
 
                 <if test="since != null and since != '' ">
@@ -94,15 +94,15 @@
                 </if>
             </trim>
         </where>
-        Group By developer_unique_name
+        Group By developer
     </select>
 
     <select id="getDeveloperFirstCommitDate" resultType="java.util.HashMap" >
-        SELECT developer_unique_name,SUBSTRING(min(commit_time),1,10) AS firstCommitDate FROM issueTracker.commit_view
+        SELECT developer,SUBSTRING(min(commit_time),1,10) AS firstCommitDate FROM issueTracker.commit
         <where>
             <trim prefixOverrides="and">
                 <if test="repoUuid != null and repoUuid !='' ">
-                    and repo_uuid = #{repoUuid}
+                    and repo_id = #{repoUuid}
                 </if>
 
                 <if test="since != null and since != '' ">
@@ -112,7 +112,7 @@
                 <if test="until != null and until != '' ">
                     and <![CDATA[ commit_time <= #{until} ]]>
                 </if>
-                and developer_unique_name = #{developer}
+                and developer = #{developer}
             </trim>
         </where>
     </select>
@@ -160,17 +160,20 @@
         WHERE repo_uuid = #{repoUuid}
     </select>
 
-    <select id="getValidCommitMsg" resultType="java.util.HashMap">
-        SELECT developer_unique_name,left(commit_time,10) as commit_time,commit_id,message
-        from issueTracker.commit_view
+    <select id="getDeveloperValidCommitMsg" resultType="java.util.HashMap">
+        SELECT repo_id,developer,left(commit_time,10) as commit_time,commit_id,message
+        from issueTracker.commit
         <where>
             <trim prefixOverrides="and">
-                <if test="developer != null and developer != '' ">
-                    and developer_unique_name = #{developer}
+                <if test="accountGitNameList!=null and accountGitNameList.size > 0">
+                    and developer in
+                    <foreach collection="accountGitNameList" separator="," open="(" close=")" item="gitName">
+                        #{gitName}
+                    </foreach>
                 </if>
 
                 <if test="repoUuidList != null and repoUuidList.size >0 ">
-                    and repo_uuid in
+                    and repo_id in
                     <foreach collection="repoUuidList" separator="," open="(" close=")" item="repoUuid">
                         #{repoUuid}
                     </foreach>
@@ -183,7 +186,32 @@
                 <if test="until != null and until != '' ">
                     and <![CDATA[ commit_time <= #{until} ]]>
                 </if>
-                and message NOT LIKE '%Merge%'
+                and length(parent_commit) &lt; 50
+            </trim>
+        </where>
+        ORDER By commit_time desc
+    </select>
+
+    <select id="getProjectValidCommitMsg" resultType="java.util.HashMap">
+        SELECT repo_id,developer,left(commit_time,10) as commit_time,commit_id,message
+        from issueTracker.commit
+        <where>
+            <trim prefixOverrides="and">
+                <if test="repoUuidList != null and repoUuidList.size >0 ">
+                    and repo_id in
+                    <foreach collection="repoUuidList" separator="," open="(" close=")" item="repoUuid">
+                        #{repoUuid}
+                    </foreach>
+                </if>
+
+                <if test="since != null and since != '' ">
+                    and <![CDATA[ commit_time >= #{since} ]]>
+                </if>
+
+                <if test="until != null and until != '' ">
+                    and <![CDATA[ commit_time <= #{until} ]]>
+                </if>
+                and length(parent_commit) &lt; 50
             </trim>
         </where>
         ORDER By commit_time desc
@@ -257,14 +285,6 @@
         WHERE p.account_uuid = #{account_uuid} AND p.account_role = 'LEADER'
     </select>
 
-    <delete id="deleteRepoMsg">
-        DELETE FROM issueTracker.repo_measure
-        WHERE repo_id in
-        <foreach collection="repoUuidList" separator="," open="(" close=")" item="repoUuid">
-            #{repoUuid}
-        </foreach>
-        LIMIT 5000
-    </delete>
 
     <select id="getRepoLanguage" resultType="String">
         SELECT language FROM issueTracker.sub_repository
@@ -287,5 +307,6 @@
         SELECT id FROM issueTracker.project
         WHERE project_name = #{projectName}
     </select>
+
 
 </mapper>

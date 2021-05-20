@@ -15,24 +15,25 @@ import java.util.Set;
 public interface ProjectMapper {
 
     /**
-     * 返回具体情况下的developerList
+     * 返回具体情况下的 developerGitNameList
      * @param repoUuidList 查询库列表
      * @param since 查询起止时间
      * @param until 查询结束时间
      * @return List<String> 开发者列表信息
      */
-    List<String> getDeveloperList(@Param("repoUuidList") List<String> repoUuidList, @Param("since")String since, @Param("until")String until);
+    List<String> getCommitGitNameList(@Param("repoUuidList") List<String> repoUuidList, @Param("since")String since, @Param("until")String until);
 
     /**
      * 返回开发者在参与库中的信息
      * @param repoUuid 查询库
      * @param since 查询起止时间
      * @param until 查询结束时间
-     * @return
+     * @return key : developerGitName
      */
     List<Map<String,String>> getDeveloperRepoInfoList(@Param("repoUuid") String repoUuid,@Param("since")String since, @Param("until")String until);
 
     /**
+     * fixme 改为从 gitName 查
      * 返回单个开发者在参与库/项目中的第一次提交时间
      * @param repoUuid 查询库
      * @param since 查询起止时间
@@ -71,15 +72,23 @@ public interface ProjectMapper {
 
 
     /**
-     * 获取开发者参与库的合法提交信息（去除Merge）
+     * 获取开发者参与库的合法提交信息（不含Merge）
      * @param repoUuidList 查询库列表
      * @param since 查询起始时间
      * @param until 查询结束时间
-     * @param developer 开发者姓名
-     * @return  List<Map<String,Object>> key : developer_unique_name , commit_time , commit_id , message
+     * @param accountGitNameList 开发者姓名
+     * @return  List<Map<String,Object>> key : repo_id, developer, commit_time , commit_id , message
      */
-    List<Map<String,String>> getValidCommitMsg(@Param("repoUuidList")List<String> repoUuidList,@Param("since")String since,@Param("until")String until,@Param("developer")String developer);
+    List<Map<String,String>> getDeveloperValidCommitMsg(@Param("repoUuidList")List<String> repoUuidList,@Param("since")String since,@Param("until")String until,@Param("accountGitNameList")List<String> accountGitNameList);
 
+    /**
+     * 获取项目下包含库的合法提交信息 （不含Merge）
+     * @param repoUuidList 查询库列表
+     * @param since 查询起始时间
+     * @param until 查询结束时间
+     * @return List<Map<String,Object>> key : repo_id , developer, commit_time , commit_id , message
+     */
+    List<Map<String,String>> getProjectValidCommitMsg(@Param("repoUuidList")List<String> repoUuidList,@Param("since")String since,@Param("until")String until);
 
     /**
      * 获取查询库列表中前3位提交次数最多的开发者
@@ -113,12 +122,6 @@ public interface ProjectMapper {
      * @return String projectName
      */
     String getProjectName(@Param("repoUuid") String repoUuid);
-
-    /**
-     * 删除repo_measure表中所属repoUuidList的数据
-     * @param repoUuidList 删除库列表
-     */
-    void deleteRepoMsg(@Param("repoUuidList") List<String> repoUuidList);
 
     /**
      * 用户鉴权，返回Leader管理库列表
@@ -160,4 +163,5 @@ public interface ProjectMapper {
      * @return
      */
     Integer getProjectIdByName(@Param("projectName") String projectName);
+
 }

@@ -18,6 +18,9 @@ public class Query implements Serializable {
     private String token;
     private String since;
     private String until;
+    /**
+     * note : 聚合后名
+     */
     private String developer;
     private List<String> repoUuidList;
 

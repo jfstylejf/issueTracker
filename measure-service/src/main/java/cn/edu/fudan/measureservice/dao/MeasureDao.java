@@ -6,8 +6,10 @@ import cn.edu.fudan.measureservice.domain.vo.ProjectBigFileDetail;
 import cn.edu.fudan.measureservice.mapper.FileMeasureMapper;
 import cn.edu.fudan.measureservice.mapper.MeasureMapper;
 import cn.edu.fudan.measureservice.mapper.ProjectMapper;
+import cn.edu.fudan.measureservice.mapper.RepoMeasureMapper;
 import cn.edu.fudan.measureservice.util.DateTimeUtil;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.Assert;
@@ -21,10 +23,12 @@ import java.util.*;
 /**
  * @author wjzho
  */
+@Slf4j
 @Repository
 public class MeasureDao {
 
     private MeasureMapper measureMapper;
+    private RepoMeasureMapper repoMeasureMapper;
     private FileMeasureMapper fileMeasureMapper;
     private ProjectMapper projectMapper;
 
@@ -57,14 +61,6 @@ public class MeasureDao {
         return measureMapper.getDeveloperRankByLoc(query.getRepoUuidList(),query.getSince(),query.getUntil());
     }
 
-    /**
-     * 返回所查询库列表下的信息条数
-     * @param query 查询条件
-     * @return int countNum
-     */
-    public int getMsgNumByRepo(Query query) {
-        return measureMapper.getMsgNumByRepo(query.getRepoUuidList());
-    }
 
     /**
      * 查询库下所有大文件最新信息
@@ -90,6 +86,59 @@ public class MeasureDao {
         return projectBigFileDetailList;
     }
 
+
+    /**
+     * 删除所属repo下repo_measure,file_measure表数据
+     * @param repoUuid 待删除库
+     */
+    public boolean deleteRepoMsg(String repoUuid) {
+        return deleteRepoMeasureMsgByRepo(repoUuid) && deleteFileMeasureMsgByRepo(repoUuid);
+    }
+
+    /**
+     * 删除所属repo下repo_measure表数据
+     * @param repoUuid 待删除库
+     * @return true : 删除成功 ， false : 删除失败
+     */
+    public boolean deleteRepoMeasureMsgByRepo(String repoUuid) {
+        int countNum = repoMeasureMapper.getRepoMeasureMsgNumByRepo(repoUuid);
+        try {
+            while (countNum > 0) {
+                countNum -= 500;
+                repoMeasureMapper.deleteRepoMeasureMsg(repoUuid);
+            }
+            log.info("delete repoMsg from repo_measure Success!");
+            return true;
+        }catch (Exception e) {
+            e.getMessage();
+            log.error("delete repoMsg from repo_measure Failed");
+        }
+        return false;
+    }
+
+    /**
+     * 删除所属repo下file_measure表数据
+     * @param repoUuid 待删除库
+     * @return true : 删除成功 ， false : 删除失败
+     */
+    public boolean deleteFileMeasureMsgByRepo(String repoUuid) {
+        int countNum = fileMeasureMapper.getFileMeasureMsgNumByRepo(repoUuid);
+        try {
+            while (countNum > 0) {
+                countNum -= 500;
+                fileMeasureMapper.deleteFileMeasureMsg(repoUuid);
+            }
+            log.info("delete repoMsg from file_measure Success!");
+            return true;
+        }catch (Exception e) {
+            e.getMessage();
+            log.error("delete repoMsg from file_measure Failed");
+        }
+        return false;
+    }
+
+
+
     @SneakyThrows
     public int getDeveloperDiffCcn(String repoUuid,String since,String until,String developer) {
         Objects.requireNonNull(developer,"开发者不可为空");
@@ -105,6 +154,11 @@ public class MeasureDao {
     @Autowired
     public void setFileMeasureMapper(FileMeasureMapper fileMeasureMapper) {
         this.fileMeasureMapper = fileMeasureMapper;
+    }
+
+    @Autowired
+    public void setRepoMeasureMapper(RepoMeasureMapper repoMeasureMapper) {
+        this.repoMeasureMapper = repoMeasureMapper;
     }
 
     @Autowired
