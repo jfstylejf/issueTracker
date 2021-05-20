@@ -32,8 +32,6 @@ public class ProjectDao {
 
     private ProjectMapper projectMapper;
 
-    private MeasureMapper measureMapper;
-
     private AccountMapper accountMapper;
 
     private static final String split = ",";
@@ -306,24 +304,6 @@ public class ProjectDao {
      */
     public int getDeveloperCommitCountsByDuration(Query query) {
         return projectMapper.getDeveloperCommitCountsByDuration(query.getRepoUuidList(),query.getSince(),query.getUntil(),query.getDeveloper());
-    }
-
-    /**
-     * 删除所属repo下repo_measure表数据
-     * @param query 查询条件
-     */
-    public void deleteRepoMsg(Query query) {
-        int countNum = measureMapper.getMsgNumByRepo(query.getRepoUuidList());
-        try {
-            while (countNum > 0) {
-                countNum -= 5000;
-                projectMapper.deleteRepoMsg(query.getRepoUuidList());
-            }
-            log.info("delete repoMsg from repo_measure Success!");
-        }catch (Exception e) {
-            e.getMessage();
-            log.error("delete repoMsg from repo_measure Failed");
-        }
     }
 
     /**
@@ -601,11 +581,6 @@ public class ProjectDao {
     @Autowired
     public void setProjectMapper(ProjectMapper projectMapper) {
         this.projectMapper = projectMapper;
-    }
-
-    @Autowired
-    public void setMeasureMapper(MeasureMapper measureMapper) {
-        this.measureMapper = measureMapper;
     }
 
     @Autowired

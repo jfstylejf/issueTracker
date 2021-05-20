@@ -11,6 +11,7 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -56,10 +57,10 @@ public class MeasureRepoController {
             if(until==null || "".equals(until)) {
                 until = dtf.format(LocalDate.now().plusDays(1));
             }
-            return new ResponseBean<>(200,"success", measureRepoService.getRepoMeasureByRepoUuid(repoUuid,since,until,granularity));
+            return new ResponseBean<>(HttpStatus.OK.value(),"success", measureRepoService.getRepoMeasureByRepoUuid(repoUuid,since,until,granularity));
         }catch (Exception e){
             e.printStackTrace();
-            return new ResponseBean<>(401,"failed "+ e.getMessage(),null);
+            return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(),"failed "+ e.getMessage(),null);
         }
     }
 
@@ -84,10 +85,10 @@ public class MeasureRepoController {
             if(until==null || "".equals(until)) {
                 until = dtf.format(LocalDate.now().plusDays(1));
             }
-            return new ResponseBean<>(200,"success",measureRepoService.getCommitBaseInformationByDuration(repoUuid, since, until, developerName));
+            return new ResponseBean<>(HttpStatus.OK.value(),"success",measureRepoService.getCommitBaseInformationByDuration(repoUuid, since, until, developerName));
         }catch (Exception e){
             e.printStackTrace();
-            return new ResponseBean<>(401,"failed "+e.getMessage(),null);
+            return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(),"failed "+e.getMessage(),null);
         }
 
     }
@@ -123,10 +124,10 @@ public class MeasureRepoController {
                 repoUuidList = projectDao.involvedRepoProcess(repoUuid,token);
             }
             Query query = new Query(null,since,until,null, repoUuidList);
-            return new ResponseBean<>(200,"success", measureRepoService.getDeveloperRankByCommitCount(query));
+            return new ResponseBean<>(HttpStatus.OK.value(),"success", measureRepoService.getDeveloperRankByCommitCount(query));
         }catch (Exception e){
             e.printStackTrace();
-            return new ResponseBean<>(401,"failed "+ e.getMessage(),null);
+            return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(),"failed "+ e.getMessage(),null);
         }
     }
 
@@ -161,10 +162,10 @@ public class MeasureRepoController {
                 repoUuidList = projectDao.involvedRepoProcess(repoUuid,token);
             }
             Query query = new Query(null,since,until,null,repoUuidList);
-            return new ResponseBean<>(200,"success", measureRepoService.getDeveloperRankByLoc(query));
+            return new ResponseBean<>(HttpStatus.OK.value(),"success", measureRepoService.getDeveloperRankByLoc(query));
         }catch (Exception e){
             e.printStackTrace();
-            return new ResponseBean<>(401,"failed "+e.getMessage(),null);
+            return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(),"failed "+e.getMessage(),null);
         }
     }
 
@@ -194,25 +195,30 @@ public class MeasureRepoController {
                 repoUuidList = projectDao.involvedRepoProcess(repoUuid,token);
             }
             Query query = new Query(token,since,until,null,repoUuidList);
-            return new ResponseBean<>(200,"success",measureRepoService.getDailyCommitCountAndLOC(query));
+            return new ResponseBean<>(HttpStatus.OK.value(),"success",measureRepoService.getDailyCommitCountAndLOC(query));
         }catch (Exception e){
             e.printStackTrace();
-            return new ResponseBean<>(401,"failed "+e.getMessage(),null);
+            return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(),"failed "+e.getMessage(),null);
         }
     }
 
 
-
-    @DeleteMapping("/measure/repo/{repo_uuids}")
+    /**
+     * measure 服务删除接口
+     * @param repoUuid 待删除库
+     * @return
+     */
+    @DeleteMapping("/measure/repo/{repo_uuid}")
     @CrossOrigin
-    public ResponseBean<String> deleteRepoUselessMsg(@PathVariable("repo_uuids") String repoUuidList) {
-        Query query = new Query(null,null,null,null,Arrays.asList(repoUuidList.split(split)));
+    public ResponseBean<String> deleteRepoUselessMsg(@PathVariable("repo_uuid") String repoUuid,
+                                                     HttpServletRequest request) {
         try {
-            measureRepoService.deleteRepoMsg(query);
-            return new ResponseBean<>(200,"measure delete Success","Completed");
+            String token = request.getHeader("token");
+            measureRepoService.deleteRepoMsg(repoUuid,token);
+            return new ResponseBean<>(HttpStatus.OK.value(),"measure delete Success","Completed");
         }catch (Exception e) {
             e.printStackTrace();
-            return new ResponseBean<>(401,"measure failed",e.getMessage());
+            return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(),"measure failed",e.getMessage());
         }
     }
 

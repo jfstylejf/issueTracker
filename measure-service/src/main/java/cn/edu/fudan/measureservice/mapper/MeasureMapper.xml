@@ -75,22 +75,6 @@
         LIMIT 3;
     </select>
 
-    <select id="getMsgNumByRepo" resultType="int">
-        SELECT IFNULL(count(uuid),0) FROM issueTracker.repo_measure
-        <where>
-            <trim prefixOverrides="and">
-
-                <if test="repoUuidList != null and repoUuidList.size >0 ">
-                    and repo_id in
-                    <foreach collection="repoUuidList" separator="," open="(" close=")" item="repoUuid">
-                        #{repoUuid}
-                    </foreach>
-                </if>
-
-            </trim>
-        </where>
-    </select>
-
 
 
 

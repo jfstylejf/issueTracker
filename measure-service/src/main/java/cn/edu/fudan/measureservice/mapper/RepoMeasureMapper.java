@@ -98,4 +98,18 @@ public interface RepoMeasureMapper {
      */
     String getDeveloperType(@Param("developer")String developer);
 
+
+    /**
+     * 返回所查询库下 repo_measure 表中的信息条数
+     * @param repoUuid 查询库
+     * @return int countNum
+     */
+    int getRepoMeasureMsgNumByRepo(@Param("repoUuid") String repoUuid);
+
+    /**
+     * 删除repo_measure表中所属repoUuid的数据
+     * @param repoUuid 删除库
+     */
+    void deleteRepoMeasureMsg(@Param("repoUuid") String repoUuid);
+
 }

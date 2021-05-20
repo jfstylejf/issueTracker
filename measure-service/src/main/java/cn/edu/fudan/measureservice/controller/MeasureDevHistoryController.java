@@ -51,10 +51,10 @@ public class MeasureDevHistoryController {
                                                                            @RequestParam(value = "until",required = false)String until){
 
         try{
-            return new ResponseBean<>(200,"success",(List<Map<String, Object>>) measureDevHistoryService.getDevHistoryCommitInfo(repoUuid,since,until));
+            return new ResponseBean<>(HttpStatus.OK.value(),"success",(List<Map<String, Object>>) measureDevHistoryService.getDevHistoryCommitInfo(repoUuid,since,until));
         }catch (Exception e){
             e.printStackTrace();
-            return new ResponseBean<>(401,"failed "+ e.getMessage(),null);
+            return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(),"failed "+ e.getMessage(),null);
         }
     }
 
@@ -67,10 +67,10 @@ public class MeasureDevHistoryController {
     public ResponseBean<List<Map<String, Object>>> getDevHistoryFileInfo(@RequestParam("commit_id")String commitId){
 
         try{
-            return new ResponseBean<> (200,"success",(List<Map<String, Object>>) measureDevHistoryService.getDevHistoryFileInfo(commitId));
+            return new ResponseBean<> (HttpStatus.OK.value(),"success",(List<Map<String, Object>>) measureDevHistoryService.getDevHistoryFileInfo(commitId));
         }catch (Exception e){
             e.printStackTrace();
-            return new ResponseBean<> (401,"failed "+ e.getMessage(),null);
+            return new ResponseBean<> (HttpStatus.BAD_REQUEST.value(),"failed "+ e.getMessage(),null);
         }
     }
 

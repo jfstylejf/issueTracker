@@ -124,12 +124,6 @@ public interface ProjectMapper {
     String getProjectName(@Param("repoUuid") String repoUuid);
 
     /**
-     * 删除repo_measure表中所属repoUuidList的数据
-     * @param repoUuidList 删除库列表
-     */
-    void deleteRepoMsg(@Param("repoUuidList") List<String> repoUuidList);
-
-    /**
      * 用户鉴权，返回Leader管理库列表
      * @param userUuid 查询用户 account_uuid
      * @return List<String> projectList

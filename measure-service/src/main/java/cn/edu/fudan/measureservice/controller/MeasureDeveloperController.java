@@ -110,13 +110,13 @@ public class MeasureDeveloperController {
                 int totalPage = developerWorkLoadList.size() % ps == 0 ? developerWorkLoadList.size()/ps : developerWorkLoadList.size()/ps + 1;
                 List<DeveloperWorkLoad> selectedDeveloperWorkLoadList = developerWorkLoadList.subList((page-1)*ps, Math.min(page * ps, developerWorkLoadList.size()));
                 ProjectFrontEnd<DeveloperWorkLoad> developerWorkLoadFrontend = new ProjectFrontEnd<>(page,totalPage,developerWorkLoadList.size(),selectedDeveloperWorkLoadList);
-                return new ResponseBean<>(200,"success",developerWorkLoadFrontend);
+                return new ResponseBean<>(HttpStatus.OK.value(),"success",developerWorkLoadFrontend);
             }else {
-                return new ResponseBean<>(200,"success",developerWorkLoadList);
+                return new ResponseBean<>(HttpStatus.OK.value(),"success",developerWorkLoadList);
             }
         }catch (Exception e){
             e.printStackTrace();
-            return new ResponseBean<>(401,"failed" + e.getMessage(),null);
+            return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(),"failed" + e.getMessage(),null);
         }
     }
 
@@ -147,10 +147,10 @@ public class MeasureDeveloperController {
             String token = request.getHeader("token");
             List<String> repoUuidList = projectDao.involvedRepoProcess(repoUuid,token);
             Query query = new Query(token,since,until,developer,repoUuidList);
-            return new ResponseBean<>(200,"success",null);
+            return new ResponseBean<>(HttpStatus.OK.value(),"success",null);
         }catch (Exception e){
             e.printStackTrace();
-            return new ResponseBean<>(401,"failed "+ e.getMessage() ,null);
+            return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(),"failed "+ e.getMessage() ,null);
         }
     }
 
@@ -183,10 +183,10 @@ public class MeasureDeveloperController {
             Query query = new Query(token,since,until,developer,repoUuidList);
             //fixme
             Map<String,List<DeveloperRepoInfo>> developerRepoInfos = projectDao.getDeveloperRepoInfoList(query);
-            return new ResponseBean<>(200,"success", measureDeveloperService.getDeveloperPortrait(query,developerRepoInfos));
+            return new ResponseBean<>(HttpStatus.OK.value(),"success", measureDeveloperService.getDeveloperPortrait(query,developerRepoInfos));
         }catch (Exception e){
             e.printStackTrace();
-            return new ResponseBean<>(401,"failed "+e.getMessage(),null);
+            return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(),"failed "+e.getMessage(),null);
         }
     }
 
@@ -214,10 +214,10 @@ public class MeasureDeveloperController {
                 until = dtf.format(LocalDate.now().plusDays(1));
             }
             String token = request.getHeader("token");
-            return new ResponseBean<>(200,"success",(List<cn.edu.fudan.measureservice.portrait2.DeveloperPortrait>) measureDeveloperService.getPortraitCompetence(developer,repoUuidList,since,until,token));
+            return new ResponseBean<>(HttpStatus.OK.value(),"success",(List<cn.edu.fudan.measureservice.portrait2.DeveloperPortrait>) measureDeveloperService.getPortraitCompetence(developer,repoUuidList,since,until,token));
         }catch (Exception e){
             e.printStackTrace();
-            return new ResponseBean<>(401,"failed "+ e.getMessage(),null);
+            return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(),"failed "+ e.getMessage(),null);
         }
     }
 
@@ -270,19 +270,19 @@ public class MeasureDeveloperController {
                 int totalPage = developerCommitStandardList.size() % ps == 0 ? developerCommitStandardList.size()/ps : developerCommitStandardList.size()/ps + 1;
                 List<DeveloperCommitStandard> selectedDeveloperCommitStandardList = developerCommitStandardList.subList(ps*(page-1), Math.min(ps * page, developerCommitStandardList.size()));
                 ProjectFrontEnd<DeveloperCommitStandard> developerCommitStandardFrontend = new ProjectFrontEnd<>(page,totalPage,developerCommitStandardList.size(),selectedDeveloperCommitStandardList);
-                return new ResponseBean<>(200,"success",developerCommitStandardFrontend);
+                return new ResponseBean<>(HttpStatus.OK.value(),"success",developerCommitStandardFrontend);
             }else if (developer!=null && !"".equals(developer)){
                 // 如果传入单个开发者，此时 page 按照不规范明细进行分页
                 DeveloperCommitStandard developerCommitStandard = developerCommitStandardList.get(0);
                 List<Map<String,String>> developerInvalidCommitList = developerCommitStandard.getDeveloperInvalidCommitInfo().subList((page-1)*ps , Math.min(page * ps, developerCommitStandard.getDeveloperInvalidCommitCount()));
                 developerCommitStandard.setDeveloperInvalidCommitInfo(developerInvalidCommitList);
-                return new ResponseBean<>(200,"success",Collections.singletonList(developerCommitStandard));
+                return new ResponseBean<>(HttpStatus.OK.value(),"success",Collections.singletonList(developerCommitStandard));
             }else {
-                return new ResponseBean<>(200,"success",developerCommitStandardList);
+                return new ResponseBean<>(HttpStatus.OK.value(),"success",developerCommitStandardList);
             }
         }catch (Exception e){
             e.printStackTrace();
-            return new ResponseBean<>(401,"failed " + e.getMessage(),null);
+            return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(),"failed " + e.getMessage(),null);
         }
     }
 
@@ -298,11 +298,11 @@ public class MeasureDeveloperController {
         try {
             until = timeProcess(until);
             String token = request.getHeader("token");
-            return new ResponseBean<>(200,"success",measureDeveloperService.getCommitStandardTrendChartIntegratedByProject(projectIds,since,until,token,interval));
+            return new ResponseBean<>(HttpStatus.OK.value(),"success",measureDeveloperService.getCommitStandardTrendChartIntegratedByProject(projectIds,since,until,token,interval));
         }catch (Exception e) {
             e.getMessage();
         }
-        return new ResponseBean<>(401,"failed",new ArrayList<>());
+        return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(),"failed",new ArrayList<>());
     }
 
 
@@ -337,11 +337,11 @@ public class MeasureDeveloperController {
             int totalPage = projectCommitStandardDetailList.size() % ps == 0 ? projectCommitStandardDetailList.size()/ps : projectCommitStandardDetailList.size()/ps + 1;
             List<ProjectCommitStandardDetail> selectedDeveloperCommitStandardList = projectCommitStandardDetailList.subList(ps*(page-1), Math.min(ps * page, projectCommitStandardDetailList.size()));
             ProjectFrontEnd<ProjectCommitStandardDetail> developerCommitStandardFrontend = new ProjectFrontEnd<>(page,totalPage,projectCommitStandardDetailList.size(),selectedDeveloperCommitStandardList);
-            return new ResponseBean<>(200,"success",developerCommitStandardFrontend);
+            return new ResponseBean<>(HttpStatus.OK.value(),"success",developerCommitStandardFrontend);
         }catch (Exception e) {
             e.printStackTrace();
         }
-        return new ResponseBean<>(401,"failed",null);
+        return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(),"failed",null);
     }
 
     @GetMapping("/measure/commit-standard/detail/download")
@@ -379,11 +379,11 @@ public class MeasureDeveloperController {
             String token = request.getHeader("token");
             List<String> committerList = measureDeveloperService.getCommitStandardCommitterList(projectNameList,repoUuidList,token);
             committerList.sort(String::compareTo);
-            return new ResponseBean<>(200,"success",committerList);
+            return new ResponseBean<>(HttpStatus.OK.value(),"success",committerList);
         }catch (Exception e) {
             e.getMessage();
         }
-        return new ResponseBean<>(401,"failed",null);
+        return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(),"failed",null);
     }
 
 
@@ -398,11 +398,11 @@ public class MeasureDeveloperController {
         try {
             until = timeProcess(until);
             String token = request.getHeader("token");
-            return new ResponseBean<>(200,"success",measureDeveloperService.getHugeLocRemainedFile(projectIds,since,until,token,interval));
+            return new ResponseBean<>(HttpStatus.OK.value(),"success",measureDeveloperService.getHugeLocRemainedFile(projectIds,since,until,token,interval));
         }catch (Exception e) {
             e.getMessage();
         }
-        return new ResponseBean<>(401,"failed",new ArrayList<>());
+        return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(),"failed",new ArrayList<>());
     }
 
 
@@ -433,11 +433,11 @@ public class MeasureDeveloperController {
             int totalPage = projectBigFileDetailList.size() % ps == 0 ? projectBigFileDetailList.size()/ps : projectBigFileDetailList.size()/ps + 1;
             List<ProjectBigFileDetail> selectedDeveloperCommitStandardList = projectBigFileDetailList.subList(ps*(page-1), Math.min(ps * page, projectBigFileDetailList.size()));
             ProjectFrontEnd<ProjectBigFileDetail> projectBigFileDetailProjectFrontEnd = new ProjectFrontEnd<>(page,totalPage,projectBigFileDetailList.size(),selectedDeveloperCommitStandardList);
-            return new ResponseBean<>(200,"success",projectBigFileDetailProjectFrontEnd);
+            return new ResponseBean<>(HttpStatus.OK.value(),"success",projectBigFileDetailProjectFrontEnd);
         }catch (Exception e) {
             e.printStackTrace();
         }
-        return new ResponseBean<>(401,"failed",null);
+        return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(),"failed",null);
 
     }
 
@@ -480,11 +480,11 @@ public class MeasureDeveloperController {
             int totalPage = developerDataCcnList.size() % ps == 0 ? developerDataCcnList.size()/ps : developerDataCcnList.size()/ps + 1;
             List<DeveloperDataCcn> selectedDeveloperDataCcnList = developerDataCcnList.subList(ps*(page-1), Math.min(ps * page, developerDataCcnList.size()));
             ProjectFrontEnd<DeveloperDataCcn> developerDtaCcnProjectFrontEnd = new ProjectFrontEnd<>(page,totalPage,developerDataCcnList.size(),selectedDeveloperDataCcnList);
-            return new ResponseBean<>(200,"success",developerDtaCcnProjectFrontEnd);
+            return new ResponseBean<>(HttpStatus.OK.value(),"success",developerDtaCcnProjectFrontEnd);
         }catch (Exception e) {
             e.getMessage();
         }
-        return new ResponseBean<>(401,"failed",null);
+        return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(),"failed",null);
     }
 
 
@@ -508,10 +508,10 @@ public class MeasureDeveloperController {
             if(until!=null && !"".equals(until)) {
                 until = dtf.format(LocalDate.now().plusDays(1));
             }
-            return new ResponseBean<>(200,"success",(Map<String,Object>) measureDeveloperService.getStatementByCondition(repUuidList,developer,since,until));
+            return new ResponseBean<>(HttpStatus.OK.value(),"success",(Map<String,Object>) measureDeveloperService.getStatementByCondition(repUuidList,developer,since,until));
         }catch (Exception e){
             e.printStackTrace();
-            return new ResponseBean<>(401,"failed "+e.getMessage(),null);
+            return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(),"failed "+e.getMessage(),null);
         }
     }
 
@@ -536,10 +536,10 @@ public class MeasureDeveloperController {
             if(until!=null && !"".equals(until)) {
                 until = dtf.format(LocalDate.now().plusDays(1));
             }
-            return new ResponseBean<>(200,"success",(List<Map<String, Object>>)measureDeveloperService.getDeveloperRecentNews(repoUuidList,developer,since,until));
+            return new ResponseBean<>(HttpStatus.OK.value(),"success",(List<Map<String, Object>>)measureDeveloperService.getDeveloperRecentNews(repoUuidList,developer,since,until));
         }catch (Exception e){
             e.printStackTrace();
-            return new ResponseBean<>(401,"failed "+e.getMessage(),null);
+            return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(),"failed "+e.getMessage(),null);
         }
     }
 
@@ -574,10 +574,10 @@ public class MeasureDeveloperController {
                 repoUuidList = projectDao.involvedRepoProcess(repoUuid,token);
             }
             Query query = new Query(token,since,until,null,repoUuidList);
-            return new ResponseBean<>(200,"success", measureDeveloperService.getDeveloperLevelList(query));
+            return new ResponseBean<>(HttpStatus.OK.value(),"success", measureDeveloperService.getDeveloperLevelList(query));
         }catch (Exception e){
             e.printStackTrace();
-            return new ResponseBean<>(401,"failed "+ e.getMessage(),null);
+            return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(),"failed "+ e.getMessage(),null);
         }
     }
 

@@ -285,14 +285,6 @@
         WHERE p.account_uuid = #{account_uuid} AND p.account_role = 'LEADER'
     </select>
 
-    <delete id="deleteRepoMsg">
-        DELETE FROM issueTracker.repo_measure
-        WHERE repo_id in
-        <foreach collection="repoUuidList" separator="," open="(" close=")" item="repoUuid">
-            #{repoUuid}
-        </foreach>
-        LIMIT 5000
-    </delete>
 
     <select id="getRepoLanguage" resultType="String">
         SELECT language FROM issueTracker.sub_repository
