@@ -364,15 +364,16 @@ public class IssueMeasurementController {
     @GetMapping("/developer/data/living-issue")
     public ResponseBean<PagedGridResult<DeveloperLivingIssueVO>> getDeveloperListLivingIssue(@RequestParam(value = "since", required = false) String since,
                                                                                              @RequestParam(value = "until", required = false) String until,
-                                                                                             @RequestParam(value = "project_names") String projectNames,
+                                                                                             @RequestParam(value = "project_names", required = false) String projectNames,
                                                                                              @RequestParam(value = "developers") String developers,
+                                                                                             @RequestParam(value = "asc", required = false) Boolean asc,
                                                                                              @RequestParam(value = "page", required = false, defaultValue = "1") int page,
                                                                                              @RequestParam(value = "ps", required = false, defaultValue = "10") int ps,
                                                                                              HttpServletRequest httpServletRequest) {
         try {
 
             List<String> repoUuids = restInterfaceManager.getAllRepoByProjectNames(httpServletRequest.getHeader(TOKEN), StringsUtil.splitStringList(projectNames));
-            PagedGridResult<DeveloperLivingIssueVO> result = issueMeasureInfoService.getDeveloperListLivingIssue(since, until, repoUuids, StringsUtil.splitStringList(developers), page, ps);
+            PagedGridResult<DeveloperLivingIssueVO> result = issueMeasureInfoService.getDeveloperListLivingIssue(since, until, repoUuids, StringsUtil.splitStringList(developers), page, ps, asc);
             return new ResponseBean<>(200, SUCCESS, result);
         } catch (Exception e) {
             e.printStackTrace();
