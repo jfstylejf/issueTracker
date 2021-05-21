@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 @RunWith(JUnit4.class)
 public class JGitHelperTest extends IssueServiceApplicationTest {
 
-    private final String repoPath = System.getProperty("user.dir") + "/src/test/resources/test-project/forTest";
+    private final String repoPath = System.getProperty("user.dir") + "/src/test/dependency/repo/forTest";
 
     @InjectMocks
     private final JGitHelper jGitHelper = new JGitHelper(repoPath);
