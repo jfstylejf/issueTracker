@@ -32,13 +32,12 @@ import java.util.*;
  * create: 4/20/2021
  **/
 @PrepareForTest({AstParserUtil.class})
-public class IssueMatcherTestNormalMatch extends IssueServiceApplicationTest {
+public class IssueMatcherNormalMatchTest extends IssueServiceApplicationTest {
 
     @Autowired
     private IssueMatcher issueMatcher;
 
-    @Value("${test.repo.java.path}")
-    private String REPO_PATH;
+    private final String REPO_PATH = System.getProperty("user.dir") + "/src/test/dependency/repo/forTest";
 
     private JGitHelper jGitHelper;
 

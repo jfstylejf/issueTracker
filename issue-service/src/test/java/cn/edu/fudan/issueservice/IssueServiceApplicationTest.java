@@ -1,6 +1,5 @@
 package cn.edu.fudan.issueservice;
 
-import cn.edu.fudan.issueservice.controller.IssueScanController;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -8,11 +7,8 @@ import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.modules.junit4.PowerMockRunnerDelegate;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.File;
@@ -55,7 +51,7 @@ public class IssueServiceApplicationTest {
 
     @Test
     public void init() {
-        System.out.println(".................testing.................");
+
     }
 
     @After
