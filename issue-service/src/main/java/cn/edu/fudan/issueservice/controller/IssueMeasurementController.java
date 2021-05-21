@@ -343,13 +343,13 @@ public class IssueMeasurementController {
             @ApiImplicitParam(name = "showDetail", value = "是否展示detail", dataType = "String", defaultValue = "false")
     })
     @GetMapping(value = {"/codewisdom/issue/living-issue-tendency"})
-    public ResponseBean<Object> getCcnMethodNum(@RequestParam(value = "since") String since,
+    public ResponseBean<Object> getCcnMethodNum(@RequestParam(value = "since", required = false) String since,
                                                 @RequestParam(value = "until") String until,
-                                                @RequestParam(value = "projectIds", required = false) String projectIds,
+                                                @RequestParam(value = "project_ids", required = false) String projectIds,
                                                 @RequestParam(value = "interval", required = false, defaultValue = "week") String interval,
                                                 @RequestParam(value = "showDetail", required = false, defaultValue = "false") String showDetail) {
         try {
-            if (since.isEmpty() || until.isEmpty()) {
+            if (until.isEmpty()) {
                 return new ResponseBean<>(412, PARAMETER_IS_EMPTY, null);
             }
             if (TIME_FORMAT_ERROR.equals(DateTimeUtil.timeFormatIsLegal(since, false)) || TIME_FORMAT_ERROR.equals(DateTimeUtil.timeFormatIsLegal(until, false))) {
