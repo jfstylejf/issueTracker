@@ -419,8 +419,13 @@ public class ProjectControlServiceImpl implements ProjectControlService {
                     log.error("scan repo delete failed!");
                 }
 
+                boolean deleteDependencyRepoSucess = rest.deleteDependencyRepo(repoUuid);
+                if (!deleteDependencyRepoSucess) {
+                    log.error("scan repo delete failed!");
+                }
+
                 if (!deleteCloneRepoSuccess || !deleteCodetrackerRepoSuccess || !deleteCommitRepoSucess || !deleteIssueRepoSuccess
-                        || !deleteMeasureRepoSucess || !deleteScanRepoSucess) {
+                        || !deleteMeasureRepoSucess || !deleteScanRepoSucess || !deleteDependencyRepoSucess) {
                     throw new RunTimeException("delete failed!");
                 }
 
