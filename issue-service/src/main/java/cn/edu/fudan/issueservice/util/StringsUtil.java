@@ -2,6 +2,7 @@ package cn.edu.fudan.issueservice.util;
 
 import org.springframework.util.StringUtils;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
@@ -47,5 +48,9 @@ public class StringsUtil {
             result.append(list.get(i));
         }
         return result.toString();
+    }
+
+    public static void main(String[] args) {
+        System.out.println(new File(System.getProperty("user.dir") + "/issue-service/src/test/dependency/repo").exists());
     }
 }

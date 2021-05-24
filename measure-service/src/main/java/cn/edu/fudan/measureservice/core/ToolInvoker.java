@@ -165,7 +165,7 @@ public class ToolInvoker {
         }
 
         try{
-            if(repoMeasureMapper.sameRepoMeasureOfOneCommit(scanCommitInfoDto.getRepoUuid(),scanCommitInfoDto.getCommitId())==0) {
+            if(repoMeasureMapper.containCommitIdOrNot(scanCommitInfoDto.getCommitId())==0) {
                 repoMeasureMapper.insertOneRepoMeasure(repoMeasure);
             }
         } catch (Exception e) {
@@ -241,6 +241,7 @@ public class ToolInvoker {
         }
 
         try{
+            // fixme 查询有问题
             if(fileMeasureMapper.sameFileMeasureOfOneCommit(scanCommitInfoDto.getRepoUuid(),scanCommitInfoDto.getCommitId())==0) {
                 fileMeasureMapper.insertFileMeasureList(fileMeasureList);
             }

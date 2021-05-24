@@ -11,10 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -82,7 +79,7 @@ public class RestInterfaceManager {
         url.append(projectServicePath).append("/inner/project?repo_uuid=").append(repoUuid);
         ResponseEntity<ResponseBean> responseEntity =restTemplate.exchange(url.toString(),HttpMethod.GET,request,ResponseBean.class);
         ResponseBean<Map<String,Object>> result = responseEntity.getBody();
-        if (result!=null && result.getCode()==200) {
+        if (result!=null && result.getCode()==HttpStatus.OK.value()) {
             return result.getData();
         }else {
             return null;
@@ -114,7 +111,7 @@ public class RestInterfaceManager {
             return null;
         }
 
-        if (result.getCode() != 200) {
+        if (result.getCode() != HttpStatus.OK.value()) {
             log.error(result.getMsg());
             return null;
         }
@@ -122,6 +119,15 @@ public class RestInterfaceManager {
         return new UserInfoDTO(token, (String) data.get("uuid"), (Integer) data.get("right"));
     }
 
+    public boolean deleteRecall(String repoUuid, String token) {
+        String path =  projectServicePath + "/repo?service_name=MEASURE&repo_uuid=" + repoUuid;
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("token", token);
+        HttpEntity<HttpHeaders> request = new HttpEntity<>(headers);
+        ResponseEntity<JSONObject> responseEntity = restTemplate.exchange(path, HttpMethod.PUT, request, JSONObject.class);
+        log.info(responseEntity.toString());
+        return Objects.requireNonNull(responseEntity.getBody()).getIntValue("code") == HttpStatus.OK.value();
+    }
 
     //---------------------------------------------code service---------------------------------------------------------
     public String getRepoPath(String repoUuid,String commit_id){
@@ -204,7 +210,7 @@ public class RestInterfaceManager {
         ResponseEntity responseEntity = restTemplate.exchange(url.toString(), HttpMethod.GET, request, JSONObject.class);
         String body = responseEntity.getBody().toString();
         JSONObject result = JSONObject.parseObject(body);
-        if(result.getIntValue("code") == 200){
+        if(result.getIntValue("code") == HttpStatus.OK.value()){
             return result.getJSONObject("data").getIntValue("total");
         }
         return 0;
@@ -232,7 +238,7 @@ public class RestInterfaceManager {
         ResponseEntity responseEntity = restTemplate.exchange(url.toString(), HttpMethod.GET, request, JSONObject.class);
         String body = responseEntity.getBody().toString();
         JSONObject result = JSONObject.parseObject(body);
-        if(result.getIntValue("code") == 200){
+        if(result.getIntValue("code") == HttpStatus.OK.value()){
             return result.getJSONObject("data").getIntValue("total");
         }
         return 0;
@@ -261,7 +267,7 @@ public class RestInterfaceManager {
         String body = responseEntity.getBody().toString();
         JSONObject result = JSONObject.parseObject(body);
 
-        if(result.getIntValue("code") == 200){
+        if(result.getIntValue("code") == HttpStatus.OK.value()){
             return result.getJSONObject("data");
         }
         return null;
@@ -285,7 +291,7 @@ public class RestInterfaceManager {
             url.append("&developers=").append(developer);
         }
         ResponseBean<List<Map<String,Object>>> response = restTemplate.getForObject(url.toString(), ResponseBean.class);
-        if (response == null || response.getCode() != 200){
+        if (response == null || response.getCode() != HttpStatus.OK.value()){
             return null;
         }
         return response.getData();
@@ -307,7 +313,7 @@ public class RestInterfaceManager {
             url.append("&until").append(until);
         }
         ResponseBean<List<Map<String,Object>>> response = restTemplate.getForObject(url.toString(),ResponseBean.class);
-        if(response!=null && response.getCode()==200) {
+        if(response!=null && response.getCode()==HttpStatus.OK.value()) {
             return response.getData();
         }else {
             return null;
@@ -327,7 +333,7 @@ public class RestInterfaceManager {
             url.append("&until").append(until);
         }
         ResponseBean<List<Map<String,Object>>> response = restTemplate.getForObject(url.toString(),ResponseBean.class);
-        if(response!=null && response.getCode()==200) {
+        if(response!=null && response.getCode()==HttpStatus.OK.value()) {
             return response.getData();
         }else {
             return  null;
@@ -347,7 +353,7 @@ public class RestInterfaceManager {
         }
         try {
             ResponseBean<List<Map<String,Object>>> result = restTemplate.getForObject(url.toString(), ResponseBean.class);
-            if (result!=null && result.getCode()==200) {
+            if (result!=null && result.getCode()==HttpStatus.OK.value()) {
                 return result.getData();
             }else {
                 return null;
@@ -363,7 +369,7 @@ public class RestInterfaceManager {
     public JSONArray getJiraInfoByKey(String type, String keyword){
         try {
             JSONObject response = restTemplate.getForObject(uniformServicePath+"/jira/jql"  + "?keyword=" + keyword +  "&type=" + type, JSONObject.class);
-            if(response.getIntValue("code") == 200){
+            if(response.getIntValue("code") == HttpStatus.OK.value()){
                 return response.getJSONArray("data");
             }
         }catch (Exception e) {
@@ -386,7 +392,7 @@ public class RestInterfaceManager {
                 url.append("&until").append(until);
             }
             JSONObject response = restTemplate.getForObject(url.toString(), JSONObject.class);
-            if(response.getIntValue("code") == 200){
+            if(response.getIntValue("code") == HttpStatus.OK.value()){
                 return response.getJSONObject("data");
             }
         }catch (Exception e) {

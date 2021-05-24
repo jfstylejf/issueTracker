@@ -173,7 +173,7 @@ public class IssueMeasurementController {
                 assert developers != null;
                 developers.forEach(producer -> {
                     query.put("producer", producer);
-                    developersLifecycle.add(new HashMap<String, JSONObject>(2) {{
+                    developersLifecycle.add(new HashMap<>(2) {{
                         put(producer, issueMeasureInfoService.getIssuesLifeCycle(status, target, query));
                     }});
                 });
@@ -343,13 +343,13 @@ public class IssueMeasurementController {
             @ApiImplicitParam(name = "showDetail", value = "是否展示detail", dataType = "String", defaultValue = "false")
     })
     @GetMapping(value = {"/codewisdom/issue/living-issue-tendency"})
-    public ResponseBean<Object> getCcnMethodNum(@RequestParam(value = "since") String since,
+    public ResponseBean<Object> getCcnMethodNum(@RequestParam(value = "since", required = false) String since,
                                                 @RequestParam(value = "until") String until,
-                                                @RequestParam(value = "projectIds", required = false) String projectIds,
+                                                @RequestParam(value = "project_ids", required = false) String projectIds,
                                                 @RequestParam(value = "interval", required = false, defaultValue = "week") String interval,
                                                 @RequestParam(value = "showDetail", required = false, defaultValue = "false") String showDetail) {
         try {
-            if (since.isEmpty() || until.isEmpty()) {
+            if (until.isEmpty()) {
                 return new ResponseBean<>(412, PARAMETER_IS_EMPTY, null);
             }
             if (TIME_FORMAT_ERROR.equals(DateTimeUtil.timeFormatIsLegal(since, false)) || TIME_FORMAT_ERROR.equals(DateTimeUtil.timeFormatIsLegal(until, false))) {
@@ -364,15 +364,16 @@ public class IssueMeasurementController {
     @GetMapping("/developer/data/living-issue")
     public ResponseBean<PagedGridResult<DeveloperLivingIssueVO>> getDeveloperListLivingIssue(@RequestParam(value = "since", required = false) String since,
                                                                                              @RequestParam(value = "until", required = false) String until,
-                                                                                             @RequestParam(value = "project_names") String projectNames,
+                                                                                             @RequestParam(value = "project_names", required = false) String projectNames,
                                                                                              @RequestParam(value = "developers") String developers,
+                                                                                             @RequestParam(value = "asc", required = false) Boolean asc,
                                                                                              @RequestParam(value = "page", required = false, defaultValue = "1") int page,
                                                                                              @RequestParam(value = "ps", required = false, defaultValue = "10") int ps,
                                                                                              HttpServletRequest httpServletRequest) {
         try {
 
             List<String> repoUuids = restInterfaceManager.getAllRepoByProjectNames(httpServletRequest.getHeader(TOKEN), StringsUtil.splitStringList(projectNames));
-            PagedGridResult<DeveloperLivingIssueVO> result = issueMeasureInfoService.getDeveloperListLivingIssue(since, until, repoUuids, StringsUtil.splitStringList(developers), page, ps);
+            PagedGridResult<DeveloperLivingIssueVO> result = issueMeasureInfoService.getDeveloperListLivingIssue(since, until, repoUuids, StringsUtil.splitStringList(developers), page, ps, asc);
             return new ResponseBean<>(200, SUCCESS, result);
         } catch (Exception e) {
             e.printStackTrace();

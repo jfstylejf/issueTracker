@@ -43,6 +43,33 @@
                 #{issueRepo.endScanTime})
     </insert>
 
+<!--    <insert id="insertOneIssueRepo" parameterType="IssueRepo">-->
+<!--        insert into issue_repo-->
+<!--        (uuid,-->
+<!--         repo_uuid,-->
+<!--         branch,-->
+<!--         tool,-->
+<!--         start_commit,-->
+<!--         total_commit_count,-->
+<!--         scan_time,-->
+<!--         scanned_commit_count,-->
+<!--         status,-->
+<!--         start_scan_time,-->
+<!--         end_scan_time)-->
+<!--        VALUES (#{uuid},-->
+<!--                #{issueRepo.repoUuid},-->
+<!--                #{issueRepo.branch},-->
+<!--                #{issueRepo.tool},-->
+<!--                #{issueRepo.startCommit},-->
+<!--                #{issueRepo.totalCommitCount},-->
+<!--                #{issueRepo.scanTime},-->
+<!--                #{issueRepo.scannedCommitCount},-->
+<!--                #{issueRepo.status},-->
+<!--                #{issueRepo.startScanTime},-->
+<!--                #{issueRepo.endScanTime})-->
+<!--    </insert>-->
+
+
     <update id="updateIssueRepo">
         UPDATE issue_repo
         SET end_scan_time        = #{issueRepo.endScanTime},

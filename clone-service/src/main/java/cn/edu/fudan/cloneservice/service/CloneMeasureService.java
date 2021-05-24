@@ -30,7 +30,7 @@ public interface CloneMeasureService {
      * @param end       end time
      * @return list
      */
-    List<CloneMessage> getCloneMeasure(String repoId, String developers, String start, String end, String page, String size, Boolean isAsc, String order);
+    List<CloneMessage> getCloneMeasure(String repoId, String developers, String start, String end);
 
     /**
      * 获取最新版本的clone行数
@@ -58,4 +58,6 @@ public interface CloneMeasureService {
     List<CloneDetail> getCloneDetails(String projectId, String groupId, String commitId, String token);
 
     List<CloneDetailOverall> getCloneDetailOverall(String projectId, String commitId, String repoUuid,String until, String token);
+
+    List<CloneMessage> getCloneLine(String projectId, String repoUuid, String developers, String since, String until, String token);
 }

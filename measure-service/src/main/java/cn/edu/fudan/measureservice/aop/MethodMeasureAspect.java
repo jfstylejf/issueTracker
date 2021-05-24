@@ -38,7 +38,6 @@ public class MethodMeasureAspect {
 
     @SuppressWarnings(value = "unchecked")
     @Around("@annotation(cn.edu.fudan.measureservice.annotation.MethodMeasureAnnotation)"
-            + "|| execution(* cn.edu.fudan.measureservice.controller.MeasureDeveloperController.*(..)) "
             + "|| execution(* cn.edu.fudan.measureservice.service.MeasureDeveloperService.*(..)) "
             + "|| execution(* cn.edu.fudan.measureservice.component.RestInterfaceManager.*(..))"
             + "|| execution(* cn.edu.fudan.measureservice.mapper.*.*(..))")
@@ -59,6 +58,7 @@ public class MethodMeasureAspect {
             costList.add((int)costTime);
             methodCost.put(methodName, costList);
         }
+        System.out.println(this);
         return obj;
     }
 

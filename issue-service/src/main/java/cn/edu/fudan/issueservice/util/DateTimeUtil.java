@@ -7,10 +7,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoField;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
 
 /**
  * @author WZY
@@ -36,13 +34,17 @@ public class DateTimeUtil {
             .appendValue(ChronoField.SECOND_OF_MINUTE, 2)
             .toFormatter();
 
-    public static DateTimeFormatter Y_M_D_formatter = new DateTimeFormatterBuilder()
+    public static final DateTimeFormatter Y_M_D_formatter = new DateTimeFormatterBuilder()
             .appendValue(ChronoField.YEAR)
             .appendLiteral("-")
             .appendValue(ChronoField.MONTH_OF_YEAR, 2)
             .appendLiteral("-")
             .appendValue(ChronoField.DAY_OF_MONTH, 2)
             .toFormatter();
+
+    public static Date parse(String date) throws ParseException {
+        return new SimpleDateFormat(DATE_FORMAT_WITH_DETAIL).parse(date);
+    }
 
     public static String format(LocalDateTime dateTime) {
         return dateTime.format(Y_M_D_H_M_S_FORMATTER);

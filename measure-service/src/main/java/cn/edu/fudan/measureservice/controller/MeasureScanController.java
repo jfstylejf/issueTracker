@@ -11,6 +11,7 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -46,7 +47,7 @@ public class MeasureScanController {
         // TODO 调用 tool scan 流程
         try {
             measureScanService.scan(RepoResourceDTO.builder().repoUuid(repoUuid).build(), branch, beginCommit);
-            return ResponseBean.builder().code(200).build();
+            return ResponseBean.builder().code(HttpStatus.OK.value()).build();
         }catch (Exception e) {
             log.error("measure scan failed! message is {}", e.getMessage());
             return ResponseBean.builder().code(500).data(e.getMessage()).build();
@@ -64,7 +65,7 @@ public class MeasureScanController {
         try {
             //目前measure服务只有这个扫描工具
             Map<String, Object> result = (Map<String, Object>) measureScanService.getScanStatus(repoUuid);
-            return new ResponseBean<>(200,"success", result);
+            return new ResponseBean<>(HttpStatus.OK.value(),"success", result);
         }catch (Exception e) {
             e.printStackTrace();
             log.error("get scan status failed! message is {}", e.getMessage());
@@ -82,10 +83,10 @@ public class MeasureScanController {
     public ResponseBean deleteRepoMeasureByRepoUuid(@PathVariable("repo_uuid")String repoUuid){
         try{
             measureScanService.delete(repoUuid);
-            return new ResponseBean(200,"success",null);
+            return new ResponseBean(HttpStatus.OK.value(),"success",null);
         }catch (Exception e){
             e.printStackTrace();
-            return new ResponseBean(401,"failed",null);
+            return new ResponseBean(HttpStatus.BAD_REQUEST.value(),"failed",null);
         }
     }
 

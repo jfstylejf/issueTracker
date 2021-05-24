@@ -13,6 +13,8 @@ import java.io.LineNumberReader;
 @Slf4j
 public class FileUtil {
 
+    private static final String SRC = "src";
+
     private static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().contains("win");
 
     private static final String JSON_STR = ".json", CODE_SOURCE_ERROR_MESSAGE = "get code source failed ! file is ---> {}";
@@ -71,5 +73,27 @@ public class FileUtil {
     public static String getEsLintRunningLogAbsolutePath(String resultFileHome, String repoUuid, String commit) {
         return IS_WINDOWS ? resultFileHome + "\\eslint-running-" + repoUuid + "_" + commit + ".log"
                 : resultFileHome + "/eslint-running-" + repoUuid + "_" + commit + ".log";
+    }
+
+    public static String findSrcDir(String repoPath) {
+        File repo = new File(repoPath);
+        File[] files = repo.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                if (file.isDirectory() && containSrc(file.getAbsolutePath())) {
+                    return file.getAbsolutePath();
+                }
+            }
+        }
+        return null;
+    }
+
+    private static boolean containSrc(String absolutePath) {
+        return absolutePath.contains("/src");
+    }
+
+    public static void main(String[] args) {
+        String srcDir = findSrcDir("/Users/beethoven/Desktop/saic/IssueTracker-Master/issue-service");
+        System.out.println(srcDir);
     }
 }

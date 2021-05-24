@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * @author beethoven
@@ -20,6 +21,10 @@ public class IssueRepoDao {
     public void insertOneIssueRepo(RepoScan issueRepo) {
         issueRepoMapper.insertOneIssueRepo(issueRepo);
     }
+
+//    public void insertOneIssueRepo(RepoScan issueRepo) {
+//        issueRepoMapper.insertOneIssueRepo(issueRepo, UUID.randomUUID().toString());
+//    }
 
     public void updateIssueRepo(RepoScan issueRepo) {
         issueRepoMapper.updateIssueRepo(issueRepo);

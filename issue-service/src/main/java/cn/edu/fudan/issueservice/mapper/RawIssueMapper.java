@@ -71,8 +71,9 @@ public interface RawIssueMapper {
 
     /**
      * raw issue count
+     *
      * @param repoUuid repoUuid
-     * @param tool tool
+     * @param tool     tool
      * @return count
      */
     @Select("select count(*) from raw_issue where repo_uuid = #{repoUuid} and tool = #{tool}")

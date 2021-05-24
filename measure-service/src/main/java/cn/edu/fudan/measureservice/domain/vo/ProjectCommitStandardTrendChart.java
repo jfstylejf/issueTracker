@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,7 +22,7 @@ import java.util.Map;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ProjectCommitStandardTrendChart {
+public class ProjectCommitStandardTrendChart implements Serializable {
     /**
      * 项目 id
      */
@@ -38,10 +39,6 @@ public class ProjectCommitStandardTrendChart {
      * 趋势图节点对应比值
      */
     private double num;
-    /**
-     * 数据明细
-     */
-    private List<DeveloperCommitStandard> detail;
 
     /**
      * 可选参数，用于描述上一行数据字段
