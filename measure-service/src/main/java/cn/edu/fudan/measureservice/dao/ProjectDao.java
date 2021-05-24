@@ -12,6 +12,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -61,6 +62,16 @@ public class ProjectDao {
         return list;
     }
 
+    /**
+     * 获取库下的开发者列表（全部时间内）
+     * @param repoUuid 查询库 id
+     * @return 该库参与的开发者
+     */
+    @Cacheable(value = "repoDeveloper",key = "#repoUuid")
+    public List<String> getRepoDeveloperList(String repoUuid) {
+        Query query = new Query(null,null,null,null,Collections.singletonList(repoUuid));
+        return getDeveloperList(query);
+    }
 
     /**
      * fixme
@@ -245,7 +256,6 @@ public class ProjectDao {
      * @param query 查询条件
      * @return List<Map<String,Object>> key : developer , commit_time , commit_id , message
      */
-    @Cacheable(value = "developerValidCommitMsg",key = "#query.developer+'_'+#query.since+'~'+#query.until")
     public List<Map<String,String>> getDeveloperValidCommitMsg(Query query) {
         List<String> developerGitNameList = ((ProjectDao) AopContext.currentProxy()).getDeveloperGitNameList(query.getDeveloper());
         return projectMapper.getDeveloperValidCommitMsg(query.getRepoUuidList(),query.getSince(),query.getUntil(),developerGitNameList);
@@ -273,22 +283,13 @@ public class ProjectDao {
     /**
      * 获取查询repoUuid的库名
      * @param repoUuid 查询库
-     * @return String repoName
+     * @return  repoName
      */
-    @Deprecated
+    @Cacheable(value = "repoName",key = "#repoUuid")
     public String getRepoName(String repoUuid) {
         return projectMapper.getRepoName(repoUuid);
     }
 
-    /**
-     * 获取查询repoUuid的项目名
-     * @param repoUuid 查询库
-     * @return String projectName
-     */
-    @Deprecated
-    public String getProjectName(String repoUuid) {
-        return projectMapper.getProjectName(repoUuid);
-    }
 
     /**
      * 获取查询条件下提交次数前3名的开发者
@@ -522,7 +523,7 @@ public class ProjectDao {
     @SneakyThrows
     public List<ProjectPair> getVisibleProjectPairListByProjectIds(String projectIds, String token) {
         List<ProjectPair> projectPairList = new ArrayList<>();
-        Map<String,Integer> queryProjectMap = getProjectNameById(projectIds);
+        Map<String,Integer> queryProjectMap = getProjectNameListById(projectIds);
         // 内部调用走代理，否则缓存失效
         List<String> visibleProjectList = ((ProjectDao) AopContext.currentProxy()).getVisibleProjectByToken(token);
         List<String> checkedProjectList = mergeBetweenProject(new ArrayList<>(queryProjectMap.keySet()),visibleProjectList);
@@ -539,21 +540,38 @@ public class ProjectDao {
      * @return key : projectName, id
      */
     @SneakyThrows
-    public Map<String,Integer> getProjectNameById(String projectIds) {
+    public Map<String,Integer> getProjectNameListById(String projectIds) {
         Map<String,Integer> map = new HashMap<>();
         List<String> projectIdList;
         if(projectIds!=null && !"".equals(projectIds)) {
             projectIdList = Arrays.asList(projectIds.split(split));
         }else {
-            projectIdList = new ArrayList<>();
+            projectIdList = ((ProjectDao) AopContext.currentProxy()).getAllProjectId();
         }
-        List<Map<String,Object>> result = projectMapper.getProjectNameById(projectIdList);
-        for (Map<String, Object> temp : result) {
-            String projectName = (String) temp.get("project_name");
-            int id = (Integer) temp.get("id");
-            map.put(projectName, id);
+        for (String projectId : projectIdList) {
+            String projectName = ((ProjectDao) AopContext.currentProxy()).getProjectNameById(projectId);
+            map.put(projectName,Integer.parseInt(projectId));
         }
         return map;
+    }
+
+    /**
+     * 根据查询项目Id, 获取 projectName
+     * @param projectId 查询 projectId
+     * @return 所查项目名
+     */
+    @Cacheable(value = "projectNameById",key = "#projectId")
+    public  String getProjectNameById(String projectId) {
+        return projectMapper.getProjectNameById(projectId);
+    }
+
+    /**
+     * 获取所有项目id
+     * @return
+     */
+    @Cacheable(value = "allProject")
+    public List<String> getAllProjectId() {
+        return projectMapper.getAllProjectId();
     }
 
     /**
@@ -572,6 +590,7 @@ public class ProjectDao {
             return -1;
         }
     }
+
 
 
     /**

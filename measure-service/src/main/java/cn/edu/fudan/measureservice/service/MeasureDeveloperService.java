@@ -910,7 +910,7 @@ public class MeasureDeveloperService {
         if (since!=null && !"".equals(since)) {
             beginTime = LocalDate.parse(since,dtf);
         }else {
-            // 默认 begintime 时间
+            // 默认 beginTime 时间
             beginTime = endTime.minusWeeks(1);
         }
         // 根据 interval 对 beginTime 及 endTime 处理为当前周的 周一 和 周日
@@ -981,86 +981,116 @@ public class MeasureDeveloperService {
     }
 
 
-    @CacheEvict(value = "projectCommitStandardChart", key = "#projectPair.projectName+'_'+#query.until")
-    public void deleteSingleProjectCommitStandardChart(Query query, ProjectPair projectPair) {
+    @CacheEvict(value = "projectCommitStandardChart", allEntries=true, beforeInvocation = true)
+    public void deleteProjectCommitStandardChart() {
+
+    }
+
+    @CacheEvict(value = "projectCommitStandardChart", key = "#projectName+'_'+#until")
+    public void deleteProjectCommitStandardChart(String projectName,String until) {
 
     }
 
     /**
      * 获取提交规范性按照项目聚合的明细
-     * @param projectNameList 查询项目列表
-     * @param repoUuidList 查询库列表
-     * @param since 查询起始时间
-     * @param until 查询截至时间
+     * @param projectNames 查询项目列表
+     * @param repoUuids 查询库列表
      * @param token 查询权限
      * @return new ArrayList<{@link ProjectCommitStandardDetail}>
      */
     @SneakyThrows
-    public synchronized List<ProjectCommitStandardDetail> getCommitStandardDetailIntegratedByProject(String projectNameList,String repoUuidList,String committer,String since,String until,String token) {
+    public synchronized List<ProjectCommitStandardDetail> getCommitStandardDetailIntegratedByProject(String projectNames,String repoUuids,String committer,String token) {
         List<ProjectCommitStandardDetail> projectCommitStandardDetailList = new ArrayList<>();
-        // 获取可见库列表
-        List<String> visibleRepoList = projectDao.getVisibleRepoListByProjectNameAndRepo(projectNameList,repoUuidList,token);
-        Query query = new Query(token,since,until,committer,visibleRepoList);
-        List<DeveloperCommitStandard> developerCommitStandardList = ((MeasureDeveloperService) AopContext.currentProxy()).getCommitStandard(query,null);
-        for (DeveloperCommitStandard developerCommitStandard : developerCommitStandardList) {
-            projectCommitStandardDetailList.addAll(((MeasureDeveloperService) AopContext.currentProxy()).dealWithDeveloperCommitStandardDetail(developerCommitStandard,token));
+        List<String> repoUuidList = new ArrayList<>();
+        if (repoUuids != null && !"".equals(repoUuids)) {
+            repoUuidList = Arrays.asList(repoUuids.split(split));
+        }
+        // 获取每个项目的提交规范性明细
+        List<String> projectNameList;
+        if (projectNames != null && !"".equals(projectNames)) {
+            projectNameList = Arrays.asList(projectNames.split(split));
+        }else {
+            List<ProjectPair> visibleProjectPairListByProjectIds = projectDao.getVisibleProjectPairListByProjectIds(null,token);
+            List<String> finalProjectNameList = new ArrayList<>();
+            visibleProjectPairListByProjectIds.forEach(projectPair -> finalProjectNameList.add(projectPair.getProjectName()));
+            projectNameList = finalProjectNameList;
+        }
+        for (String projectName : projectNameList) {
+            log.info("start to getProjectCommitStandardDetail of {}\n",projectName);
+            List<String> projectRepoList = projectDao.getProjectRepoList(projectName,token);
+            // 若前端传入查询库 repoUuids ，则只查询在此范围内的库
+            projectRepoList = repoUuidList.size() > 0 ? projectDao.mergeBetweenRepo(projectRepoList,repoUuidList) : projectRepoList;
+            // 获取每个项目下各库的提交规范性明细
+            for (String repoUuid : projectRepoList) {
+                log.info("start to get repoCommitStandardDetail of {} in {}",repoUuid,projectName);
+                if (committer == null || "".equals(committer)) {
+                    projectCommitStandardDetailList.addAll(((MeasureDeveloperService) AopContext.currentProxy()).getRepoCommitStandardDetail(projectName,repoUuid));
+                }else {
+                    projectCommitStandardDetailList.addAll(((MeasureDeveloperService) AopContext.currentProxy()).getDeveloperRepoCommitStandardDetail(projectName,repoUuid,committer));
+                }
+            }
         }
         return projectCommitStandardDetailList;
      }
 
     /**
-     * 转换相关数据
-     * @see DeveloperCommitStandard
-     * @see ProjectCommitStandardDetail
-     * @param developerCommitStandard 开发者提交规范性明细
-     * @return new ArrayList<{@link ProjectCommitStandardDetail}>
+     * 获取项目总览提交规范一个库的详情明细
+     * @param projectName 查询项目
+     * @param repoUuid 查询库id
+     * @return 该库的提交规范详情
      */
-     public List<ProjectCommitStandardDetail> dealWithDeveloperCommitStandardDetail(DeveloperCommitStandard developerCommitStandard,String token) {
-         List<ProjectCommitStandardDetail> projectCommitStandardDetailList = new ArrayList<>();
-         List<Map<String,String>> developerJiraCommitInfo = developerCommitStandard.getDeveloperJiraCommitInfo();
-         List<Map<String,String>> developerInvalidCommitInfo = developerCommitStandard.getDeveloperInvalidCommitInfo();
-         // 添加项目规范提交明细
-         projectCommitStandardDetailList.addAll(commitInfoToProjectCommitStandardDetail(developerCommitStandard.getDeveloperName(),developerJiraCommitInfo,token,true));
-         // 添加项目不规范提交明细
-         projectCommitStandardDetailList.addAll(commitInfoToProjectCommitStandardDetail(developerCommitStandard.getDeveloperName(),developerInvalidCommitInfo,token,false));
-         return projectCommitStandardDetailList;
-     }
+    @Cacheable(value = "repoCommitStandardDetail",key = "#projectName+'_'+#repoUuid")
+    public List<ProjectCommitStandardDetail> getRepoCommitStandardDetail(String projectName , String repoUuid) {
+        List<ProjectCommitStandardDetail> repoCommitStandardDetail = new ArrayList<>();
+        Query query = new Query(null,null,null,null,Collections.singletonList(repoUuid));
+        // 获取库下参与开发者列表
+        List<String> developerList = projectDao.getRepoDeveloperList(repoUuid);
+        // 获取项目下每个开发者的提交明细
+        for (String developer : developerList) {
+            List<ProjectCommitStandardDetail> developerRepoCommitStandardDetailList = ((MeasureDeveloperService) AopContext.currentProxy()).getDeveloperRepoCommitStandardDetail(projectName,repoUuid,developer);
+            repoCommitStandardDetail.addAll(developerRepoCommitStandardDetailList);
+        }
+        return repoCommitStandardDetail;
+    }
 
     /**
-     * 提交信息 转换为 项目提交明细
-     * @see ProjectCommitStandardDetail
-     * @param commitInfo 提交明细
-     * @param isValid 是否规范
-     * @return List<ProjectCommitStandardDetail>
+     * 项目总览提交规范性明细，对每个开发者该库下的详情（查询全部时间）
+     * @param projectName 查询项目名
+     * @param repoUuid 查询库id
+     * @param committer 查询提交者
+     * @return 开发者该库的提交规范明细
      */
-     private List<ProjectCommitStandardDetail> commitInfoToProjectCommitStandardDetail(String developerName, List<Map<String,String>> commitInfo,String token, boolean isValid) {
-         List<ProjectCommitStandardDetail> projectCommitStandardDetailList = new ArrayList<>();
-         for (Map<String, String> stringStringMap : commitInfo) {
-             String repoUuid = stringStringMap.get("repo_id");
-             if (!projectDao.getRepoInfoMap().containsKey(repoUuid)) {
-                 projectDao.insertProjectInfo(token);
-             }
-             RepoInfo repoInfo = projectDao.getRepoInfoMap().get(repoUuid);
-             String projectName = repoInfo.getProjectName();
-             String repoName = repoInfo.getRepoName();
-             int projectId = projectDao.getProjectIdByName(projectName);
-             String message = stringStringMap.get("message");
-             String commitTime = stringStringMap.get("commit_time");
-             String commitId = stringStringMap.get("commit_id");
-             ProjectCommitStandardDetail projectCommitStandardDetail = ProjectCommitStandardDetail.builder()
-                     .committer(developerName)
-                     .commitId(commitId)
-                     .repoUuid(repoUuid)
-                     .repoName(repoName)
-                     .commitTime(commitTime)
-                     .message(message)
-                     .projectId(String.valueOf(projectId))
-                     .projectName(projectName)
-                     .isValid(isValid).build();
-             projectCommitStandardDetailList.add(projectCommitStandardDetail);
-         }
-         return projectCommitStandardDetailList;
-     }
+    @Cacheable(value = "developerRepoCommitStandardDetail",key = "#projectName+'_'+#repoUuid+'_'+#committer")
+    public List<ProjectCommitStandardDetail> getDeveloperRepoCommitStandardDetail(String projectName , String repoUuid , String committer) {
+        List<ProjectCommitStandardDetail> developerProjectCommitStandardDetailList = new ArrayList<>();
+        // 获取库对应的信息
+        String projectId = String.valueOf(projectDao.getProjectIdByName(projectName));
+        String repoName = projectDao.getRepoName(repoUuid);
+        // 获取开发者对应的合法提交信息
+        Query query = new Query(null,null,null,committer,Collections.singletonList(repoUuid));
+        List<Map<String,String>> developerValidCommitInfo = projectDao.getDeveloperValidCommitMsg(query);
+        // 封装 ProjectCommitStandardDetail
+        for (Map<String,String> map : developerValidCommitInfo) {
+            String commitId = map.get("commit_id");
+            String commitTime = map.get("commit_time");
+            String message = map.get("message");
+            boolean isValid = !"noJiraID".equals(jiraDao.getJiraIDFromCommitMsg(message));
+            ProjectCommitStandardDetail projectCommitStandardDetail = ProjectCommitStandardDetail.builder()
+                    .projectName(projectName).projectId(projectId)
+                    .repoName(repoName).repoUuid(repoUuid)
+                    .committer(committer).commitTime(commitTime).commitId(commitId)
+                    .message(message)
+                    .isValid(isValid)
+                    .build();
+            developerProjectCommitStandardDetailList.add(projectCommitStandardDetail);
+        }
+        return developerProjectCommitStandardDetailList;
+    }
+
+    @CacheEvict(cacheNames = {"repoCommitStandardDetail","developerRepoCommitStandardDetail"}, allEntries=true, beforeInvocation = true)
+    public void deleteProjectCommitStandardInfo() {
+    }
+
 
     /**
      * 前端项目总览界面， 添加提交者列表功能

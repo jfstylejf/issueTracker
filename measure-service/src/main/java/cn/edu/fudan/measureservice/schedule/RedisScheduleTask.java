@@ -14,10 +14,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
 import java.text.ParseException;
@@ -35,7 +40,8 @@ import java.util.Map;
  * create: 2020-08-25 22:30
  **/
 @Slf4j
-@Configuration
+@EnableScheduling
+@Component
 public class RedisScheduleTask {
 
     private static final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -49,6 +55,18 @@ public class RedisScheduleTask {
     private MeasureDeveloperController measureDeveloperController;
     private MeasureDeveloperService measureDeveloperService;
     private RepoMeasureMapper repoMeasureMapper;
+
+    /**
+     * Springboot 默认是用 newSingleThreadScheduledExecutor() 创建，若没有给定TaskScheduler，则无法在同一时间内执行多个任务
+     * @return
+     */
+    @Bean
+    public TaskScheduler taskScheduler() {
+        ThreadPoolTaskScheduler taskScheduler = new ThreadPoolTaskScheduler();
+        taskScheduler.setPoolSize(50);
+        return taskScheduler;
+    }
+
 
     /**
      * 缓存的过期时间配置为24小时
@@ -71,40 +89,50 @@ public class RedisScheduleTask {
             measureDeveloperService.getPortraitCompetence(developerName,null,null,null,token);
             measureDeveloperService.getDeveloperRecentNews(null,developerName,null,null);
         }
+
+        // 提交规范性趋势图本周缓存更新
+        initProjectCommitStandardTrendChart();
+
         log.info("Successfully re request developerList, portrait, recentNews API.");
     }
 
-    @Scheduled(cron = "0 0 2 1 * ?")
-    private void initProjectCommitStandardTrendChart() throws ParseException{
-        List<ProjectPair> projectPairList = projectDao.getVisibleProjectPairListByProjectIds(null,token);
-        LocalDate begin = LocalDate.now();
-        LocalDate end = begin.with(TemporalAdjusters.lastDayOfMonth());
-        // 缓存这个月的趋势图
-        measureDeveloperService.getCommitStandardTrendChartIntegratedByProject(null,DateTimeUtil.dtf.format(begin),DateTimeUtil.dtf.format(end),token,GranularityEnum.Week.getType());
-        //删除上个月的趋势图
-        LocalDate delBegin = begin.minusMonths(1);
-        LocalDate delEnd = end.minusMonths(1);
-        // 根据 interval 对 beginTime 及 endTime 处理为当前周的 周一 和 周日
-        delBegin = DateTimeUtil.initBeginTimeByInterval(delBegin, GranularityEnum.Week.getType());
-        delEnd = DateTimeUtil.initEndTimeByInterval(delEnd,GranularityEnum.Week.getType());
-        assert delBegin != null;
-        assert delEnd != null;
-        while (delBegin.isBefore(delEnd)) {
-            LocalDate tempTime = DateTimeUtil.selectTimeIncrementByInterval(delBegin,GranularityEnum.Week.getType());
-            if(tempTime == null) {
-                break;
-            }
-            if(tempTime.isAfter(delEnd)) {
-                tempTime = delEnd;
-            }
-            for (ProjectPair projectPair : projectPairList) {
-                Query query = new Query(token,delBegin.format(dtf),tempTime.format(dtf),null,null);
-                measureDeveloperService.deleteSingleProjectCommitStandardChart(query,projectPair);
-            }
-            delBegin = tempTime;
-        }
+
+    private void initProjectCommitStandardInfo()  {
+        measureDeveloperService.getCommitStandardDetailIntegratedByProject(null,null,null,token);
     }
 
+    /**
+     *  每天凌晨2点 缓存这一周的提交规范性趋势图
+     */
+    private void initProjectCommitStandardTrendChart() {
+        List<ProjectPair> projectPairList = projectDao.getVisibleProjectPairListByProjectIds(null,token);
+        // beginTime 及 endTime 处理为当前周的 周一 和 周日
+        LocalDate begin = DateTimeUtil.initBeginTimeByInterval(LocalDate.now(), GranularityEnum.Week.getType());
+        LocalDate end = DateTimeUtil.initEndTimeByInterval(LocalDate.now(),GranularityEnum.Week.getType());
+        assert begin != null;
+        assert end != null;
+        for (ProjectPair projectPair : projectPairList) {
+            measureDeveloperService.deleteProjectCommitStandardChart(projectPair.getProjectName(),DateTimeUtil.dtf.format(end));
+        }
+        // 缓存这周的趋势图
+        measureDeveloperService.getCommitStandardTrendChartIntegratedByProject(null,DateTimeUtil.dtf.format(begin),DateTimeUtil.dtf.format(end),token,GranularityEnum.Week.getType());
+    }
+
+    /**
+     * 每月1号凌晨1点 删除提交规范性趋势图
+     */
+    @Scheduled(cron = "0 0 1 1 * ?")
+    private void deleteProjectCommitStandardTrendChart() {
+        measureDeveloperService.deleteProjectCommitStandardChart();
+    }
+
+    /**
+     * 每天凌晨1点 删除提交规范性各库提交明细
+     */
+    @Scheduled(cron = "0 0 1 * * ?")
+    private void deleteProjectCommitStandardInfo() {
+        measureDeveloperService.deleteProjectCommitStandardInfo();
+    }
 
 
 

@@ -152,10 +152,10 @@ public interface ProjectMapper {
 
     /**
      * 根据 projectId 获取项目名称
-     * @param projectIdList 查询 projectId 列表
-     * @return
+     * @param projectId 查询 projectId
+     * @return 查询项目名
      */
-    List<Map<String,Object>> getProjectNameById(@Param("projectIdList") List<String> projectIdList);
+    String getProjectNameById(@Param("projectId") String projectId);
 
     /**
      * 根据 projectName 获取 projectId
@@ -163,5 +163,12 @@ public interface ProjectMapper {
      * @return
      */
     Integer getProjectIdByName(@Param("projectName") String projectName);
+
+    /**
+     * 返回所有项目id
+     * @return 所有项目id
+     */
+    List<String> getAllProjectId();
+
 
 }

@@ -237,7 +237,7 @@ public class MeasureDeveloperController {
                                           @RequestParam(value = "until", required = false)String until,
                                           @RequestParam(required = false, defaultValue = "1")int page,
                                           @RequestParam(required = false, defaultValue = "5")int ps,
-                                          @RequestParam(required = false, defaultValue = "true") boolean asc,
+                                          @RequestParam(required = false, defaultValue = "false") boolean asc,
                                           @RequestParam(required = false, defaultValue = "") String order,
                                           HttpServletRequest request){
 
@@ -305,18 +305,15 @@ public class MeasureDeveloperController {
                                                         @RequestParam(value = "project_names",required = false) String projectNameList,
                                                         @RequestParam(value = "repo_uuids",required = false)String repoUuidList,
                                                         @RequestParam(value = "committer",required = false) String committer,
-                                                        @RequestParam(value = "since", required = false)String since,
-                                                        @RequestParam(value = "until", required = false)String until,
                                                         @RequestParam(required = false, defaultValue = "1")int page,
                                                         @RequestParam(required = false, defaultValue = "10")int ps,
-                                                        @RequestParam(required = false, defaultValue = "true") boolean asc,
+                                                        @RequestParam(required = false, defaultValue = "false") boolean asc,
                                                         @RequestParam(required = false, defaultValue = "false") boolean is_valid,
                                                         @RequestParam(required = false, defaultValue = "") String order,
                                                         HttpServletRequest request) {
-        try { //todo 增加更具开发者查询功能
-            until = DateTimeUtil.processUntil(until);
+        try {
             String token = request.getHeader("token");
-            List<ProjectCommitStandardDetail> projectCommitStandardDetailList = measureDeveloperService.getCommitStandardDetailIntegratedByProject(projectNameList,repoUuidList,committer,since,until,token);
+            List<ProjectCommitStandardDetail> projectCommitStandardDetailList = measureDeveloperService.getCommitStandardDetailIntegratedByProject(projectNameList,repoUuidList,committer,token);
             if (is_valid) {
                 projectCommitStandardDetailList.removeIf(projectCommitStandardDetail -> (!projectCommitStandardDetail.getIsValid()));
             }
@@ -342,15 +339,13 @@ public class MeasureDeveloperController {
     public void downLoadCommitStandardDetail(
                                          @RequestParam(value = "project_names",required = false) String projectNameList,
                                          @RequestParam(value = "repo_uuids",required = false)String repoUuidList,
-                                         @RequestParam(value = "since", required = false)String since,
-                                         @RequestParam(value = "until", required = false)String until,
+                                         @RequestParam(value = "committer",required = false) String committer,
                                          @RequestParam(required = false, defaultValue = "") String order,
                                          HttpServletResponse response,
                                          HttpServletRequest request)  {
         try {
-            until = DateTimeUtil.processUntil(until);
             String token = request.getHeader("token");
-            List<ProjectCommitStandardDetail> projectCommitStandardDetailList = measureDeveloperService.getCommitStandardDetailIntegratedByProject(projectNameList,repoUuidList,null,since,until,token);
+            List<ProjectCommitStandardDetail> projectCommitStandardDetailList = measureDeveloperService.getCommitStandardDetailIntegratedByProject(projectNameList,repoUuidList,committer,token);
             projectCommitStandardDetailList.sort((o1, o2) -> o2.getCommitTime().compareTo(o1.getCommitTime()));
             response.setContentType("application/vnd.ms-excel");
             response.setCharacterEncoding("utf-8");
