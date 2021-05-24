@@ -303,65 +303,100 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
         List<Map<String, Object>> result = new ArrayList<>();
         String time1 = " 00:00:00";
         String time2 = " 24:00:00";
-        beginDate = beginDate + time1;
+
+        // since 可能为空 所以需要判断一下
+        if  (!StringUtils.isEmpty(beginDate)) {
+            beginDate = beginDate + time1;
+        }
+
+        // until 约定了必须要传
         endDate = endDate + time2;
+
         if (StringUtils.isEmpty(projectIds)) {
             projectIds = projectDao.getAllProjectIds();
         }
         for (String projectId : projectIds.split(",")) {
             if (projectId.length() != 0) {
-                String tempDateBegin = beginDate.split(" ")[0] + time1;
+                String tempDateBegin;
                 String tempDateEnd;
                 switch (interval) {
                     case "day":
-                        tempDateEnd = beginDate.split(" ")[0] + time2;
-                        while (tempDateBegin.compareTo(endDate) < 1) {
-                            result.add(issueDao.getLivingIssueTendency(tempDateEnd, projectId, showDetail));
-                            tempDateBegin = DateTimeUtil.datePlus(tempDateBegin.split(" ")[0]) + time1;
-                            tempDateEnd = tempDateBegin.split(" ")[0] + time2;
+                        if  (StringUtils.isEmpty(beginDate)) {
+                            // 不传since的情况
+                            result.add(issueDao.getLivingIssueTendency(endDate, projectId, showDetail));
+                        } else {
+                            tempDateBegin = beginDate.split(" ")[0] + time1;
+                            tempDateEnd = beginDate.split(" ")[0] + time2;
+                            while (tempDateBegin.compareTo(endDate) < 1) {
+                                result.add(issueDao.getLivingIssueTendency(tempDateEnd, projectId, showDetail));
+                                tempDateBegin = DateTimeUtil.datePlus(tempDateBegin.split(" ")[0]) + time1;
+                                tempDateEnd = tempDateBegin.split(" ")[0] + time2;
+                            }
                         }
                         break;
                     case "month":
-                        while (tempDateBegin.compareTo(endDate) < 1) {
-                            tempDateEnd = tempDateBegin;
-                            int year = Integer.parseInt(tempDateEnd.split(" ")[0].split("-")[0]);
-                            int month = Integer.parseInt(tempDateEnd.split(" ")[0].split("-")[1]);
-                            tempDateEnd = DateTimeUtil.lastDayOfMonth(year, month) + time2;
-                            result.add(issueDao.getLivingIssueTendency(tempDateEnd, projectId, showDetail));
-                            tempDateBegin = DateTimeUtil.datePlus(tempDateEnd).split(" ")[0] + time1;
+                        if  (StringUtils.isEmpty(beginDate)) {
+                            // 不传since的情况
+                            result.add(issueDao.getLivingIssueTendency(endDate, projectId, showDetail));
+                        } else {
+                            tempDateBegin = beginDate.split(" ")[0] + time1;
+                            tempDateEnd = beginDate.split(" ")[0] + time2;
+                            while (tempDateBegin.compareTo(endDate) < 1) {
+                                tempDateEnd = tempDateBegin;
+                                int year = Integer.parseInt(tempDateEnd.split(" ")[0].split("-")[0]);
+                                int month = Integer.parseInt(tempDateEnd.split(" ")[0].split("-")[1]);
+                                tempDateEnd = DateTimeUtil.lastDayOfMonth(year, month) + time2;
+                                result.add(issueDao.getLivingIssueTendency(tempDateEnd, projectId, showDetail));
+                                tempDateBegin = DateTimeUtil.datePlus(tempDateEnd).split(" ")[0] + time1;
+                            }
                         }
                         break;
                     case "year":
-                        while (tempDateBegin.compareTo(endDate) < 1) {
-                            tempDateEnd = tempDateBegin;
-                            int year = Integer.parseInt(tempDateEnd.split(" ")[0].split("-")[0]);
-                            tempDateEnd = DateTimeUtil.lastDayOfMonth(year, 12) + time2;
-                            result.add(issueDao.getLivingIssueTendency(tempDateEnd, projectId, showDetail));
-                            tempDateBegin = DateTimeUtil.datePlus(tempDateEnd).split(" ")[0] + time1;
+                        if  (StringUtils.isEmpty(beginDate)) {
+                            // 不传since的情况
+                            result.add(issueDao.getLivingIssueTendency(endDate, projectId, showDetail));
+                        } else {
+                            tempDateBegin = beginDate.split(" ")[0] + time1;
+                            tempDateEnd = beginDate.split(" ")[0] + time2;
+                            while (tempDateBegin.compareTo(endDate) < 1) {
+                                tempDateEnd = tempDateBegin;
+                                int year = Integer.parseInt(tempDateEnd.split(" ")[0].split("-")[0]);
+                                tempDateEnd = DateTimeUtil.lastDayOfMonth(year, 12) + time2;
+                                result.add(issueDao.getLivingIssueTendency(tempDateEnd, projectId, showDetail));
+                                tempDateBegin = DateTimeUtil.datePlus(tempDateEnd).split(" ")[0] + time1;
+                            }
                         }
                         break;
                     default:
-                        while (tempDateBegin.compareTo(endDate) < 1) {
-                            tempDateEnd = tempDateBegin;
-                            try {
-                                SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
-                                Calendar cal = Calendar.getInstance();
-                                Date time = sdf.parse(tempDateEnd.split(" ")[0]);
-                                cal.setTime(time);
-                                int dayWeek = cal.get(Calendar.DAY_OF_WEEK);
-                                if (1 == dayWeek) {
-                                    cal.add(Calendar.DAY_OF_MONTH, -1);
+                        if  (StringUtils.isEmpty(beginDate)) {
+                            // 不传since的情况
+                            result.add(issueDao.getLivingIssueTendency(endDate, projectId, showDetail));
+                        } else {
+                            // 传since的情况
+                            tempDateBegin = beginDate.split(" ")[0] + time1;
+                            tempDateEnd = beginDate.split(" ")[0] + time2;
+                            while (tempDateBegin.compareTo(endDate) < 1) {
+                                tempDateEnd = tempDateBegin;
+                                try {
+                                    SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
+                                    Calendar cal = Calendar.getInstance();
+                                    Date time = sdf.parse(tempDateEnd.split(" ")[0]);
+                                    cal.setTime(time);
+                                    int dayWeek = cal.get(Calendar.DAY_OF_WEEK);
+                                    if (1 == dayWeek) {
+                                        cal.add(Calendar.DAY_OF_MONTH, -1);
+                                    }
+                                    cal.setFirstDayOfWeek(Calendar.MONDAY);
+                                    int day = cal.get(Calendar.DAY_OF_WEEK);
+                                    cal.add(Calendar.DATE, cal.getFirstDayOfWeek() - day);
+                                    cal.add(Calendar.DATE, 6);
+                                    tempDateEnd = sdf.format(cal.getTime()) + time2;
+                                } catch (ParseException e) {
+                                    e.printStackTrace();
                                 }
-                                cal.setFirstDayOfWeek(Calendar.MONDAY);
-                                int day = cal.get(Calendar.DAY_OF_WEEK);
-                                cal.add(Calendar.DATE, cal.getFirstDayOfWeek() - day);
-                                cal.add(Calendar.DATE, 6);
-                                tempDateEnd = sdf.format(cal.getTime()) + time2;
-                            } catch (ParseException e) {
-                                e.printStackTrace();
+                                result.add(issueDao.getLivingIssueTendency(tempDateEnd, projectId, showDetail));
+                                tempDateBegin = DateTimeUtil.datePlus(tempDateEnd).split(" ")[0] + time1;
                             }
-                            result.add(issueDao.getLivingIssueTendency(tempDateEnd, projectId, showDetail));
-                            tempDateBegin = DateTimeUtil.datePlus(tempDateEnd).split(" ")[0] + time1;
                         }
                         break;
                 }
