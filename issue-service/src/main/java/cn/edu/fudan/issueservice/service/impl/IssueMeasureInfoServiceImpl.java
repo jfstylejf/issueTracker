@@ -136,7 +136,9 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
 
         developerWorkload.keySet().forEach(r -> {
             query.put("solver", null);
-            query.put(DEVELOPER, r);
+            query.put(DEVELOPER, new ArrayList<>() {{
+                add(r);
+            }});
             int developerAddIssueCount = issueDao.getIssueFilterListCount(query);
 
             query.put(DEVELOPER, null);
