@@ -16,25 +16,18 @@
 
     <insert id="insertIssueAnalyzerRecords">
         insert into issue_analyzer
-        (
-        uuid,
-        repo_uuid,
-        commit_id,
-        analyze_result,
-        invoke_result,
-        tool
-        )
-        VALUES
-        <foreach collection="list" item="item" index="index" separator=",">
-            (
-            #{item.uuid},
-            #{item.repoUuid},
-            #{item.commitId},
-            #{item.analyzeResult,jdbcType=OTHER,typeHandler=cn.edu.fudan.issueservice.handler.JsonTypeHandler},
-            #{item.invokeResult},
-            #{item.tool}
-            )
-        </foreach>
+        (uuid,
+         repo_uuid,
+         commit_id,
+         analyze_result,
+         invoke_result,
+         tool)
+        VALUES (#{uuid},
+                #{repoUuid},
+                #{commitId},
+                #{analyzeResult,jdbcType=OTHER,typeHandler=cn.edu.fudan.issueservice.handler.JsonTypeHandler},
+                #{invokeResult},
+                #{tool})
     </insert>
 
     <select id="getIssueAnalyzeResultByRepoUuidCommitIdTool" parameterType="String" resultMap="issueAnalyzer">

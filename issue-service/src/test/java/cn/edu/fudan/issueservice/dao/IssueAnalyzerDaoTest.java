@@ -7,12 +7,18 @@ import cn.edu.fudan.issueservice.mapper.IssueAnalyzerMapper;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
+import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
+/**
+ * @author beethoven
+ * @date 2021-05-17 13:21:07
+ */
 public class IssueAnalyzerDaoTest extends IssueServiceApplicationTest {
 
 
@@ -32,30 +38,21 @@ public class IssueAnalyzerDaoTest extends IssueServiceApplicationTest {
 
     @Test
     public void insertTest() {
-        IssueAnalyzer issueAnalyzer = new IssueAnalyzer();
         JSONObject obj = new JSONObject();
         obj.put("result", "11");
         obj.put("result2", "1221");
-        issueAnalyzer.setAnalyzeResult(obj);
-        issueAnalyzer.setUuid("111");
-        issueAnalyzer.setRepoUuid("11122");
-        issueAnalyzer.setCommitId("1112233");
-        List<IssueAnalyzer> list = new ArrayList<>();
-        list.add(issueAnalyzer);
-        issueAnalyzerMapper.insertIssueAnalyzerRecords(list);
-        System.out.println(1 + 1);
-    }
-
-    @Test
-    public void selectTest() {
-        JSONObject issueAnalyzer = issueAnalyzerDao.getAnalyzeResultByRepoUuidCommitIdTool("dafeb164-40fb-11eb-b6ff-f9c372bb0fcb", "76b821de0d80e755001d326b1840d417e02f4e42", "ESLint");
-        // 第一步：先获取jsonArray数组
-        JSONArray resArr = issueAnalyzer.getJSONArray("result");
-        // 第二步：将数组转换成字符串
-        String js = JSONObject.toJSONString(resArr, SerializerFeature.WriteClassName);
-        // 第三步：将字符串转换成List集合
-        List<RawIssue> analyzeRawIssues = JSONArray.parseArray(resArr.toJSONString(), RawIssue.class);
-        System.out.println(1 + 1);
+        String commitId = UUID.randomUUID().toString();
+        IssueAnalyzer issueAnalyzer = IssueAnalyzer.builder()
+                .analyzeResult(obj)
+                .uuid(UUID.randomUUID().toString())
+                .repoUuid("11122")
+                .commitId("test " + commitId)
+                .tool("sonarqube")
+                .invokeResult(IssueAnalyzer.InvokeResult.SUCCESS.getStatus())
+                .build();
+        issueAnalyzerMapper.insertIssueAnalyzerRecords(issueAnalyzer);
+        JSONObject sonarqube = issueAnalyzerDao.getAnalyzeResultByRepoUuidCommitIdTool("11122", "test " + commitId, "sonarqube");
+        Assert.assertNotNull(sonarqube);
     }
 
 }

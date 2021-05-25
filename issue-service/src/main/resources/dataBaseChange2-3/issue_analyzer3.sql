@@ -22,7 +22,7 @@ SET @@SESSION.SQL_LOG_BIN = 0;
 --
 
 SET @@GLOBAL.GTID_PURGED = /*!80000 '+'*/ 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa:1-159780,
-bac0d0b5-92dd-11e7-a6dd-74867af28ae8:1-57741271';
+bac0d0b5-92dd-11e7-a6dd-74867af28ae8:1-59254512';
 
 --
 -- Table structure for table `issue_analyzer`
@@ -39,7 +39,9 @@ CREATE TABLE `issue_analyzer`
     `analyze_result` json         DEFAULT NULL COMMENT '存储的是调用工具解析后的结果',
     `invoke_result`  int(10)      DEFAULT NULL COMMENT '1表示此次commit调用工具成功，0表示调用失败',
     `tool`           varchar(512) DEFAULT NULL COMMENT '调用的工具如sonarqube、ESLint等',
-    PRIMARY KEY (`uuid`)
+    PRIMARY KEY (`uuid`),
+    KEY `issue_analyzer_commit_id_index` (`commit_id`),
+    KEY `issue_analyzer_repo_uuid_index` (`repo_uuid`)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;

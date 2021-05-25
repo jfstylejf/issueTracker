@@ -34,14 +34,5 @@ public interface MeasureMapper {
      */
     List<Map<String, Object>> getDeveloperRankByLoc(@Param("repoUuidList")List<String> repoUuidList, @Param("since") String since, @Param("until") String until);
 
-    /**
-     * 返回所查询库列表下的信息条数
-     * @param repoUuidList 查询库列表
-     * @return int countNum
-     */
-    int getMsgNumByRepo(@Param("repoUuidList") List<String> repoUuidList);
-
-
-
 
 }

@@ -1,5 +1,6 @@
 package cn.edu.fudan.cloneservice.controller;
 
+import cn.edu.fudan.cloneservice.component.RestInterfaceManager;
 import cn.edu.fudan.cloneservice.domain.ResponseBean;
 import cn.edu.fudan.cloneservice.domain.clone.CloneRepo;
 import cn.edu.fudan.cloneservice.service.CloneMeasureService;
@@ -7,7 +8,12 @@ import cn.edu.fudan.cloneservice.service.ScanService;
 import cn.edu.fudan.cloneservice.task.CPUCloneScanOperation;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
+
+import static org.reflections.Reflections.log;
 
 /**
  * @author zyh yp wgc
@@ -44,13 +50,15 @@ public class ScanController {
     }
 
     @DeleteMapping("/cloneScan/{repo_uuid}")
-    public Object deleteCloneScan(@PathVariable("repo_uuid") String repoId){
-        scanService.deleteCloneScan(repoId);
+    public Object deleteCloneScan(@PathVariable("repo_uuid") String repoId,
+                                  HttpServletRequest httpServletRequest
+    ){
+        String token = httpServletRequest.getHeader("token");
         try {
-            scanService.deleteCloneScan(repoId);
-            return new ResponseBean<>(200, "scan msg send success!", null);
+            scanService.deleteCloneScan(repoId, token);
+            return new ResponseBean<>(HttpStatus.OK.value(), "scan msg send success!", null);
         } catch (Exception e) {
-            return new ResponseBean<>(401, e.getMessage(), null);
+            return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null);
         }
     }
 

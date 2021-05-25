@@ -11,9 +11,15 @@ import java.util.List;
 import java.util.Map;
 
 @Repository
+// fixme 删除前代无用代码，补全javaDoc
 public interface RepoMeasureMapper {
 
-    int sameRepoMeasureOfOneCommit(@Param("repo_id")String repo_id,@Param("commit_id")String commit_id);
+    /**
+     * 查询 repo_measure 中是否存在这条 commit 信息
+     * @param commitId 查询 commit_id
+     * @return 存在的记录数
+     */
+    int containCommitIdOrNot(@Param("commit_id")String commitId);
 
     RepoMeasure getRepoMeasureByCommit(@Param("repo_id")String repo_id,@Param("commit_id")String commit_id);
 
@@ -97,5 +103,19 @@ public interface RepoMeasureMapper {
      * @return
      */
     String getDeveloperType(@Param("developer")String developer);
+
+
+    /**
+     * 返回所查询库下 repo_measure 表中的信息条数
+     * @param repoUuid 查询库
+     * @return int countNum
+     */
+    int getRepoMeasureMsgNumByRepo(@Param("repoUuid") String repoUuid);
+
+    /**
+     * 删除repo_measure表中所属repoUuid的数据
+     * @param repoUuid 删除库
+     */
+    void deleteRepoMeasureMsg(@Param("repoUuid") String repoUuid);
 
 }

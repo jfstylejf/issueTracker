@@ -46,7 +46,7 @@ public interface CloneLocationMapper {
      * @param until
      * @return 最新的commitId
      */
-    String getLatestCommitId(@Param("repo_uuid") String repoUuid,
+    String getLatestCommitId(@Param("repo_id") String repoUuid,
                               @Param("since") String since,
                               @Param("until") String until);
     /**
@@ -54,6 +54,12 @@ public interface CloneLocationMapper {
      * @param repoId repo id
      */
     void deleteCloneLocations(@Param("repo_id") String repoId);
+
+    /**
+     * 删除对应commit所有的clone location
+     * @param commitId commit id
+     */
+    void deleteCloneLocationByCommitId(@Param("commit_id") String commitId);
 
     /**
      * 根据commitId获得组数

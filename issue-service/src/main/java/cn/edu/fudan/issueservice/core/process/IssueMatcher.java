@@ -12,9 +12,7 @@ import cn.edu.fudan.issueservice.domain.enums.JavaScriptIssuePriorityEnum;
 import cn.edu.fudan.issueservice.domain.enums.RawIssueStatus;
 import cn.edu.fudan.issueservice.domain.enums.ScanStatusEnum;
 import cn.edu.fudan.issueservice.util.*;
-import com.alibaba.fastjson.JSON;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,9 +28,8 @@ import java.util.stream.Stream;
  * create: 2020-05-20 16:56
  **/
 @Slf4j
-@Setter
+@Data
 @Component
-@NoArgsConstructor
 public class IssueMatcher {
 
     private final ThreadLocal<List<String>> parentCommitsThreadLocal = new ThreadLocal<>();

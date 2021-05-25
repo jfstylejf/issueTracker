@@ -4,7 +4,37 @@
 <mapper namespace="cn.edu.fudan.measureservice.mapper.AccountMapper">
 
     <select id="getAccountName" parameterType="String" resultType="String">
-        select name from account_info where account_gitname=#{name}
+        select account_name from issueTracker.account_author where account_gitname=#{gitName}
+    </select>
+
+
+    <select id="getAccountNameList" resultType="String">
+        select distinct (account_name) from issueTracker.account_author
+        <where>
+            <if test="accountGitNameList!=null and accountGitNameList.size>0">
+                account_gitname in
+                <foreach collection="accountGitNameList" separator="," open="(" close=")" item="accountGitName">
+                    #{accountGitName}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="getDeveloperAccountGitNameList" parameterType="String" resultType="String">
+        select distinct (account_gitname) FROM issueTracker.account_author
+        where account_name = #{accountName}
+    </select>
+
+    <select id="getAccountGitNameList" resultType="String">
+        select distinct (account_gitname) FROM issueTracker.account_author
+        <where>
+            <if test="accountNameList!=null and accountNameList.size>0">
+                account_name in
+                <foreach collection="accountNameList" separator="," open="(" close=")" item="accountName">
+                    #{accountName}
+                </foreach>
+            </if>
+        </where>
     </select>
 
 </mapper>

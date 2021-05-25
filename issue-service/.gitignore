@@ -4,6 +4,7 @@ target/
 !**/src/main/**
 !**/src/test/**
 log/
+/src/test/dependency/repo/**
 
 ### STS ###
 .apt_generated

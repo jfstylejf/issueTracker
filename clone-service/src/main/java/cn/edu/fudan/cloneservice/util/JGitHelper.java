@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.*;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -128,6 +129,44 @@ public class JGitHelper implements Closeable {
         }
     }
 
+    public List<String> getCommitListByBranchAndBeginCommitWeekly(String branchName, String beginCommit, Boolean isUpdate) {
+        branch = branchName;
+        checkout(branchName);
+        Map<String, Long> commitMap = new HashMap<>(512);
+        Long start = getLongCommitTime(beginCommit);
+        if (start == 0) {
+            throw new RuntimeException("beginCommit Error!");
+        }
+        try {
+            Iterable<RevCommit> commits = git.log().call();
+            boolean isFirstCommit = true;
+            LocalDate tempLocalDate = LocalDate.parse("2000-01-01");
+            for (RevCommit commit : commits) {
+                Long commitTime = commit.getCommitTime() * 1000L;
+                LocalDate localDate = LocalDateTime.ofInstant(Instant.ofEpochMilli(commitTime), ZoneId.systemDefault()).toLocalDate();
+                if(!localDate.equals(tempLocalDate)){
+                    isFirstCommit = true;
+                }
+                if(DayOfWeek.MONDAY != localDate.getDayOfWeek() || !isFirstCommit){
+                    continue;
+                }
+                if (isUpdate) {
+                    if (commitTime > start) {
+                        commitMap.put(commit.getName(), commitTime);
+                        isFirstCommit = false;
+                    }
+                } else {
+                    if (commitTime >= start) {
+                        commitMap.put(commit.getName(), commitTime);
+                        isFirstCommit = false;
+                    }
+                }
+            }
+        } catch (GitAPIException e) {
+            e.getMessage();
+        }
+        return new ArrayList<>(sortByValue(commitMap).keySet());
+    }
 
     public List<String> getCommitListByBranchAndBeginCommit(String branchName, String beginCommit, Boolean isUpdate) {
         branch = branchName;
@@ -141,6 +180,7 @@ public class JGitHelper implements Closeable {
             Iterable<RevCommit> commits = git.log().call();
             for (RevCommit commit : commits) {
                 Long commitTime = commit.getCommitTime() * 1000L;
+
                 if (isUpdate) {
                     if (commitTime > start) {
                         commitMap.put(commit.getName(), commitTime);
@@ -150,7 +190,6 @@ public class JGitHelper implements Closeable {
                         commitMap.put(commit.getName(), commitTime);
                     }
                 }
-
             }
         } catch (GitAPIException e) {
             e.getMessage();
@@ -367,3 +406,4 @@ public class JGitHelper implements Closeable {
         return rd.compute();
     }
 }
+

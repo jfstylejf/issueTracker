@@ -141,6 +141,19 @@ public class RestInterfaceManager extends BaseRepoRestManager {
     public List<String> getAllRepoByProjectNames(String userToken, List<String> projectNames) {
         List<String> result = new ArrayList<>();
         JSONObject allRepo = getAllRepo(userToken);
+
+        if (projectNames.isEmpty()) {
+            JSONObject allProject = getAllRepo(userToken);
+            for (String str : allProject.keySet()) {
+                JSONArray repo = allProject.getJSONArray(str);
+                for (int i = 0; i < repo.size(); i++) {
+                    String tempRepo = repo.getJSONObject(i).getString(REPO_ID);
+                    result.add(tempRepo);
+                }
+            }
+            return result;
+        }
+
         for (String projectName : allRepo.keySet()) {
             if (projectNames.contains(projectName)) {
                 JSONArray repoList = allRepo.getJSONArray(projectName);
@@ -222,7 +235,7 @@ public class RestInterfaceManager extends BaseRepoRestManager {
     }
 
     public void sendDeleteSuccessMessage(String repoUuid) {
-        restTemplate.put(projectServicePath + "service_name=ISSUE&repo_uuid=" + repoUuid,null);
+        restTemplate.put(projectServicePath + "service_name=ISSUE&repo_uuid=" + repoUuid, null);
     }
 
     //---------------------------------------------commit service------------------------------------------------------

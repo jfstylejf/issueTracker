@@ -922,8 +922,32 @@
         <if test="ignoreFiles != null and ignoreFiles.size > 0">
             AND
             <foreach collection="ignoreFiles" separator="OR" open="(" close=")" item="ignoreFile">
-                file_name LIKE  #{ignoreFile}
+                file_name LIKE #{ignoreFile}
             </foreach>
         </if>
     </update>
+
+    <select id="getDeveloperListLivingIssue" resultType="java.util.Map">
+        SELECT COUNT(*) AS issueCount, producer FROM issue
+        WHERE status = 'Open'
+        <if test="since != null and since != '' ">
+            AND <![CDATA[ solve_commit_date >= #{since} ]]>
+        </if>
+        <if test="until != null and until != '' ">
+            AND <![CDATA[ solve_commit_date <= #{until} ]]>
+        </if>
+        <if test="developers != null and developers.size > 0">
+            AND producer IN
+            <foreach collection="developers" separator="," open="(" close=")" item="developer">
+                #{developer}
+            </foreach>
+        </if>
+        <if test="repoUuids != null and repoUuids.size > 0">
+            AND repo_uuid IN
+            <foreach collection="repoUuids" separator="," open="(" close=")" item="repoUuid">
+                #{repoUuid}
+            </foreach>
+        </if>
+        GROUP BY producer
+    </select>
 </mapper>

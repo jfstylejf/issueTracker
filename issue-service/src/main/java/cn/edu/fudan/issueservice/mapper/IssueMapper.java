@@ -277,16 +277,29 @@ public interface IssueMapper {
      * eslint ignore
      *
      * @param ignoreFiles ignoreFiles
-     * @param repoUuid repoUuid
+     * @param repoUuid    repoUuid
      */
     void updateIssuesForIgnore(List<String> ignoreFiles, String repoUuid);
 
     /**
      * issue count
+     *
      * @param repoUuid repoUuid
-     * @param tool tool
+     * @param tool     tool
      * @return count
      */
     @Select("select count(*) from issue where repo_uuid = #{repoUuid} and tool = #{tool}")
     int getIssueCount(String repoUuid, String tool);
+
+
+    /**
+     * get developers living issues count
+     *
+     * @param since      since
+     * @param until      until
+     * @param repoUuids  repoUuids
+     * @param developers developers
+     * @return developers living issues count
+     */
+    List<Map<String, Object>> getDeveloperListLivingIssue(String since, String until, List<String> repoUuids, List<String> developers);
 }

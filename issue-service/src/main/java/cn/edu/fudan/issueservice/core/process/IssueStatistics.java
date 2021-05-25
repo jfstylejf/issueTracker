@@ -2,12 +2,9 @@ package cn.edu.fudan.issueservice.core.process;
 
 import cn.edu.fudan.issueservice.component.RestInterfaceManager;
 import cn.edu.fudan.issueservice.core.analyzer.BaseAnalyzer;
-import cn.edu.fudan.issueservice.core.analyzer.EsLintBaseAnalyzer;
 import cn.edu.fudan.issueservice.dao.*;
 import cn.edu.fudan.issueservice.domain.dbo.*;
 import cn.edu.fudan.issueservice.domain.enums.IgnoreTypeEnum;
-import cn.edu.fudan.issueservice.domain.enums.ToolEnum;
-import cn.edu.fudan.issueservice.util.AstParserUtil;
 import cn.edu.fudan.common.jgit.JGitHelper;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,9 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.*;
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -53,6 +48,7 @@ public class IssueStatistics {
     private ScanResult scanResult;
     private Date currentCommitDate;
     private BaseAnalyzer analyzer;
+    private IssueAnalyzer issueAnalyzer;
 
     /**
      * 当前 raw issues 中没匹配上的

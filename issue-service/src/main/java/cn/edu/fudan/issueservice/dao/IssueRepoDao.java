@@ -1,6 +1,6 @@
 package cn.edu.fudan.issueservice.dao;
 
-
+import cn.edu.fudan.common.domain.po.scan.RepoScan;
 import cn.edu.fudan.issueservice.domain.dbo.IssueRepo;
 import cn.edu.fudan.issueservice.mapper.IssueRepoMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * @author beethoven
@@ -17,11 +18,15 @@ public class IssueRepoDao {
 
     private IssueRepoMapper issueRepoMapper;
 
-    public void insertOneIssueRepo(IssueRepo issueRepo) {
+    public void insertOneIssueRepo(RepoScan issueRepo) {
         issueRepoMapper.insertOneIssueRepo(issueRepo);
     }
 
-    public void updateIssueRepo(IssueRepo issueRepo) {
+//    public void insertOneIssueRepo(RepoScan issueRepo) {
+//        issueRepoMapper.insertOneIssueRepo(issueRepo, UUID.randomUUID().toString());
+//    }
+
+    public void updateIssueRepo(RepoScan issueRepo) {
         issueRepoMapper.updateIssueRepo(issueRepo);
     }
 

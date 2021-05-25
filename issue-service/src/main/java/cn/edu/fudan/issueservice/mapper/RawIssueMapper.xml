@@ -162,7 +162,7 @@
         b.commit_time AS commitTime
         FROM raw_issue AS a
         INNER JOIN commit AS b
-        ON a.commit_id = b.commit_id
+        ON a.commit_id = b.commit_id AND a.repo_uuid = b.repo_id
         WHERE a.uuid IN
         <foreach collection="uuids" separator="," open="(" close=")" item="uuid">
             #{uuid}

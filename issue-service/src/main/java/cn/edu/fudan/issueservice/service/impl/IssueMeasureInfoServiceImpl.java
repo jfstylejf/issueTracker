@@ -18,6 +18,7 @@ import com.alibaba.druid.util.StringUtils;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.maven.model.Developer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
@@ -57,6 +58,7 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
     private static final String SOLVED = "solved";
     private static final String OPEN = "open";
     private static final String DATE_FORMAT = "yyyy-MM-dd";
+    private static final String PRODUCER = "producer";
 
     @Override
     public List<Map.Entry<String, JSONObject>> getNotSolvedIssueCountByToolAndRepoUuid(List<String> repoUuids, String tool, String order) {
@@ -134,7 +136,9 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
 
         developerWorkload.keySet().forEach(r -> {
             query.put("solver", null);
-            query.put(DEVELOPER, r);
+            query.put(DEVELOPER, new ArrayList<>() {{
+                add(r);
+            }});
             int developerAddIssueCount = issueDao.getIssueFilterListCount(query);
 
             query.put(DEVELOPER, null);
@@ -299,65 +303,100 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
         List<Map<String, Object>> result = new ArrayList<>();
         String time1 = " 00:00:00";
         String time2 = " 24:00:00";
-        beginDate = beginDate + time1;
+
+        // since 可能为空 所以需要判断一下
+        if  (!StringUtils.isEmpty(beginDate)) {
+            beginDate = beginDate + time1;
+        }
+
+        // until 约定了必须要传
         endDate = endDate + time2;
+
         if (StringUtils.isEmpty(projectIds)) {
             projectIds = projectDao.getAllProjectIds();
         }
         for (String projectId : projectIds.split(",")) {
             if (projectId.length() != 0) {
-                String tempDateBegin = beginDate.split(" ")[0] + time1;
+                String tempDateBegin;
                 String tempDateEnd;
                 switch (interval) {
                     case "day":
-                        tempDateEnd = beginDate.split(" ")[0] + time2;
-                        while (tempDateBegin.compareTo(endDate) < 1) {
-                            result.add(issueDao.getLivingIssueTendency(tempDateEnd, projectId, showDetail));
-                            tempDateBegin = DateTimeUtil.datePlus(tempDateBegin.split(" ")[0]) + time1;
-                            tempDateEnd = tempDateBegin.split(" ")[0] + time2;
+                        if  (StringUtils.isEmpty(beginDate)) {
+                            // 不传since的情况
+                            result.add(issueDao.getLivingIssueTendency(endDate, projectId, showDetail));
+                        } else {
+                            tempDateBegin = beginDate.split(" ")[0] + time1;
+                            tempDateEnd = beginDate.split(" ")[0] + time2;
+                            while (tempDateBegin.compareTo(endDate) < 1) {
+                                result.add(issueDao.getLivingIssueTendency(tempDateEnd, projectId, showDetail));
+                                tempDateBegin = DateTimeUtil.datePlus(tempDateBegin.split(" ")[0]) + time1;
+                                tempDateEnd = tempDateBegin.split(" ")[0] + time2;
+                            }
                         }
                         break;
                     case "month":
-                        while (tempDateBegin.compareTo(endDate) < 1) {
-                            tempDateEnd = tempDateBegin;
-                            int year = Integer.parseInt(tempDateEnd.split(" ")[0].split("-")[0]);
-                            int month = Integer.parseInt(tempDateEnd.split(" ")[0].split("-")[1]);
-                            tempDateEnd = DateTimeUtil.lastDayOfMonth(year, month) + time2;
-                            result.add(issueDao.getLivingIssueTendency(tempDateEnd, projectId, showDetail));
-                            tempDateBegin = DateTimeUtil.datePlus(tempDateEnd).split(" ")[0] + time1;
+                        if  (StringUtils.isEmpty(beginDate)) {
+                            // 不传since的情况
+                            result.add(issueDao.getLivingIssueTendency(endDate, projectId, showDetail));
+                        } else {
+                            tempDateBegin = beginDate.split(" ")[0] + time1;
+                            tempDateEnd = beginDate.split(" ")[0] + time2;
+                            while (tempDateBegin.compareTo(endDate) < 1) {
+                                tempDateEnd = tempDateBegin;
+                                int year = Integer.parseInt(tempDateEnd.split(" ")[0].split("-")[0]);
+                                int month = Integer.parseInt(tempDateEnd.split(" ")[0].split("-")[1]);
+                                tempDateEnd = DateTimeUtil.lastDayOfMonth(year, month) + time2;
+                                result.add(issueDao.getLivingIssueTendency(tempDateEnd, projectId, showDetail));
+                                tempDateBegin = DateTimeUtil.datePlus(tempDateEnd).split(" ")[0] + time1;
+                            }
                         }
                         break;
                     case "year":
-                        while (tempDateBegin.compareTo(endDate) < 1) {
-                            tempDateEnd = tempDateBegin;
-                            int year = Integer.parseInt(tempDateEnd.split(" ")[0].split("-")[0]);
-                            tempDateEnd = DateTimeUtil.lastDayOfMonth(year, 12) + time2;
-                            result.add(issueDao.getLivingIssueTendency(tempDateEnd, projectId, showDetail));
-                            tempDateBegin = DateTimeUtil.datePlus(tempDateEnd).split(" ")[0] + time1;
+                        if  (StringUtils.isEmpty(beginDate)) {
+                            // 不传since的情况
+                            result.add(issueDao.getLivingIssueTendency(endDate, projectId, showDetail));
+                        } else {
+                            tempDateBegin = beginDate.split(" ")[0] + time1;
+                            tempDateEnd = beginDate.split(" ")[0] + time2;
+                            while (tempDateBegin.compareTo(endDate) < 1) {
+                                tempDateEnd = tempDateBegin;
+                                int year = Integer.parseInt(tempDateEnd.split(" ")[0].split("-")[0]);
+                                tempDateEnd = DateTimeUtil.lastDayOfMonth(year, 12) + time2;
+                                result.add(issueDao.getLivingIssueTendency(tempDateEnd, projectId, showDetail));
+                                tempDateBegin = DateTimeUtil.datePlus(tempDateEnd).split(" ")[0] + time1;
+                            }
                         }
                         break;
                     default:
-                        while (tempDateBegin.compareTo(endDate) < 1) {
-                            tempDateEnd = tempDateBegin;
-                            try {
-                                SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
-                                Calendar cal = Calendar.getInstance();
-                                Date time = sdf.parse(tempDateEnd.split(" ")[0]);
-                                cal.setTime(time);
-                                int dayWeek = cal.get(Calendar.DAY_OF_WEEK);
-                                if (1 == dayWeek) {
-                                    cal.add(Calendar.DAY_OF_MONTH, -1);
+                        if  (StringUtils.isEmpty(beginDate)) {
+                            // 不传since的情况
+                            result.add(issueDao.getLivingIssueTendency(endDate, projectId, showDetail));
+                        } else {
+                            // 传since的情况
+                            tempDateBegin = beginDate.split(" ")[0] + time1;
+                            tempDateEnd = beginDate.split(" ")[0] + time2;
+                            while (tempDateBegin.compareTo(endDate) < 1) {
+                                tempDateEnd = tempDateBegin;
+                                try {
+                                    SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
+                                    Calendar cal = Calendar.getInstance();
+                                    Date time = sdf.parse(tempDateEnd.split(" ")[0]);
+                                    cal.setTime(time);
+                                    int dayWeek = cal.get(Calendar.DAY_OF_WEEK);
+                                    if (1 == dayWeek) {
+                                        cal.add(Calendar.DAY_OF_MONTH, -1);
+                                    }
+                                    cal.setFirstDayOfWeek(Calendar.MONDAY);
+                                    int day = cal.get(Calendar.DAY_OF_WEEK);
+                                    cal.add(Calendar.DATE, cal.getFirstDayOfWeek() - day);
+                                    cal.add(Calendar.DATE, 6);
+                                    tempDateEnd = sdf.format(cal.getTime()) + time2;
+                                } catch (ParseException e) {
+                                    e.printStackTrace();
                                 }
-                                cal.setFirstDayOfWeek(Calendar.MONDAY);
-                                int day = cal.get(Calendar.DAY_OF_WEEK);
-                                cal.add(Calendar.DATE, cal.getFirstDayOfWeek() - day);
-                                cal.add(Calendar.DATE, 6);
-                                tempDateEnd = sdf.format(cal.getTime()) + time2;
-                            } catch (ParseException e) {
-                                e.printStackTrace();
+                                result.add(issueDao.getLivingIssueTendency(tempDateEnd, projectId, showDetail));
+                                tempDateBegin = DateTimeUtil.datePlus(tempDateEnd).split(" ")[0] + time1;
                             }
-                            result.add(issueDao.getLivingIssueTendency(tempDateEnd, projectId, showDetail));
-                            tempDateBegin = DateTimeUtil.datePlus(tempDateEnd).split(" ")[0] + time1;
                         }
                         break;
                 }
@@ -441,9 +480,42 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
     }
 
     @Override
-    public PagedGridResult<DeveloperLivingIssueVO> getDeveloperListLivingIssue(String since, String until, String projectNames, List<String> developers) {
-        issueDao.getDeveloperListLivingIssue(since, until, projectNames, developers);
-        return null;
+    public PagedGridResult<DeveloperLivingIssueVO> getDeveloperListLivingIssue(String since, String until, List<String> repoUuids, List<String> developers, int page, int ps, Boolean asc) {
+        PagedGridResult.handlePageHelper(page, ps, PRODUCER, true);
+
+        List<Map<String, Object>> developersDetail = issueDao.getDeveloperListLivingIssue(since, until, repoUuids, developers);
+
+//        Map<String, Long> developerIssueCount = new HashMap<>(32);
+//        for (Map<String, Object> developerDetail : developersDetail) {
+//            developerIssueCount.put((String) developerDetail.get(PRODUCER), (Long) developerDetail.get(ISSUE_COUNT));
+//        }
+//        Map<String, Integer> sortMap = new HashMap<>();
+//        developerIssueCount.entrySet().stream()
+//                .sorted(Map.Entry.comparingByValue())
+//                .forEachOrdered(b -> sortMap.put(b.getKey(), Math.toIntExact(b.getValue())));
+
+        List<DeveloperLivingIssueVO> developerListLivingIssue = new ArrayList<>();
+        for (String developer : developers) {
+            long issueCount = 0;
+            for (Map<String, Object> developerDetail : developersDetail) {
+                if (developerDetail.get(PRODUCER).equals(developer)) {
+                    issueCount = (long) developerDetail.get(ISSUE_COUNT);
+                }
+            }
+
+            DeveloperLivingIssueVO developerLivingIssueVO = DeveloperLivingIssueVO.builder()
+                    .developerName(developer)
+                    .num(issueCount)
+                    .build();
+            developerListLivingIssue.add(developerLivingIssueVO);
+        }
+
+        if (asc != null) {
+            developerListLivingIssue.sort((o1, o2) -> (int) (asc ? o1.getNum() - o2.getNum() : o2.getNum() - o1.getNum()));
+        }
+
+        PagedGridResult<DeveloperLivingIssueVO> pagedGridResult = new PagedGridResult<>();
+        return pagedGridResult.setterPagedGrid(developerListLivingIssue, page);
     }
 
     @Autowired

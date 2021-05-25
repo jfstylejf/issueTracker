@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -258,11 +259,20 @@ public class MeasureRepoService {
     }
 
     /**
-     * 删除所属repo下repo_measure表数据
-     * @param query 查询条件
+     * 删除所属 repo 下 Measure 服务数据
+     * @param repoUuid 删除库
      */
-    public void deleteRepoMsg(Query query) {
-        projectDao.deleteRepoMsg(query);
+    @Async("taskExecutor")
+    public void deleteRepoMsg(String repoUuid,String token) {
+       boolean res = measureDao.deleteRepoMsg(repoUuid);
+        if(res){
+            boolean recallRes = restInterfaceManager.deleteRecall(repoUuid,token);
+            if(recallRes){
+                log.info(" recall success\n");
+            }else {
+                log.info(" recall false\n");
+            }
+        }
     }
 
 

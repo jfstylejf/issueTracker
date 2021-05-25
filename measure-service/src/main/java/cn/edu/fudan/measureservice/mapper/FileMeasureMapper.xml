@@ -170,4 +170,23 @@
 
     </select>
 
+    <select id="getFileMeasureMsgNumByRepo" resultType="int">
+        SELECT IFNULL(count(uuid),0) FROM issueTracker.file_measure
+        <where>
+            <trim prefixOverrides="and">
+
+                <if test="repoUuid != null and repoUuid != '' ">
+                    and repo_id = #{repoUuid}
+                </if>
+
+            </trim>
+        </where>
+    </select>
+
+    <delete id="deleteFileMeasureMsg">
+        DELETE FROM issueTracker.file_measure
+        WHERE repo_id = #{repoUuid}
+        LIMIT 500
+    </delete>
+
 </mapper>

@@ -1,5 +1,6 @@
 package cn.edu.fudan.issueservice.mapper;
 
+import cn.edu.fudan.common.domain.po.scan.RepoScan;
 import cn.edu.fudan.issueservice.domain.dbo.IssueRepo;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
@@ -18,14 +19,16 @@ public interface IssueRepoMapper {
      *
      * @param issueRepo issueRepo
      */
-    void insertOneIssueRepo(IssueRepo issueRepo);
+    void insertOneIssueRepo(@Param("issueRepo") RepoScan issueRepo);
+
+    //void insertOneIssueRepo(@Param("issueRepo") RepoScan issueRepo,String uuid);
 
     /**
      * 更新issueRepo
      *
      * @param issueRepo issueRepo
      */
-    void updateIssueRepo(IssueRepo issueRepo);
+    void updateIssueRepo(@Param("issueRepo") RepoScan issueRepo);
 
     /**
      * 获取issueRepo

@@ -10,13 +10,14 @@ import cn.edu.fudan.measureservice.domain.vo.*;
 import cn.edu.fudan.measureservice.portrait.DeveloperMetrics;
 import cn.edu.fudan.measureservice.domain.bo.DeveloperPortrait;
 import cn.edu.fudan.measureservice.service.MeasureDeveloperService;
+import cn.edu.fudan.measureservice.util.DateTimeUtil;
 import com.alibaba.excel.EasyExcel;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.aspectj.weaver.patterns.IToken;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -39,10 +40,6 @@ public class MeasureDeveloperController {
     private final MeasureDeveloperService measureDeveloperService;
 
     private ProjectDao projectDao;
-
-    private final static String split = ",";
-
-    private final static DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     public MeasureDeveloperController(MeasureDeveloperService measureDeveloperService) {
         this.measureDeveloperService = measureDeveloperService;
@@ -86,7 +83,7 @@ public class MeasureDeveloperController {
             HttpServletRequest request
     ){
         try{
-            until = timeProcess(until);
+            until = DateTimeUtil.processUntil(until);
             String token = request.getHeader("token");
             List<String> repoUuidList;
             if(token==null || "".equals(token)) {
@@ -110,13 +107,13 @@ public class MeasureDeveloperController {
                 int totalPage = developerWorkLoadList.size() % ps == 0 ? developerWorkLoadList.size()/ps : developerWorkLoadList.size()/ps + 1;
                 List<DeveloperWorkLoad> selectedDeveloperWorkLoadList = developerWorkLoadList.subList((page-1)*ps, Math.min(page * ps, developerWorkLoadList.size()));
                 ProjectFrontEnd<DeveloperWorkLoad> developerWorkLoadFrontend = new ProjectFrontEnd<>(page,totalPage,developerWorkLoadList.size(),selectedDeveloperWorkLoadList);
-                return new ResponseBean<>(200,"success",developerWorkLoadFrontend);
+                return new ResponseBean<>(HttpStatus.OK.value(),"success",developerWorkLoadFrontend);
             }else {
-                return new ResponseBean<>(200,"success",developerWorkLoadList);
+                return new ResponseBean<>(HttpStatus.OK.value(),"success",developerWorkLoadList);
             }
         }catch (Exception e){
             e.printStackTrace();
-            return new ResponseBean<>(401,"failed" + e.getMessage(),null);
+            return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(),"failed" + e.getMessage(),null);
         }
     }
 
@@ -141,16 +138,14 @@ public class MeasureDeveloperController {
                                                       @RequestParam(value = "tool", required = false, defaultValue = "sonarqube")String tool,
                                                       HttpServletRequest request){
         try{
-            if(until==null || "".equals(until)) {
-                until = dtf.format(LocalDate.now().plusDays(1));
-            }
+            until = DateTimeUtil.processUntil(until);
             String token = request.getHeader("token");
             List<String> repoUuidList = projectDao.involvedRepoProcess(repoUuid,token);
             Query query = new Query(token,since,until,developer,repoUuidList);
-            return new ResponseBean<>(200,"success",null);
+            return new ResponseBean<>(HttpStatus.OK.value(),"success",null);
         }catch (Exception e){
             e.printStackTrace();
-            return new ResponseBean<>(401,"failed "+ e.getMessage() ,null);
+            return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(),"failed "+ e.getMessage() ,null);
         }
     }
 
@@ -171,7 +166,7 @@ public class MeasureDeveloperController {
                                                                 HttpServletRequest request){
 
         try{
-            until = timeProcess(until);
+            until = DateTimeUtil.processUntil(until);
             String token = request.getHeader("token");
             List<String> repoUuidList;
             if(projectName!=null && !"".equals(projectName)) {
@@ -183,10 +178,10 @@ public class MeasureDeveloperController {
             Query query = new Query(token,since,until,developer,repoUuidList);
             //fixme
             Map<String,List<DeveloperRepoInfo>> developerRepoInfos = projectDao.getDeveloperRepoInfoList(query);
-            return new ResponseBean<>(200,"success", measureDeveloperService.getDeveloperPortrait(query,developerRepoInfos));
+            return new ResponseBean<>(HttpStatus.OK.value(),"success", measureDeveloperService.getDeveloperPortrait(query,developerRepoInfos));
         }catch (Exception e){
             e.printStackTrace();
-            return new ResponseBean<>(401,"failed "+e.getMessage(),null);
+            return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(),"failed "+e.getMessage(),null);
         }
     }
 
@@ -210,14 +205,12 @@ public class MeasureDeveloperController {
                                               HttpServletRequest request){
 
         try{
-            if(until==null || "".equals(until)) {
-                until = dtf.format(LocalDate.now().plusDays(1));
-            }
+            until = DateTimeUtil.processUntil(until);
             String token = request.getHeader("token");
-            return new ResponseBean<>(200,"success",(List<cn.edu.fudan.measureservice.portrait2.DeveloperPortrait>) measureDeveloperService.getPortraitCompetence(developer,repoUuidList,since,until,token));
+            return new ResponseBean<>(HttpStatus.OK.value(),"success",(List<cn.edu.fudan.measureservice.portrait2.DeveloperPortrait>) measureDeveloperService.getPortraitCompetence(developer,repoUuidList,since,until,token));
         }catch (Exception e){
             e.printStackTrace();
-            return new ResponseBean<>(401,"failed "+ e.getMessage(),null);
+            return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(),"failed "+ e.getMessage(),null);
         }
     }
 
@@ -249,7 +242,7 @@ public class MeasureDeveloperController {
                                           HttpServletRequest request){
 
         try{
-            until = timeProcess(until);
+            until = DateTimeUtil.processUntil(until);
             String token = request.getHeader("token");
             List<String> repoUuidList;
             if(projectName!=null && !"".equals(projectName)) {
@@ -270,19 +263,19 @@ public class MeasureDeveloperController {
                 int totalPage = developerCommitStandardList.size() % ps == 0 ? developerCommitStandardList.size()/ps : developerCommitStandardList.size()/ps + 1;
                 List<DeveloperCommitStandard> selectedDeveloperCommitStandardList = developerCommitStandardList.subList(ps*(page-1), Math.min(ps * page, developerCommitStandardList.size()));
                 ProjectFrontEnd<DeveloperCommitStandard> developerCommitStandardFrontend = new ProjectFrontEnd<>(page,totalPage,developerCommitStandardList.size(),selectedDeveloperCommitStandardList);
-                return new ResponseBean<>(200,"success",developerCommitStandardFrontend);
+                return new ResponseBean<>(HttpStatus.OK.value(),"success",developerCommitStandardFrontend);
             }else if (developer!=null && !"".equals(developer)){
                 // 如果传入单个开发者，此时 page 按照不规范明细进行分页
                 DeveloperCommitStandard developerCommitStandard = developerCommitStandardList.get(0);
                 List<Map<String,String>> developerInvalidCommitList = developerCommitStandard.getDeveloperInvalidCommitInfo().subList((page-1)*ps , Math.min(page * ps, developerCommitStandard.getDeveloperInvalidCommitCount()));
                 developerCommitStandard.setDeveloperInvalidCommitInfo(developerInvalidCommitList);
-                return new ResponseBean<>(200,"success",Collections.singletonList(developerCommitStandard));
+                return new ResponseBean<>(HttpStatus.OK.value(),"success",Collections.singletonList(developerCommitStandard));
             }else {
-                return new ResponseBean<>(200,"success",developerCommitStandardList);
+                return new ResponseBean<>(HttpStatus.OK.value(),"success",developerCommitStandardList);
             }
         }catch (Exception e){
             e.printStackTrace();
-            return new ResponseBean<>(401,"failed " + e.getMessage(),null);
+            return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(),"failed " + e.getMessage(),null);
         }
     }
 
@@ -296,13 +289,13 @@ public class MeasureDeveloperController {
                                                                                            @RequestParam(value = "show_detail",required = false, defaultValue = "false") boolean showDetail,
                                                                                            HttpServletRequest request) {
         try {
-            until = timeProcess(until);
+            until = DateTimeUtil.processUntil(until);
             String token = request.getHeader("token");
-            return new ResponseBean<>(200,"success",measureDeveloperService.getCommitStandardTrendChartIntegratedByProject(projectIds,since,until,token,interval,showDetail));
+            return new ResponseBean<>(HttpStatus.OK.value(),"success",measureDeveloperService.getCommitStandardTrendChartIntegratedByProject(projectIds,since,until,token,interval));
         }catch (Exception e) {
             e.getMessage();
         }
-        return new ResponseBean<>(401,"failed",new ArrayList<>());
+        return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(),"failed",new ArrayList<>());
     }
 
 
@@ -321,7 +314,7 @@ public class MeasureDeveloperController {
                                                         @RequestParam(required = false, defaultValue = "") String order,
                                                         HttpServletRequest request) {
         try { //todo 增加更具开发者查询功能
-            until = timeProcess(until);
+            until = DateTimeUtil.processUntil(until);
             String token = request.getHeader("token");
             List<ProjectCommitStandardDetail> projectCommitStandardDetailList = measureDeveloperService.getCommitStandardDetailIntegratedByProject(projectNameList,repoUuidList,committer,since,until,token);
             if (is_valid) {
@@ -337,11 +330,11 @@ public class MeasureDeveloperController {
             int totalPage = projectCommitStandardDetailList.size() % ps == 0 ? projectCommitStandardDetailList.size()/ps : projectCommitStandardDetailList.size()/ps + 1;
             List<ProjectCommitStandardDetail> selectedDeveloperCommitStandardList = projectCommitStandardDetailList.subList(ps*(page-1), Math.min(ps * page, projectCommitStandardDetailList.size()));
             ProjectFrontEnd<ProjectCommitStandardDetail> developerCommitStandardFrontend = new ProjectFrontEnd<>(page,totalPage,projectCommitStandardDetailList.size(),selectedDeveloperCommitStandardList);
-            return new ResponseBean<>(200,"success",developerCommitStandardFrontend);
+            return new ResponseBean<>(HttpStatus.OK.value(),"success",developerCommitStandardFrontend);
         }catch (Exception e) {
             e.printStackTrace();
         }
-        return new ResponseBean<>(401,"failed",null);
+        return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(),"failed",null);
     }
 
     @GetMapping("/measure/commit-standard/detail/download")
@@ -355,7 +348,7 @@ public class MeasureDeveloperController {
                                          HttpServletResponse response,
                                          HttpServletRequest request)  {
         try {
-            until = timeProcess(until);
+            until = DateTimeUtil.processUntil(until);
             String token = request.getHeader("token");
             List<ProjectCommitStandardDetail> projectCommitStandardDetailList = measureDeveloperService.getCommitStandardDetailIntegratedByProject(projectNameList,repoUuidList,null,since,until,token);
             projectCommitStandardDetailList.sort((o1, o2) -> o2.getCommitTime().compareTo(o1.getCommitTime()));
@@ -379,11 +372,11 @@ public class MeasureDeveloperController {
             String token = request.getHeader("token");
             List<String> committerList = measureDeveloperService.getCommitStandardCommitterList(projectNameList,repoUuidList,token);
             committerList.sort(String::compareTo);
-            return new ResponseBean<>(200,"success",committerList);
+            return new ResponseBean<>(HttpStatus.OK.value(),"success",committerList);
         }catch (Exception e) {
             e.getMessage();
         }
-        return new ResponseBean<>(401,"failed",null);
+        return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(),"failed",null);
     }
 
 
@@ -396,13 +389,13 @@ public class MeasureDeveloperController {
                                                                  @RequestParam(required = false, defaultValue = "week") String interval,
                                                                  HttpServletRequest request) {
         try {
-            until = timeProcess(until);
+            until = DateTimeUtil.processUntil(until);
             String token = request.getHeader("token");
-            return new ResponseBean<>(200,"success",measureDeveloperService.getHugeLocRemainedFile(projectIds,since,until,token,interval));
+            return new ResponseBean<>(HttpStatus.OK.value(),"success",measureDeveloperService.getHugeLocRemainedFile(projectIds,since,until,token,interval));
         }catch (Exception e) {
             e.getMessage();
         }
-        return new ResponseBean<>(401,"failed",new ArrayList<>());
+        return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(),"failed",new ArrayList<>());
     }
 
 
@@ -433,11 +426,11 @@ public class MeasureDeveloperController {
             int totalPage = projectBigFileDetailList.size() % ps == 0 ? projectBigFileDetailList.size()/ps : projectBigFileDetailList.size()/ps + 1;
             List<ProjectBigFileDetail> selectedDeveloperCommitStandardList = projectBigFileDetailList.subList(ps*(page-1), Math.min(ps * page, projectBigFileDetailList.size()));
             ProjectFrontEnd<ProjectBigFileDetail> projectBigFileDetailProjectFrontEnd = new ProjectFrontEnd<>(page,totalPage,projectBigFileDetailList.size(),selectedDeveloperCommitStandardList);
-            return new ResponseBean<>(200,"success",projectBigFileDetailProjectFrontEnd);
+            return new ResponseBean<>(HttpStatus.OK.value(),"success",projectBigFileDetailProjectFrontEnd);
         }catch (Exception e) {
             e.printStackTrace();
         }
-        return new ResponseBean<>(401,"failed",null);
+        return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(),"failed",null);
 
     }
 
@@ -466,27 +459,54 @@ public class MeasureDeveloperController {
     }
 
     @GetMapping("/developer/data/ccn")
-    public ResponseBean<Object> getDeveloperDataCcn(@RequestParam(value = "project_names",required = false) String projectNameList,
+    public ResponseBean<ProjectFrontEnd> getDeveloperDataCcn(@RequestParam(value = "project_names",required = false) String projectNameList,
                                               @RequestParam(value = "developers",required = true) String developerList,
                                               @RequestParam(value = "since" , required = false) String since,
                                               @RequestParam(value = "until",required = false) String until,
                                               @RequestParam(required = false, defaultValue = "1")int page,
                                               @RequestParam(required = false, defaultValue = "10")int ps,
+                                              @RequestParam(required = false, defaultValue = "") String order,
+                                              @RequestParam(required = false, defaultValue = "") String asc,
                                               HttpServletRequest request )
     {
         try {
             String token = request.getHeader("token");
             List<DeveloperDataCcn> developerDataCcnList = measureDeveloperService.getDeveloperDataCcn(projectNameList,developerList,token,since,until);
+            developerDataCcnList.sort(((o1, o2) -> o2.getTotalDiffCcn() - o1.getTotalDiffCcn()));
             int totalPage = developerDataCcnList.size() % ps == 0 ? developerDataCcnList.size()/ps : developerDataCcnList.size()/ps + 1;
             List<DeveloperDataCcn> selectedDeveloperDataCcnList = developerDataCcnList.subList(ps*(page-1), Math.min(ps * page, developerDataCcnList.size()));
             ProjectFrontEnd<DeveloperDataCcn> developerDtaCcnProjectFrontEnd = new ProjectFrontEnd<>(page,totalPage,developerDataCcnList.size(),selectedDeveloperDataCcnList);
-            return new ResponseBean<>(200,"success",developerDtaCcnProjectFrontEnd);
+            return new ResponseBean<>(HttpStatus.OK.value(),"success",developerDtaCcnProjectFrontEnd);
         }catch (Exception e) {
             e.getMessage();
         }
-        return new ResponseBean<>(401,"failed",null);
+        return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(),"failed",null);
     }
 
+    @GetMapping("/developer/data/commit-standard")
+    public ResponseBean<ProjectFrontEnd> getDeveloperDataCommitStandard(@RequestParam(value = "project_names",required = false) String projectNameList,
+                                                               @RequestParam(value = "developers",required = true) String developerList,
+                                                               @RequestParam(value = "since" , required = false) String since,
+                                                               @RequestParam(value = "until",required = false) String until,
+                                                               @RequestParam(required = false, defaultValue = "1")int page,
+                                                               @RequestParam(required = false, defaultValue = "10")int ps,
+                                                               @RequestParam(required = false, defaultValue = "") String order,
+                                                               @RequestParam(required = false, defaultValue = "") String asc,
+                                                               HttpServletRequest request )
+    {
+        try {
+            String token = request.getHeader("token");
+            List<DeveloperDataCommitStandard> developerDataCommitStandardList = measureDeveloperService.getDeveloperDataCommitStandard(projectNameList,developerList,token,since,until);
+            developerDataCommitStandardList.sort((o1, o2) -> Double.compare(o2.getCommitStandard(), o1.getCommitStandard()));
+            int totalPage = developerDataCommitStandardList.size() % ps == 0 ? developerDataCommitStandardList.size()/ps : developerDataCommitStandardList.size()/ps + 1;
+            List<DeveloperDataCommitStandard> selectedDeveloperDataCommitStandardList = developerDataCommitStandardList.subList(ps*(page-1), Math.min(ps * page, developerDataCommitStandardList.size()));
+            ProjectFrontEnd<DeveloperDataCommitStandard> developerDtaCommitStandardProjectFrontEnd = new ProjectFrontEnd<>(page,totalPage,developerDataCommitStandardList.size(),selectedDeveloperDataCommitStandardList);
+            return new ResponseBean<>(HttpStatus.OK.value(),"success",developerDtaCommitStandardProjectFrontEnd);
+        }catch (Exception e) {
+            e.getMessage();
+        }
+        return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(),"failed",null);
+    }
 
     @ApiOperation(value = "返回用户画像页面得代码行数数据，包括所有项目和单个项目的 To codeTracker", notes = "@return Map<String,Object>", httpMethod = "GET")
     @ApiImplicitParams({
@@ -505,13 +525,11 @@ public class MeasureDeveloperController {
                                                 @RequestParam(value = "until", required = false)String until){
 
         try{
-            if(until!=null && !"".equals(until)) {
-                until = dtf.format(LocalDate.now().plusDays(1));
-            }
-            return new ResponseBean<>(200,"success",(Map<String,Object>) measureDeveloperService.getStatementByCondition(repUuidList,developer,since,until));
+            until = DateTimeUtil.processUntil(until);
+            return new ResponseBean<>(HttpStatus.OK.value(),"success",(Map<String,Object>) measureDeveloperService.getStatementByCondition(repUuidList,developer,since,until));
         }catch (Exception e){
             e.printStackTrace();
-            return new ResponseBean<>(401,"failed "+e.getMessage(),null);
+            return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(),"failed "+e.getMessage(),null);
         }
     }
 
@@ -533,13 +551,11 @@ public class MeasureDeveloperController {
                                                @RequestParam(value = "until", required = false)String until){
 
         try{
-            if(until!=null && !"".equals(until)) {
-                until = dtf.format(LocalDate.now().plusDays(1));
-            }
-            return new ResponseBean<>(200,"success",(List<Map<String, Object>>)measureDeveloperService.getDeveloperRecentNews(repoUuidList,developer,since,until));
+            until = DateTimeUtil.processUntil(until);
+            return new ResponseBean<>(HttpStatus.OK.value(),"success",(List<Map<String, Object>>)measureDeveloperService.getDeveloperRecentNews(repoUuidList,developer,since,until));
         }catch (Exception e){
             e.printStackTrace();
-            return new ResponseBean<>(401,"failed "+e.getMessage(),null);
+            return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(),"failed "+e.getMessage(),null);
         }
     }
 
@@ -562,7 +578,7 @@ public class MeasureDeveloperController {
                                                                     @RequestParam(required = false, defaultValue = "true")boolean asc ,
                                                                     HttpServletRequest request){
         try{
-            until = timeProcess(until);
+            until = DateTimeUtil.processUntil(until);
             String token = request.getHeader("token");
             List<String> repoUuidList;
             if(token==null || "".equals(token)) {
@@ -574,31 +590,13 @@ public class MeasureDeveloperController {
                 repoUuidList = projectDao.involvedRepoProcess(repoUuid,token);
             }
             Query query = new Query(token,since,until,null,repoUuidList);
-            return new ResponseBean<>(200,"success", measureDeveloperService.getDeveloperLevelList(query));
+            return new ResponseBean<>(HttpStatus.OK.value(),"success", measureDeveloperService.getDeveloperLevelList(query));
         }catch (Exception e){
             e.printStackTrace();
-            return new ResponseBean<>(401,"failed "+ e.getMessage(),null);
+            return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(),"failed "+ e.getMessage(),null);
         }
     }
 
-    /**
-     * 查询时间统一处理加一天
-     * @param until 查询截止时间
-     * @return String until
-     */
-    private String timeProcess(String until) {
-        try {
-            if(until!=null && !"".equals(until)) {
-                until = dtf.format(LocalDate.parse(until,dtf).plusDays(1));
-            }else {
-                until = dtf.format(LocalDate.now().plusDays(1));
-            }
-            return until;
-        }catch (Exception e) {
-            e.getMessage();
-        }
-        return null;
-    }
 
     @Autowired
     public void setProjectDao(ProjectDao projectDao) {this.projectDao = projectDao;}

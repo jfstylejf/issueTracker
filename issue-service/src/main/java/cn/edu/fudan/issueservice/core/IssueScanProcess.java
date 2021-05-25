@@ -4,6 +4,7 @@ import cn.edu.fudan.common.domain.po.scan.RepoScan;
 import cn.edu.fudan.common.scan.CommonScanProcess;
 import cn.edu.fudan.common.scan.ToolScan;
 import cn.edu.fudan.issueservice.component.RestInterfaceManager;
+import cn.edu.fudan.issueservice.dao.IssueRepoDao;
 import cn.edu.fudan.issueservice.dao.IssueScanDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -20,6 +21,8 @@ import java.util.List;
 public class IssueScanProcess extends CommonScanProcess {
 
     private IssueScanDao issueScanDao;
+
+    private IssueRepoDao issueRepoDao;
 
     private RestInterfaceManager restInterfaceManager;
 
@@ -50,12 +53,12 @@ public class IssueScanProcess extends CommonScanProcess {
 
     @Override
     protected void insertRepoScan(RepoScan repoScan) {
-
+        issueRepoDao.insertOneIssueRepo(repoScan);
     }
 
     @Override
     public void updateRepoScan(RepoScan scanInfo) {
-
+        issueRepoDao.updateIssueRepo(scanInfo);
     }
 
     @Override
@@ -86,5 +89,10 @@ public class IssueScanProcess extends CommonScanProcess {
     @Autowired
     public void setRestInterfaceManager(RestInterfaceManager restInterfaceManager) {
         this.restInterfaceManager = restInterfaceManager;
+    }
+
+    @Autowired
+    public void setIssueRepoDao(IssueRepoDao issueRepoDao) {
+        this.issueRepoDao = issueRepoDao;
     }
 }

@@ -1,26 +1,25 @@
 package cn.edu.fudan.projectmanager.controller;
 
+import cn.edu.fudan.projectmanager.ProjectServiceApplicationTest;
 import cn.edu.fudan.projectmanager.component.RestInterfaceManager;
 import cn.edu.fudan.projectmanager.dao.SubRepositoryDao;
 import cn.edu.fudan.projectmanager.domain.Account;
 import cn.edu.fudan.projectmanager.service.impl.ProjectControlServiceImpl;
-import cn.edu.fudan.projectmanager.util.JDBCUtil;
 import com.alibaba.fastjson.JSONObject;
-import org.junit.*;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.FixMethodOrder;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.annotation.Rollback;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -30,12 +29,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
-
-
-import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
 
 /**
  * description: the test of delete repo
@@ -54,7 +47,19 @@ import java.sql.Statement;
 
 @Transactional
 @Rollback() // 事务自动回滚，默认是true
-public class RepoDeleteTest {
+public class RepoDeleteTest2 extends ProjectServiceApplicationTest {
+
+    /**
+     * 2.测试某服务未回调时的删除库功能
+     *   （1）将待删库放入回收站
+     *   （2）调用总删库接口（各个服务硬删除，project服务软删除）
+     *   （3）各个服务完成硬删除并检查确认没有脏数据后，调用project服务回调接口，修改该服务删除状态
+     *   （4）project服务判断各服务删除状态，均为1后硬删除project服务repo数据
+     *   （5）恢复数据
+     *
+     *   输入:repoUuid (DEPENDENCY,CLONE服务未回调)
+     *   预期结果：test_03，test_04失败
+     */
 
     final String token = "ec15d79e36e14dd258cfff3d48b73d35";
     //测试库
@@ -134,7 +139,6 @@ public class RepoDeleteTest {
                 .andExpect(MockMvcResultMatchers.status().is(200))
                 .andDo(MockMvcResultHandlers.print())
                 .andReturn();
-
     }
 
     @Test
@@ -163,48 +167,6 @@ public class RepoDeleteTest {
         Assert.assertEquals('1',deleteStatus1[0]);
 
 
-        //回调接口 mock DEPENDENCY服务回调  2
-        MvcResult recallResult2 = mockMvc.perform(MockMvcRequestBuilders
-                .put("/repo")
-                .accept(MediaType.APPLICATION_JSON_UTF8)
-                .param("repo_uuid", repoUuid)
-                .param("service_name", serviceName[1])
-                .header("token", token)
-                .session(session)
-        )
-                .andExpect(MockMvcResultMatchers.status().is(200))
-                .andDo(MockMvcResultHandlers.print())
-                .andReturn();
-
-        //将返回值转换成json，拿到data中的recycled的值
-        JSONObject jsonObject2 = JSONObject.parseObject(recallResult2.getResponse().getContentAsString());
-
-        Integer recycledStatus2 = jsonObject2.getIntValue("data");
-        char[] deleteStatus2 = String.valueOf(recycledStatus2).toCharArray();
-        Assert.assertEquals('1',deleteStatus2[1]);
-
-
-        //回调接口 mock CLONE服务回调  3
-        MvcResult recallResult3 = mockMvc.perform(MockMvcRequestBuilders
-                .put("/repo")
-                .accept(MediaType.APPLICATION_JSON_UTF8)
-                .param("repo_uuid", repoUuid)
-                .param("service_name", serviceName[2])
-                .header("token", token)
-                .session(session)
-        )
-                .andExpect(MockMvcResultMatchers.status().is(200))
-                .andDo(MockMvcResultHandlers.print())
-                .andReturn();
-
-        //将返回值转换成json，拿到data中的recycled的值
-        JSONObject jsonObject3 = JSONObject.parseObject(recallResult3.getResponse().getContentAsString());
-
-        Integer recycledStatus3 = jsonObject3.getIntValue("data");
-        char[] deleteStatus3 = String.valueOf(recycledStatus3).toCharArray();
-        Assert.assertEquals('1',deleteStatus3[2]);
-
-
         //回调接口 mock MEASURE服务回调  4
         MvcResult recallResult4 = mockMvc.perform(MockMvcRequestBuilders
                 .put("/repo")
@@ -223,7 +185,7 @@ public class RepoDeleteTest {
 
         Integer recycledStatus4 = jsonObject4.getIntValue("data");
         char[] deleteStatus4 = String.valueOf(recycledStatus4).toCharArray();
-        Assert.assertEquals('1',deleteStatus4[3]);
+        //Assert.assertEquals('1',deleteStatus4[3]);
 
 
         //回调接口 mock CODETRACKER服务回调  5
@@ -305,9 +267,13 @@ public class RepoDeleteTest {
                 .andDo(MockMvcResultHandlers.print())
                 .andReturn();
 
+        //因为个别服务回调失败（没删除成功），repo信息不能删除
+        String errorMsg = "repo can not be delete!";
+
         //将返回值转换成json，拿到status的值
         JSONObject jsonObject = JSONObject.parseObject(deleteProjectRepo.getResponse().getContentAsString());
-        Assert.assertEquals(200,jsonObject.getIntValue("code"));
+        Assert.assertEquals(412,jsonObject.getIntValue("code"));
+        Assert.assertEquals(errorMsg,jsonObject.getString("msg"));
     }
 
 

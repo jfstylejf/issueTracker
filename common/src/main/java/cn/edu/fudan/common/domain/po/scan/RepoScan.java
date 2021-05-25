@@ -25,5 +25,6 @@ public class RepoScan {
     Date endScanTime;
     boolean initialScan;
     String startCommit;
+    long scanTime;
 
 }
