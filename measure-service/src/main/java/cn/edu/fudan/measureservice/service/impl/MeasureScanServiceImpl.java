@@ -3,6 +3,7 @@ package cn.edu.fudan.measureservice.service.impl;
 import cn.edu.fudan.measureservice.annotation.RepoResource;
 import cn.edu.fudan.measureservice.component.RestInterfaceManager;
 import cn.edu.fudan.measureservice.core.ToolInvoker;
+import cn.edu.fudan.measureservice.dao.AccountDao;
 import cn.edu.fudan.measureservice.dao.ProjectDao;
 import cn.edu.fudan.measureservice.domain.core.MeasureScan;
 import cn.edu.fudan.measureservice.domain.dto.RepoResourceDTO;
@@ -38,6 +39,7 @@ public class MeasureScanServiceImpl implements MeasureScanService {
     private RestInterfaceManager restInterfaceManager;
     private ThreadLocal<JGitHelper> jGitHelperT = new ThreadLocal<>();
     private ProjectDao projectDao;
+    private AccountDao accountDao;
     private static final String SCANNING = "scanning";
     private static final String SCANNED = "complete";
 
@@ -130,7 +132,7 @@ public class MeasureScanServiceImpl implements MeasureScanService {
                         .toolName(toolName)
                         .repoPath(repoPath)
                         .commitTime(commitTime)
-                        .developerName(getDeveloperName(authorName))
+                        .developerName(accountDao.getDeveloperName(authorName))
                         .mailAddress(mailAddress)
                         .build();
 
@@ -166,20 +168,6 @@ public class MeasureScanServiceImpl implements MeasureScanService {
     }
 
 
-    private String getDeveloperName(String authorName) {
-        if (authorName == null) {
-            log.error("cannot get authorName\n");
-            return null;
-        }
-        try {
-            String accountName = accountMapper.getAccountName(authorName);
-            return accountName == null ? authorName : accountName;
-        }catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
     private void updateMeasureScan(MeasureScan measureScan, String endCommit, int scannedCommitCount,
                                           int scanTime, String status, Date endScanTime){
         measureScan.setEndCommit(endCommit);
@@ -193,6 +181,11 @@ public class MeasureScanServiceImpl implements MeasureScanService {
     @Autowired
     public void setProjectDao(ProjectDao projectDao) {
         this.projectDao = projectDao;
+    }
+
+    @Autowired
+    public void setAccountDao(AccountDao accountDao) {
+        this.accountDao = accountDao;
     }
 
     @Autowired

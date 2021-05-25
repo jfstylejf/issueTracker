@@ -192,6 +192,39 @@
         ORDER By commit_time desc
     </select>
 
+    <select id="getDeveloperValidCommitMsgWithPage" resultType="java.util.HashMap">
+        SELECT repo_id,developer,left(commit_time,10) as commit_time,commit_id,message
+        from issueTracker.commit
+        <where>
+            <trim prefixOverrides="and">
+                <if test="accountGitNameList!=null and accountGitNameList.size > 0">
+                    and developer in
+                    <foreach collection="accountGitNameList" separator="," open="(" close=")" item="gitName">
+                        #{gitName}
+                    </foreach>
+                </if>
+
+                <if test="repoUuidList != null and repoUuidList.size >0 ">
+                    and repo_id in
+                    <foreach collection="repoUuidList" separator="," open="(" close=")" item="repoUuid">
+                        #{repoUuid}
+                    </foreach>
+                </if>
+
+                <if test="since != null and since != '' ">
+                    and <![CDATA[ commit_time >= #{since} ]]>
+                </if>
+
+                <if test="until != null and until != '' ">
+                    and <![CDATA[ commit_time <= #{until} ]]>
+                </if>
+                and length(parent_commit) &lt; 50
+            </trim>
+        </where>
+        ORDER By commit_time desc
+        limit ${beginIndex}, ${size}
+    </select>
+
     <select id="getProjectValidCommitMsg" resultType="java.util.HashMap">
         SELECT repo_id,developer,left(commit_time,10) as commit_time,commit_id,message
         from issueTracker.commit
@@ -215,6 +248,32 @@
             </trim>
         </where>
         ORDER By commit_time desc
+    </select>
+
+    <select id="getProjectValidCommitMsgWithPage" resultType="java.util.HashMap" >
+        SELECT repo_id,developer,left(commit_time,10) as commit_time,commit_id,message
+        from issueTracker.commit
+        <where>
+            <trim prefixOverrides="and">
+                <if test="repoUuidList != null and repoUuidList.size >0 ">
+                    and repo_id in
+                    <foreach collection="repoUuidList" separator="," open="(" close=")" item="repoUuid">
+                        #{repoUuid}
+                    </foreach>
+                </if>
+
+                <if test="since != null and since != '' ">
+                    and <![CDATA[ commit_time >= #{since} ]]>
+                </if>
+
+                <if test="until != null and until != '' ">
+                    and <![CDATA[ commit_time <= #{until} ]]>
+                </if>
+                and length(parent_commit) &lt; 50
+            </trim>
+        </where>
+        ORDER By commit_time desc
+        limit ${beginIndex}, ${size}
     </select>
 
     <select id="getDeveloperRankByCommitCount" parameterType="String" resultType="java.util.HashMap">
@@ -303,6 +362,23 @@
 
     <select id="getAllProjectId" resultType="String">
         SELECT distinct (id) FROM issueTracker.project
+    </select>
+
+    <select id="getSingleProjectMsgNum" resultType="Integer" >
+        SELECT COUNT(uuid) AS commitNum FROM issueTracker.commit
+        <where>
+            <trim prefixOverrides="and">
+                and repo_id = #{repoUuid}
+
+                <if test="since != null and since != '' ">
+                    and <![CDATA[ commit_time >= #{since} ]]>
+                </if>
+
+                <if test="until != null and until != '' ">
+                    and <![CDATA[ commit_time <= #{until} ]]>
+                </if>
+            </trim>
+        </where>
     </select>
 
 </mapper>

@@ -97,10 +97,6 @@ public class RedisScheduleTask {
     }
 
 
-    private void initProjectCommitStandardInfo()  {
-        measureDeveloperService.getCommitStandardDetailIntegratedByProject(null,null,null,token);
-    }
-
     /**
      *  每天凌晨2点 缓存这一周的提交规范性趋势图
      */
@@ -124,14 +120,6 @@ public class RedisScheduleTask {
     @Scheduled(cron = "0 0 1 1 * ?")
     private void deleteProjectCommitStandardTrendChart() {
         measureDeveloperService.deleteProjectCommitStandardChart();
-    }
-
-    /**
-     * 每天凌晨1点 删除提交规范性各库提交明细
-     */
-    @Scheduled(cron = "0 0 1 * * ?")
-    private void deleteProjectCommitStandardInfo() {
-        measureDeveloperService.deleteProjectCommitStandardInfo();
     }
 
 

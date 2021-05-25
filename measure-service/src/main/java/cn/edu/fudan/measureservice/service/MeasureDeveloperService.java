@@ -3,6 +3,7 @@ package cn.edu.fudan.measureservice.service;
 import cn.edu.fudan.measureservice.annotation.MethodMeasureAnnotation;
 import cn.edu.fudan.measureservice.aop.MethodMeasureAspect;
 import cn.edu.fudan.measureservice.component.RestInterfaceManager;
+import cn.edu.fudan.measureservice.dao.AccountDao;
 import cn.edu.fudan.measureservice.dao.JiraDao;
 import cn.edu.fudan.measureservice.dao.MeasureDao;
 import cn.edu.fudan.measureservice.dao.ProjectDao;
@@ -52,6 +53,7 @@ public class MeasureDeveloperService {
     private final ProjectDao projectDao;
     private final JiraDao jiraDao;
     private final MeasureDao measureDao;
+    private final AccountDao accountDao;
     private MeasureDeveloperService measureDeveloperService;
 
     private MethodMeasureAspect methodMeasureAspect;
@@ -992,103 +994,119 @@ public class MeasureDeveloperService {
     }
 
     /**
-     * 获取提交规范性按照项目聚合的明细
-     * @param projectNames 查询项目列表
-     * @param repoUuids 查询库列表
+     * 分页获取提交规范性按照项目聚合的明细
+     * @param projectNameList 查询项目列表
+     * @param repoUuidList 查询库列表
      * @param token 查询权限
-     * @return new ArrayList<{@link ProjectCommitStandardDetail}>
+     * @return <{@link ProjectCommitStandardDetail}>
      */
     @SneakyThrows
-    public synchronized List<ProjectCommitStandardDetail> getCommitStandardDetailIntegratedByProject(String projectNames,String repoUuids,String committer,String token) {
+    public synchronized ProjectFrontEnd<ProjectCommitStandardDetail> getCommitStandardDetailIntegratedByProject(String projectNameList,String repoUuidList,String committer,String token,int page,int ps,boolean isValid) {
         List<ProjectCommitStandardDetail> projectCommitStandardDetailList = new ArrayList<>();
-        List<String> repoUuidList = new ArrayList<>();
-        if (repoUuids != null && !"".equals(repoUuids)) {
-            repoUuidList = Arrays.asList(repoUuids.split(split));
+        // 获取查询条件下可见的库列表
+        List<String> visibleRepoList = projectDao.getVisibleRepoListByProjectNameAndRepo(projectNameList,repoUuidList,token);
+        // 获取查询条件下的提交规范性明细 （分页查询）
+        int totalMsgSize = projectDao.getRepoListMsgNum(visibleRepoList);
+        int totalPage = totalMsgSize % ps == 0 ? totalMsgSize / ps : totalMsgSize / ps + 1;
+        // 起始查询位置
+        int initialBeginIndex = (page-1) * ps;
+        //获取 ps 条合法提交数据
+        while (initialBeginIndex < totalMsgSize && ps > 0) {
+            List<ProjectCommitStandardDetail> selectedProjectCommitStandardDetail = ((MeasureDeveloperService) AopContext.currentProxy()).getProjectValidCommitStandardDetail(visibleRepoList,committer,initialBeginIndex,ps,isValid);
+            projectCommitStandardDetailList.addAll(selectedProjectCommitStandardDetail);
+            // 更新下次查询起始位置
+            initialBeginIndex += selectedProjectCommitStandardDetail.size();
+            ps -= selectedProjectCommitStandardDetail.size();
         }
-        // 获取每个项目的提交规范性明细
-        List<String> projectNameList;
-        if (projectNames != null && !"".equals(projectNames)) {
-            projectNameList = Arrays.asList(projectNames.split(split));
-        }else {
-            List<ProjectPair> visibleProjectPairListByProjectIds = projectDao.getVisibleProjectPairListByProjectIds(null,token);
-            List<String> finalProjectNameList = new ArrayList<>();
-            visibleProjectPairListByProjectIds.forEach(projectPair -> finalProjectNameList.add(projectPair.getProjectName()));
-            projectNameList = finalProjectNameList;
-        }
-        for (String projectName : projectNameList) {
-            log.info("start to getProjectCommitStandardDetail of {}\n",projectName);
-            List<String> projectRepoList = projectDao.getProjectRepoList(projectName,token);
-            // 若前端传入查询库 repoUuids ，则只查询在此范围内的库
-            projectRepoList = repoUuidList.size() > 0 ? projectDao.mergeBetweenRepo(projectRepoList,repoUuidList) : projectRepoList;
-            // 获取每个项目下各库的提交规范性明细
-            for (String repoUuid : projectRepoList) {
-                log.info("start to get repoCommitStandardDetail of {} in {}",repoUuid,projectName);
-                if (committer == null || "".equals(committer)) {
-                    projectCommitStandardDetailList.addAll(((MeasureDeveloperService) AopContext.currentProxy()).getRepoCommitStandardDetail(projectName,repoUuid));
-                }else {
-                    projectCommitStandardDetailList.addAll(((MeasureDeveloperService) AopContext.currentProxy()).getDeveloperRepoCommitStandardDetail(projectName,repoUuid,committer));
-                }
-            }
-        }
-        return projectCommitStandardDetailList;
+        // 封装返回前端的明细
+
+        return new ProjectFrontEnd<>(page,totalPage,totalMsgSize,projectCommitStandardDetailList);
      }
 
     /**
-     * 获取项目总览提交规范一个库的详情明细
-     * @param projectName 查询项目
-     * @param repoUuid 查询库id
-     * @return 该库的提交规范详情
+     * 分页获取项目最近提交明细
+     * @param repoUuidList 查询库列表
+     * @param committer 查询开发者
+     * @param beginIndex 查询起始位置
+     * @param size 查询条数
+     * @param selectOrNot 是否筛选包含 Jira 单号的提交数
+     * @return 项目查询条件下最新提交明细
      */
-    @Cacheable(value = "repoCommitStandardDetail",key = "#projectName+'_'+#repoUuid")
-    public List<ProjectCommitStandardDetail> getRepoCommitStandardDetail(String projectName , String repoUuid) {
-        List<ProjectCommitStandardDetail> repoCommitStandardDetail = new ArrayList<>();
-        Query query = new Query(null,null,null,null,Collections.singletonList(repoUuid));
-        // 获取库下参与开发者列表
-        List<String> developerList = projectDao.getRepoDeveloperList(repoUuid);
-        // 获取项目下每个开发者的提交明细
-        for (String developer : developerList) {
-            List<ProjectCommitStandardDetail> developerRepoCommitStandardDetailList = ((MeasureDeveloperService) AopContext.currentProxy()).getDeveloperRepoCommitStandardDetail(projectName,repoUuid,developer);
-            repoCommitStandardDetail.addAll(developerRepoCommitStandardDetailList);
-        }
-        return repoCommitStandardDetail;
-    }
+     public List<ProjectCommitStandardDetail> getProjectValidCommitStandardDetail(List<String> repoUuidList, String committer, int beginIndex, int size, boolean selectOrNot) {
+         List<ProjectCommitStandardDetail> projectCommitStandardDetailList = new ArrayList<>();
+         // 获取查询条件下的提交明细
+         Query query = new Query(null,null,null,null,repoUuidList);
+         List<Map<String,String>> projectValidCommitMsg;
+         if (committer == null || "".equals(committer)) { // 若未指定开发者则查找整个项目中的前 ps 个最新提交
+             projectValidCommitMsg = projectDao.getProjectValidCommitMsg(query,beginIndex,size);
+         }else {
+             query.setDeveloper(committer);// 若指定 committer,则查询该开发者最新 ps 次提交
+             projectValidCommitMsg = projectDao.getDeveloperValidCommitMsg(query,beginIndex,size);
+         }
+         for (Map<String,String> map : projectValidCommitMsg) {
+             String repoId = map.get("repo_id");
+             String commitId = map.get("commit_id");
+             String commitTime = map.get("commit_time");
+             String message = map.get("message");
+             String developer = map.get("developer");
+             boolean isValid = !"noJiraID".equals(jiraDao.getJiraIDFromCommitMsg(message));
+             if (selectOrNot && !isValid) {
+                continue;
+             }
+             String projectName = projectDao.getProjectName(repoId);
+             String projectId = String.valueOf(projectDao.getProjectIdByName(projectName));
+             String repoName = projectDao.getRepoName(repoId);
+             committer = accountDao.getDeveloperName(developer);
+             ProjectCommitStandardDetail projectCommitStandardDetail = ProjectCommitStandardDetail.builder()
+                     .projectName(projectName).projectId(projectId)
+                     .repoName(repoName).repoUuid(repoId)
+                     .committer(committer).commitTime(commitTime).commitId(commitId)
+                     .message(message)
+                     .isValid(isValid)
+                     .build();
+             projectCommitStandardDetailList.add(projectCommitStandardDetail);
+         }
+         return projectCommitStandardDetailList;
+     }
 
     /**
-     * 项目总览提交规范性明细，对每个开发者该库下的详情（查询全部时间）
-     * @param projectName 查询项目名
-     * @param repoUuid 查询库id
-     * @param committer 查询提交者
-     * @return 开发者该库的提交规范明细
+     * 获取项目最近提交明细
+     * @param repoUuidList 查询库列表
+     * @param committer 查询开发者
+     * @return 项目查询条件下全部提交明细
      */
-    @Cacheable(value = "developerRepoCommitStandardDetail",key = "#projectName+'_'+#repoUuid+'_'+#committer")
-    public List<ProjectCommitStandardDetail> getDeveloperRepoCommitStandardDetail(String projectName , String repoUuid , String committer) {
-        List<ProjectCommitStandardDetail> developerProjectCommitStandardDetailList = new ArrayList<>();
-        // 获取库对应的信息
-        String projectId = String.valueOf(projectDao.getProjectIdByName(projectName));
-        String repoName = projectDao.getRepoName(repoUuid);
-        // 获取开发者对应的合法提交信息
-        Query query = new Query(null,null,null,committer,Collections.singletonList(repoUuid));
-        List<Map<String,String>> developerValidCommitInfo = projectDao.getDeveloperValidCommitMsg(query);
-        // 封装 ProjectCommitStandardDetail
-        for (Map<String,String> map : developerValidCommitInfo) {
+    public List<ProjectCommitStandardDetail> getProjectValidCommitStandardDetail(List<String> repoUuidList, String committer) {
+        List<ProjectCommitStandardDetail> projectCommitStandardDetailList = new ArrayList<>();
+        // 获取查询条件下的提交明细
+        Query query = new Query(null,null,null,null,repoUuidList);
+        List<Map<String,String>> projectValidCommitMsg;
+        if (committer == null || "".equals(committer)) { // 若未指定开发者则查找整个项目中的前 ps 个最新提交
+            projectValidCommitMsg = projectDao.getProjectValidCommitMsg(query);
+        }else {
+            query.setDeveloper(committer);// 若指定 committer,则查询该开发者最新 ps 次提交
+            projectValidCommitMsg = projectDao.getDeveloperValidCommitMsg(query);
+        }
+        for (Map<String,String> map : projectValidCommitMsg) {
+            String repoId = map.get("repo_id");
             String commitId = map.get("commit_id");
             String commitTime = map.get("commit_time");
             String message = map.get("message");
+            String developer = map.get("developer");
             boolean isValid = !"noJiraID".equals(jiraDao.getJiraIDFromCommitMsg(message));
+            String projectName = projectDao.getProjectName(repoId);
+            String projectId = String.valueOf(projectDao.getProjectIdByName(projectName));
+            String repoName = projectDao.getRepoName(repoId);
+            committer = accountDao.getDeveloperName(developer);
             ProjectCommitStandardDetail projectCommitStandardDetail = ProjectCommitStandardDetail.builder()
                     .projectName(projectName).projectId(projectId)
-                    .repoName(repoName).repoUuid(repoUuid)
+                    .repoName(repoName).repoUuid(repoId)
                     .committer(committer).commitTime(commitTime).commitId(commitId)
                     .message(message)
                     .isValid(isValid)
                     .build();
-            developerProjectCommitStandardDetailList.add(projectCommitStandardDetail);
+            projectCommitStandardDetailList.add(projectCommitStandardDetail);
         }
-        return developerProjectCommitStandardDetailList;
-    }
-
-    @CacheEvict(cacheNames = {"repoCommitStandardDetail","developerRepoCommitStandardDetail"}, allEntries=true, beforeInvocation = true)
-    public void deleteProjectCommitStandardInfo() {
+        return projectCommitStandardDetailList;
     }
 
 
@@ -1299,12 +1317,13 @@ public class MeasureDeveloperService {
 
 
     @Autowired
-    public MeasureDeveloperService(RestInterfaceManager restInterfaceManager, RepoMeasureMapper repoMeasureMapper, ProjectDao projectDao, JiraDao jiraDao, MeasureDao measureDao) {
+    public MeasureDeveloperService(RestInterfaceManager restInterfaceManager, RepoMeasureMapper repoMeasureMapper, ProjectDao projectDao, JiraDao jiraDao, MeasureDao measureDao,AccountDao accountDao) {
         this.restInterfaceManager = restInterfaceManager;
         this.repoMeasureMapper = repoMeasureMapper;
         this.projectDao = projectDao;
         this.jiraDao = jiraDao;
         this.measureDao = measureDao;
+        this.accountDao = accountDao;
     }
 
     @Autowired

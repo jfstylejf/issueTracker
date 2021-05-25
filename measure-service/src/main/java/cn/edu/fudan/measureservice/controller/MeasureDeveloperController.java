@@ -313,20 +313,7 @@ public class MeasureDeveloperController {
                                                         HttpServletRequest request) {
         try {
             String token = request.getHeader("token");
-            List<ProjectCommitStandardDetail> projectCommitStandardDetailList = measureDeveloperService.getCommitStandardDetailIntegratedByProject(projectNameList,repoUuidList,committer,token);
-            if (is_valid) {
-                projectCommitStandardDetailList.removeIf(projectCommitStandardDetail -> (!projectCommitStandardDetail.getIsValid()));
-            }
-            Collections.sort(projectCommitStandardDetailList, (o1, o2) -> {
-                if(asc) {
-                    return o1.getCommitTime().compareTo(o2.getCommitTime());
-                }else {
-                    return o2.getCommitTime().compareTo(o1.getCommitTime());
-                }
-            });
-            int totalPage = projectCommitStandardDetailList.size() % ps == 0 ? projectCommitStandardDetailList.size()/ps : projectCommitStandardDetailList.size()/ps + 1;
-            List<ProjectCommitStandardDetail> selectedDeveloperCommitStandardList = projectCommitStandardDetailList.subList(ps*(page-1), Math.min(ps * page, projectCommitStandardDetailList.size()));
-            ProjectFrontEnd<ProjectCommitStandardDetail> developerCommitStandardFrontend = new ProjectFrontEnd<>(page,totalPage,projectCommitStandardDetailList.size(),selectedDeveloperCommitStandardList);
+            ProjectFrontEnd<ProjectCommitStandardDetail> developerCommitStandardFrontend = measureDeveloperService.getCommitStandardDetailIntegratedByProject(projectNameList,repoUuidList,committer,token,page,ps,is_valid);
             return new ResponseBean<>(HttpStatus.OK.value(),"success",developerCommitStandardFrontend);
         }catch (Exception e) {
             e.printStackTrace();
@@ -345,8 +332,8 @@ public class MeasureDeveloperController {
                                          HttpServletRequest request)  {
         try {
             String token = request.getHeader("token");
-            List<ProjectCommitStandardDetail> projectCommitStandardDetailList = measureDeveloperService.getCommitStandardDetailIntegratedByProject(projectNameList,repoUuidList,committer,token);
-            projectCommitStandardDetailList.sort((o1, o2) -> o2.getCommitTime().compareTo(o1.getCommitTime()));
+            List<String> visibleRepoList = projectDao.getVisibleRepoListByProjectNameAndRepo(projectNameList,repoUuidList,token);
+            List<ProjectCommitStandardDetail> projectCommitStandardDetailList = measureDeveloperService.getProjectValidCommitStandardDetail(visibleRepoList,committer);
             response.setContentType("application/vnd.ms-excel");
             response.setCharacterEncoding("utf-8");
             // 保证下载到本地文件名不乱码的
@@ -453,7 +440,7 @@ public class MeasureDeveloperController {
         }
     }
 
-    @GetMapping("/developer/data/ccn")
+    @GetMapping("/measure/developer/data/ccn")
     public ResponseBean<ProjectFrontEnd> getDeveloperDataCcn(@RequestParam(value = "project_names",required = false) String projectNameList,
                                               @RequestParam(value = "developers",required = true) String developerList,
                                               @RequestParam(value = "since" , required = false) String since,
@@ -478,7 +465,7 @@ public class MeasureDeveloperController {
         return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(),"failed",null);
     }
 
-    @GetMapping("/developer/data/commit-standard")
+    @GetMapping("/measure/developer/data/commit-standard")
     public ResponseBean<ProjectFrontEnd> getDeveloperDataCommitStandard(@RequestParam(value = "project_names",required = false) String projectNameList,
                                                                @RequestParam(value = "developers",required = true) String developerList,
                                                                @RequestParam(value = "since" , required = false) String since,

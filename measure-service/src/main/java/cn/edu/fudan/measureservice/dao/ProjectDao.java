@@ -68,10 +68,12 @@ public class ProjectDao {
      * @return 该库参与的开发者
      */
     @Cacheable(value = "repoDeveloper",key = "#repoUuid")
-    public List<String> getRepoDeveloperList(String repoUuid) {
+    public List<String> getSingleRepoDeveloperList(String repoUuid) {
+        Objects.requireNonNull(repoUuid);
         Query query = new Query(null,null,null,null,Collections.singletonList(repoUuid));
         return getDeveloperList(query);
     }
+
 
     /**
      * fixme
@@ -262,12 +264,34 @@ public class ProjectDao {
     }
 
     /**
+     * 分页获取开发者参与库的合法提交信息（去除Merge）
+     * @param query 查询条件
+     * @return List<Map<String,Object>> key : repo_id, developer , commit_time , commit_id , message
+     */
+    public List<Map<String,String>> getDeveloperValidCommitMsg(Query query, int beginIndex , int ps) {
+        List<String> developerGitNameList = ((ProjectDao) AopContext.currentProxy()).getDeveloperGitNameList(query.getDeveloper());
+        return projectMapper.getDeveloperValidCommitMsgWithPage(query.getRepoUuidList(),query.getSince(),query.getUntil(),developerGitNameList,ps,beginIndex);
+    }
+
+
+    /**
      * 获取项目包含库的合法提交信息（去除Merge）
      * @param query 查询条件
-     * @return List<Map<String,Object>> key : developer , repo_id, commit_time , commit_id , message
+     * @return List<Map<String,Object>> key : repo_id, developer , repo_id, commit_time , commit_id , message
      */
     public List<Map<String,String>> getProjectValidCommitMsg(Query query) {
         return projectMapper.getProjectValidCommitMsg(query.getRepoUuidList(),query.getSince(),query.getUntil());
+    }
+
+    /**
+     * 分页获取项目包括库的合法提交明细（去除Merge）
+     * @param query 查询条件
+     * @param beginIndex 查询起始位置
+     * @param ps 每页大小
+     * @return 分页查询后合法提交明细 key : developer , repo_id, commit_time , commit_id , message
+     */
+    public List<Map<String,String>> getProjectValidCommitMsg(Query query,int beginIndex, int ps) {
+        return projectMapper.getProjectValidCommitMsgWithPage(query.getRepoUuidList(),query.getSince(),query.getUntil(),ps,beginIndex);
     }
 
     /**
@@ -290,6 +314,15 @@ public class ProjectDao {
         return projectMapper.getRepoName(repoUuid);
     }
 
+    /**
+     * 获取查询repoUuid的项目名
+     * @param repoUuid 查询库
+     * @return  projectName
+     */
+    @Cacheable(value = "projectName",key = "#repoUuid")
+    public String getProjectName(String repoUuid) {
+        return projectMapper.getProjectName(repoUuid);
+    }
 
     /**
      * 获取查询条件下提交次数前3名的开发者
@@ -591,8 +624,6 @@ public class ProjectDao {
         }
     }
 
-
-
     /**
      * 获取开发者选定时间段内可见库列表
      * @param projectVisibleRepoList 项目可见库列表
@@ -602,6 +633,31 @@ public class ProjectDao {
         List<String> developerRepoList = projectMapper.getDeveloperRepoList(developer,since,until);
         return mergeBetweenRepo(developerRepoList,projectVisibleRepoList);
     }
+
+    /**
+     * 获取库列表所包含的提交次数
+     * @param repoUuidList 查询库列表
+     * @return
+     */
+    public int getRepoListMsgNum(List<String> repoUuidList) {
+        int count = 0;
+        for (String repoUuid : repoUuidList) {
+            count += ((ProjectDao) AopContext.currentProxy()).getSingleRepoMsgNum(repoUuid);
+        }
+        return count;
+    }
+
+    /**
+     * 获取一个库下的总提交次数
+     * @param repoUuid 查询库 id
+     * @return
+     */
+    @Cacheable(value = "repoMsgNum",key = "#repoUuid")
+    public int getSingleRepoMsgNum(String repoUuid) {
+        return projectMapper.getSingleProjectMsgNum(repoUuid,null,null);
+    }
+
+
 
     @Autowired
     public void setRestInterface(RestInterfaceManager restInterface) {
