@@ -20,7 +20,7 @@ public class ServicesManager {
         /**
          * 七个服务的删除状态
          */
-        RECYCLED, JIRA, DEPENDENCY, CLONE, MEASURE, CODETRACKER, ISSUE, SCAN;
+        RECYCLED, JIRA, DEPENDENCY, CLONE, MEASURE, CODETRACKER, ISSUE, SCAN, REPOSITORY;
 
 //        /**
 //         第一位 jira服务

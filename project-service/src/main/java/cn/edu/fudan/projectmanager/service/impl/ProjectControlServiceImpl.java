@@ -439,7 +439,7 @@ public class ProjectControlServiceImpl implements ProjectControlService {
     public Integer updateRecycleStatus(String token, String repoUuid, Integer recycled) throws Exception {
         UserInfoDTO userInfoDTO = getUserInfoByToken(token);
         final Integer outRecycle = 0;
-        final Integer inRecycle = 10000000;
+        final Integer inRecycle = 100000000;
 
         // 0 表示超级管理员 只有超级管理员能操作
         if (userInfoDTO.getRight() != 0) {
@@ -453,7 +453,7 @@ public class ProjectControlServiceImpl implements ProjectControlService {
             return subRepositoryDao.getRecycledStatus(repoUuid);
         }
 
-        if (recycled == 10000000) {
+        if (recycled == 100000000) {
             //将库从回收站中拿出
             recycled = outRecycle;
             subRepositoryDao.putRecycledStatus(repoUuid, recycled);
@@ -491,9 +491,10 @@ public class ProjectControlServiceImpl implements ProjectControlService {
         serviceStatus.put(ServicesManager.Services.CODETRACKER, deleteStatus[5]);
         serviceStatus.put(ServicesManager.Services.ISSUE, deleteStatus[6]);
         serviceStatus.put(ServicesManager.Services.SCAN, deleteStatus[7]);
+        serviceStatus.put(ServicesManager.Services.REPOSITORY, deleteStatus[8]);
 
 
-        //服务顺序是RECYCLED, JIRA, DEPENDENCY, CLONE, MEASURE, CODETRACKER, ISSUE, SCAN
+        //服务顺序是RECYCLED, JIRA, DEPENDENCY, CLONE, MEASURE, CODETRACKER, ISSUE, SCAN, REPOSITORY
         if("JIRA".equals(serviceName)){
             serviceStatus.put(ServicesManager.Services.JIRA, '1');
         }else if("DEPENDENCY".equals(serviceName)){
@@ -508,23 +509,19 @@ public class ProjectControlServiceImpl implements ProjectControlService {
             serviceStatus.put(ServicesManager.Services.ISSUE, '1');
         }else if("SCAN".equals(serviceName)){
             serviceStatus.put(ServicesManager.Services.SCAN, '1');
+        }else if("REPOSITORY".equals(serviceName)){
+            serviceStatus.put(ServicesManager.Services.REPOSITORY, '1');
         }
 
        String statusCollection = serviceStatus.get(ServicesManager.Services.RECYCLED).toString() + serviceStatus.get(ServicesManager.Services.JIRA).toString()
                + serviceStatus.get(ServicesManager.Services.DEPENDENCY).toString() + serviceStatus.get(ServicesManager.Services.CLONE).toString()
                + serviceStatus.get(ServicesManager.Services.MEASURE).toString() + serviceStatus.get(ServicesManager.Services.CODETRACKER).toString()
-               + serviceStatus.get(ServicesManager.Services.ISSUE).toString() + serviceStatus.get(ServicesManager.Services.SCAN).toString();
+               + serviceStatus.get(ServicesManager.Services.ISSUE).toString() + serviceStatus.get(ServicesManager.Services.SCAN).toString()
+               + serviceStatus.get(ServicesManager.Services.REPOSITORY).toString();
 
         Integer status = Integer.parseInt(statusCollection);
         subRepositoryDao.putRecycledStatus(repoUuid, status);
 
-        //硬删除project服务中的表
-//        if(!serviceStatus.containsValue('0')){
-//            accountRepositoryDao.deleteRepoAR(accountUuid, repoUuid);
-//            subRepositoryDao.deleteRepoSR(accountUuid, repoUuid);
-//        }else {
-//            return subRepositoryDao.getRecycledStatus(repoUuid);
-//        }
         return subRepositoryDao.getRecycledStatus(repoUuid);
     }
 
