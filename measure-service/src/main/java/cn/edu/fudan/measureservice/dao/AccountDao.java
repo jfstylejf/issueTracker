@@ -3,7 +3,10 @@ package cn.edu.fudan.measureservice.dao;
 import cn.edu.fudan.measureservice.mapper.AccountMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 /**
  * @ClassName: AccountDao
@@ -22,6 +25,7 @@ public class AccountDao {
      * @param gitName 查询 gitName
      * @return
      */
+    @Cacheable(value = "developer",key = "#gitName")
     public String getDeveloperName(String gitName) {
         if (gitName == null) {
             log.error("cannot get authorName\n");
@@ -35,6 +39,16 @@ public class AccountDao {
         }
         return null;
     }
+
+    /**
+     * 获取全部开发者下的 gitName
+     * @return 开发者
+     */
+    @Cacheable("allGitName")
+    public List<String> getAllAccountGitName() {
+        return accountMapper.getAllAccountGitNameList();
+    }
+
 
     @Autowired
     public void setAccountMapper(AccountMapper accountMapper) {

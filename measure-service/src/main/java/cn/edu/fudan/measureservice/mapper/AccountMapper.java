@@ -37,4 +37,11 @@ public interface AccountMapper {
      */
     List<String> getAccountGitNameList(@Param("accountNameList") List<String> accountNameList);
 
+    /**
+     * 获取全部开发者的 gitName
+     * @return 全部开发者 gitName 列表
+     */
+    List<String> getAllAccountGitNameList();
+
+
 }

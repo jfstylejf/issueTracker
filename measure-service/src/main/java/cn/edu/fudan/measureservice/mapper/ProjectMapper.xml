@@ -77,6 +77,11 @@
         </where>
     </select>
 
+    <select id="getRepoCommitGitNameList"  resultType="String">
+        SELECT DISTINCT developer FROM issueTracker.commit
+        where repo_id = #{repoUuid}
+    </select>
+
     <select id="getDeveloperRepoInfoList" resultType="java.util.HashMap">
         SELECT developer,repo_id,SUBSTRING(min(commit_time),1,10) AS firstCommitDate FROM issueTracker.commit
         <where>
@@ -381,4 +386,9 @@
         </where>
     </select>
 
+    <select id="getProjectRepoList" resultType="String">
+        SELECT distinct (repo_uuid) FROM issueTracker.sub_repository
+        WHERE project_name = #{projectName}
+    </select>
+    
 </mapper>

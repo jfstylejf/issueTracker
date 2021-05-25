@@ -352,8 +352,7 @@ public class MeasureDeveloperController {
                                                 HttpServletRequest request) {
         try {
             String token = request.getHeader("token");
-            List<String> committerList = measureDeveloperService.getCommitStandardCommitterList(projectNameList,repoUuidList,token);
-            committerList.sort(String::compareTo);
+            Set<String> committerList = measureDeveloperService.getCommitStandardCommitterList(projectNameList,repoUuidList,token);
             return new ResponseBean<>(HttpStatus.OK.value(),"success",committerList);
         }catch (Exception e) {
             e.getMessage();
@@ -383,15 +382,11 @@ public class MeasureDeveloperController {
 
     @GetMapping("/measure/big-file/detail")
     @CrossOrigin
-    public ResponseBean<ProjectFrontEnd<ProjectBigFileDetail>> getHugeLocRemainedFileDetail(
+    public ResponseBean<ProjectFrontEnd<ProjectBigFileDetail>> getHugeLocRemainedFileDetail( //todo 改为分页查询
                                         @RequestParam(value = "project_names",required = false) String projectNameList,
                                         @RequestParam(value = "repo_uuids",required = false)String repoUuidList,
-                                        @RequestParam(value = "since", required = false)String since,
-                                        @RequestParam(value = "until", required = false)String until,
                                         @RequestParam(required = false, defaultValue = "1")int page,
                                         @RequestParam(required = false, defaultValue = "10")int ps,
-                                        // 默认降序
-                                        @RequestParam(required = false, defaultValue = "false") boolean asc,
                                         @RequestParam(required = false, defaultValue = "") String order,
                                         HttpServletRequest request) {
 
@@ -399,10 +394,10 @@ public class MeasureDeveloperController {
             String token = request.getHeader("token");
             List<ProjectBigFileDetail> projectBigFileDetailList = measureDeveloperService.getHugeLocRemainedDetail(projectNameList,repoUuidList,token);
             Collections.sort(projectBigFileDetailList, (o1, o2) -> {
-                if(asc) {
-                    return o1.getCurrentModifyTime().compareTo(o2.getCurrentModifyTime());
-                }else {
+                if (!o1.getCurrentModifyTime().equals(o2.getCurrentModifyTime())) {
                     return o2.getCurrentModifyTime().compareTo(o1.getCurrentModifyTime());
+                }else {
+                    return o2.getCurrentLines() - o1.getCurrentLines();
                 }
             });
             int totalPage = projectBigFileDetailList.size() % ps == 0 ? projectBigFileDetailList.size()/ps : projectBigFileDetailList.size()/ps + 1;

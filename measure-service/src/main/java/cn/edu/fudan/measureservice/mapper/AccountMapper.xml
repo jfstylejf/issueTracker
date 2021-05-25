@@ -37,4 +37,8 @@
         </where>
     </select>
 
+    <select id="getAllAccountGitNameList" resultType="String">
+        select distinct (account_gitname) FROM issueTracker.account_author
+    </select>
+
 </mapper>

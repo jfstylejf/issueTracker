@@ -24,6 +24,13 @@ public interface ProjectMapper {
     List<String> getCommitGitNameList(@Param("repoUuidList") List<String> repoUuidList, @Param("since")String since, @Param("until")String until);
 
     /**
+     * 返回单个库下的 developerGitNameList
+     * @param repoUuid 查询库
+     * @return List<String> 开发者列表信息
+     */
+    List<String> getRepoCommitGitNameList(@Param("repoUuid") String repoUuid);
+
+    /**
      * 返回开发者在参与库中的信息
      * @param repoUuid 查询库
      * @param since 查询起止时间
@@ -203,6 +210,13 @@ public interface ProjectMapper {
      * @return 查询条件下，单个库的提交次数
      */
     int getSingleProjectMsgNum(String repoUuid, String since ,String until);
+
+    /**
+     * 查询项目下包含的库列表
+     * @param projectName 查询项目名
+     * @return 项目包含库列表
+     */
+    List<String> getProjectRepoList(@Param("projectName") String projectName);
 
 
 }

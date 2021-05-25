@@ -63,16 +63,29 @@ public class ProjectDao {
     }
 
     /**
-     * 获取库下的开发者列表（全部时间内）
-     * @param repoUuid 查询库 id
-     * @return 该库参与的开发者
+     * 获取查询库下的开发者列表
+     * @param repoUuidList
+     * @return
      */
-    @Cacheable(value = "repoDeveloper",key = "#repoUuid")
-    public List<String> getSingleRepoDeveloperList(String repoUuid) {
-        Objects.requireNonNull(repoUuid);
-        Query query = new Query(null,null,null,null,Collections.singletonList(repoUuid));
-        return getDeveloperList(query);
+    public Set<String> getDeveloperList(List<String> repoUuidList) {
+        Set<String> developerList = new TreeSet<>(String::compareTo);
+        for (String repoUuid : repoUuidList) {
+            List<String> temp = ((ProjectDao) AopContext.currentProxy()).getDeveloperList(repoUuid);
+            developerList.addAll(temp);
+        }
+        return developerList;
     }
+
+    @Cacheable(value = "repoDeveloper",key = "#repoUuid")
+    public List<String> getDeveloperList(String repoUuid) {
+        Objects.requireNonNull(repoUuid);
+        List<String> repoDeveloperGitNameList = projectMapper.getRepoCommitGitNameList(repoUuid);
+        List<String> repoDeveloperList = accountMapper.getAccountNameList(repoDeveloperGitNameList);
+        repoDeveloperList.removeIf(Objects::isNull);
+        return repoDeveloperList;
+    }
+
+
 
 
     /**
@@ -185,6 +198,16 @@ public class ProjectDao {
             repoUuidList.addAll(temp);
         }
         return repoUuidList;
+    }
+
+    /**
+     * 获取项目的参与库列表
+     * @param projectName 项目名
+     * @return 项目参与库列表
+     */
+    @Cacheable(value = "projectRepo",key = "#projectName")
+    public List<String> getProjectRepoList(String projectName) {
+        return projectMapper.getProjectRepoList(projectName);
     }
 
     /**

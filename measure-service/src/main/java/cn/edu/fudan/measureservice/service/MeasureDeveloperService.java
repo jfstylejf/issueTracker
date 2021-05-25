@@ -988,11 +988,6 @@ public class MeasureDeveloperService {
 
     }
 
-    @CacheEvict(value = "projectCommitStandardChart", key = "#projectName+'_'+#until")
-    public void deleteProjectCommitStandardChart(String projectName,String until) {
-
-    }
-
     /**
      * 分页获取提交规范性按照项目聚合的明细
      * @param projectNameList 查询项目列表
@@ -1115,11 +1110,11 @@ public class MeasureDeveloperService {
      * note 这里的开发者是参与项目所在库中的全部开发者，不区分提交时间
      * @param projectNameList 查询项目列表
      * @param repoUuidList 查询库列表
-     * @return List<String> commiter
+     * @return Set<String> commiter
      */
-     public List<String> getCommitStandardCommitterList(String projectNameList,String repoUuidList,String token) {
+     public Set<String> getCommitStandardCommitterList(String projectNameList,String repoUuidList,String token) {
          List<String> checkedRepoList = projectDao.getVisibleRepoListByProjectNameAndRepo(projectNameList,repoUuidList,token);
-         return projectDao.getDeveloperList(new Query(token,null,null,null,checkedRepoList));
+         return projectDao.getDeveloperList(checkedRepoList);
      }
 
 
@@ -1159,26 +1154,37 @@ public class MeasureDeveloperService {
              if(tempTime.isAfter(endTime)) {
                  tempTime = endTime;
              }
-             for (ProjectPair projectPair : checkedProjectPairList) {
-                 List<String> repoUuidList = new ArrayList<>();
-                 List<RepoInfo> repoInfoList = projectDao.getProjectInvolvedRepoInfo(projectPair.getProjectName(),token);
-                 for (RepoInfo repoInfo : repoInfoList) {
-                     repoUuidList.add(repoInfo.getRepoUuid());
-                 }
-                 int projectId = projectPair.getProjectId();
-                 List<ProjectBigFileDetail> projectBigFileDetailList = measureDao.getCurrentBigFileInfo(repoUuidList,tempTime.format(DateTimeUtil.dtf));
-                 ProjectBigFileTrendChart projectBigFileTrendChart = ProjectBigFileTrendChart.builder()
-                         .projectId(String.valueOf(projectId))
-                         .date(tempTime.format(dtf))
-                         .projectName(projectPair.getProjectName())
-                         .num(projectBigFileDetailList.size())
-                         .build();
-                 results.add(projectBigFileTrendChart);
-             }
+             List<ProjectBigFileTrendChart> projectBigFileTrendChartList = ((MeasureDeveloperService) AopContext.currentProxy()).getAllProjectBigFileDetail(checkedProjectPairList,DateTimeUtil.dtf.format(tempTime));
+             results.addAll(projectBigFileTrendChartList);
              beginTime = tempTime;
          }
          return results;
      }
+
+     @Cacheable(value = "projectBigFileTrendChart",key = "#until")
+     public List<ProjectBigFileTrendChart> getAllProjectBigFileDetail(List<ProjectPair> projectPairList,String until) {
+         List<ProjectBigFileTrendChart> projectBigFileTrendChartList = new ArrayList<>();
+         for (ProjectPair projectPair : projectPairList) {
+             // 获取项目下的参与库
+             List<String> repoUuidList = projectDao.getProjectRepoList(projectPair.getProjectName());
+             int projectId = projectPair.getProjectId();
+             // 获取这个间断内的 超大文件数明细
+             List<ProjectBigFileDetail> projectBigFileDetailList = measureDao.getCurrentBigFileInfo(repoUuidList,until);
+             ProjectBigFileTrendChart projectBigFileTrendChart = ProjectBigFileTrendChart.builder()
+                     .projectId(String.valueOf(projectId))
+                     .date(until)
+                     .projectName(projectPair.getProjectName())
+                     .num(projectBigFileDetailList.size())
+                     .build();
+             projectBigFileTrendChartList.add(projectBigFileTrendChart);
+         }
+         return projectBigFileTrendChartList;
+     }
+
+    @CacheEvict(value = "projectBigFileTrendChart", allEntries=true, beforeInvocation = true)
+    public void deleteProjectBigFileTrendChart() {
+
+    }
 
     /**
      * 获取超大文件数明细
@@ -1192,14 +1198,10 @@ public class MeasureDeveloperService {
          List<ProjectBigFileDetail> result = new ArrayList<>();
          List<String> visibleRepoList = projectDao.getVisibleRepoListByProjectNameAndRepo(projectNameList,repoUuidList,token);
          for (String repoUuid : visibleRepoList) {
-             if (!projectDao.getRepoInfoMap().containsKey(repoUuid)) {
-                 projectDao.insertProjectInfo(token);
-             }
-             RepoInfo repoInfo = projectDao.getRepoInfoMap().get(repoUuid);
-             String projectName = repoInfo.getProjectName();
-             String repoName = repoInfo.getRepoName();
+             String projectName = projectDao.getProjectName(repoUuid);
+             String repoName = projectDao.getRepoName(repoUuid);
              int projectId = projectDao.getProjectIdByName(projectName);
-             List<ProjectBigFileDetail> projectBigFileDetailList = measureDao.getCurrentBigFileInfo(Collections.singletonList(repoUuid),null);
+             List<ProjectBigFileDetail> projectBigFileDetailList = measureDao.getCurrentBigFileInfo(repoUuid,null);
              for (ProjectBigFileDetail projectBigFileDetail : projectBigFileDetailList) {
                  projectBigFileDetail.setProjectId(String.valueOf(projectId));
                  projectBigFileDetail.setProjectName(projectName);

@@ -1,6 +1,7 @@
 package cn.edu.fudan.measureservice.schedule;
 
 import cn.edu.fudan.measureservice.controller.MeasureDeveloperController;
+import cn.edu.fudan.measureservice.dao.MeasureDao;
 import cn.edu.fudan.measureservice.dao.ProjectDao;
 import cn.edu.fudan.measureservice.domain.dto.ProjectPair;
 import cn.edu.fudan.measureservice.domain.dto.Query;
@@ -46,6 +47,7 @@ public class RedisScheduleTask {
 
     private static final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private ProjectDao projectDao;
+    private MeasureDao measureDao;
 
     @Value("${token}")
     private String token;
@@ -90,28 +92,62 @@ public class RedisScheduleTask {
             measureDeveloperService.getDeveloperRecentNews(null,developerName,null,null);
         }
 
-        // 提交规范性趋势图本周缓存更新
-        initProjectCommitStandardTrendChart();
 
         log.info("Successfully re request developerList, portrait, recentNews API.");
     }
 
+    /**
+     *  每天凌晨2点 缓存开发者列表
+     */
+    @Scheduled(cron = "0 0 2 * * ?")
+    private void initDeveloperInfo() {
+        List<String> visibleRepoList = projectDao.getVisibleRepoListByProjectNameAndRepo(null,null,token);
+        // 缓存开发者列表
+        projectDao.getDeveloperList(visibleRepoList);
+    }
 
     /**
-     *  每天凌晨2点 缓存这一周的提交规范性趋势图
+     *  每天凌晨2点 缓存最新的项目相关信息
      */
-    private void initProjectCommitStandardTrendChart() {
-        List<ProjectPair> projectPairList = projectDao.getVisibleProjectPairListByProjectIds(null,token);
+    @Scheduled(cron = "0 0 2 * * ?")
+    private void initProjectInfo() {
+        List<String> visibleRepoList = projectDao.getVisibleRepoListByProjectNameAndRepo(null,null,token);
+        // 缓存项目id和项目名的关系
+        projectDao.getProjectNameListById(null);
+        // 缓存 repoUuid 和项目名，库名的对应关系
+        for (String repoUuid : visibleRepoList) {
+            projectDao.getProjectName(repoUuid);
+            projectDao.getRepoName(repoUuid);
+            measureDao.getCurrentBigFileInfo(repoUuid,null);
+        }
+        List<String> projectNameList = projectDao.getVisibleProjectByToken(token);
+        // 缓存项目包含库的关系
+        for (String projectName : projectNameList) {
+            projectDao.getProjectRepoList(projectName);
+        }
+    }
+
+    /**
+     *  每天凌晨2点 缓存这一周的提交规范性趋势图,超大文件数趋势图
+     */
+    @Scheduled(cron = "0 0 2 * * ?")
+    private void initProjectTreadChart() {
         // beginTime 及 endTime 处理为当前周的 周一 和 周日
         LocalDate begin = DateTimeUtil.initBeginTimeByInterval(LocalDate.now(), GranularityEnum.Week.getType());
         LocalDate end = DateTimeUtil.initEndTimeByInterval(LocalDate.now(),GranularityEnum.Week.getType());
         assert begin != null;
         assert end != null;
-        for (ProjectPair projectPair : projectPairList) {
-            measureDeveloperService.deleteProjectCommitStandardChart(projectPair.getProjectName(),DateTimeUtil.dtf.format(end));
-        }
         // 缓存这周的趋势图
         measureDeveloperService.getCommitStandardTrendChartIntegratedByProject(null,DateTimeUtil.dtf.format(begin),DateTimeUtil.dtf.format(end),token,GranularityEnum.Week.getType());
+        measureDeveloperService.getHugeLocRemainedFile(null,DateTimeUtil.dtf.format(begin),DateTimeUtil.dtf.format(end),token,GranularityEnum.Week.getType());
+    }
+
+    /**
+     *  每天凌晨2点 缓存今天为止的超大文件数明细
+     */
+    @Scheduled(cron = "0 0 2 * * ?")
+    private void initCurrentBigFileInfo() {
+        measureDeveloperService.getHugeLocRemainedDetail(null,null,token);
     }
 
     /**
@@ -120,6 +156,15 @@ public class RedisScheduleTask {
     @Scheduled(cron = "0 0 1 1 * ?")
     private void deleteProjectCommitStandardTrendChart() {
         measureDeveloperService.deleteProjectCommitStandardChart();
+    }
+
+    /**
+     * 每月1号凌晨1点 删除提交规范性趋势图
+     */
+    @Scheduled(cron = "0 0 1 1 * ?")
+    private void deleteProjectBigFileTrendChart() {
+        measureDao.deleteRepoBigFileTrendChart();
+        measureDeveloperService.deleteProjectBigFileTrendChart();
     }
 
 
@@ -137,6 +182,11 @@ public class RedisScheduleTask {
     @Autowired
     public void setProjectDao(ProjectDao projectDao) {
         this.projectDao = projectDao;
+    }
+
+    @Autowired
+    public void setMeasureDao(MeasureDao measureDao) {
+        this.measureDao = measureDao;
     }
 
     @Autowired
