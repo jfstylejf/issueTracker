@@ -1,5 +1,6 @@
 package cn.edu.fudan.issueservice.controller;
 
+import cn.edu.fudan.issueservice.component.RestInterfaceManager;
 import cn.edu.fudan.issueservice.domain.ResponseBean;
 import cn.edu.fudan.issueservice.domain.enums.IgnoreTypeEnum;
 import cn.edu.fudan.issueservice.domain.enums.IssueStatusEnum;
@@ -22,6 +23,7 @@ import javax.servlet.http.HttpServletRequest;
 public class IssueInnerController {
 
     private IssueService issueService;
+    private RestInterfaceManager restInterfaceManager;
 
     private static final String SUCCESS = "success";
     private static final String FAILED = "failed ";
@@ -34,12 +36,12 @@ public class IssueInnerController {
 
     @ApiOperation(value = "根据repoUuid和tool删除对应issue", notes = "@return String", httpMethod = "DELETE")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "tool", value = "工具名", dataType = "String", required = true, allowableValues = "sonarqube"),
             @ApiImplicitParam(name = "repo-uuid", value = "代码库uuid", dataType = "String", required = true),
     })
-    @DeleteMapping(value = {"/issue/{tool}/{repo-uuid}"})
-    public ResponseBean<String> deleteIssues(@PathVariable("tool") String tool, @PathVariable("repo-uuid") String repoUuid) {
+    @DeleteMapping(value = {"/issue/{repo-uuid}"})
+    public ResponseBean<String> deleteIssues(@PathVariable("repo-uuid") String repoUuid) {
         try {
+            String tool = restInterfaceManager.getToolByRepoUuid(repoUuid);
             issueService.deleteIssueByRepoIdAndTool(repoUuid, tool);
             return new ResponseBean<>(200, SUCCESS, "issues delete success!");
         } catch (Exception e) {
@@ -90,4 +92,8 @@ public class IssueInnerController {
         }
     }
 
+    @Autowired
+    public void setRestInterfaceManager(RestInterfaceManager restInterfaceManager) {
+        this.restInterfaceManager = restInterfaceManager;
+    }
 }
