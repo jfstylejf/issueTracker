@@ -7,11 +7,13 @@ import cn.edu.fudan.accountservice.service.AccountService;
 import cn.edu.fudan.accountservice.util.CookieUtil;
 import cn.edu.fudan.accountservice.util.PagedGridResult;
 import cn.edu.fudan.common.http.ResponseEntity;
+import io.netty.util.internal.StringUtil;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -302,6 +304,9 @@ public class AccountController {
                                    ){
         String[] repoListArr = repoUuids.split(",");
         List<String> repoList = Arrays.asList(repoListArr);
+        if (StringUtils.isEmpty(repoUuids)) {
+            repoList = null;
+        }
         try{
             // 获取所有数据，不进行分页
             if (isWhole) {
