@@ -27,7 +27,7 @@ public class RequestController {
     public void setDependencyService(DependencyService dependencyService) {
         this.dependencyService = dependencyService;
     }
-
+  /*
     @ApiOperation(value = "获取在循环依赖中文件的数量", httpMethod = "GET", notes = "@return Map{\"code\": String, \"msg\": String, \"data\": List<Map>}")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "since", value = "起始时间(yyyy-MM-dd)", required = true, dataType = "String"),
@@ -69,6 +69,8 @@ public class RequestController {
         }
 
     }
+
+   */
     @ApiOperation(value = "获取在循环依赖中文件的数量", httpMethod = "GET", notes = "@return Map{\"code\": String, \"msg\": String, \"data\": List<Map>}")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "since", value = "起始时间(yyyy-MM-dd)", required = true, dataType = "String"),
@@ -97,7 +99,7 @@ public class RequestController {
                 showDetail = "false";
             }
             List<String> dates = DateHandler.handleParamDate(beginDate, endDate);
-            List<DependencyInfo> data = dependencyService.getDependencyNum2(dates.get(0), dates.get(1), projectIds, interval, showDetail, "method");
+            List<DependencyInfo> data = dependencyService.getDependencyNum(dates.get(0), dates.get(1), projectIds, interval, showDetail, "method");
 
             if (data.get(0).getProjectName() == null) {
                 return new ResponseBean<>(412, NO_SUCH_PROJECT, null);

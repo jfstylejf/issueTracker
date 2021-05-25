@@ -24,7 +24,9 @@ public class DeleteServiceImpl implements DeleteService {
     @Override
     @Async("taskExecutor")
     public void deleteOneRepo(String repoUuid, String token) throws InterruptedException {
+        log.info("to delete");
         boolean res =deleteRecursive(repoUuid);
+        log.info("end delete");
         if(res){
             boolean recallres=restInterfaceManager.deleteRecall(repoUuid,token);
             if(recallres){

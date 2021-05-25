@@ -43,7 +43,7 @@ public class DependencyServiceImpl implements DependencyService {
         this.applicationContext = applicationContext;
     }
 //    todo  one sql
-    public List<DependencyInfo> getDependencyNum2(String beginDate, String endDate, String projectIds, String interval, String showDetail, String level) {
+    public List<DependencyInfo> getDependencyNum(String beginDate, String endDate, String projectIds, String interval, String showDetail, String level) {
         List<DependencyInfo> numInfo = new ArrayList<>();
         String time1 = " 00:00:00";
         String time2 = " 24:00:00";
@@ -118,7 +118,7 @@ public class DependencyServiceImpl implements DependencyService {
         return numInfo;
 
     }
-
+    @Deprecated
     public List<DependencyInfo> getDependencyNumWithDate(String beginDate, String endDate, String projectIds, String interval, String showDetail, String level) {
         List<DependencyInfo> numInfo = new ArrayList<>();
         String time1 = " 00:00:00";

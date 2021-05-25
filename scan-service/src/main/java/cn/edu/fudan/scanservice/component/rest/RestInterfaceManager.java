@@ -138,7 +138,7 @@ public class RestInterfaceManager {
     }
 
     public boolean deleteRecall(String repoId, String token) {
-        String path =  projectServicePath + "/repo?service_name=DEPENDENCY&repo_uuid=" + repoId;
+        String path =  projectServicePath + "/repo?service_name=SCAN&repo_uuid=" + repoId;
         HttpHeaders headers = new HttpHeaders();
         headers.add("token", token);
         HttpEntity<HttpHeaders> request = new HttpEntity<>(headers);
