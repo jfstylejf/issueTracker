@@ -21,6 +21,8 @@ public interface IssueRepoMapper {
      */
     void insertOneIssueRepo(@Param("issueRepo") RepoScan issueRepo);
 
+    //void insertOneIssueRepo(@Param("issueRepo") RepoScan issueRepo,String uuid);
+
     /**
      * 更新issueRepo
      *

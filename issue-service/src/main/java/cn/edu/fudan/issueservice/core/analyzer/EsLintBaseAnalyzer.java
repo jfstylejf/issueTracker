@@ -26,6 +26,7 @@ import org.springframework.stereotype.Component;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -54,20 +55,22 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
         try {
             //eslint ignore
             File file = new File(repoPath + "/.eslintignore");
+            boolean newFile = false;
             if (!file.exists()) {
-                boolean newFile = file.createNewFile();
+                newFile = file.createNewFile();
                 if (!newFile) {
                     log.error("create .eslintignore failed!");
                     return false;
                 }
             }
             //find src dir
+            Runtime rt = Runtime.getRuntime();
             String srcDir = FileUtil.findSrcDir(repoPath);
             if (srcDir == null) {
                 log.error("can't find this repo src path");
-                return false;
+                checkNeedDeleteIgnoreFile(newFile, repoPath);
+                return true;
             }
-            Runtime rt = Runtime.getRuntime();
             //ESLint exe command
             String command = binHome + "executeESLint.sh " + repoPath + " " + repoUuid + "_" + commit + " " + srcDir;
             log.info("command -> {}", command);
@@ -79,11 +82,19 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
                 log.error("invoke tool timeout ! (200s)");
                 return false;
             }
+            checkNeedDeleteIgnoreFile(newFile, repoPath);
             return process.exitValue() == 0;
         } catch (Exception e) {
             log.error("ESLint can not parse this repo,repoUuid: {},commit: {}", repoUuid, commit);
         }
         return false;
+    }
+
+    private void checkNeedDeleteIgnoreFile(boolean newFile, String repoPath) throws IOException {
+        if (newFile) {
+            Runtime rt = Runtime.getRuntime();
+            rt.exec("rm -f " + repoPath + "/.eslintignore");
+        }
     }
 
     @Override
