@@ -43,10 +43,10 @@ public class IssueInnerController {
         try {
             String tool = restInterfaceManager.getToolByRepoUuid(repoUuid);
             issueService.deleteIssueByRepoIdAndTool(repoUuid, tool);
-            return new ResponseBean<>(200, SUCCESS, "issues delete success!");
+            return new ResponseBean<>(200, SUCCESS, null);
         } catch (Exception e) {
             e.printStackTrace();
-            return new ResponseBean<>(500, FAILED + e.getMessage(), "issues delete failed!");
+            return new ResponseBean<>(500, FAILED + e.getMessage(), null);
         }
     }
 

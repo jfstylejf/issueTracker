@@ -60,7 +60,7 @@ public class RestInterfaceManager {
     }
 
     public boolean deleteIssueRepo(String repoUuid) {
-        ResponseEntity<JSONObject> exchange = restTemplate.exchange(issueServicePath + "/issue/sonarqube/" + repoUuid, HttpMethod.DELETE, null, JSONObject.class);
+        ResponseEntity<JSONObject> exchange = restTemplate.exchange(issueServicePath + "/issue/" + repoUuid, HttpMethod.DELETE, null, JSONObject.class);
         JSONObject body = exchange.getBody();
         assert body != null;
         return body.getIntValue("code") == 200;
