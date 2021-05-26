@@ -883,7 +883,7 @@ public class MeasureDeveloperService {
             developerCommitStandard.setDeveloperJiraCommitCount(developerJiraCommitInfo.size());
             developerCommitStandard.setDeveloperInvalidCommitCount(developerInvalidCommitInfo.size());
             developerCommitStandard.setDeveloperInvalidCommitInfo(developerInvalidCommitInfo);
-            double commitStandard = developerCommitStandard.getDeveloperJiraCommitCount() * 1.0 / developerCommitStandard.getDeveloperValidCommitCount();
+            double commitStandard = developerCommitStandard.getDeveloperValidCommitCount() != 0 ? developerCommitStandard.getDeveloperJiraCommitCount() * 1.0 / developerCommitStandard.getDeveloperValidCommitCount() : 0;
             developerCommitStandard.setCommitStandard(commitStandard);
             developerCommitStandardList.add(developerCommitStandard);
         }
