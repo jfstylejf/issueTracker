@@ -3,6 +3,7 @@ package cn.edu.fudan.measureservice.service;
 import cn.edu.fudan.measureservice.annotation.MethodMeasureAnnotation;
 import cn.edu.fudan.measureservice.aop.MethodMeasureAspect;
 import cn.edu.fudan.measureservice.component.RestInterfaceManager;
+import cn.edu.fudan.measureservice.dao.AccountDao;
 import cn.edu.fudan.measureservice.dao.JiraDao;
 import cn.edu.fudan.measureservice.dao.MeasureDao;
 import cn.edu.fudan.measureservice.dao.ProjectDao;
@@ -52,6 +53,7 @@ public class MeasureDeveloperService {
     private final ProjectDao projectDao;
     private final JiraDao jiraDao;
     private final MeasureDao measureDao;
+    private final AccountDao accountDao;
     private MeasureDeveloperService measureDeveloperService;
 
     private MethodMeasureAspect methodMeasureAspect;
@@ -881,7 +883,7 @@ public class MeasureDeveloperService {
             developerCommitStandard.setDeveloperJiraCommitCount(developerJiraCommitInfo.size());
             developerCommitStandard.setDeveloperInvalidCommitCount(developerInvalidCommitInfo.size());
             developerCommitStandard.setDeveloperInvalidCommitInfo(developerInvalidCommitInfo);
-            double commitStandard = developerCommitStandard.getDeveloperJiraCommitCount() * 1.0 / developerCommitStandard.getDeveloperValidCommitCount();
+            double commitStandard = developerCommitStandard.getDeveloperValidCommitCount() != 0 ? developerCommitStandard.getDeveloperJiraCommitCount() * 1.0 / developerCommitStandard.getDeveloperValidCommitCount() : 0;
             developerCommitStandard.setCommitStandard(commitStandard);
             developerCommitStandardList.add(developerCommitStandard);
         }
@@ -910,7 +912,7 @@ public class MeasureDeveloperService {
         if (since!=null && !"".equals(since)) {
             beginTime = LocalDate.parse(since,dtf);
         }else {
-            // 默认 begintime 时间
+            // 默认 beginTime 时间
             beginTime = endTime.minusWeeks(1);
         }
         // 根据 interval 对 beginTime 及 endTime 处理为当前周的 周一 和 周日
@@ -981,97 +983,138 @@ public class MeasureDeveloperService {
     }
 
 
-    @CacheEvict(value = "projectCommitStandardChart", key = "#projectPair.projectName+'_'+#query.until")
-    public void deleteSingleProjectCommitStandardChart(Query query, ProjectPair projectPair) {
+    @CacheEvict(value = "projectCommitStandardChart", allEntries=true, beforeInvocation = true)
+    public void deleteProjectCommitStandardChart() {
 
     }
 
     /**
-     * 获取提交规范性按照项目聚合的明细
+     * 分页获取提交规范性按照项目聚合的明细
      * @param projectNameList 查询项目列表
      * @param repoUuidList 查询库列表
-     * @param since 查询起始时间
-     * @param until 查询截至时间
      * @param token 查询权限
-     * @return new ArrayList<{@link ProjectCommitStandardDetail}>
+     * @return <{@link ProjectCommitStandardDetail}>
      */
     @SneakyThrows
-    public synchronized List<ProjectCommitStandardDetail> getCommitStandardDetailIntegratedByProject(String projectNameList,String repoUuidList,String committer,String since,String until,String token) {
+    public synchronized ProjectFrontEnd<ProjectCommitStandardDetail> getCommitStandardDetailIntegratedByProject(String projectNameList,String repoUuidList,String committer,String token,int page,int ps,boolean isValid) {
         List<ProjectCommitStandardDetail> projectCommitStandardDetailList = new ArrayList<>();
-        // 获取可见库列表
+        // 获取查询条件下可见的库列表
         List<String> visibleRepoList = projectDao.getVisibleRepoListByProjectNameAndRepo(projectNameList,repoUuidList,token);
-        Query query = new Query(token,since,until,committer,visibleRepoList);
-        List<DeveloperCommitStandard> developerCommitStandardList = ((MeasureDeveloperService) AopContext.currentProxy()).getCommitStandard(query,null);
-        for (DeveloperCommitStandard developerCommitStandard : developerCommitStandardList) {
-            projectCommitStandardDetailList.addAll(((MeasureDeveloperService) AopContext.currentProxy()).dealWithDeveloperCommitStandardDetail(developerCommitStandard,token));
+        // 获取查询条件下的提交规范性明细 （分页查询）
+        int totalMsgSize = projectDao.getRepoListMsgNum(visibleRepoList);
+        int totalPage = totalMsgSize % ps == 0 ? totalMsgSize / ps : totalMsgSize / ps + 1;
+        // 起始查询位置
+        int initialBeginIndex = (page-1) * ps;
+        //获取 ps 条合法提交数据
+        while (initialBeginIndex < totalMsgSize && ps > 0) {
+            List<ProjectCommitStandardDetail> selectedProjectCommitStandardDetail = ((MeasureDeveloperService) AopContext.currentProxy()).getProjectValidCommitStandardDetail(visibleRepoList,committer,initialBeginIndex,ps,isValid);
+            projectCommitStandardDetailList.addAll(selectedProjectCommitStandardDetail);
+            // 更新下次查询起始位置
+            initialBeginIndex += selectedProjectCommitStandardDetail.size();
+            ps -= selectedProjectCommitStandardDetail.size();
         }
-        return projectCommitStandardDetailList;
+        // 封装返回前端的明细
+
+        return new ProjectFrontEnd<>(page,totalPage,totalMsgSize,projectCommitStandardDetailList);
      }
 
     /**
-     * 转换相关数据
-     * @see DeveloperCommitStandard
-     * @see ProjectCommitStandardDetail
-     * @param developerCommitStandard 开发者提交规范性明细
-     * @return new ArrayList<{@link ProjectCommitStandardDetail}>
+     * 分页获取项目最近提交明细
+     * @param repoUuidList 查询库列表
+     * @param committer 查询开发者
+     * @param beginIndex 查询起始位置
+     * @param size 查询条数
+     * @param selectOrNot 是否筛选包含 Jira 单号的提交数
+     * @return 项目查询条件下最新提交明细
      */
-     public List<ProjectCommitStandardDetail> dealWithDeveloperCommitStandardDetail(DeveloperCommitStandard developerCommitStandard,String token) {
+     public List<ProjectCommitStandardDetail> getProjectValidCommitStandardDetail(List<String> repoUuidList, String committer, int beginIndex, int size, boolean selectOrNot) {
          List<ProjectCommitStandardDetail> projectCommitStandardDetailList = new ArrayList<>();
-         List<Map<String,String>> developerJiraCommitInfo = developerCommitStandard.getDeveloperJiraCommitInfo();
-         List<Map<String,String>> developerInvalidCommitInfo = developerCommitStandard.getDeveloperInvalidCommitInfo();
-         // 添加项目规范提交明细
-         projectCommitStandardDetailList.addAll(commitInfoToProjectCommitStandardDetail(developerCommitStandard.getDeveloperName(),developerJiraCommitInfo,token,true));
-         // 添加项目不规范提交明细
-         projectCommitStandardDetailList.addAll(commitInfoToProjectCommitStandardDetail(developerCommitStandard.getDeveloperName(),developerInvalidCommitInfo,token,false));
-         return projectCommitStandardDetailList;
-     }
-
-    /**
-     * 提交信息 转换为 项目提交明细
-     * @see ProjectCommitStandardDetail
-     * @param commitInfo 提交明细
-     * @param isValid 是否规范
-     * @return List<ProjectCommitStandardDetail>
-     */
-     private List<ProjectCommitStandardDetail> commitInfoToProjectCommitStandardDetail(String developerName, List<Map<String,String>> commitInfo,String token, boolean isValid) {
-         List<ProjectCommitStandardDetail> projectCommitStandardDetailList = new ArrayList<>();
-         for (Map<String, String> stringStringMap : commitInfo) {
-             String repoUuid = stringStringMap.get("repo_id");
-             if (!projectDao.getRepoInfoMap().containsKey(repoUuid)) {
-                 projectDao.insertProjectInfo(token);
+         // 获取查询条件下的提交明细
+         Query query = new Query(null,null,null,null,repoUuidList);
+         List<Map<String,String>> projectValidCommitMsg;
+         if (committer == null || "".equals(committer)) { // 若未指定开发者则查找整个项目中的前 ps 个最新提交
+             projectValidCommitMsg = projectDao.getProjectValidCommitMsg(query,beginIndex,size);
+         }else {
+             query.setDeveloper(committer);// 若指定 committer,则查询该开发者最新 ps 次提交
+             projectValidCommitMsg = projectDao.getDeveloperValidCommitMsg(query,beginIndex,size);
+         }
+         for (Map<String,String> map : projectValidCommitMsg) {
+             String repoId = map.get("repo_id");
+             String commitId = map.get("commit_id");
+             String commitTime = map.get("commit_time");
+             String message = map.get("message");
+             String developer = map.get("developer");
+             boolean isValid = !"noJiraID".equals(jiraDao.getJiraIDFromCommitMsg(message));
+             if (selectOrNot && !isValid) {
+                continue;
              }
-             RepoInfo repoInfo = projectDao.getRepoInfoMap().get(repoUuid);
-             String projectName = repoInfo.getProjectName();
-             String repoName = repoInfo.getRepoName();
-             int projectId = projectDao.getProjectIdByName(projectName);
-             String message = stringStringMap.get("message");
-             String commitTime = stringStringMap.get("commit_time");
-             String commitId = stringStringMap.get("commit_id");
+             String projectName = projectDao.getProjectName(repoId);
+             String projectId = String.valueOf(projectDao.getProjectIdByName(projectName));
+             String repoName = projectDao.getRepoName(repoId);
+             committer = accountDao.getDeveloperName(developer);
              ProjectCommitStandardDetail projectCommitStandardDetail = ProjectCommitStandardDetail.builder()
-                     .committer(developerName)
-                     .commitId(commitId)
-                     .repoUuid(repoUuid)
-                     .repoName(repoName)
-                     .commitTime(commitTime)
+                     .projectName(projectName).projectId(projectId)
+                     .repoName(repoName).repoUuid(repoId)
+                     .committer(committer).commitTime(commitTime).commitId(commitId)
                      .message(message)
-                     .projectId(String.valueOf(projectId))
-                     .projectName(projectName)
-                     .isValid(isValid).build();
+                     .isValid(isValid)
+                     .build();
              projectCommitStandardDetailList.add(projectCommitStandardDetail);
          }
          return projectCommitStandardDetailList;
      }
 
     /**
+     * 获取项目最近提交明细
+     * @param repoUuidList 查询库列表
+     * @param committer 查询开发者
+     * @return 项目查询条件下全部提交明细
+     */
+    public List<ProjectCommitStandardDetail> getProjectValidCommitStandardDetail(List<String> repoUuidList, String committer) {
+        List<ProjectCommitStandardDetail> projectCommitStandardDetailList = new ArrayList<>();
+        // 获取查询条件下的提交明细
+        Query query = new Query(null,null,null,null,repoUuidList);
+        List<Map<String,String>> projectValidCommitMsg;
+        if (committer == null || "".equals(committer)) { // 若未指定开发者则查找整个项目中的前 ps 个最新提交
+            projectValidCommitMsg = projectDao.getProjectValidCommitMsg(query);
+        }else {
+            query.setDeveloper(committer);// 若指定 committer,则查询该开发者最新 ps 次提交
+            projectValidCommitMsg = projectDao.getDeveloperValidCommitMsg(query);
+        }
+        for (Map<String,String> map : projectValidCommitMsg) {
+            String repoId = map.get("repo_id");
+            String commitId = map.get("commit_id");
+            String commitTime = map.get("commit_time");
+            String message = map.get("message");
+            String developer = map.get("developer");
+            boolean isValid = !"noJiraID".equals(jiraDao.getJiraIDFromCommitMsg(message));
+            String projectName = projectDao.getProjectName(repoId);
+            String projectId = String.valueOf(projectDao.getProjectIdByName(projectName));
+            String repoName = projectDao.getRepoName(repoId);
+            committer = accountDao.getDeveloperName(developer);
+            ProjectCommitStandardDetail projectCommitStandardDetail = ProjectCommitStandardDetail.builder()
+                    .projectName(projectName).projectId(projectId)
+                    .repoName(repoName).repoUuid(repoId)
+                    .committer(committer).commitTime(commitTime).commitId(commitId)
+                    .message(message)
+                    .isValid(isValid)
+                    .build();
+            projectCommitStandardDetailList.add(projectCommitStandardDetail);
+        }
+        return projectCommitStandardDetailList;
+    }
+
+
+    /**
      * 前端项目总览界面， 添加提交者列表功能
      * note 这里的开发者是参与项目所在库中的全部开发者，不区分提交时间
      * @param projectNameList 查询项目列表
      * @param repoUuidList 查询库列表
-     * @return List<String> commiter
+     * @return Set<String> commiter
      */
-     public List<String> getCommitStandardCommitterList(String projectNameList,String repoUuidList,String token) {
+     public Set<String> getCommitStandardCommitterList(String projectNameList,String repoUuidList,String token) {
          List<String> checkedRepoList = projectDao.getVisibleRepoListByProjectNameAndRepo(projectNameList,repoUuidList,token);
-         return projectDao.getDeveloperList(new Query(token,null,null,null,checkedRepoList));
+         return projectDao.getDeveloperList(checkedRepoList);
      }
 
 
@@ -1111,26 +1154,37 @@ public class MeasureDeveloperService {
              if(tempTime.isAfter(endTime)) {
                  tempTime = endTime;
              }
-             for (ProjectPair projectPair : checkedProjectPairList) {
-                 List<String> repoUuidList = new ArrayList<>();
-                 List<RepoInfo> repoInfoList = projectDao.getProjectInvolvedRepoInfo(projectPair.getProjectName(),token);
-                 for (RepoInfo repoInfo : repoInfoList) {
-                     repoUuidList.add(repoInfo.getRepoUuid());
-                 }
-                 int projectId = projectPair.getProjectId();
-                 List<ProjectBigFileDetail> projectBigFileDetailList = measureDao.getCurrentBigFileInfo(repoUuidList,tempTime.format(DateTimeUtil.dtf));
-                 ProjectBigFileTrendChart projectBigFileTrendChart = ProjectBigFileTrendChart.builder()
-                         .projectId(String.valueOf(projectId))
-                         .date(tempTime.format(dtf))
-                         .projectName(projectPair.getProjectName())
-                         .num(projectBigFileDetailList.size())
-                         .build();
-                 results.add(projectBigFileTrendChart);
-             }
+             List<ProjectBigFileTrendChart> projectBigFileTrendChartList = ((MeasureDeveloperService) AopContext.currentProxy()).getAllProjectBigFileDetail(checkedProjectPairList,DateTimeUtil.dtf.format(tempTime));
+             results.addAll(projectBigFileTrendChartList);
              beginTime = tempTime;
          }
          return results;
      }
+
+     @Cacheable(value = "projectBigFileTrendChart",key = "#until")
+     public List<ProjectBigFileTrendChart> getAllProjectBigFileDetail(List<ProjectPair> projectPairList,String until) {
+         List<ProjectBigFileTrendChart> projectBigFileTrendChartList = new ArrayList<>();
+         for (ProjectPair projectPair : projectPairList) {
+             // 获取项目下的参与库
+             List<String> repoUuidList = projectDao.getProjectRepoList(projectPair.getProjectName());
+             int projectId = projectPair.getProjectId();
+             // 获取这个间断内的 超大文件数明细
+             List<ProjectBigFileDetail> projectBigFileDetailList = measureDao.getCurrentBigFileInfo(repoUuidList,until);
+             ProjectBigFileTrendChart projectBigFileTrendChart = ProjectBigFileTrendChart.builder()
+                     .projectId(String.valueOf(projectId))
+                     .date(until)
+                     .projectName(projectPair.getProjectName())
+                     .num(projectBigFileDetailList.size())
+                     .build();
+             projectBigFileTrendChartList.add(projectBigFileTrendChart);
+         }
+         return projectBigFileTrendChartList;
+     }
+
+    @CacheEvict(value = "projectBigFileTrendChart", allEntries=true, beforeInvocation = true)
+    public void deleteProjectBigFileTrendChart() {
+
+    }
 
     /**
      * 获取超大文件数明细
@@ -1144,14 +1198,10 @@ public class MeasureDeveloperService {
          List<ProjectBigFileDetail> result = new ArrayList<>();
          List<String> visibleRepoList = projectDao.getVisibleRepoListByProjectNameAndRepo(projectNameList,repoUuidList,token);
          for (String repoUuid : visibleRepoList) {
-             if (!projectDao.getRepoInfoMap().containsKey(repoUuid)) {
-                 projectDao.insertProjectInfo(token);
-             }
-             RepoInfo repoInfo = projectDao.getRepoInfoMap().get(repoUuid);
-             String projectName = repoInfo.getProjectName();
-             String repoName = repoInfo.getRepoName();
+             String projectName = projectDao.getProjectName(repoUuid);
+             String repoName = projectDao.getRepoName(repoUuid);
              int projectId = projectDao.getProjectIdByName(projectName);
-             List<ProjectBigFileDetail> projectBigFileDetailList = measureDao.getCurrentBigFileInfo(Collections.singletonList(repoUuid),null);
+             List<ProjectBigFileDetail> projectBigFileDetailList = measureDao.getCurrentBigFileInfo(repoUuid,null);
              for (ProjectBigFileDetail projectBigFileDetail : projectBigFileDetailList) {
                  projectBigFileDetail.setProjectId(String.valueOf(projectId));
                  projectBigFileDetail.setProjectName(projectName);
@@ -1269,12 +1319,13 @@ public class MeasureDeveloperService {
 
 
     @Autowired
-    public MeasureDeveloperService(RestInterfaceManager restInterfaceManager, RepoMeasureMapper repoMeasureMapper, ProjectDao projectDao, JiraDao jiraDao, MeasureDao measureDao) {
+    public MeasureDeveloperService(RestInterfaceManager restInterfaceManager, RepoMeasureMapper repoMeasureMapper, ProjectDao projectDao, JiraDao jiraDao, MeasureDao measureDao,AccountDao accountDao) {
         this.restInterfaceManager = restInterfaceManager;
         this.repoMeasureMapper = repoMeasureMapper;
         this.projectDao = projectDao;
         this.jiraDao = jiraDao;
         this.measureDao = measureDao;
+        this.accountDao = accountDao;
     }
 
     @Autowired

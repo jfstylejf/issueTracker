@@ -14,7 +14,7 @@
 
     <select id="getDeveloperWorkLoad"  resultMap="workLoad">
         SELECT
-        sum(add_lines) AS addLines, sum(del_lines) AS delLines, count(uuid) AS commitCount, sum(changed_files) AS changedFiles
+        IFNULL(SUM(add_lines),0) AS addLines, IFNULL(sum(del_lines),0) AS delLines, count(uuid) AS commitCount, sum(changed_files) AS changedFiles
         FROM
         issueTracker.repo_measure
         <where>

@@ -24,6 +24,13 @@ public interface ProjectMapper {
     List<String> getCommitGitNameList(@Param("repoUuidList") List<String> repoUuidList, @Param("since")String since, @Param("until")String until);
 
     /**
+     * 返回单个库下的 developerGitNameList
+     * @param repoUuid 查询库
+     * @return List<String> 开发者列表信息
+     */
+    List<String> getRepoCommitGitNameList(@Param("repoUuid") String repoUuid);
+
+    /**
      * 返回开发者在参与库中的信息
      * @param repoUuid 查询库
      * @param since 查询起止时间
@@ -81,6 +88,20 @@ public interface ProjectMapper {
      */
     List<Map<String,String>> getDeveloperValidCommitMsg(@Param("repoUuidList")List<String> repoUuidList,@Param("since")String since,@Param("until")String until,@Param("accountGitNameList")List<String> accountGitNameList);
 
+
+    /**
+     * 分获取分页查询查询库下该开发者的合法提交信息 （不含Merge）
+     * @param repoUuidList 查询库列表
+     * @param since 查询起始时间
+     * @param until 查询结束时间
+     * @param accountGitNameList 开发者姓名
+     * @param beginIndex 查询起始点
+     * @param size 查询条数
+     * @return  List<Map<String,Object>> key : repo_id, developer, commit_time , commit_id , message
+     */
+    List<Map<String,String>> getDeveloperValidCommitMsgWithPage(@Param("repoUuidList")List<String> repoUuidList,@Param("since")String since,@Param("until")String until,@Param("accountGitNameList")List<String> accountGitNameList,@Param("size") int size ,@Param("beginIndex") int beginIndex);
+
+
     /**
      * 获取项目下包含库的合法提交信息 （不含Merge）
      * @param repoUuidList 查询库列表
@@ -89,6 +110,17 @@ public interface ProjectMapper {
      * @return List<Map<String,Object>> key : repo_id , developer, commit_time , commit_id , message
      */
     List<Map<String,String>> getProjectValidCommitMsg(@Param("repoUuidList")List<String> repoUuidList,@Param("since")String since,@Param("until")String until);
+
+    /**
+     * 获取分页查询查询库下的合法提交信息 （不含Merge）
+     * @param repoUuidList 查询库列表
+     * @param since 查询起始时间
+     * @param until 查询结束时间
+     * @param size 查询大小
+     * @param beginIndex 查询起始位置
+     * @return List<Map<String,Object>> key : repo_id , developer, commit_time , commit_id , message
+     */
+    List<Map<String,String>> getProjectValidCommitMsgWithPage(@Param("repoUuidList")List<String> repoUuidList,@Param("since")String since,@Param("until")String until,@Param("size") int size ,@Param("beginIndex") int beginIndex);
 
     /**
      * 获取查询库列表中前3位提交次数最多的开发者
@@ -152,10 +184,10 @@ public interface ProjectMapper {
 
     /**
      * 根据 projectId 获取项目名称
-     * @param projectIdList 查询 projectId 列表
-     * @return
+     * @param projectId 查询 projectId
+     * @return 查询项目名
      */
-    List<Map<String,Object>> getProjectNameById(@Param("projectIdList") List<String> projectIdList);
+    String getProjectNameById(@Param("projectId") String projectId);
 
     /**
      * 根据 projectName 获取 projectId
@@ -163,5 +195,28 @@ public interface ProjectMapper {
      * @return
      */
     Integer getProjectIdByName(@Param("projectName") String projectName);
+
+    /**
+     * 返回所有项目id
+     * @return 所有项目id
+     */
+    List<String> getAllProjectId();
+
+    /**
+     * 查询单个库下查询条件下的提交数
+     * @param repoUuid 查询库
+     * @param since 查询起始时间
+     * @param until 截止时间
+     * @return 查询条件下，单个库的提交次数
+     */
+    int getSingleProjectMsgNum(String repoUuid, String since ,String until);
+
+    /**
+     * 查询项目下包含的库列表
+     * @param projectName 查询项目名
+     * @return 项目包含库列表
+     */
+    List<String> getProjectRepoList(@Param("projectName") String projectName);
+
 
 }

@@ -12,6 +12,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 /**
  * @ClassName: ProjectCommitStandardDetail
  * @Description: 项目总览页面 提交规范性明细
@@ -22,7 +24,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ProjectCommitStandardDetail {
+public class ProjectCommitStandardDetail implements Serializable {
     /**
      * 项目id
      */

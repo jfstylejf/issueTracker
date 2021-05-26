@@ -19,6 +19,9 @@
             <if test="until != null and until != '' ">
                 AND <![CDATA[ commit_time <= #{until} ]]>
             </if>
+            <if test="developers != null and developers != '' ">
+                AND developer_unique_name LIKE CONCAT('%',#{developers},'%')
+            </if>
                 AND developer_unique_name IS NOT null
         </trim>
     </select>

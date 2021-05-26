@@ -129,7 +129,7 @@ public interface AccountService {
      * @param isAsc 是否升序
      * @return 根据查询条件获取开发者（聚合后）的列表
      */
-    PagedGridResult getDevelopers(List<String> repoList, String since, String until, Integer page, Integer pageSize, String order, Boolean isAsc);
+    PagedGridResult getDevelopers(List<String> repoList, String since, String until, String developers, Integer page, Integer pageSize, String order, Boolean isAsc);
 
     /**
      *
