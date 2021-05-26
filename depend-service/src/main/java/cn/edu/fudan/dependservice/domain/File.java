@@ -6,6 +6,7 @@ import lombok.Data;
 
 @Data
 public class File {
+    private String projectName;
     private String fileName;
     private String repoUUid;
     private String commitId;
@@ -18,6 +19,13 @@ public class File {
         File file = (File) obj;
         return fileName.equals(file.getFileName());
     }
+    @Override
+    public int hashCode() {
+        int result = fileName.hashCode();
+        result = 17 * result + repoUUid.hashCode();
+        return result;
+    }
+
 
     public File(String fileName, String repoUUid, String commitId) {
         this.fileName = fileName;

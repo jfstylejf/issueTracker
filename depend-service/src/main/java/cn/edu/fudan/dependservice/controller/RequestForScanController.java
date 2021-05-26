@@ -98,6 +98,7 @@ public class RequestForScanController {
         }
         //go to database for status
         scanStatus=statusService.getScanStatus(repoUuid);
+        // to do NullPointException
         log.info("scanStatus-> {}",scanStatus.getStatus());
 
         return new ResponseBean<>(200,"success",scanStatus);

@@ -7,11 +7,13 @@ import cn.edu.fudan.accountservice.service.AccountService;
 import cn.edu.fudan.accountservice.util.CookieUtil;
 import cn.edu.fudan.accountservice.util.PagedGridResult;
 import cn.edu.fudan.common.http.ResponseEntity;
+import io.netty.util.internal.StringUtil;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -284,6 +286,7 @@ public class AccountController {
             @ApiImplicitParam(name = "repo_uuids", value = "repo库", dataType = "String", required = false,defaultValue = "a140dc46-50db-11eb-b7c3-394c0d058805"),
             @ApiImplicitParam(name = "since", value = "起始时间", dataType = "String", required = false,defaultValue = "2020-01-01"),
             @ApiImplicitParam(name = "until", value = "结束时间", dataType = "String", required = false,defaultValue = "2020-12-31"),
+            @ApiImplicitParam(name = "developers", value = "名字搜索", dataType = "String"),
             @ApiImplicitParam(name = "is_whole", value = "是否获取所有数据（不进行分页）", dataType = "Boolean", required = false,defaultValue = "0"),
             @ApiImplicitParam(name = "page", value = "分页的第几页", dataType = "Integer", required = false,defaultValue = "1"),
             @ApiImplicitParam(name = "ps", value = "分页中每页的大小", dataType = "Integer", required = false,defaultValue = "10"),
@@ -294,6 +297,7 @@ public class AccountController {
     public Object getDeveloperList(@RequestParam(value = "repo_uuids", required = false) String repoUuids,
                                    @RequestParam(value = "since", required = false) String since,
                                    @RequestParam(value = "until", required = false) String until,
+                                   @RequestParam(value = "developers", required = false) String developers,
                                    @RequestParam(value = "is_whole", required = false, defaultValue = "0") Boolean isWhole,
                                    @RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
                                    @RequestParam(value = "ps", required = false, defaultValue = "30") Integer pageSize,
@@ -302,13 +306,16 @@ public class AccountController {
                                    ){
         String[] repoListArr = repoUuids.split(",");
         List<String> repoList = Arrays.asList(repoListArr);
+        if (StringUtils.isEmpty(repoUuids)) {
+            repoList = null;
+        }
         try{
             // 获取所有数据，不进行分页
             if (isWhole) {
                 return new ResponseEntity<>(200, "success!", accountService.getDevelopers(repoList, since, until));
             }
             // 否则，获取分页数据
-            PagedGridResult result = accountService.getDevelopers(repoList, since, until, page, pageSize, order, isAsc);
+            PagedGridResult result = accountService.getDevelopers(repoList, since, until, developers, page, pageSize, order, isAsc);
             return new ResponseEntity<>(200, "success!", result);
         }catch (Exception e){
             e.printStackTrace();

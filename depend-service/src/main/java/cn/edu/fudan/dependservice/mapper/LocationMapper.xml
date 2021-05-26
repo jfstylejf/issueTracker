@@ -13,7 +13,7 @@
         where id = #{projectId};
     </select>
 
-    <resultMap id="repoList" type="cn.edu.fudan.dependservice.domain.RepoUuidsInfo">
+    <resultMap id="repoList" type="cn.edu.fudan.dependservice.domain.RepoInfo">
         <id property="repoUuid" column="repo_uuid"/>
         <result property="repoName" column="repo_name"/>
         <result property="language" column="language"/>
@@ -28,9 +28,18 @@
     <resultMap id="projectIds" type="cn.edu.fudan.dependservice.domain.ProjectIdsInfo">
         <id property="projectId" column="id"/>
     </resultMap>
+    <resultMap id="project" type="cn.edu.fudan.dependservice.domain.Project">
+        <id property="projectId" column="id"/>
+        <id property="projectName" column="project_name"/>
+    </resultMap>
 
     <select id="getAllProjectIds" resultMap="projectIds">
         select id
+        from issueTracker.project;
+    </select>
+
+    <select id="getAllProjects" resultMap="project">
+        select *
         from issueTracker.project;
     </select>
 

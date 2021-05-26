@@ -31,8 +31,7 @@ public class DeleteController {
     @CrossOrigin
     public ResponseBean deleteOneRepo(@PathVariable(name = "repo_uuid") String repoUuid,
                                       HttpServletRequest request) {
-        log.info("repoId: "+repoUuid);
-
+        log.info("delete controler");
         try {
             String token = request.getHeader("token");
             deleteService.deleteOneRepo(repoUuid, token);

@@ -2,7 +2,6 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<!-- namespace：命名空间，用于隔离sql，还有一个很重要的作用，后面会讲 -->
 <mapper namespace="cn.edu.fudan.dependservice.mapper.RelationshipMapper">
     <resultMap id="RelationView" type="cn.edu.fudan.dependservice.domain.RelationView">
         <id property="projectName" column="project_name"/>
@@ -20,7 +19,7 @@
         where repo_uuid = #{repoUuid}
         limit 100;
     </delete>
-    <delete id="deleteByRepoUuidAqqndCommitId" parameterType="String">
+    <delete id="deleteByRepoUuidAndCommitId" parameterType="String">
         delete
         from issueTracker.dependency_detail
         where repo_uuid = #{repoUuid}
@@ -56,6 +55,34 @@
             where s.repo_uuid is not null
               and rl.mxtime is not null
         );
+    </select>
+
+    <select id="getRelationBydateAndProjectIds" resultMap="RelationView">
+        select distinct d.id,
+                        d.file,
+                        d.depend_on,
+                        d.repo_uuid,
+                        d.group_id,
+                        d.depend_details,
+                        s.project_name,
+                        s.repo_name
+        from issueTracker.dependency_detail d
+                 left join issueTracker.sub_repository s
+                           on d.repo_uuid = s.repo_uuid
+        where d.commit_id in (
+            select s.commit_id
+            from depend_scan_with_committime s
+                     left join(
+                select repo_uuid, max(commit_time) mxtime
+                from depend_scan_with_committime
+                where depend_scan_with_committime.commit_time &lt; #{date}
+                group by repo_uuid) rl
+                              on s.repo_uuid = rl.repo_uuid and s.commit_time = rl.mxtime
+            where s.repo_uuid is not null
+              and rl.mxtime is not null
+        )
+          and d.repo_uuid in (#{repoUuids})
+        ;
     </select>
 
 
