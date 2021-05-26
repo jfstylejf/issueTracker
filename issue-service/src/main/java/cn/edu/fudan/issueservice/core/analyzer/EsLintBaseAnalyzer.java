@@ -1,12 +1,12 @@
 package cn.edu.fudan.issueservice.core.analyzer;
 
-import cn.edu.fudan.codetracker.core.tree.parser.JsFileParser;
-import cn.edu.fudan.codetracker.domain.projectinfo.ClassNode;
-import cn.edu.fudan.codetracker.domain.projectinfo.FieldNode;
-import cn.edu.fudan.codetracker.domain.projectinfo.MethodNode;
-import cn.edu.fudan.codetracker.domain.projectinfo.StatementNode;
+import cn.edu.fudan.codetracker.scan.core.tree.JsTree;
+import cn.edu.fudan.codetracker.scan.core.tree.parser.JsFileParser;
+import cn.edu.fudan.codetracker.scan.domain.projectinfo.ClassNode;
+import cn.edu.fudan.codetracker.scan.domain.projectinfo.FieldNode;
+import cn.edu.fudan.codetracker.scan.domain.projectinfo.MethodNode;
+import cn.edu.fudan.codetracker.scan.domain.projectinfo.StatementNode;
 import cn.edu.fudan.issueservice.dao.CommitDao;
-import cn.edu.fudan.codetracker.core.tree.JsTree;
 import cn.edu.fudan.issueservice.domain.dbo.Location;
 import cn.edu.fudan.issueservice.domain.dbo.RawIssue;
 import cn.edu.fudan.issueservice.domain.enums.JavaScriptIssuePriorityEnum;
@@ -342,7 +342,8 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
         esLintBaseAnalyzer.setBabelEsLintPath("/Users/beethoven/Desktop/saic/IssueTracker-Master/issue-service/src/main/resources/node/babelEsLint.js");
         esLintBaseAnalyzer.setResultFileHome("/Users/beethoven/Desktop/saic/issue-tracker-web");
         esLintBaseAnalyzer.analyze("/Users/beethoven/Desktop/saic/issue-tracker-web", "test", "4f42e73bda0a80d044a013ef73da4d8af0f4c981");
-        JsTree jsTree = new JsTree(Collections.singletonList("/Users/beethoven/Desktop/saic/issue-tracker-web/src/pages/Home/Home.js"), "", "");
-        esLintBaseAnalyzer.handleFieldName(24, 25, new Location(), "/Users/beethoven/Desktop/saic/issue-tracker-web/src/pages/Home/Home.js", jsTree);
+        JsFileParser.setBabelPath("/Users/beethoven/Desktop/saic/IssueTracker-Master/issue-service/src/main/resources/node/babelEsLint.js");
+        JsTree jsTree = new JsTree(Collections.singletonList("/Users/beethoven/Desktop/saic/issue-tracker-web/src/issue.js"), "1", "/Users/beethoven/Desktop/saic/issue-tracker-web");
+        esLintBaseAnalyzer.handleFieldName(24, 25, new Location(), "/Users/beethoven/Desktop/saic/issue-tracker-web/src/issue.js", jsTree);
     }
 }
