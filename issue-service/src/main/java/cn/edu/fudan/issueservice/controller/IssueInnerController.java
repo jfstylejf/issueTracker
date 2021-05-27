@@ -36,10 +36,10 @@ public class IssueInnerController {
 
     @ApiOperation(value = "根据repoUuid和tool删除对应issue", notes = "@return String", httpMethod = "DELETE")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "repo-uuid", value = "代码库uuid", dataType = "String", required = true),
+            @ApiImplicitParam(name = "repo_uuid", value = "代码库uuid", dataType = "String", required = true),
     })
-    @DeleteMapping(value = {"/issue/{repo-uuid}"})
-    public ResponseBean<String> deleteIssues(@PathVariable("repo-uuid") String repoUuid) {
+    @DeleteMapping(value = {"/issue/{repo_uuid}"})
+    public ResponseBean<String> deleteIssues(@PathVariable("repo_uuid") String repoUuid) {
         try {
             String tool = restInterfaceManager.getToolByRepoUuid(repoUuid);
             issueService.deleteIssueByRepoIdAndTool(repoUuid, tool);
