@@ -365,7 +365,7 @@ public class IssueMeasurementController {
     public ResponseBean<PagedGridResult<DeveloperLivingIssueVO>> getDeveloperListLivingIssue(@RequestParam(value = "since", required = false) String since,
                                                                                              @RequestParam(value = "until", required = false) String until,
                                                                                              @RequestParam(value = "project_names", required = false) String projectNames,
-                                                                                             @RequestParam(value = "developers") String developers,
+                                                                                             @RequestParam(value = "developers", required = false) String developers,
                                                                                              @RequestParam(value = "asc", required = false) Boolean asc,
                                                                                              @RequestParam(value = "page", required = false, defaultValue = "1") int page,
                                                                                              @RequestParam(value = "ps", required = false, defaultValue = "10") int ps,
