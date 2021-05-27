@@ -6,7 +6,9 @@ import cn.edu.fudan.cloneservice.domain.CloneOverallView;
 import cn.edu.fudan.cloneservice.domain.clone.CloneLocation;
 import cn.edu.fudan.cloneservice.mapper.CloneLocationMapper;
 import com.github.pagehelper.util.StringUtil;
+import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
@@ -31,16 +33,28 @@ public class CloneLocationDao {
         this.cloneLocationMapper = cloneLocationMapper;
     }
 
+    @Cacheable(value = "group_count", key = "#commitId")
+    public int getGroupCount(String commitId){
+        return cloneLocationMapper.getGroupCount(commitId);
+    }
+
     public int getCloneLocationGroupSum(List<String> repoUuids, String until) {
         int res = 0;
         for (String repoUuid : repoUuids) {
             if (!StringUtil.isEmpty(repoUuid)) {
-                log.info(repoUuid.concat(" start"));
-                String commitId = cloneLocationMapper.getLatestCommitId(repoUuid, "", until);
-                if (!StringUtils.isEmpty(commitId)) {
-                    res = res + cloneLocationMapper.getGroupCount(commitId);
-                }
+                res = res + ((CloneLocationDao) AopContext.currentProxy()).getCloneLocationGroupSingle(until, repoUuid);
             }
+        }
+        return res;
+    }
+
+    @Cacheable(value = "group_sum_by_group_single", key = "#repoUuid + '_' + #until")
+    public int getCloneLocationGroupSingle(String until, String repoUuid) {
+        log.info(repoUuid.concat(" start"));
+        String commitId = cloneLocationMapper.getLatestCommitId(repoUuid, "", until);
+        int res = 0;
+        if (!StringUtils.isEmpty(commitId)) {
+            res = ((CloneLocationDao) AopContext.currentProxy()).getGroupCount(commitId);
         }
         return res;
     }

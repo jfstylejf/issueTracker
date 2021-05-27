@@ -182,13 +182,13 @@ public class ScanServiceImpl implements ScanService {
      */
     @Override
     @Async("taskExecutor")
-    public void deleteCloneScan(String repoId, String token) {
+    public void deleteCloneScan(String repoId) {
         cloneScanDao.deleteCloneScan(repoId);
         cloneLocationDao.deleteCloneLocations(repoId);
         cloneMeasureDao.deleteCloneMeasureByRepoId(repoId);
         cloneInfoDao.deleteCloneInfo(repoId);
         cloneRepoDao.deleteCloneRepo(repoId);
-        boolean recallRes = restInterfaceManager.deleteRecall(repoId,token);
+        boolean recallRes = restInterfaceManager.deleteRecall(repoId);
         if(recallRes){
             log.info(" recall ok");
         }else {

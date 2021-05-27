@@ -3,6 +3,7 @@ package cn.edu.fudan.cloneservice.domain.clone;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.Date;
 
@@ -11,6 +12,7 @@ import java.util.Date;
  * @date 2020/6/22
  */
 @Data
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class CloneRepo {

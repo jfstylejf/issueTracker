@@ -56,7 +56,7 @@ public class CloneMeasureController {
                                                     @RequestParam(value = "page", required = false, defaultValue = "1") String page,
                                                     @RequestParam(value = "ps", required = false, defaultValue = "5") String size,
                                                     @RequestParam(value = "asc", required = false) Boolean isAsc
-                                                    ) {
+    ) {
         try {
             if (StringUtils.isEmpty(start)) {
                 start = "2000-01-01";
@@ -82,16 +82,16 @@ public class CloneMeasureController {
 
     @GetMapping(value = {"/clone/developer/clone-line"})
     public ResponseBean<Object> getCloneLine(@RequestParam(value = "project_ids", defaultValue = "") String projectIds,
-                                                    @RequestParam(value = "project_names", required = false, defaultValue = "") String projectNames,
-                                                    @RequestParam(value = "repo_uuids", defaultValue = "") String repoId,
-                                                    @RequestParam(value = "developer", required = false) String developers,
-                                                    @RequestParam(value = "since", required = false, defaultValue = "2000-01-01") String start,
-                                                    @RequestParam(value = "until", required = false) String end,
-                                                    @RequestParam(value = "order", required = false, defaultValue = "") String order,
-                                                    @RequestParam(value = "page", required = false, defaultValue = "1") String page,
-                                                    @RequestParam(value = "ps", required = false, defaultValue = "5") String size,
-                                                    @RequestParam(value = "asc", required = false) Boolean isAsc,
-                                                    HttpServletRequest httpServletRequest
+                                             @RequestParam(value = "project_names", required = false, defaultValue = "") String projectNames,
+                                             @RequestParam(value = "repo_uuids", defaultValue = "") String repoId,
+                                             @RequestParam(value = "developers", required = false) String developers,
+                                             @RequestParam(value = "since", required = false, defaultValue = "2000-01-01") String start,
+                                             @RequestParam(value = "until", required = false) String end,
+                                             @RequestParam(value = "order", required = false, defaultValue = "") String order,
+                                             @RequestParam(value = "page", required = false, defaultValue = "1") String page,
+                                             @RequestParam(value = "ps", required = false, defaultValue = "5") String size,
+                                             @RequestParam(value = "asc", required = false) Boolean isAsc,
+                                             HttpServletRequest httpServletRequest
     ) {
         try {
 
@@ -141,11 +141,7 @@ public class CloneMeasureController {
             log.info("over-all view init success");
             List<CloneOverallView> cloneOverallViews = cloneMeasureService.getCloneOverallViews(projectIds, repoUuids, until, token);
             Map<String, Object> data = getPagingMap(page, size, isAsc, cloneOverallViews);
-            if (!cloneOverallViews.isEmpty()) {
-                return new ResponseBean<>(200, "success", data);
-            } else {
-                return new ResponseBean<>(401, "", null);
-            }
+            return new ResponseBean<>(200, "success", data);
         } catch (Exception e) {
             e.printStackTrace();
             return new ResponseBean<>(401, "failed", null);
@@ -174,7 +170,7 @@ public class CloneMeasureController {
                 until = simpleDateFormat.format(today);
             }
             if (Boolean.TRUE.equals(isOverall)) {
-                List<CloneDetailOverall> cloneDetailOverall = cloneMeasureService.getCloneDetailOverall(projectIds, commitIds, repoUuid,until, token);
+                List<CloneDetailOverall> cloneDetailOverall = cloneMeasureService.getCloneDetailOverall(projectIds, commitIds, repoUuid, until, token);
                 Collections.sort(cloneDetailOverall);
                 Map<String, Object> data = getPagingMap(page, size, isAsc, cloneDetailOverall);
                 if (!cloneDetailOverall.isEmpty()) {
@@ -186,7 +182,7 @@ public class CloneMeasureController {
                 List<CloneDetail> cloneDetails = cloneMeasureService.getCloneDetails(projectIds, groupId, commitIds, token);
                 Collections.sort(cloneDetails);
                 Map<String, Object> data = getPagingMap(page, size, isAsc, cloneDetails);
-                    return new ResponseBean<>(200, "success", data);
+                return new ResponseBean<>(200, "success", data);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -208,8 +204,8 @@ public class CloneMeasureController {
                 end = simpleDateFormat.format(today);
             }
             log.info("graph init success");
-            List<CloneGroupSum> cloneGroupsSum = cloneMeasureService.getCloneGroupsSum(projectIds, start, end, interval, token);
-                return new ResponseBean<>(200, "success", cloneGroupsSum);
+            List<CloneGroupSum> cloneGroupsSum = cloneMeasureService.getTrendGraph(projectIds, start, end, interval, token);
+            return new ResponseBean<>(200, "success", cloneGroupsSum);
         } catch (Exception e) {
             e.printStackTrace();
             return new ResponseBean<>(401, "failed", null);
@@ -218,6 +214,7 @@ public class CloneMeasureController {
 
     /**
      * 对结果进行分页操作
+     *
      * @param page
      * @param size
      * @param isAsc
