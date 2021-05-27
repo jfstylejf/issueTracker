@@ -153,6 +153,7 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
                     fileNames.add(filePath);
                     //get jsTree
                     JsTree jsTree = new JsTree(fileNames, "", "");
+                    getJsMethodInFile(filePath, jsTree);
                     resultRawIssues.addAll(handleEsLintResults(repoPath, esLintResult, repoUuid, commit, jsTree));
                 }
             }
@@ -163,6 +164,29 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
             log.error("analyze rawIssues failed!");
         }
         return false;
+    }
+
+    private void getJsMethodInFile(String filePath, JsTree jsTree) {
+        List<FieldNode> fieldInfos = jsTree.getFieldInfos();
+        for (FieldNode fieldInfo : fieldInfos) {
+            Set<String> set = methodsAndFieldsInFile.getOrDefault(filePath, new HashSet<>());
+            set.add(fieldInfo.getSimpleType() + " " + fieldInfo.getSimpleName());
+            methodsAndFieldsInFile.put(filePath, set);
+        }
+        List<MethodNode> methodInfos = jsTree.getMethodInfos();
+        for (MethodNode methodInfo : methodInfos) {
+            Set<String> set = methodsAndFieldsInFile.getOrDefault(filePath, new HashSet<>());
+            set.add(methodInfo.getSignature());
+            methodsAndFieldsInFile.put(filePath, set);
+        }
+        List<StatementNode> statementInfos = jsTree.getStatementInfos();
+        for (StatementNode statementInfo : statementInfos) {
+            Set<String> set = methodsAndFieldsInFile.getOrDefault(filePath, new HashSet<>());
+            String statementCode = StringsUtil.removeBr(statementInfo.getBody());
+            String statement = statementCode.substring(0, Math.min(statementCode.length(), 21));
+            set.add(statement);
+            methodsAndFieldsInFile.put(filePath, set);
+        }
     }
 
     List<RawIssue> handleEsLintResults(String repoPath, JSONObject esLintResult, String repoUuid, String commit, JsTree jsTree) {
@@ -250,11 +274,11 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
         //set class name
         handleClassName(line, endLine, location, jsTree);
         //handle statement
-        handleStatement(line, endLine, location, filePath, jsTree);
+        handleStatement(line, endLine, location, jsTree);
         //handle method name
-        handleMethodName(line, endLine, location, filePath, jsTree);
+        handleMethodName(line, endLine, location, jsTree);
         //handle field name
-        handleFieldName(line, endLine, location, filePath, jsTree);
+        handleFieldName(line, endLine, location, jsTree);
     }
 
     private void handleClassName(int line, int endLine, Location location, JsTree jsTree) {
@@ -267,42 +291,36 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
         }
     }
 
-    private void handleFieldName(int line, int endLine, Location location, String filePath, JsTree jsTree) {
+    private void handleFieldName(int line, int endLine, Location location, JsTree jsTree) {
         List<FieldNode> fieldInfos = jsTree.getFieldInfos();
         for (FieldNode fieldInfo : fieldInfos) {
             String fieldName = fieldInfo.getSimpleType() + " " + fieldInfo.getSimpleName();
-            Set<String> set = methodsAndFieldsInFile.getOrDefault(filePath, new HashSet<>());
-            set.add(fieldName);
-            methodsAndFieldsInFile.put(filePath, set);
             if (fieldInfo.getBeginLine() <= line && fieldInfo.getEndLine() >= endLine) {
                 location.setMethodName(fieldName);
+                break;
             }
         }
     }
 
 
-    private void handleMethodName(int line, int endLine, Location location, String filePath, JsTree jsTree) {
+    private void handleMethodName(int line, int endLine, Location location, JsTree jsTree) {
         List<MethodNode> methodInfos = jsTree.getMethodInfos();
         for (MethodNode methodInfo : methodInfos) {
-            Set<String> set = methodsAndFieldsInFile.getOrDefault(filePath, new HashSet<>());
-            set.add(methodInfo.getSignature());
-            methodsAndFieldsInFile.put(filePath, set);
             if (methodInfo.getBeginLine() <= line && methodInfo.getEndLine() >= endLine) {
                 location.setMethodName(methodInfo.getSignature());
+                break;
             }
         }
     }
 
-    private void handleStatement(int line, int endLine, Location location, String filePath, JsTree jsTree) {
+    private void handleStatement(int line, int endLine, Location location, JsTree jsTree) {
         List<StatementNode> statementInfos = jsTree.getStatementInfos();
         for (StatementNode statementInfo : statementInfos) {
-            String statementCode = StringsUtil.removeBr(statementInfo.getBody());
-            String statement = statementCode.substring(0, Math.min(statementCode.length(), 21));
-            Set<String> set = methodsAndFieldsInFile.getOrDefault(filePath, new HashSet<>());
-            set.add(statement);
-            methodsAndFieldsInFile.put(filePath, set);
             if (statementInfo.getBeginLine() <= line && statementInfo.getEndLine() >= endLine) {
+                String statementCode = StringsUtil.removeBr(statementInfo.getBody());
+                String statement = statementCode.substring(0, Math.min(statementCode.length(), 21));
                 location.setMethodName(statement);
+                break;
             }
         }
     }
@@ -344,6 +362,6 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
         esLintBaseAnalyzer.analyze("/Users/beethoven/Desktop/saic/issue-tracker-web", "test", "4f42e73bda0a80d044a013ef73da4d8af0f4c981");
         JsFileParser.setBabelPath("/Users/beethoven/Desktop/saic/IssueTracker-Master/issue-service/src/main/resources/node/babelEsLint.js");
         JsTree jsTree = new JsTree(Collections.singletonList("/Users/beethoven/Desktop/saic/issue-tracker-web/src/issue.js"), "1", "/Users/beethoven/Desktop/saic/issue-tracker-web");
-        esLintBaseAnalyzer.handleFieldName(24, 25, new Location(), "/Users/beethoven/Desktop/saic/issue-tracker-web/src/issue.js", jsTree);
+        esLintBaseAnalyzer.handleFieldName(24, 25, new Location(), jsTree);
     }
 }
