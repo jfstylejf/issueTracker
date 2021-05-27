@@ -51,7 +51,7 @@ public interface CloneMeasureService {
      * @param token
      * @return Map<projectId, Map<date, num>>
      */
-    List<CloneGroupSum> getCloneGroupsSum(String projectId, String since, String until, String interval, String token);
+    List<CloneGroupSum> getTrendGraph(String projectId, String since, String until, String interval, String token);
 
     List<CloneOverallView> getCloneOverallViews(String projectId, String repoUuid, String until, String token);
 

@@ -112,7 +112,7 @@ public class CPUCloneScanOperation extends ScanOperationAdapter {
             if("javascript".equalsIgnoreCase(languagePara)) {
                 language = "js";
             }
-            String exe = IS_WINDOWS? "executable/executable_cpu_win10_snippet.exe":"executable/executable_cpu_linux_snippet";
+            String exe = IS_WINDOWS? "executable/executable_cpu_win10_snippet.exe":"executable/executable_cpu_linux_snippet_sq";
             String[] configs = new String[]{
                     "dataset=" + repoPath,
                     "language=" + language,
@@ -165,7 +165,6 @@ public class CPUCloneScanOperation extends ScanOperationAdapter {
                     if(StringUtils.isEmpty(commitTime)){
                         commitTime = "2000-00-00";
                     }
-                    log.info(commitTime);
                     cloneLocation.setCommitTime(simpleDateFormat.parse(commitTime));
 //                    //类名 方法名
 //                    List<LocationInfo> classLocationInfos = getClassList(filePath, language);

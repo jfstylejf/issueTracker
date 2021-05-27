@@ -9,7 +9,6 @@ import cn.edu.fudan.cloneservice.mapper.CloneInfoMapper;
 import cn.edu.fudan.cloneservice.mapper.CloneMeasureMapper;
 import cn.edu.fudan.cloneservice.mapper.RepoCommitMapper;
 import cn.edu.fudan.cloneservice.service.CloneMeasureService;
-import cn.edu.fudan.cloneservice.service.ScanService;
 import cn.edu.fudan.cloneservice.thread.ForkJoinRecursiveTask;
 import cn.edu.fudan.cloneservice.util.ComputeUtil;
 import cn.edu.fudan.cloneservice.util.DateTimeUtil;
@@ -17,7 +16,11 @@ import cn.edu.fudan.cloneservice.util.JGitUtil;
 import cn.edu.fudan.cloneservice.util.UserUtil;
 import com.github.pagehelper.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -31,6 +34,7 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Service
+@Component
 public class CloneMeasureServiceImpl implements CloneMeasureService {
 
     private final RepoCommitMapper repoCommitMapper;
@@ -40,10 +44,24 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
     protected CloneLocationDao cloneLocationDao;
     private final ForkJoinRecursiveTask forkJoinRecursiveTask;
     private final CloneMeasureMapper cloneMeasureMapper;
-    @Autowired
-    private final CloneInfoMapper cloneInfoMapper;
     private final UserUtil userUtil;
+    private final RepoCommitDao repoCommitDao;
+    private final RepoMeasureDao repoMeasureDao;
 
+
+    @Autowired
+    public CloneMeasureServiceImpl(RepoCommitMapper repoCommitMapper, RestInterfaceManager restInterfaceManager, CloneMeasureDao cloneMeasureDao, CloneInfoDao cloneInfoDao, CloneLocationDao cloneLocationDao, ForkJoinRecursiveTask forkJoinRecursiveTask, CloneMeasureMapper cloneMeasureMapper, UserUtil userUtil, RepoCommitDao repoCommitDao, RepoMeasureDao repoMeasureDao) {
+        this.repoCommitMapper = repoCommitMapper;
+        this.restInterfaceManager = restInterfaceManager;
+        this.cloneMeasureDao = cloneMeasureDao;
+        this.cloneInfoDao = cloneInfoDao;
+        this.cloneLocationDao = cloneLocationDao;
+        this.forkJoinRecursiveTask = forkJoinRecursiveTask;
+        this.cloneMeasureMapper = cloneMeasureMapper;
+        this.repoMeasureDao = repoMeasureDao;
+        this.userUtil = userUtil;
+        this.repoCommitDao = repoCommitDao;
+    }
     @Override
     public List<CloneMessage> getCloneMeasure(String repositoryId, String developers, String start, String end) {
         List<CloneMessage> cloneMessages = new ArrayList<>();
@@ -326,23 +344,11 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
         return cloneMeasureDao.getLatestCloneLines(repoIds);
     }
 
-    @Autowired
-    public CloneMeasureServiceImpl(RepoCommitMapper repoCommitMapper, RestInterfaceManager restInterfaceManager, CloneMeasureDao cloneMeasureDao, CloneInfoDao cloneInfoDao, CloneLocationDao cloneLocationDao, ForkJoinRecursiveTask forkJoinRecursiveTask, CloneMeasureMapper cloneMeasureMapper, CloneInfoMapper cloneInfoMapper, UserUtil userUtil) {
-        this.repoCommitMapper = repoCommitMapper;
-        this.restInterfaceManager = restInterfaceManager;
-        this.cloneMeasureDao = cloneMeasureDao;
-        this.cloneInfoDao = cloneInfoDao;
-        this.cloneLocationDao = cloneLocationDao;
-        this.forkJoinRecursiveTask = forkJoinRecursiveTask;
-        this.cloneMeasureMapper = cloneMeasureMapper;
-        this.cloneInfoMapper = cloneInfoMapper;
-        this.userUtil = userUtil;
-    }
-
     List<String> split(String repositoryId) {
         List<String> repoIds = new ArrayList<>();
         String trim = ",";
         String[] targetRepos = new String[0];
+
         if (repositoryId.contains(trim)) {
             targetRepos = repositoryId.split(trim);
             repositoryId = null;
@@ -400,18 +406,29 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
         return cloneMessages;
     }
 
-    @Override
-    public List<CloneGroupSum> getCloneGroupsSum(String projectId, String since, String until, String interval, String token) {
-        List<String> projectList = getProjectIds(projectId, token);
+    @Cacheable(value = "trend_graph", key = "#projectId + '_' + #until + '_' + #since + '_' + #interval")
+    public List<CloneGroupSum> getCloneGroupsSum(List<String> projectList, String since, String until, String interval, String projectId) {
         List<LocalDate> timeList = getTimeList(since, until, interval);
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         List<CloneGroupSum> results = new ArrayList<>();
         log.info("get project success");
         for (String aProjectId : projectList) {
-            String projectName = repoCommitMapper.getProjectNameByProjectId(aProjectId);
+            String projectName = repoCommitDao.getProjectNameByProjectId(aProjectId);
             timeList.forEach(a -> results.add(new CloneGroupSum(projectName, aProjectId, a.format(dtf), cloneLocationDao.getCloneLocationGroupSum(repoCommitMapper.getRepoIdByProjectId(aProjectId), a.format(dtf)))));
         }
         return results;
+    }
+
+    @Override
+    public List<CloneGroupSum> getTrendGraph(String projectId, String since, String until, String interval, String token) {
+        List<String> projectList = getProjectIds(projectId, token);
+        return ((CloneMeasureServiceImpl) AopContext.currentProxy()).getCloneGroupsSum(projectList, since, until, interval, projectId);
+    }
+
+    @Scheduled(cron = "0 0 0 ? * SUN")
+    public void getCloneGroupSumWeekly() {
+        String token = "ec15d79e36e14dd258cfff3d48b73d35";
+        getTrendGraph(null, null, null, "week", token);
     }
 
     @Override
@@ -422,8 +439,10 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
         List<CloneOverallView> results = new ArrayList<>();
         log.info("get project success");
         for (String aProjectId : projectList) {
-            String projectName = repoCommitMapper.getProjectNameByProjectId(aProjectId);
-            results.addAll(cloneLocationDao.getCloneOverall(getRepoUuids(projectList, repoUuid), localDate.format(dtf), aProjectId, projectName));
+            String projectName = repoCommitDao.getProjectNameByProjectId(aProjectId);
+            List<String> projectIdList = new ArrayList<>();
+            projectIdList.add(aProjectId);
+            results.addAll(cloneLocationDao.getCloneOverall(getRepoUuids(projectIdList, repoUuid), localDate.format(dtf), aProjectId, projectName));
         }
         return results;
     }
@@ -446,16 +465,15 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
 
     private List<String> getRepoUuids(List<String> projectIds, String repoUuid) {
         List<String> repoUuids = new ArrayList<>();
-        if (StringUtils.isEmpty(repoUuid)) {
-            if (projectIds.isEmpty()) {
-                List<Integer> temp = repoCommitMapper.getProjectIds();
-                temp.forEach(a -> projectIds.add(a.toString()));
-            }
-            for (String projectId : projectIds) {
-                repoUuids.addAll(repoCommitMapper.getRepoIdByProjectId(projectId));
-            }
-        } else {
-            repoUuids.addAll(Arrays.asList(repoUuid.split(",")));
+        if (projectIds.isEmpty()) {
+            List<Integer> temp = repoCommitMapper.getProjectIds();
+            temp.forEach(a -> projectIds.add(a.toString()));
+        }
+        for (String projectId : projectIds) {
+            repoUuids.addAll(repoCommitMapper.getRepoIdByProjectId(projectId));
+        }
+        if (!StringUtils.isEmpty(repoUuid)) {
+            repoUuids.retainAll(Arrays.asList(repoUuid.split(",")));
         }
         log.info("get repo_uuid success");
         return repoUuids;
@@ -466,7 +484,7 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
         List<String> projectList = getProjectIds(projectId, token);
         List<CloneDetail> results = new ArrayList<>();
         for (String aProjectId : projectList) {
-            String projectName = repoCommitMapper.getProjectNameByProjectId(aProjectId);
+            String projectName = repoCommitDao.getProjectNameByProjectId(aProjectId);
             String repoId = repoCommitMapper.getRepoIdByCommitId(commitId);
             cloneLocationDao.getCloneDetail(repoId, projectId, groupId, projectName, commitId);
             results.addAll(cloneLocationDao.getCloneDetail(repoId, projectId, groupId, projectName, commitId));
@@ -481,7 +499,7 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
         LocalDate localDate = LocalDate.parse(until, dtf);
         List<CloneDetailOverall> results = new ArrayList<>();
         for (String aProjectId : projectList) {
-            String projectName = repoCommitMapper.getProjectNameByProjectId(aProjectId);
+            String projectName = repoCommitDao.getProjectNameByProjectId(aProjectId);
             results.addAll(cloneLocationDao.getCloneDetailOverall(aProjectId, projectName, getRepoUuids(projectList, repoUuid), commitId, localDate.format(dtf)));
         }
         return results;
@@ -489,13 +507,16 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
 
     private List<LocalDate> getTimeList(String since, String until, String interval) {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDate endTime = LocalDate.parse(until, dtf);
+        LocalDate endTime = LocalDate.now();
+        if (!StringUtil.isEmpty(until)) {
+            endTime = LocalDate.parse(until, dtf);
+        }
         LocalDate beginTime;
         // fixme since为空时默认处理
         if (since != null && !"".equals(since)) {
             beginTime = LocalDate.parse(since, dtf);
         } else {
-            beginTime = endTime.minusWeeks(1);
+            beginTime = endTime.minusWeeks(6);
         }
         beginTime = DateTimeUtil.initEndTimeByInterval(beginTime, interval);
         endTime = DateTimeUtil.initEndTimeByInterval(endTime, interval);
@@ -520,14 +541,18 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
 
     @Override
     public List<CloneMessage> getCloneLine(String projectId, String repoUuid, String developers, String since, String until, String token) {
-
         List<String> repoIds = getRepoUuids(getProjectIds(projectId, token), repoUuid);
-        int newCloneLines = 0;
-        int deleteCloneLines = 0;
-        int addLines = 0;
         List<CloneMessage> result = new ArrayList<>();
-        List<String> developerList = split(developers);
-        for(String developer:developerList) {
+        List<String> developerList;
+        if (!StringUtil.isEmpty(developers)) {
+            developerList = split(developers);
+        } else {
+            developerList = repoCommitMapper.getDevelopers();
+        }
+        for (String developer : developerList) {
+            int newCloneLines = 0;
+            int deleteCloneLines = 0;
+            int addLines = repoMeasureDao.getRepoAddLines(repoIds, developer, since, until);
             for (String repoId : repoIds) {
                 List<CloneMeasure> cloneMeasures = cloneMeasureDao.getCloneMeasureByDeveloperAndDuration(repoId, developer, since, until);
                 log.info("after get clone measure:" + System.currentTimeMillis() / 1000);
@@ -540,10 +565,7 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
                         deleteCloneLines += preCloneLines - cloneMeasure1.getCloneLines();
                     }
                 }
-
                 log.info("after compute:" + System.currentTimeMillis() / 1000);
-                addLines += restInterfaceManager.getAddLines(repoId, since, until, developer);
-                log.info("after rest get add lines:" + System.currentTimeMillis() / 1000);
             }
 
             CloneMessage cloneMessage = new CloneMessage();
@@ -557,6 +579,7 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
             cloneMessage.setEliminateCloneLines(deleteCloneLines);
             result.add(cloneMessage);
         }
+
         return result;
     }
 }

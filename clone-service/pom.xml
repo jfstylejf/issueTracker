@@ -96,11 +96,11 @@
         </dependency>
 
         <dependency>
-            <groupId>cloneManager-v2.0</groupId>
-            <artifactId>cloneManager-v2.0</artifactId>
+            <groupId>cloneManager-v3.0</groupId>
+            <artifactId>cloneManager-v3.0</artifactId>
             <version>1.0.0</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/lib/CloneManager-v2.0.jar</systemPath>
+            <systemPath>${project.basedir}/lib/CloneManager-v3.0.jar</systemPath>
         </dependency>
 
         <dependency>
@@ -109,6 +109,12 @@
             <version>4.12</version>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
