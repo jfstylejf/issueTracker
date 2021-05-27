@@ -26,6 +26,7 @@
         <result property="first_parent_commit_id" column="first_parent_commit_id"/>
         <result property="second_parent_commit_id" column="second_parent_commit_id"/>
         <result property="absoluteLines" column="absolute_lines"/>
+        <result property="is_compliance" column="is_compliance"/>
     </resultMap>
 
     <resultMap id="repoMeasureWithDate" type="RepoMeasure">
@@ -114,7 +115,8 @@
                commit_message,
                first_parent_commit_id,
                second_parent_commit_id,
-               absolute_lines
+               absolute_lines,
+               is_compliance
             )
         values
            (
@@ -142,8 +144,8 @@
               #{commit_message},
               #{first_parent_commit_id},
               #{second_parent_commit_id},
-              #{absoluteLines}
-
+              #{absoluteLines},
+              #{is_compliance}
            )
     </insert>
 

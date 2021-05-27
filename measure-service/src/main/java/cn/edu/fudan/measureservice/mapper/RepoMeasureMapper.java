@@ -52,6 +52,10 @@ public interface RepoMeasureMapper {
 
     String getStartDateOfRepo(@Param("repo_id")String repo_id);
 
+    /**
+     * 插入 repo_measure 一条 commit 相关数据
+     * @param repoMeasure 插入参数信息
+     */
     void insertOneRepoMeasure(RepoMeasure repoMeasure);
 
     void delRepoMeasureByrepoUuid(@Param("repo_id")String repo_id);
