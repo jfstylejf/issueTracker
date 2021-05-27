@@ -404,7 +404,7 @@ public class ProjectControlServiceImpl implements ProjectControlService {
                     log.error("commit repo delete failed!");
                 }
 
-                boolean deleteIssueRepoSuccess = rest.deleteIssueRepo(repoUuid);
+                boolean deleteIssueRepoSuccess = rest.deleteIssueRepo(token, repoUuid);
                 if (!deleteIssueRepoSuccess) {
                     log.error("issue repo delete failed!");
                 }
