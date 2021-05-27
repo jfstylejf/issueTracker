@@ -864,6 +864,7 @@ public class MeasureDeveloperService {
         for(String developer : developerList) {
             query.setDeveloper(developer);
             // 获取开发者对应的合法提交信息
+            log.info("start to get {}",developer);
             List<Map<String,String>> developerValidCommitInfo = projectDao.getDeveloperValidCommitMsg(query);
             // 封装 DeveloperCommitStandard
             DeveloperCommitStandard developerCommitStandard = new DeveloperCommitStandard();
@@ -1075,10 +1076,10 @@ public class MeasureDeveloperService {
         // 获取查询条件下的提交明细
         Query query = new Query(null,null,null,null,repoUuidList);
         List<Map<String,String>> projectValidCommitMsg;
-        if (committer == null || "".equals(committer)) { // 若未指定开发者则查找整个项目中的前 ps 个最新提交
+        if (committer == null || "".equals(committer)) { // 若未指定开发者则查找整个项目中的
             projectValidCommitMsg = projectDao.getProjectValidCommitMsg(query);
         }else {
-            query.setDeveloper(committer);// 若指定 committer,则查询该开发者最新 ps 次提交
+            query.setDeveloper(committer);// 若指定 committer,则查询该开发者
             projectValidCommitMsg = projectDao.getDeveloperValidCommitMsg(query);
         }
         for (Map<String,String> map : projectValidCommitMsg) {

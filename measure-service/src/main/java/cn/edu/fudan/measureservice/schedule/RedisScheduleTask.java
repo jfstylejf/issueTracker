@@ -133,7 +133,7 @@ public class RedisScheduleTask {
     @Scheduled(cron = "0 0 2 * * ?")
     private void initProjectTreadChart() {
         // beginTime 及 endTime 处理为当前周的 周一 和 周日
-        LocalDate begin = DateTimeUtil.initBeginTimeByInterval(LocalDate.now(), GranularityEnum.Week.getType());
+        LocalDate begin = DateTimeUtil.initBeginTimeByInterval(LocalDate.now().minusMonths(2), GranularityEnum.Week.getType());
         LocalDate end = DateTimeUtil.initEndTimeByInterval(LocalDate.now(),GranularityEnum.Week.getType());
         assert begin != null;
         assert end != null;

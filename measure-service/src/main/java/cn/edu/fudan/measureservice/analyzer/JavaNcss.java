@@ -91,7 +91,7 @@ public class JavaNcss {
     public static Measure analyse(String repoPath) {
         List<File> files = new ArrayList<>();
         FileFilter fileFilter = new JavaFileFilter();
-        new DirExplorer((level, path, file) -> !fileFilter.fileFilter(path),
+        new DirExplorer((level, path, file) -> !fileFilter.fileFilter(file.getPath()),
                 (level, path, file) -> files.add(file)).explore(new File(repoPath));
 
         Javancss javancss = new Javancss(files);
@@ -224,6 +224,11 @@ public class JavaNcss {
             multiCommentLines += packageMetric.multiLn;
         }
         return new Total(files, classes, functions, ncss, javaDocs, javaDocsLines, singleCommentLines, multiCommentLines,absoluteLine);
+    }
+
+    public static void main(String[] args) {
+        String repoPath = "C:\\Users\\wjzho\\Desktop\\akk\\HistoryServiceImpl.java";
+        System.out.println(JavaNcss.analyse(repoPath));
     }
 
 }

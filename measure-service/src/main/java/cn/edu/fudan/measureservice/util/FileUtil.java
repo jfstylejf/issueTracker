@@ -6,7 +6,7 @@ package cn.edu.fudan.measureservice.util;
  */
 public class FileUtil {
 
-    private static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().contains("win");
+    public static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().contains("win");
     private static final String WINDOWS_SEPARATOR = "\\\\";
     private static final String SINGLE_WINDOWS_SEPARATOR = "\\";
     private static final String LINUX_SEPARATOR = "/";

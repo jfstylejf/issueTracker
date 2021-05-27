@@ -291,6 +291,7 @@ public class MeasureDeveloperController {
         try {
             until = DateTimeUtil.processUntil(until);
             String token = request.getHeader("token");
+            log.info("request : /measure/commit-standard/trend-chart");
             return new ResponseBean<>(HttpStatus.OK.value(),"success",measureDeveloperService.getCommitStandardTrendChartIntegratedByProject(projectIds,since,until,token,interval));
         }catch (Exception e) {
             e.getMessage();
@@ -313,6 +314,7 @@ public class MeasureDeveloperController {
                                                         HttpServletRequest request) {
         try {
             String token = request.getHeader("token");
+            log.info("request : /measure/commit-standard/detail");
             ProjectFrontEnd<ProjectCommitStandardDetail> developerCommitStandardFrontend = measureDeveloperService.getCommitStandardDetailIntegratedByProject(projectNameList,repoUuidList,committer,token,page,ps,is_valid);
             return new ResponseBean<>(HttpStatus.OK.value(),"success",developerCommitStandardFrontend);
         }catch (Exception e) {
@@ -332,6 +334,7 @@ public class MeasureDeveloperController {
                                          HttpServletRequest request)  {
         try {
             String token = request.getHeader("token");
+            log.info("request : /measure/commit-standard/detail/download");
             List<String> visibleRepoList = projectDao.getVisibleRepoListByProjectNameAndRepo(projectNameList,repoUuidList,token);
             List<ProjectCommitStandardDetail> projectCommitStandardDetailList = measureDeveloperService.getProjectValidCommitStandardDetail(visibleRepoList,committer);
             response.setContentType("application/vnd.ms-excel");
