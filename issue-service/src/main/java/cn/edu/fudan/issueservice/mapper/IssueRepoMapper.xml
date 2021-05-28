@@ -86,12 +86,13 @@
         SELECT start_commit FROM issue_repo
         <trim prefix="where" prefixOverrides="and">
             <if test="repoUuid != null and repoUuid != ''">
-                and repo_uuid = #{repoUuid}
+                AND repo_uuid = #{repoUuid}
             </if>
             <if test="tool != null and tool != ''">
-                and tool = #{tool}
+                AND tool = #{tool}
             </if>
         </trim>
+        LIMIT 1
     </select>
 </mapper>
 
