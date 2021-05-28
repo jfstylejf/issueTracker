@@ -3,18 +3,15 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.edu.fudan.issueservice.mapper.IssueRepoMapper">
 
-    <resultMap id="issueRepo" type="cn.edu.fudan.issueservice.domain.dbo.IssueRepo">
-        <id property="uuid" column="uuid"/>
-        <result property="repoId" column="repo_uuid"/>
+    <resultMap id="issueRepo" type="cn.edu.fudan.common.domain.po.scan.RepoScan">
+        <result property="repoUuid" column="repo_uuid"/>
         <result property="branch" column="branch"/>
         <result property="tool" column="tool"/>
         <result property="startCommit" column="start_commit"/>
-        <result property="endCommit" column="end_commit"/>
         <result property="totalCommitCount" column="total_commit_count"/>
         <result property="scannedCommitCount" column="scanned_commit_count"/>
         <result property="scanTime" column="scan_time"/>
         <result property="status" column="status"/>
-        <result property="nature" column="nature"/>
         <result property="startScanTime" column="start_scan_time"/>
         <result property="endScanTime" column="end_scan_time"/>
     </resultMap>
@@ -59,21 +56,16 @@
         <if test="tool != null and tool != ''">
             AND tool = #{tool}
         </if>
-        <if test="nature != null and nature != ''">
-            AND nature = #{nature}
-        </if>
     </delete>
 
 
-    <select id="getIssueRepoByCondition" parameterType="String" resultMap="issueRepo">
-        select * from issue_repo
+    <select id="getIssueRepoByCondition" resultMap="issueRepo">
+        select repo_uuid, branch, tool, status, scanned_commit_count, scan_time,
+        total_commit_count, start_commit, start_scan_time, end_scan_time from issue_repo
         <where>
             repo_uuid = #{repo_uuid}
             <if test="tool != null and tool != ''">
                 and tool = #{tool}
-            </if>
-            <if test="nature != null and nature != ''">
-                and nature = #{nature}
             </if>
         </where>
     </select>
@@ -91,16 +83,15 @@
     </select>
 
     <select id="getMainIssueRepo" resultMap="issueRepo">
-        SELECT * FROM issue_repo
-        <where>
-            nature = 'main'
+        SELECT start_commit FROM issue_repo
+        <trim prefix="where" prefixOverrides="and">
             <if test="repoUuid != null and repoUuid != ''">
                 and repo_uuid = #{repoUuid}
             </if>
             <if test="tool != null and tool != ''">
                 and tool = #{tool}
             </if>
-        </where>
+        </trim>
     </select>
 </mapper>
 

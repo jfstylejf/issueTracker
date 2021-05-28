@@ -1,7 +1,6 @@
 package cn.edu.fudan.issueservice.service;
 
-import cn.edu.fudan.issueservice.domain.dbo.IssueRepo;
-import cn.edu.fudan.issueservice.domain.dto.RepoResourceDTO;
+import cn.edu.fudan.common.domain.po.scan.RepoScan;
 
 import java.util.Map;
 
@@ -11,14 +10,6 @@ import java.util.Map;
 public interface IssueScanService {
 
     /**
-     * 停止扫描
-     *
-     * @param repoId   repoId
-     * @param toolName toolName
-     */
-    void stopScan(String repoId, String toolName);
-
-    /**
      * 获取扫描状态
      *
      * @param repoId   repoId
@@ -26,7 +17,7 @@ public interface IssueScanService {
      * @return IssueRepo
      * @throws Exception Exception
      */
-    IssueRepo getScanStatus(String repoId, String toolName) throws Exception;
+    RepoScan getScanStatus(String repoId, String toolName);
 
     /**
      * 获取未扫锚commit数量
