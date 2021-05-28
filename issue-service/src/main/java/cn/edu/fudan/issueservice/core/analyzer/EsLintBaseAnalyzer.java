@@ -23,10 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -71,6 +68,7 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
                 checkNeedDeleteIgnoreFile(newFile, repoPath);
                 return true;
             }
+            addIgnoreFile(repoPath + "/.eslintignore");
             //ESLint exe command
             String command = binHome + "executeESLint.sh " + repoPath + " " + repoUuid + "_" + commit + " " + srcDir;
             log.info("command -> {}", command);
@@ -94,6 +92,14 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
         if (newFile) {
             Runtime rt = Runtime.getRuntime();
             rt.exec("rm -f " + repoPath + "/.eslintignore");
+        }
+    }
+
+    public void addIgnoreFile(String file) {
+        try (BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file, true)))) {
+            out.write("/src/assets");
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
