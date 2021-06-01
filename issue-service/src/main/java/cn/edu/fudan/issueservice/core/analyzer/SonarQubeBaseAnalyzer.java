@@ -2,7 +2,6 @@ package cn.edu.fudan.issueservice.core.analyzer;
 
 import cn.edu.fudan.issueservice.component.RestInterfaceManager;
 import cn.edu.fudan.issueservice.dao.CommitDao;
-import cn.edu.fudan.issueservice.dao.IssueAnalyzerDao;
 import cn.edu.fudan.issueservice.domain.dbo.Location;
 import cn.edu.fudan.issueservice.domain.dbo.RawIssue;
 import cn.edu.fudan.issueservice.domain.enums.RawIssueStatus;
@@ -38,17 +37,12 @@ public class SonarQubeBaseAnalyzer extends BaseAnalyzer {
 
     private CommitDao commitDao;
 
-    private IssueAnalyzerDao issueAnalyzerDao;
-
     private RestInterfaceManager restInterfaceManager;
 
     @Value("${binHome}")
     private String binHome;
 
     private static final String COMPONENT = "component";
-
-    private static final String TOOL = "sonarqube";
-
 
     @Override
     public boolean invoke(String repoUuid, String repoPath, String commit) {
@@ -294,8 +288,11 @@ public class SonarQubeBaseAnalyzer extends BaseAnalyzer {
         location.setFilePath(filePath);
         location.setRawIssueId(rawIssueId);
         // todo location 方法名解析
-        String methodName = AstParserUtil.findMethod(repoPath + "/" + filePath, startLine, endLine);
-        location.setMethodName(methodName);
+        Object[] methodNameAndOffset = AstParserUtil.findMethodNameAndOffset(repoPath + "/" + filePath, startLine, endLine);
+        if (methodNameAndOffset != null) {
+            location.setMethodName((String) methodNameAndOffset[0]);
+            location.setOffset((int) methodNameAndOffset[1]);
+        }
 
         return location;
     }
@@ -353,11 +350,6 @@ public class SonarQubeBaseAnalyzer extends BaseAnalyzer {
     @Autowired
     public void setCommitDao(CommitDao commitDao) {
         this.commitDao = commitDao;
-    }
-
-    @Autowired
-    public void setIssueAnalyzerDao(IssueAnalyzerDao issueAnalyzerDao) {
-        this.issueAnalyzerDao = issueAnalyzerDao;
     }
 
 }

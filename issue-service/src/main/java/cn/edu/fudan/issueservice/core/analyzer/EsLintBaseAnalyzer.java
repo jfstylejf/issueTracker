@@ -97,7 +97,7 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
 
     public void addIgnoreFile(String file) {
         try (BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file, true)))) {
-            out.write("/src/assets");
+            out.write("src/assets");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -268,7 +268,7 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
         location.setRawIssueId(rawIssue.getUuid());
         //set location class name and method name
         //fixme todo import condition and statement
-        setLocationClassNameAndMethodName(line, endLine, location, filePath, jsTree);
+        setLocationClassNameAndMethodName(line, endLine, location, jsTree);
         //set bug lines
         location.setBugLines(endLine + "-" + line);
         locations.add(location);
@@ -276,7 +276,7 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
         return locations;
     }
 
-    private void setLocationClassNameAndMethodName(int line, int endLine, Location location, String filePath, JsTree jsTree) {
+    private void setLocationClassNameAndMethodName(int line, int endLine, Location location, JsTree jsTree) {
         //set class name
         handleClassName(line, endLine, location, jsTree);
         //handle statement
@@ -292,6 +292,7 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
         for (ClassNode classInfo : classInfos) {
             if (classInfo.getBeginLine() <= line && classInfo.getEndLine() >= endLine) {
                 location.setClassName(classInfo.getName());
+                location.setOffset(line - classInfo.getBeginLine());
                 break;
             }
         }
@@ -303,6 +304,7 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
             String fieldName = fieldInfo.getSimpleType() + " " + fieldInfo.getSimpleName();
             if (fieldInfo.getBeginLine() <= line && fieldInfo.getEndLine() >= endLine) {
                 location.setMethodName(fieldName);
+                location.setOffset(line - fieldInfo.getBeginLine());
                 break;
             }
         }
@@ -314,6 +316,7 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
         for (MethodNode methodInfo : methodInfos) {
             if (methodInfo.getBeginLine() <= line && methodInfo.getEndLine() >= endLine) {
                 location.setMethodName(methodInfo.getSignature());
+                location.setOffset(line - methodInfo.getBeginLine());
                 break;
             }
         }
@@ -326,6 +329,7 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
                 String statementCode = StringsUtil.removeBr(statementInfo.getBody());
                 String statement = statementCode.substring(0, Math.min(statementCode.length(), 21));
                 location.setMethodName(statement);
+                location.setOffset(line - statementInfo.getBeginLine());
                 break;
             }
         }
@@ -367,7 +371,7 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
         esLintBaseAnalyzer.setResultFileHome("/Users/beethoven/Desktop/saic/issue-tracker-web");
         esLintBaseAnalyzer.analyze("/Users/beethoven/Desktop/saic/issue-tracker-web", "test", "4f42e73bda0a80d044a013ef73da4d8af0f4c981");
         JsFileParser.setBabelPath("/Users/beethoven/Desktop/saic/IssueTracker-Master/issue-service/src/main/resources/node/babelEsLint.js");
-        JsTree jsTree = new JsTree(Collections.singletonList("/Users/beethoven/Desktop/saic/issue-tracker-web/src/issue.js"), "1", "/Users/beethoven/Desktop/saic/issue-tracker-web");
+        JsTree jsTree = new JsTree(Collections.singletonList("/Users/beethoven/Desktop/saic/issue-tracker-web/src/issue.js"), "", "");
         esLintBaseAnalyzer.handleFieldName(24, 25, new Location(), jsTree);
     }
 }
