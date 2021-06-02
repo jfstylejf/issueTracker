@@ -465,7 +465,7 @@ public class MeasureDeveloperController {
 
     @GetMapping("/measure/developer/data/commit-standard")
     public ResponseBean<ProjectFrontEnd> getDeveloperDataCommitStandard(@RequestParam(value = "project_names",required = false) String projectNameList,
-                                                               @RequestParam(value = "developers",required = true) String developerList,
+                                                               @RequestParam(value = "developers",required = false,defaultValue = "") String developerList,
                                                                @RequestParam(value = "since" , required = false) String since,
                                                                @RequestParam(value = "until",required = false) String until,
                                                                @RequestParam(required = false, defaultValue = "1")int page,

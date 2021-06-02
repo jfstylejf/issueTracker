@@ -1286,7 +1286,8 @@ public class MeasureDeveloperService {
          List<String> visibleRepoList = projectDao.getVisibleRepoListByProjectName(projectNameList,token);
          // 获取开发者提交规范列表
          Query query = new Query(token,since,until,null,visibleRepoList);
-         List<DeveloperCommitStandard> developerCommitStandardList = getCommitStandard(query,Arrays.asList(developers.split(split)));
+         List<String> developerNameList = !"".equals(developers) ? Arrays.asList(developers.split(split)) : new ArrayList<>();
+         List<DeveloperCommitStandard> developerCommitStandardList = getCommitStandard(query,developerNameList);
          // 构建人员总览提交规范性类
          for (DeveloperCommitStandard developerCommitStandard : developerCommitStandardList) {
              DeveloperDataCommitStandard developerDataCommitStandard = DeveloperDataCommitStandard.builder()
