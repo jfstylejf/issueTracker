@@ -244,14 +244,17 @@ public class MeasureDeveloperController {
         try{
             until = DateTimeUtil.processUntil(until);
             String token = request.getHeader("token");
-            List<String> repoUuidList;
-            if(projectName!=null && !"".equals(projectName)) {
-                repoUuidList = projectDao.getProjectRepoList(projectName,token);
+            List<String> repoUuidList = projectDao.getVisibleRepoListByProjectNameAndRepo(projectName,repoUuid,token);
+            List<String> developerList = new ArrayList<>();
+            if (developer!=null && !"".equals(developer)) {
+                developerList.add(developer);
             }else {
-                repoUuidList = projectDao.involvedRepoProcess(repoUuid,token);
+                developerList = projectDao.getDeveloperList(new Query(token,since,until,null,repoUuidList));
             }
-            Query query = new Query(token,since,until,developer,repoUuidList);
-            List<DeveloperCommitStandard> developerCommitStandardList = measureDeveloperService.getCommitStandard(query,developers);
+            List<DeveloperCommitStandard> developerCommitStandardList = new ArrayList<>();
+            for (String committer : developerList) {
+                developerCommitStandardList.add(measureDeveloperService.getDeveloperCommitStandard(new Query(token,since,until,committer,repoUuidList)));
+            }
             if(order!=null && !"".equals(order)) {
                 Collections.sort(developerCommitStandardList, (o1, o2) -> {
                     if(asc) {
@@ -469,13 +472,17 @@ public class MeasureDeveloperController {
                                                                @RequestParam(required = false, defaultValue = "1")int page,
                                                                @RequestParam(required = false, defaultValue = "10")int ps,
                                                                @RequestParam(required = false, defaultValue = "") String order,
-                                                               @RequestParam(required = false, defaultValue = "") String asc,
+                                                               @RequestParam(required = false, defaultValue = "false") boolean asc,
                                                                HttpServletRequest request )
     {
         try {
             String token = request.getHeader("token");
             List<DeveloperDataCommitStandard> developerDataCommitStandardList = measureDeveloperService.getDeveloperDataCommitStandard(projectNameList,developerList,token,since,until);
-            developerDataCommitStandardList.sort((o1, o2) -> Double.compare(o2.getCommitStandard(), o1.getCommitStandard()));
+            if (asc) {
+                developerDataCommitStandardList.sort((o1, o2) -> Double.compare(o1.getCommitStandard(), o2.getCommitStandard()));
+            }else {
+                developerDataCommitStandardList.sort((o1, o2) -> Double.compare(o2.getCommitStandard(), o1.getCommitStandard()));
+            }
             int totalPage = developerDataCommitStandardList.size() % ps == 0 ? developerDataCommitStandardList.size()/ps : developerDataCommitStandardList.size()/ps + 1;
             List<DeveloperDataCommitStandard> selectedDeveloperDataCommitStandardList = developerDataCommitStandardList.subList(ps*(page-1), Math.min(ps * page, developerDataCommitStandardList.size()));
             ProjectFrontEnd<DeveloperDataCommitStandard> developerDtaCommitStandardProjectFrontEnd = new ProjectFrontEnd<>(page,totalPage,developerDataCommitStandardList.size(),selectedDeveloperDataCommitStandardList);

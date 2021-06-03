@@ -106,7 +106,6 @@ public class ProjectDao {
                 insertProjectInfo(query.getToken());
             }
             // 获取开发者的 gitName 列表
-            List<String> developerGitNameList = getDeveloperList(new Query(query.getToken(),query.getSince(),query.getUntil(),null,Collections.singletonList(repoUuid)));
             List<Map<String,String>> developerRepoInfoList = projectMapper.getDeveloperRepoInfoList(repoUuid,query.getSince(),query.getUntil());
             repoInfoMap.get(repoUuid).setInvolvedDeveloperNumber(developerRepoInfoList.size());
             for(Map<String,String> map : developerRepoInfoList) {

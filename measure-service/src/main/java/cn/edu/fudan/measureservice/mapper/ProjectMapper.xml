@@ -56,7 +56,7 @@
     </select>
 
     <select id="getCommitGitNameList"  resultType="String">
-        SELECT DISTINCT developer FROM issueTracker.commit
+        SELECT distinct developer FROM issueTracker.commit
         <where>
             <trim prefixOverrides="and">
                 <if test="repoUuidList != null and repoUuidList.size > 0">

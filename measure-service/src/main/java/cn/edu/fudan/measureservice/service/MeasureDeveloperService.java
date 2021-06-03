@@ -381,7 +381,7 @@ public class MeasureDeveloperService {
         int developerJiraCount = 0;
         try {
             Query query = new Query(token,since,until,developer,Collections.singletonList(repoUuid));
-            DeveloperCommitStandard developerCommitStandard = getCommitStandard(query,null).get(0);
+            DeveloperCommitStandard developerCommitStandard = getDeveloperCommitStandard(query);
             developerJiraCount = developerCommitStandard.getDeveloperJiraCommitCount();
         }catch (Exception e) {
             log.error(e.getMessage());
@@ -846,46 +846,33 @@ public class MeasureDeveloperService {
     /**
      * 按照开发者聚合获取提交规范性
      * @param query 查询条件
-     * @param developerAccountNames 查询人列表，此为聚合后的名字
      * @return
      */
     @SuppressWarnings("unchecked")
-    public List<DeveloperCommitStandard> getCommitStandard(Query query , List<String> developerAccountNames) {
-        List<DeveloperCommitStandard> developerCommitStandardList = new ArrayList<>();
-        List<String> developerList = new ArrayList<>();
-        // 根据查询条件对 查询人列表 处理
-        if(query.getDeveloper()!=null && !"".equals(query.getDeveloper())) {
-            developerList.add(query.getDeveloper());
-        }else if(developerAccountNames!=null && developerAccountNames.size()>0) {
-            developerList = developerAccountNames;
-        }else {
-            developerList = projectDao.getDeveloperList(query);
-        }
-        for(String developer : developerList) {
-            query.setDeveloper(developer);
-            // 获取开发者对应的合法提交信息
-            log.info("start to get {}",developer);
-            List<Map<String,Object>> developerValidCommitInfo = measureDao.getProjectValidCommitMsg(query);
-            // 封装 DeveloperCommitStandard
-            DeveloperCommitStandard developerCommitStandard = new DeveloperCommitStandard();
-            developerCommitStandard.setDeveloperName(developer);
-            developerCommitStandard.setDeveloperValidCommitCount(developerValidCommitInfo.size());
-            int developerJiraCommitCount = 0, developerNotJiraCommitCount = 0;
-            for(Map<String,Object> commitInfo : developerValidCommitInfo) {
-                boolean isValid = (int) commitInfo.get("is_compliance") == 1;
-                if (isValid) {
-                    developerJiraCommitCount++;
-                }else {
-                    developerNotJiraCommitCount++;
-                }
+    public DeveloperCommitStandard getDeveloperCommitStandard(Query query) {
+        assert query.getDeveloper() != null && !"".equals(query.getDeveloper());
+        // 获取开发者对应的合法提交信息
+        log.info("start to get {}",query.getDeveloper());
+        List<Map<String,Object>> developerValidCommitInfo = measureDao.getProjectValidCommitMsg(query);
+        // 封装 DeveloperCommitStandard
+        DeveloperCommitStandard developerCommitStandard = new DeveloperCommitStandard();
+        developerCommitStandard.setDeveloperName(query.getDeveloper());
+        developerCommitStandard.setDeveloperValidCommitCount(developerValidCommitInfo.size());
+        int developerJiraCommitCount = 0, developerNotJiraCommitCount = 0;
+        for(Map<String,Object> commitInfo : developerValidCommitInfo) {
+            boolean isValid = (int) commitInfo.get("is_compliance") == 1;
+            if (isValid) {
+                developerJiraCommitCount++;
+            }else {
+                developerNotJiraCommitCount++;
             }
-            developerCommitStandard.setDeveloperJiraCommitCount(developerJiraCommitCount);
-            developerCommitStandard.setDeveloperInvalidCommitCount(developerNotJiraCommitCount);
-            double commitStandard = developerCommitStandard.getDeveloperValidCommitCount() != 0 ? developerCommitStandard.getDeveloperJiraCommitCount() * 1.0 / developerCommitStandard.getDeveloperValidCommitCount() : 0;
-            developerCommitStandard.setCommitStandard(commitStandard);
-            developerCommitStandardList.add(developerCommitStandard);
         }
-        return developerCommitStandardList;
+        developerCommitStandard.setDeveloperJiraCommitCount(developerJiraCommitCount);
+        developerCommitStandard.setDeveloperInvalidCommitCount(developerNotJiraCommitCount);
+        double commitStandard = developerCommitStandard.getDeveloperValidCommitCount() != 0 ? developerCommitStandard.getDeveloperJiraCommitCount() * 1.0 / developerCommitStandard.getDeveloperValidCommitCount() : 0;
+        developerCommitStandard.setCommitStandard(Double.parseDouble(df.format(commitStandard)));
+
+        return developerCommitStandard;
     }
 
     /**
@@ -1068,7 +1055,7 @@ public class MeasureDeveloperService {
         // 获取查询条件下的提交明细
         Query query = new Query(null,null,null,null,repoUuidList);
         List<Map<String,Object>> projectValidCommitMsg;
-        if (committer != null || !"".equals(committer)) {
+        if (committer != null && !"".equals(committer)) {
             query.setDeveloper(committer);
         }
         projectValidCommitMsg = measureDao.getProjectValidCommitMsg(query);
@@ -1275,8 +1262,12 @@ public class MeasureDeveloperService {
          List<String> visibleRepoList = projectDao.getVisibleRepoListByProjectName(projectNameList,token);
          // 获取开发者提交规范列表
          Query query = new Query(token,since,until,null,visibleRepoList);
-         List<String> developerNameList = !"".equals(developers) ? Arrays.asList(developers.split(split)) : new ArrayList<>();
-         List<DeveloperCommitStandard> developerCommitStandardList = getCommitStandard(query,developerNameList);
+         Set<String> developerNameList = !"".equals(developers) ? new HashSet<>(Arrays.asList(developers.split(split))) : projectDao.getDeveloperList(visibleRepoList);
+         List<DeveloperCommitStandard> developerCommitStandardList = new ArrayList<>();
+         for (String developer : developerNameList) {
+             DeveloperCommitStandard developerCommitStandard = ((MeasureDeveloperService) AopContext.currentProxy()).getDeveloperCommitStandard(new Query(token,since,until,developer,visibleRepoList));
+             developerCommitStandardList.add(developerCommitStandard);
+         }
          // 构建人员总览提交规范性类
          for (DeveloperCommitStandard developerCommitStandard : developerCommitStandardList) {
              DeveloperDataCommitStandard developerDataCommitStandard = DeveloperDataCommitStandard.builder()
