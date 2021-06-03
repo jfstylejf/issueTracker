@@ -133,6 +133,7 @@ public class MeasureDeveloperService {
 
     @MethodMeasureAnnotation
     @SuppressWarnings("unchecked")
+    @SneakyThrows
     private Efficiency getDeveloperEfficiency(Query query, String branch,
                                               int developerNumber){
         String repoUuid = query.getRepoUuidList().get(0);
@@ -153,17 +154,21 @@ public class MeasureDeveloperService {
         int totalDelStatement = 0;
         int developerValidLine = 0;
         int totalValidLine = 0;
-        if (allDeveloperStatements!=null && allDeveloperStatements.size()>0) {
-            for (Map<String,Object> developerStatement : allDeveloperStatements) {
-                if (developerStatement.get("developerName").equals(query.getDeveloper())) {
-                    developerAddStatement = (int) ((Map<String,Object>) developerStatement.get("add")).get("total");
-                    developerDelStatement = (int) ((Map<String,Object>) developerStatement.get("delete")).get("total");
-                    developerValidLine = (int) ((Map<String,Object>) developerStatement.get("current")).get("total");
+        try {
+            if (allDeveloperStatements!=null && allDeveloperStatements.size()>0) {
+                for (Map<String,Object> developerStatement : allDeveloperStatements) {
+                    if (developerStatement.get("developerName").equals(query.getDeveloper())) {
+                        developerAddStatement = (int) ((Map<String,Object>) developerStatement.get("add")).get("total");
+                        developerDelStatement = (int) ((Map<String,Object>) developerStatement.get("delete")).get("total");
+                        developerValidLine = (int) ((Map<String,Object>) developerStatement.get("current")).get("total");
+                    }
+                    totalAddStatement += (int) ((Map<String,Object>) developerStatement.get("add")).get("total");
+                    totalDelStatement += (int) ((Map<String,Object>) developerStatement.get("delete")).get("total");
+                    totalValidLine += (int) ((Map<String,Object>) developerStatement.get("current")).get("total");
                 }
-                totalAddStatement += (int) ((Map<String,Object>) developerStatement.get("add")).get("total");
-                totalDelStatement += (int) ((Map<String,Object>) developerStatement.get("delete")).get("total");
-                totalValidLine += (int) ((Map<String,Object>) developerStatement.get("current")).get("total");
             }
+        }catch (Exception e) {
+            e.getMessage();
         }
 
         return Efficiency.builder()
@@ -214,11 +219,15 @@ public class MeasureDeveloperService {
         int selfIncreasedCloneLines = 0;
         int eliminateCloneLines = 0;
         int allEliminateCloneLines = 0;
-        if (cloneMeasure != null){
-            increasedCloneLines = (int) cloneMeasure.get(0).get("increasedCloneLines");
-            selfIncreasedCloneLines = (int) cloneMeasure.get(0).get("selfIncreasedCloneLines");
-            eliminateCloneLines = (int) cloneMeasure.get(0).get("eliminateCloneLines");
-            allEliminateCloneLines = (int) cloneMeasure.get(0).get("allEliminateCloneLines");
+        try {
+            if (cloneMeasure != null){
+                increasedCloneLines = (int) cloneMeasure.get(0).get("increasedCloneLines");
+                selfIncreasedCloneLines = (int) cloneMeasure.get(0).get("selfIncreasedCloneLines");
+                eliminateCloneLines = (int) cloneMeasure.get(0).get("eliminateCloneLines");
+                allEliminateCloneLines = (int) cloneMeasure.get(0).get("allEliminateCloneLines");
+            }
+        }catch (Exception e) {
+            e.getMessage();
         }
         List<Map<String,Object>> developerChangeCodeLifeCycle = restInterfaceManager.getCodeLifeCycle(repoUuid,developer,since,until,Statement_developer,Change);
         List<Map<String,Object>> developerDeleteCodeLifeCycle = restInterfaceManager.getCodeLifeCycle(repoUuid,developer,since,until,Statement_developer,Delete);
@@ -226,27 +235,33 @@ public class MeasureDeveloperService {
         int changedCodeMAXAge = 0;
         double deletedCodeAVGAge = 0;
         int deletedCodeMAXAge = 0;
-        if(developerChangeCodeLifeCycle!=null && developerChangeCodeLifeCycle.size()>0) {
-            changedCodeAVGAge = (double) developerChangeCodeLifeCycle.get(0).get("average");
-            changedCodeMAXAge = (int) developerChangeCodeLifeCycle.get(0).get("max");
+        try {
+            if(developerChangeCodeLifeCycle!=null && developerChangeCodeLifeCycle.size()>0) {
+                changedCodeAVGAge = (double) developerChangeCodeLifeCycle.get(0).get("average");
+                changedCodeMAXAge = (int) developerChangeCodeLifeCycle.get(0).get("max");
+            }
+            if (developerDeleteCodeLifeCycle!=null && developerDeleteCodeLifeCycle.size()>0) {
+                deletedCodeAVGAge = (double) developerDeleteCodeLifeCycle.get(0).get("average");
+                deletedCodeMAXAge = (int) developerDeleteCodeLifeCycle.get(0).get("max");
+            }
+        }catch (Exception e) {
+            e.printStackTrace();
         }
-        if (developerDeleteCodeLifeCycle!=null && developerDeleteCodeLifeCycle.size()>0) {
-            deletedCodeAVGAge = (double) developerDeleteCodeLifeCycle.get(0).get("average");
-            deletedCodeMAXAge = (int) developerDeleteCodeLifeCycle.get(0).get("max");
-        }
-
         List<Map<String,Object>> focusMeasure = restInterfaceManager.getFocusFilesCount(repoUuid,null,since,until);
         int totalChangedFile = 0;
         int developerFocusFile = 0;
-        if (focusMeasure!=null && focusMeasure.size()>0){
-            for (Map<String,Object> focus : focusMeasure) {
-                if (focus.get("developerName").equals(developer)) {
-                    developerFocusFile = (int) focus.get("num");
+        try {
+            if (focusMeasure!=null && focusMeasure.size()>0){
+                for (Map<String,Object> focus : focusMeasure) {
+                    if (focus.get("developerName").equals(developer)) {
+                        developerFocusFile = (int) focus.get("num");
+                    }
+                    totalChangedFile += (int) focus.get("num");
                 }
-                totalChangedFile += (int) focus.get("num");
             }
+        }catch (Exception e) {
+            e.printStackTrace();
         }
-
         int repoAge = repoMeasureMapper.getRepoAge(repoUuid);
 
 
@@ -294,7 +309,7 @@ public class MeasureDeveloperService {
             repoName = repoName.replace("/","");
         }
         //获取程序员在本项目中第一次提交commit的日期
-        String developerFirstCommitTime = projectDao.getDeveloperFirstCommitDate(developer,since,until,repoUuid);
+        String developerFirstCommitTime = projectDao.getDeveloperFirstCommitDate(developer,repoUuid);
         LocalDate firstCommitDate = LocalDate.parse(developerFirstCommitTime,dtf);
         firstCommitDate = firstCommitDate.plusDays(1);
 
@@ -515,7 +530,7 @@ public class MeasureDeveloperService {
         //获取第一次提交commit的日期
         List<cn.edu.fudan.measureservice.portrait2.DeveloperPortrait> developerPortraitList = new ArrayList<>();
         for(String key : developerMetricMap.keySet()) {
-            String developerFirstCommitTime = projectDao.getDeveloperFirstCommitDate(key,null,null,null);
+            String developerFirstCommitTime = projectDao.getDeveloperFirstCommitDate(developer,null);
             LocalDate firstCommitDate = LocalDate.parse(developerFirstCommitTime,dtf);
             firstCommitDate = firstCommitDate.plusDays(1);
             //todo 日后需要添加程序员类型接口 目前统一认为是java后端工程师
@@ -704,22 +719,18 @@ public class MeasureDeveloperService {
      * @return Developer
      */
     // fixme 新版本 获得一个开发者的画像 (Contribution,Quality,Effiency)
-    @Cacheable(cacheNames = {"developerPortrait"})
-    public DeveloperPortrait getDeveloperPortrait(Query query,Map<String,List<DeveloperRepoInfo>> developerRepoInfos) {
-        if(!developerRepoInfos.containsKey(query.getDeveloper())) {
-            log.warn("查询库中无该开发者 {}：",query.getDeveloper());
-            return null;
-        }
-        List<DeveloperRepoInfo> developerRepoInfoList = developerRepoInfos.get(query.getDeveloper());
-        orderByDeveloperFirstCommitDate(developerRepoInfoList);
-        String firstCommitDate = developerRepoInfoList.get(0).getFirstCommitDate();
+    public DeveloperPortrait getDeveloperPortrait(Query query) {
+        Objects.requireNonNull(query.getDeveloper());
+        // 获取开发者所参与库下最早的提交时间
+        String firstCommitDate = projectDao.getDeveloperFirstCommitDate(query.getDeveloper(),null);
         String developerType = "JAVA后端工程师";
         int totalCommitCount = 0;
         int totalStatement = 0;
         List<DeveloperRepositoryMetric> developerRepositoryMetrics = new ArrayList<>();
-        for(DeveloperRepoInfo repoInfo : developerRepoInfoList) {
-            log.info("get portrait of {} in repo : {}",query.getDeveloper(),repoInfo.getRepoInfo().getRepoName());
-            DeveloperRepositoryMetric developerRepoMetric = getDeveloperRepositoryMetric(repoInfo,query);
+        // 获取开发者在每个库下的画像
+        for (String repoUuid : query.getRepoUuidList()) {
+            log.info("get portrait of {} in repo : {}",query.getDeveloper(),repoUuid);
+            DeveloperRepositoryMetric developerRepoMetric = ((MeasureDeveloperService) AopContext.currentProxy()).getDeveloperRepositoryMetric(query.getDeveloper(),repoUuid,query.getToken());
             totalCommitCount += developerRepoMetric.getTotalCommitCount();
             totalStatement += developerRepoMetric.getTotalStatement();
             developerRepositoryMetrics.add(developerRepoMetric);
@@ -731,28 +742,27 @@ public class MeasureDeveloperService {
 
     /**
      * 开发者单库下的画像数据
-     * @param developerRepoInfo 开发者库信息
-     * @param query 查询条件
+     * @param developer 查询开发者
+     * @param repoUuid 查询库 id
      * @return DeveloperRepositoryMetric 开发者库画像
      */
-    public DeveloperRepositoryMetric getDeveloperRepositoryMetric(DeveloperRepoInfo developerRepoInfo,Query query) {
-        RepoInfo repoInfo = developerRepoInfo.getRepoInfo();
-        String projectName = repoInfo.getProjectName();
-        String repoName = repoInfo.getRepoName();
-        String repoUuid = repoInfo.getRepoUuid();
-        int developerNumber = repoInfo.getInvolvedDeveloperNumber();
-        String firstCommitDate = developerRepoInfo.getFirstCommitDate();
-        query.setRepoUuidList(Collections.singletonList(repoUuid));
+    @SneakyThrows
+    @Cacheable(value = "developerRepositoryMetric",key = "#developer+'_'+#repoUuid")
+    public DeveloperRepositoryMetric getDeveloperRepositoryMetric(String developer,String repoUuid,String token) {
+        String projectName = projectDao.getProjectName(repoUuid);
+        String repoName = projectDao.getRepoName(repoUuid);
+        int developerNumber = projectDao.getDeveloperList(repoUuid).size();
+        String firstCommitDate = projectDao.getDeveloperFirstCommitDate(developer,repoUuid);
         // fixme 数据经由Repostory类自动获取
         // Repository repository = new Repository(query,repoName,projectName);
         int developerStatement = 0;
-        List<Map<String,Object>> developerStatements = restInterfaceManager.getStatements(repoUuid,query.getSince(),query.getUntil(),query.getDeveloper(),Statement_developer);
+        List<Map<String,Object>> developerStatements = restInterfaceManager.getStatements(repoUuid,null,null,developer,Statement_developer);
         if (developerStatements.size()>0) {
             developerStatement = (int) developerStatements.get(0).get("total");
         }
         //----------------------------------开发效率相关指标-------------------------------------
         // fixme 这边等project/all接口更新后加入branch字段
-        Efficiency efficiency = getDeveloperEfficiency(query, "", developerNumber);
+        Efficiency efficiency = getDeveloperEfficiency(new Query(token,null,null,developer,Collections.singletonList(repoUuid)), "", developerNumber);
         log.info(efficiency.toString());
         int totalLOC = efficiency.getTotalLOC();
         int developerAddStatement = efficiency.getDeveloperAddStatement();
@@ -763,14 +773,14 @@ public class MeasureDeveloperService {
         int developerCommitCount = efficiency.getDeveloperCommitCount();
 
         //----------------------------------代码质量相关指标-------------------------------------
-        Quality quality = getDeveloperQuality(repoUuid,query.getDeveloper(),query.getSince(),query.getUntil(),TOOL,query.getToken(),developerNumber,totalLOC);
+        Quality quality = getDeveloperQuality(repoUuid,developer,null,null,TOOL,token,developerNumber,totalLOC);
         log.info(quality.toString());
 
         //----------------------------------开发能力相关指标-------------------------------------
-        Competence competence = getDeveloperCompetence(repoUuid,query.getSince(),query.getUntil(),query.getDeveloper(),developerNumber,developerAddStatement,totalAddStatement,developerValidLine,totalValidLine);
+        Competence competence = getDeveloperCompetence(repoUuid,null,null,developer,developerNumber,developerAddStatement,totalAddStatement,developerValidLine,totalValidLine);
         log.info(competence.toString());
 
-        return new DeveloperRepositoryMetric(firstCommitDate,developerStatement,developerCommitCount,repoName,repoUuid,query.getDeveloper(),efficiency,quality,competence);
+        return new DeveloperRepositoryMetric(firstCommitDate,developerStatement,developerCommitCount,repoName,repoUuid,developer,efficiency,quality,competence);
     }
 
 
@@ -780,29 +790,20 @@ public class MeasureDeveloperService {
      * @return 开发者画像相关数据 key : DutyType,involvedRepoCount,totalLevel,value,quality,efficiency
      * @throws ParseException
      */
-    public synchronized void getDeveloperList(Query redisQuery) throws ParseException {
-        Query query = new Query(redisQuery);
+    public synchronized void getDeveloperList(Query query) throws ParseException {
         if(query.getRepoUuidList().size()==0) {
             log.warn("do not have any authorized repo to see");
         }
-        Map<String,List<DeveloperRepoInfo>> developerRepoInfos = projectDao.getDeveloperRepoInfoList(query);
-        Map<String,String> developerDutyType = projectDao.getDeveloperDutyType(developerRepoInfos.keySet());
         List<DeveloperLevel> developerLevelList = new ArrayList<>();
-        // fixme 单个人员的画像补全 , 需要建一个全局变量，来保存developer相关的developerRepoInfo
-        for(String developer : developerRepoInfos.keySet()) {
-            Map<String,Object> dev = new HashMap<>();
+        Set<String> developerSet = projectDao.getDeveloperList(query.getRepoUuidList());
+        // 获取每个开发者的画像等级
+        for(String developer : developerSet) {
             log.info("start to get portrait of {}",developer);
-            query.setDeveloper(developer);
-            dev.put("developer",developer);
-            String dutyType = developerDutyType.get(developer);
-            if("1".equals(dutyType)) {
-                dutyType = "在职";
-            } else{
-                dutyType = "离职";
-            }
-            int involvedRepoCount = developerRepoInfos.get(developer).size();
-            dev.put("involvedRepoCount",involvedRepoCount);
-            DeveloperPortrait developerPortrait = getDeveloperPortrait(query,developerRepoInfos);
+            Query temp = new Query(query.getToken(),null,null,developer,query.getRepoUuidList());
+            // 获取开发者任职状态
+            String dutyType = projectDao.getDeveloperDutyType(developer);
+            int involvedRepoCount = projectDao.getDeveloperInvolvedRepoNum(developer);
+            DeveloperPortrait developerPortrait = ((MeasureDeveloperService) AopContext.currentProxy()).getDeveloperPortrait(temp);
             double totalLevel = developerPortrait.getLevel();
             double value = developerPortrait.getValue();
             double quality = developerPortrait.getQuality();

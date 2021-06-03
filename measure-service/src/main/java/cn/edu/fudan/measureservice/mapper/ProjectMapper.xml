@@ -82,48 +82,27 @@
         where repo_id = #{repoUuid}
     </select>
 
-    <select id="getDeveloperRepoInfoList" resultType="java.util.HashMap">
-        SELECT developer,repo_id,SUBSTRING(min(commit_time),1,10) AS firstCommitDate FROM issueTracker.commit
-        <where>
-            <trim prefixOverrides="and">
-                <if test="repoUuid != null and repoUuid !='' ">
-                    and repo_id = #{repoUuid}
-                </if>
-
-                <if test="since != null and since != '' ">
-                    and <![CDATA[ commit_time >= #{since} ]]>
-                </if>
-
-                <if test="until != null and until != '' ">
-                    and <![CDATA[ commit_time <= #{until} ]]>
-                </if>
-            </trim>
-        </where>
-        Group By developer
-    </select>
-
     <select id="getDeveloperFirstCommitDate" resultType="java.util.HashMap" >
-        SELECT developer,SUBSTRING(min(commit_time),1,10) AS firstCommitDate FROM issueTracker.commit
+        SELECT SUBSTRING(min(commit_time),1,10) AS firstCommitDate FROM issueTracker.commit
         <where>
             <trim prefixOverrides="and">
                 <if test="repoUuid != null and repoUuid !='' ">
                     and repo_id = #{repoUuid}
                 </if>
 
-                <if test="since != null and since != '' ">
-                    and <![CDATA[ commit_time >= #{since} ]]>
+                <if test="gitNameList != null and gitNameList.size > 0">
+                    and developer in
+                    <foreach collection="gitNameList" separator="," open="(" close=")" item="gitName">
+                        #{gitName}
+                    </foreach>
                 </if>
-
-                <if test="until != null and until != '' ">
-                    and <![CDATA[ commit_time <= #{until} ]]>
-                </if>
-                and developer = #{developer}
             </trim>
         </where>
     </select>
 
-    <select id="getDeveloperDutyTypeList" resultType="java.util.HashMap">
-        SELECT distinct account_name,account_status FROM issueTracker.account
+    <select id="getDeveloperDutyType" resultType="String">
+        SELECT account_status FROM issueTracker.account
+        WHERE account_name = #{developer}
     </select>
 
     <select id="getDeveloperRepoList" parameterType="String" resultType="String">
@@ -275,5 +254,19 @@
         SELECT distinct (repo_uuid) FROM issueTracker.sub_repository
         WHERE project_name = #{projectName}
     </select>
-    
+
+    <select id="getDeveloperInvolvedRepoNum" resultType="int">
+        SELECT distinct repo_id FROM issueTracker.commit
+        <where>
+            <trim prefixOverrides="and">
+                <if test="gitNameList != null and gitNameList != '' ">
+                    and developer in
+                    <foreach collection="gitNameList" separator="," open="(" close=")" item="gitName">
+                        #{gitName}
+                    </foreach>
+                </if>
+            </trim>
+        </where>
+    </select>
+
 </mapper>

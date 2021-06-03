@@ -161,24 +161,14 @@ public class MeasureDeveloperController {
     public ResponseBean<DeveloperPortrait> getDeveloperPortrait(@RequestParam("developer")String developer,
                                                                 @RequestParam(value = "repo_uuids",required = false) String repoUuid,
                                                                 @RequestParam(value = "project_name",required = false) String projectName,
-                                                                @RequestParam(value = "since", required = false)String since,
-                                                                @RequestParam(value = "until", required = false)String until,
                                                                 HttpServletRequest request){
 
         try{
-            until = DateTimeUtil.processUntil(until);
             String token = request.getHeader("token");
-            List<String> repoUuidList;
-            if(projectName!=null && !"".equals(projectName)) {
-                repoUuidList = projectDao.getProjectRepoList(projectName,token);
-            }else {
-                repoUuidList = projectDao.involvedRepoProcess(repoUuid,token);
-            }
+            List<String> repoUuidList = projectDao.getVisibleRepoListByProjectNameAndRepo(projectName,repoUuid,token);
             // todo 再根据开发者实际参与的库筛选一遍
-            Query query = new Query(token,since,until,developer,repoUuidList);
-            //fixme
-            Map<String,List<DeveloperRepoInfo>> developerRepoInfos = projectDao.getDeveloperRepoInfoList(query);
-            return new ResponseBean<>(HttpStatus.OK.value(),"success", measureDeveloperService.getDeveloperPortrait(query,developerRepoInfos));
+            Query query = new Query(token,null,null,developer,repoUuidList);
+            return new ResponseBean<>(HttpStatus.OK.value(),"success", measureDeveloperService.getDeveloperPortrait(query));
         }catch (Exception e){
             e.printStackTrace();
             return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(),"failed "+e.getMessage(),null);

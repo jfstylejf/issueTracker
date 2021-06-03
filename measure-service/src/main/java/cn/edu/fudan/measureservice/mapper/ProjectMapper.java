@@ -30,32 +30,21 @@ public interface ProjectMapper {
      */
     List<String> getRepoCommitGitNameList(@Param("repoUuid") String repoUuid);
 
-    /**
-     * 返回开发者在参与库中的信息
-     * @param repoUuid 查询库
-     * @param since 查询起止时间
-     * @param until 查询结束时间
-     * @return key : developerGitName
-     */
-    List<Map<String,String>> getDeveloperRepoInfoList(@Param("repoUuid") String repoUuid,@Param("since")String since, @Param("until")String until);
 
     /**
-     * fixme 改为从 gitName 查
-     * 返回单个开发者在参与库/项目中的第一次提交时间
+     * 返回单个开发者在参与库中的第一次提交时间
      * @param repoUuid 查询库
-     * @param since 查询起止时间
-     * @param until 查询结束时间
-     * @param developer 查询开发者
+     * @param gitNameList 查询开发者 gitName 列表
      * @return
      */
-    Map<String,String> getDeveloperFirstCommitDate(@Param("repoUuid") String repoUuid, @Param("since") String since, @Param("until") String until, @Param("developer") String developer);
-
+    String getDeveloperFirstCommitDate(@Param("repoUuid") String repoUuid, @Param("gitNameList") List<String> gitNameList);
 
     /**
      * 开发者在职状态
-     * @return List<Map<String,String>> key : account_name,account_status
+     * @param developer 查询开发者
+     * @return 在职 1 ， 离职 0
      */
-    List<Map<String,String>> getDeveloperDutyTypeList();
+    String getDeveloperDutyType(@Param("developer") String developer);
 
 
 
@@ -173,6 +162,13 @@ public interface ProjectMapper {
      * @return 项目包含库列表
      */
     List<String> getProjectRepoList(@Param("projectName") String projectName);
+
+    /**
+     * 查询开发者参与库的个数
+     * @param gitNameList 开发者 gitName 列表
+     * @return 参与库个数
+     */
+    int getDeveloperInvolvedRepoNum(@Param("gitNameList") List<String> gitNameList);
 
 
 }
