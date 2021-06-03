@@ -26,4 +26,11 @@
         </where>
     </update>
 
+    <select id="getGitnameByAccountName"  parameterType="String" resultType="String">
+        select account_gitname from account_author
+        <where>
+            account_name = #{majorAccountName}
+        </where>
+    </select>
+
 </mapper>

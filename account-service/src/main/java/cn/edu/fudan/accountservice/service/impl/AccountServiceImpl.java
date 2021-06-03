@@ -256,7 +256,9 @@ public class AccountServiceImpl implements AccountService {
         //修改修改被合并人account_author表中的uuid和account_name
         accountDao.resetSubAccount(subAccountName, majorAccountName, majorAccountUuid);
 
-        return null;
+        //返回该人员对应的git账号
+        return  accountDao.getGitnameByAccountName(majorAccountName);
+
     }
 
     private PagedGridResult setterPagedGrid(List<?> list, Integer page) {

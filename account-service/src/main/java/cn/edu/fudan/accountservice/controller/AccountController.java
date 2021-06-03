@@ -335,8 +335,8 @@ public class AccountController {
                                @RequestParam("subAccountName") String subAccountName,
                                HttpServletRequest request) {
         try{
-            accountService.accountMerge(majorAccountName, subAccountName, request.getHeader(TOKEN));
-            return new ResponseEntity<>(200, "reset success!", null);
+            List<String> accountGitname = accountService.accountMerge(majorAccountName, subAccountName, request.getHeader(TOKEN));
+            return new ResponseEntity<>(200, "reset success!", accountGitname);
         }catch (Exception e){
             return new ResponseEntity<>(401, "reset failed! " + e.getMessage(), null);
         }

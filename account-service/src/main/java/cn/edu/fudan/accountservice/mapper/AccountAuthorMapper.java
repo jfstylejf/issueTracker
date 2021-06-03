@@ -32,4 +32,10 @@ public interface AccountAuthorMapper {
      */
     void resetSubAccount(@Param("subAccountName") String subAccountName, @Param("majorAccountName") String majorAccountName, @Param("majorAccountUuid")String majorAccountUuid);
 
+    /**
+     * 修改被合并人关联信息
+     *
+     * @param majorAccountName 主合并人姓名
+     */
+    List<String> getGitnameByAccountName(@Param("majorAccountName") String majorAccountName);
 }
