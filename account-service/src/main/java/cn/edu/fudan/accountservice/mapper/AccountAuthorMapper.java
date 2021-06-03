@@ -23,4 +23,13 @@ public interface AccountAuthorMapper {
      */
     void batchInsertAccountAuthor(@Param("accountAuthors") List<AccountAuthor> accountAuthors);
 
+    /**
+     * 修改被合并人关联信息
+     *
+     * @param subAccountName 被合并人姓名
+     * @param majorAccountName 主合并人姓名
+     * @param majorAccountUuid 主合并人uuid
+     */
+    void resetSubAccount(@Param("subAccountName") String subAccountName, @Param("majorAccountName") String majorAccountName, @Param("majorAccountUuid")String majorAccountUuid);
+
 }

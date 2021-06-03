@@ -2,6 +2,7 @@ package cn.edu.fudan.accountservice.dao;
 
 import cn.edu.fudan.accountservice.domain.Account;
 import cn.edu.fudan.accountservice.domain.Tool;
+import cn.edu.fudan.accountservice.mapper.AccountAuthorMapper;
 import cn.edu.fudan.accountservice.mapper.AccountMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -13,11 +14,7 @@ public class AccountDao {
 
 
     private AccountMapper accountMapper;
-
-    @Autowired
-    public void setAccountMapper(AccountMapper accountMapper) {
-        this.accountMapper = accountMapper;
-    }
+    private AccountAuthorMapper accountAuthorMapper;
 
     public Account login(String accountName, String password) {
         return accountMapper.login(accountName, password);
@@ -86,5 +83,19 @@ public class AccountDao {
     public String getAccountName(String email) {
         return accountMapper.getAccountName(email);
     }
+
     public void setPasswordByUserName(String username, String encodePassword){accountMapper.setPasswordByUserName(username, encodePassword); }
+
+    public void resetSubAccount(String subAccountName, String majorAccountName, String majorAccountUuid){
+        accountAuthorMapper.resetSubAccount(subAccountName, majorAccountName, majorAccountUuid);}
+
+    @Autowired
+    public void setAccountMapper(AccountMapper accountMapper) {
+        this.accountMapper = accountMapper;
+    }
+
+    @Autowired
+    public void setAccountAuthorMapper(AccountAuthorMapper accountAuthorMapper) {
+        this.accountAuthorMapper = accountAuthorMapper;
+    }
 }
