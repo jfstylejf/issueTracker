@@ -35,6 +35,8 @@ import java.util.List;
 @CrossOrigin
 @RequestMapping("/user")
 public class AccountController {
+    private final String TOKEN = "token";
+
     @Autowired
     private AccountService accountService;
 
@@ -320,6 +322,23 @@ public class AccountController {
         }catch (Exception e){
             e.printStackTrace();
             return new ResponseEntity<>(401, "failed! " + e.getMessage(), null);
+        }
+    }
+
+    @ApiOperation(value="前端人员聚合", httpMethod = "PUT")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "majorAccountName", value = "主合并人姓名", dataType = "String", required = true),
+            @ApiImplicitParam(name = "subAccountName", value = "被合并人姓名", dataType = "String", required = true)
+    })
+    @PutMapping(value = {"/account/merge"})
+    public Object accountMerge(@RequestParam("majorAccountName") String majorAccountName,
+                               @RequestParam("subAccountName") String subAccountName,
+                               HttpServletRequest request) {
+        try{
+            accountService.accountMerge(majorAccountName, subAccountName, request.getHeader(TOKEN));
+            return new ResponseEntity<>(200, "reset success!", null);
+        }catch (Exception e){
+            return new ResponseEntity<>(401, "reset failed! " + e.getMessage(), null);
         }
     }
 

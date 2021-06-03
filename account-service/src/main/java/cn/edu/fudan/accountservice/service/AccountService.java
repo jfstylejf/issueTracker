@@ -139,4 +139,13 @@ public interface AccountService {
      * @return 获取给定条件下 所有的开发者列表 不进行分页
      */
     List<Map<String, Object>> getDevelopers(List<String> repoList, String since, String until);
+
+    /**
+     * 人员手动聚合
+     *
+     * @param majorAccountName 主合并人姓名
+     * @param subAccountName 被合并人姓名
+     * @return List<String>
+     */
+    List<String> accountMerge(String majorAccountName, String subAccountName, String token) throws Exception;
 }

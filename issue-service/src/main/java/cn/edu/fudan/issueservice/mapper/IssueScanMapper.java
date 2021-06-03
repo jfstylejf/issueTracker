@@ -68,13 +68,4 @@ public interface IssueScanMapper {
      * @return 扫描过的issueScan记录
      */
     List<String> getScannedCommitList(String repoUuid, String tool);
-
-    /**
-     * 获取扫描起始commit
-     *
-     * @param repoUuid repoUuid
-     * @return 扫描起始commit
-     */
-    @Select("select start_commit from scan where repo_uuid = #{repoUuid}")
-    String getStartCommitByRepoUuid(String repoUuid);
 }
