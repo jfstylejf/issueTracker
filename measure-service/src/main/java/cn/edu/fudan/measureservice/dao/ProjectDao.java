@@ -106,7 +106,6 @@ public class ProjectDao {
                 insertProjectInfo(query.getToken());
             }
             // 获取开发者的 gitName 列表
-            List<String> developerGitNameList = getDeveloperList(new Query(query.getToken(),query.getSince(),query.getUntil(),null,Collections.singletonList(repoUuid)));
             List<Map<String,String>> developerRepoInfoList = projectMapper.getDeveloperRepoInfoList(repoUuid,query.getSince(),query.getUntil());
             repoInfoMap.get(repoUuid).setInvolvedDeveloperNumber(developerRepoInfoList.size());
             for(Map<String,String> map : developerRepoInfoList) {
@@ -275,48 +274,7 @@ public class ProjectDao {
         }
         return true;
     }
-
-    /**
-     * 获取开发者参与库的合法提交信息（去除Merge）
-     * @param query 查询条件
-     * @return List<Map<String,Object>> key : developer , commit_time , commit_id , message
-     */
-    public List<Map<String,String>> getDeveloperValidCommitMsg(Query query) {
-        List<String> developerGitNameList = ((ProjectDao) AopContext.currentProxy()).getDeveloperGitNameList(query.getDeveloper());
-        return projectMapper.getDeveloperValidCommitMsg(query.getRepoUuidList(),query.getSince(),query.getUntil(),developerGitNameList);
-    }
-
-    /**
-     * 分页获取开发者参与库的合法提交信息（去除Merge）
-     * @param query 查询条件
-     * @return List<Map<String,Object>> key : repo_id, developer , commit_time , commit_id , message
-     */
-    public List<Map<String,String>> getDeveloperValidCommitMsg(Query query, int beginIndex , int ps) {
-        List<String> developerGitNameList = ((ProjectDao) AopContext.currentProxy()).getDeveloperGitNameList(query.getDeveloper());
-        return projectMapper.getDeveloperValidCommitMsgWithPage(query.getRepoUuidList(),query.getSince(),query.getUntil(),developerGitNameList,ps,beginIndex);
-    }
-
-
-    /**
-     * 获取项目包含库的合法提交信息（去除Merge）
-     * @param query 查询条件
-     * @return List<Map<String,Object>> key : repo_id, developer , repo_id, commit_time , commit_id , message
-     */
-    public List<Map<String,String>> getProjectValidCommitMsg(Query query) {
-        return projectMapper.getProjectValidCommitMsg(query.getRepoUuidList(),query.getSince(),query.getUntil());
-    }
-
-    /**
-     * 分页获取项目包括库的合法提交明细（去除Merge）
-     * @param query 查询条件
-     * @param beginIndex 查询起始位置
-     * @param ps 每页大小
-     * @return 分页查询后合法提交明细 key : developer , repo_id, commit_time , commit_id , message
-     */
-    public List<Map<String,String>> getProjectValidCommitMsg(Query query,int beginIndex, int ps) {
-        return projectMapper.getProjectValidCommitMsgWithPage(query.getRepoUuidList(),query.getSince(),query.getUntil(),ps,beginIndex);
-    }
-
+    
     /**
      * 获取开发者的gitName列表
      * @param developer 开发者聚合后名
