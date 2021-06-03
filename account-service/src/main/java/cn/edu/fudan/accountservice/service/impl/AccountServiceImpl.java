@@ -115,9 +115,13 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public Account getAccountByName(String accountName) {
-        if(accountName != null){
-            return accountDao.getAccountByAccountNameExceptAdmin(accountName);
+    public Account getAccountByName(String accountName, Boolean needAdmin) {
+        if(accountName != null ){
+            if(!needAdmin){
+                return  accountDao.getAccountByAccountNameExceptAdmin(accountName);
+            }else{
+                return accountDao.getAccountByAccountName(accountName);
+            }
         }
         return null;
     }
