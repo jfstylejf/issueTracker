@@ -107,6 +107,50 @@ public class MeasureDao {
         return projectBigFileDetailList;
     }
 
+
+    /**
+     * 获取项目包含库的合法提交信息（去除Merge）
+     * @param query 查询条件
+     * @return List<Map<String,Object>> key : repo_id, developer , repo_id, commit_time , commit_id , message , is_compliance
+     */
+    public List<Map<String,Object>> getProjectValidCommitMsg(Query query) {
+        return repoMeasureMapper.getProjectValidCommitMsg(query.getDeveloper(),query.getRepoUuidList(),query.getSince(),query.getUntil());
+    }
+
+    /**
+     * 分页获取项目包括库的合法提交明细（去除Merge）
+     * @param query 查询条件
+     * @param beginIndex 查询起始位置
+     * @param ps 每页大小
+     * @return 分页查询后合法提交明细 key : developer , repo_id, commit_time , commit_id , message
+     */
+    public List<Map<String,Object>> getProjectValidCommitMsg(Query query,int beginIndex, int ps) {
+        return repoMeasureMapper.getProjectValidCommitMsgWithPage(query.getDeveloper(),query.getRepoUuidList(),query.getSince(),query.getUntil(),ps,beginIndex);
+    }
+
+    /**
+     * 分页获取项目包括库的合法提交 JIRA 明细（去除Merge）
+     * @param query 查询条件
+     * @param beginIndex 查询起始位置
+     * @param ps 每页大小
+     * @return 分页查询后合法提交明细 key : developer , repo_id, commit_time , commit_id , message
+     */
+    public List<Map<String,Object>> getProjectValidJiraCommitMsg(Query query,int beginIndex, int ps) {
+        return repoMeasureMapper.getProjectValidJiraCommitMsgWithPage(query.getDeveloper(),query.getRepoUuidList(),query.getSince(),query.getUntil(),ps,beginIndex);
+    }
+
+    /**
+     * 分页获取项目包括库的合法提交 非JIRA 明细（去除Merge）
+     * @param query 查询条件
+     * @param beginIndex 查询起始位置
+     * @param ps 每页大小
+     * @return 分页查询后合法提交明细 key : developer , repo_id, commit_time , commit_id , message
+     */
+    public List<Map<String,Object>> getProjectValidNotJiraCommitMsg(Query query,int beginIndex, int ps) {
+        return repoMeasureMapper.getProjectValidNotJiraCommitMsgWithPage(query.getDeveloper(),query.getRepoUuidList(),query.getSince(),query.getUntil(),ps,beginIndex);
+    }
+
+
     @CacheEvict(value = "repoBigFileInfo", allEntries=true, beforeInvocation = true)
     public void deleteRepoBigFileTrendChart() {
 

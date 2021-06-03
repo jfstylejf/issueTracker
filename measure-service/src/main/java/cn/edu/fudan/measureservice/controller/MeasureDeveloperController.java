@@ -267,8 +267,6 @@ public class MeasureDeveloperController {
             }else if (developer!=null && !"".equals(developer)){
                 // 如果传入单个开发者，此时 page 按照不规范明细进行分页
                 DeveloperCommitStandard developerCommitStandard = developerCommitStandardList.get(0);
-                List<Map<String,String>> developerInvalidCommitList = developerCommitStandard.getDeveloperInvalidCommitInfo().subList((page-1)*ps , Math.min(page * ps, developerCommitStandard.getDeveloperInvalidCommitCount()));
-                developerCommitStandard.setDeveloperInvalidCommitInfo(developerInvalidCommitList);
                 return new ResponseBean<>(HttpStatus.OK.value(),"success",Collections.singletonList(developerCommitStandard));
             }else {
                 return new ResponseBean<>(HttpStatus.OK.value(),"success",developerCommitStandardList);
@@ -309,7 +307,7 @@ public class MeasureDeveloperController {
                                                         @RequestParam(required = false, defaultValue = "1")int page,
                                                         @RequestParam(required = false, defaultValue = "10")int ps,
                                                         @RequestParam(required = false, defaultValue = "false") boolean asc,
-                                                        @RequestParam(required = false, defaultValue = "false") boolean is_valid,
+                                                        @RequestParam(required = false) Boolean is_valid,
                                                         @RequestParam(required = false, defaultValue = "") String order,
                                                         HttpServletRequest request) {
         try {

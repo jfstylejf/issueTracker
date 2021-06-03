@@ -844,7 +844,7 @@ public class MeasureDeveloperService {
     }
 
     /**
-     * 获取开发者聚合后的提交规范性
+     * 按照开发者聚合获取提交规范性
      * @param query 查询条件
      * @param developerAccountNames 查询人列表，此为聚合后的名字
      * @return
@@ -865,25 +865,22 @@ public class MeasureDeveloperService {
             query.setDeveloper(developer);
             // 获取开发者对应的合法提交信息
             log.info("start to get {}",developer);
-            List<Map<String,String>> developerValidCommitInfo = projectDao.getDeveloperValidCommitMsg(query);
+            List<Map<String,Object>> developerValidCommitInfo = measureDao.getProjectValidCommitMsg(query);
             // 封装 DeveloperCommitStandard
             DeveloperCommitStandard developerCommitStandard = new DeveloperCommitStandard();
             developerCommitStandard.setDeveloperName(developer);
             developerCommitStandard.setDeveloperValidCommitCount(developerValidCommitInfo.size());
-            List<Map<String,String>> developerJiraCommitInfo = new ArrayList<>();
-            List<Map<String,String>> developerInvalidCommitInfo = new ArrayList<>();
-            for(Map<String,String> commitInfo : developerValidCommitInfo) {
-                String message = commitInfo.get("message");
-                if(!"noJiraID".equals(jiraDao.getJiraIDFromCommitMsg(message))) {
-                    developerJiraCommitInfo.add(commitInfo);
+            int developerJiraCommitCount = 0, developerNotJiraCommitCount = 0;
+            for(Map<String,Object> commitInfo : developerValidCommitInfo) {
+                boolean isValid = (int) commitInfo.get("is_compliance") == 1;
+                if (isValid) {
+                    developerJiraCommitCount++;
                 }else {
-                    developerInvalidCommitInfo.add(commitInfo);
+                    developerNotJiraCommitCount++;
                 }
             }
-            developerCommitStandard.setDeveloperJiraCommitInfo(developerJiraCommitInfo);
-            developerCommitStandard.setDeveloperJiraCommitCount(developerJiraCommitInfo.size());
-            developerCommitStandard.setDeveloperInvalidCommitCount(developerInvalidCommitInfo.size());
-            developerCommitStandard.setDeveloperInvalidCommitInfo(developerInvalidCommitInfo);
+            developerCommitStandard.setDeveloperJiraCommitCount(developerJiraCommitCount);
+            developerCommitStandard.setDeveloperInvalidCommitCount(developerNotJiraCommitCount);
             double commitStandard = developerCommitStandard.getDeveloperValidCommitCount() != 0 ? developerCommitStandard.getDeveloperJiraCommitCount() * 1.0 / developerCommitStandard.getDeveloperValidCommitCount() : 0;
             developerCommitStandard.setCommitStandard(commitStandard);
             developerCommitStandardList.add(developerCommitStandard);
@@ -962,13 +959,13 @@ public class MeasureDeveloperService {
     public ProjectCommitStandardTrendChart getSingleProjectCommitStandardChart(Query query,ProjectPair projectPair) {
         ProjectCommitStandardTrendChart projectCommitStandardTrendChart = new ProjectCommitStandardTrendChart();
         // 获取项目合法提交信息
-        List<Map<String,String>> projectValidCommitMsgList = projectDao.getProjectValidCommitMsg(query);
+        List<Map<String,Object>> projectValidCommitMsgList = measureDao.getProjectValidCommitMsg(query);
         // validCommitCountNum : 不含Merge的总提交次数 ， jiraCommitCountNum 包含Jira单号的总提交次数
         long validCommitCountNum = projectValidCommitMsgList.size(), jiraCommitCountNum = 0;
         for (int i = 0; i < projectValidCommitMsgList.size(); i++) {
-            Map<String,String> commitMsg = projectValidCommitMsgList.get(i);
-            String message = commitMsg.get("message");
-            if (!"noJiraID".equals(jiraDao.getJiraIDFromCommitMsg(message))) {
+            Map<String,Object> commitMsg = projectValidCommitMsgList.get(i);
+            boolean isValid = (int) commitMsg.get("is_compliance") == 1;
+            if (isValid) {
                 jiraCommitCountNum++;
             }
         }
@@ -997,8 +994,7 @@ public class MeasureDeveloperService {
      * @return <{@link ProjectCommitStandardDetail}>
      */
     @SneakyThrows
-    public synchronized ProjectFrontEnd<ProjectCommitStandardDetail> getCommitStandardDetailIntegratedByProject(String projectNameList,String repoUuidList,String committer,String token,int page,int ps,boolean isValid) {
-        List<ProjectCommitStandardDetail> projectCommitStandardDetailList = new ArrayList<>();
+    public synchronized ProjectFrontEnd<ProjectCommitStandardDetail> getCommitStandardDetailIntegratedByProject(String projectNameList,String repoUuidList,String committer,String token,int page,int ps,Boolean isValid) {
         // 获取查询条件下可见的库列表
         List<String> visibleRepoList = projectDao.getVisibleRepoListByProjectNameAndRepo(projectNameList,repoUuidList,token);
         // 获取查询条件下的提交规范性明细 （分页查询）
@@ -1007,15 +1003,9 @@ public class MeasureDeveloperService {
         // 起始查询位置
         int initialBeginIndex = (page-1) * ps;
         //获取 ps 条合法提交数据
-        while (initialBeginIndex < totalMsgSize && ps > 0) {
-            List<ProjectCommitStandardDetail> selectedProjectCommitStandardDetail = ((MeasureDeveloperService) AopContext.currentProxy()).getProjectValidCommitStandardDetail(visibleRepoList,committer,initialBeginIndex,ps,isValid);
-            projectCommitStandardDetailList.addAll(selectedProjectCommitStandardDetail);
-            // 更新下次查询起始位置
-            initialBeginIndex += selectedProjectCommitStandardDetail.size();
-            ps -= selectedProjectCommitStandardDetail.size();
-        }
+        List<ProjectCommitStandardDetail> selectedProjectCommitStandardDetail = getProjectValidCommitStandardDetail(visibleRepoList,committer,initialBeginIndex,ps,isValid);
+        List<ProjectCommitStandardDetail> projectCommitStandardDetailList = new ArrayList<>(selectedProjectCommitStandardDetail);
         // 封装返回前端的明细
-
         return new ProjectFrontEnd<>(page,totalPage,totalMsgSize,projectCommitStandardDetailList);
      }
 
@@ -1028,35 +1018,37 @@ public class MeasureDeveloperService {
      * @param selectOrNot 是否筛选包含 Jira 单号的提交数
      * @return 项目查询条件下最新提交明细
      */
-     public List<ProjectCommitStandardDetail> getProjectValidCommitStandardDetail(List<String> repoUuidList, String committer, int beginIndex, int size, boolean selectOrNot) {
+     public List<ProjectCommitStandardDetail> getProjectValidCommitStandardDetail(List<String> repoUuidList, String committer, int beginIndex, int size, Boolean selectOrNot) {
          List<ProjectCommitStandardDetail> projectCommitStandardDetailList = new ArrayList<>();
          // 获取查询条件下的提交明细
          Query query = new Query(null,null,null,null,repoUuidList);
-         List<Map<String,String>> projectValidCommitMsg;
-         if (committer == null || "".equals(committer)) { // 若未指定开发者则查找整个项目中的前 ps 个最新提交
-             projectValidCommitMsg = projectDao.getProjectValidCommitMsg(query,beginIndex,size);
-         }else {
-             query.setDeveloper(committer);// 若指定 committer,则查询该开发者最新 ps 次提交
-             projectValidCommitMsg = projectDao.getDeveloperValidCommitMsg(query,beginIndex,size);
+         List<Map<String,Object>> projectValidCommitMsg;
+         if (committer != null && !"".equals(committer)) {
+             query.setDeveloper(committer);
          }
-         for (Map<String,String> map : projectValidCommitMsg) {
-             String repoId = map.get("repo_id");
-             String commitId = map.get("commit_id");
-             String commitTime = map.get("commit_time");
-             String message = map.get("message");
-             String developer = map.get("developer");
-             boolean isValid = !"noJiraID".equals(jiraDao.getJiraIDFromCommitMsg(message));
-             if (selectOrNot && !isValid) {
-                continue;
-             }
+         // 根据 筛选条件获取相应的提交明细
+         if (selectOrNot == null) {
+            projectValidCommitMsg = measureDao.getProjectValidCommitMsg(query,beginIndex,size);
+         }else if (selectOrNot){
+            projectValidCommitMsg = measureDao.getProjectValidJiraCommitMsg(query,beginIndex,size);
+         }else {
+             projectValidCommitMsg = measureDao.getProjectValidNotJiraCommitMsg(query,beginIndex,size);
+         }
+         //数据封装
+         for (Map<String,Object> map : projectValidCommitMsg) {
+             String repoId = (String) map.get("repo_id");
+             String commitId = (String) map.get("commit_id");
+             String commitTime = (String) map.get("commit_time");
+             String message = (String) map.get("message");
+             String developer = (String) map.get("developer");
+             boolean isValid = (int) map.get("is_compliance") == 1;
              String projectName = projectDao.getProjectName(repoId);
              String projectId = String.valueOf(projectDao.getProjectIdByName(projectName));
              String repoName = projectDao.getRepoName(repoId);
-             committer = accountDao.getDeveloperName(developer);
              ProjectCommitStandardDetail projectCommitStandardDetail = ProjectCommitStandardDetail.builder()
                      .projectName(projectName).projectId(projectId)
                      .repoName(repoName).repoUuid(repoId)
-                     .committer(committer).commitTime(commitTime).commitId(commitId)
+                     .committer(developer).commitTime(commitTime).commitId(commitId)
                      .message(message)
                      .isValid(isValid)
                      .build();
@@ -1075,28 +1067,25 @@ public class MeasureDeveloperService {
         List<ProjectCommitStandardDetail> projectCommitStandardDetailList = new ArrayList<>();
         // 获取查询条件下的提交明细
         Query query = new Query(null,null,null,null,repoUuidList);
-        List<Map<String,String>> projectValidCommitMsg;
-        if (committer == null || "".equals(committer)) { // 若未指定开发者则查找整个项目中的
-            projectValidCommitMsg = projectDao.getProjectValidCommitMsg(query);
-        }else {
-            query.setDeveloper(committer);// 若指定 committer,则查询该开发者
-            projectValidCommitMsg = projectDao.getDeveloperValidCommitMsg(query);
+        List<Map<String,Object>> projectValidCommitMsg;
+        if (committer != null || !"".equals(committer)) {
+            query.setDeveloper(committer);
         }
-        for (Map<String,String> map : projectValidCommitMsg) {
-            String repoId = map.get("repo_id");
-            String commitId = map.get("commit_id");
-            String commitTime = map.get("commit_time");
-            String message = map.get("message");
-            String developer = map.get("developer");
-            boolean isValid = !"noJiraID".equals(jiraDao.getJiraIDFromCommitMsg(message));
+        projectValidCommitMsg = measureDao.getProjectValidCommitMsg(query);
+        for (Map<String,Object> map : projectValidCommitMsg) {
+            String repoId = (String) map.get("repo_id");
+            String commitId = (String) map.get("commit_id");
+            String commitTime = (String) map.get("commit_time");
+            String message = (String) map.get("message");
+            String developer = (String) map.get("developer");
+            boolean isValid = (int) map.get("is_compliance") == 1;
             String projectName = projectDao.getProjectName(repoId);
             String projectId = String.valueOf(projectDao.getProjectIdByName(projectName));
             String repoName = projectDao.getRepoName(repoId);
-            committer = accountDao.getDeveloperName(developer);
             ProjectCommitStandardDetail projectCommitStandardDetail = ProjectCommitStandardDetail.builder()
                     .projectName(projectName).projectId(projectId)
                     .repoName(repoName).repoUuid(repoId)
-                    .committer(committer).commitTime(commitTime).commitId(commitId)
+                    .committer(developer).commitTime(commitTime).commitId(commitId)
                     .message(message)
                     .isValid(isValid)
                     .build();

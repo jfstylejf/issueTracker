@@ -587,5 +587,151 @@
         LIMIT 500
     </delete>
 
+    <select id="getProjectValidCommitMsg" resultType="java.util.HashMap">
+        SELECT repo_id,developer_name AS developer,left(commit_time,10) as commit_time,commit_id,commit_message AS message,is_compliance
+        from issueTracker.repo_measure
+        <where>
+            <trim prefixOverrides="and">
+                <if test="developer != null and developer != ''">
+                    and developer_name = #{developer}
+                </if>
+
+                <if test="repoUuidList != null and repoUuidList.size >0 ">
+                    and repo_id in
+                    <foreach collection="repoUuidList" separator="," open="(" close=")" item="repoUuid">
+                        #{repoUuid}
+                    </foreach>
+                </if>
+
+                <if test="since != null and since != '' ">
+                    and <![CDATA[ commit_time >= #{since} ]]>
+                </if>
+
+                <if test="until != null and until != '' ">
+                    and <![CDATA[ commit_time <= #{until} ]]>
+                </if>
+                and is_merge = 0
+            </trim>
+        </where>
+        ORDER By commit_time desc
+    </select>
+
+    <select id="getProjectValidJiraCommitMsg" resultType="java.util.HashMap">
+        SELECT repo_id,developer_name AS developer,left(commit_time,10) as commit_time,commit_id,commit_message AS message
+        from issueTracker.repo_measure
+        <where>
+            <trim prefixOverrides="and">
+                <if test="repoUuidList != null and repoUuidList.size >0 ">
+                    and repo_id in
+                    <foreach collection="repoUuidList" separator="," open="(" close=")" item="repoUuid">
+                        #{repoUuid}
+                    </foreach>
+                </if>
+
+                <if test="since != null and since != '' ">
+                    and <![CDATA[ commit_time >= #{since} ]]>
+                </if>
+
+                <if test="until != null and until != '' ">
+                    and <![CDATA[ commit_time <= #{until} ]]>
+                </if>
+                and is_compliance = 1
+                and is_merge = 0
+            </trim>
+        </where>
+        ORDER By commit_time desc
+    </select>
+
+    <select id="getProjectValidCommitMsgWithPage" resultType="java.util.HashMap" >
+        SELECT repo_id,developer_name AS developer,left(commit_time,10) as commit_time,commit_id,commit_message AS message, is_compliance
+        from issueTracker.repo_measure
+        <where>
+            <trim prefixOverrides="and">
+                <if test="developer != null and developer != ''">
+                    and developer_name = #{developer}
+                </if>
+
+                <if test="repoUuidList != null and repoUuidList.size >0 ">
+                    and repo_id in
+                    <foreach collection="repoUuidList" separator="," open="(" close=")" item="repoUuid">
+                        #{repoUuid}
+                    </foreach>
+                </if>
+
+                <if test="since != null and since != '' ">
+                    and <![CDATA[ commit_time >= #{since} ]]>
+                </if>
+
+                <if test="until != null and until != '' ">
+                    and <![CDATA[ commit_time <= #{until} ]]>
+                </if>
+                and is_merge = 0
+            </trim>
+        </where>
+        ORDER By commit_time desc
+        limit ${beginIndex}, ${size}
+    </select>
+
+    <select id="getProjectValidJiraCommitMsgWithPage" resultType="java.util.HashMap">
+        SELECT repo_id,developer_name AS developer,left(commit_time,10) as commit_time,commit_id,commit_message AS message,is_compliance
+        from issueTracker.repo_measure
+        <where>
+            <trim prefixOverrides="and">
+                <if test="developer != null and developer != ''">
+                    and developer_name = #{developer}
+                </if>
+
+                <if test="repoUuidList != null and repoUuidList.size >0 ">
+                    and repo_id in
+                    <foreach collection="repoUuidList" separator="," open="(" close=")" item="repoUuid">
+                        #{repoUuid}
+                    </foreach>
+                </if>
+
+                <if test="since != null and since != '' ">
+                    and <![CDATA[ commit_time >= #{since} ]]>
+                </if>
+
+                <if test="until != null and until != '' ">
+                    and <![CDATA[ commit_time <= #{until} ]]>
+                </if>
+                and is_compliance = 1
+                and is_merge = 0
+            </trim>
+        </where>
+        ORDER By commit_time desc
+        limit ${beginIndex}, ${size}
+    </select>
+
+    <select id="getProjectValidNotJiraCommitMsgWithPage" resultType="java.util.HashMap">
+        SELECT repo_id,developer_name AS developer,left(commit_time,10) as commit_time,commit_id,commit_message AS message,is_compliance
+        from issueTracker.repo_measure
+        <where>
+            <trim prefixOverrides="and">
+                <if test="developer != null and developer != ''">
+                    and developer_name = #{developer}
+                </if>
+
+                <if test="repoUuidList != null and repoUuidList.size >0 ">
+                    and repo_id in
+                    <foreach collection="repoUuidList" separator="," open="(" close=")" item="repoUuid">
+                        #{repoUuid}
+                    </foreach>
+                </if>
+
+                <if test="since != null and since != '' ">
+                    and <![CDATA[ commit_time >= #{since} ]]>
+                </if>
+
+                <if test="until != null and until != '' ">
+                    and <![CDATA[ commit_time <= #{until} ]]>
+                </if>
+                and is_compliance = 0
+                and is_merge = 0
+            </trim>
+        </where>
+        ORDER By commit_time desc
+        limit ${beginIndex}, ${size}
+    </select>
 
 </mapper>

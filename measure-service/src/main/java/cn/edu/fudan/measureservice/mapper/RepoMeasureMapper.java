@@ -122,4 +122,65 @@ public interface RepoMeasureMapper {
      */
     void deleteRepoMeasureMsg(@Param("repoUuid") String repoUuid);
 
+
+
+    /**
+     * 获取项目下包含库的合法提交信息 （不含Merge）
+     * @param repoUuidList 查询库列表
+     * @param developer 查询开发者
+     * @param since 查询起始时间
+     * @param until 查询结束时间
+     * @return List<Map<String,Object>> key : repo_id , developer, commit_time , commit_id , message , is_compliance
+     */
+    List<Map<String,Object>> getProjectValidCommitMsg(@Param("developer") String developer,@Param("repoUuidList")List<String> repoUuidList,@Param("since")String since,@Param("until")String until);
+
+
+    /**
+     * 获取项目下包含库的合法 JIRA 提交信息 （不含Merge）
+     * @param repoUuidList 查询库列表
+     * @param since 查询起始时间
+     * @param until 查询结束时间
+     * @return List<Map<String,Object>> key : repo_id , developer, commit_time , commit_id , message
+     */
+    List<Map<String,String>> getProjectValidJiraCommitMsg(@Param("repoUuidList")List<String> repoUuidList,@Param("since")String since,@Param("until")String until);
+
+
+    /**
+     * 获取分页查询查询库下的合法提交信息 （不含Merge）
+     * @param developer 查询开发者
+     * @param repoUuidList 查询库列表
+     * @param since 查询起始时间
+     * @param until 查询结束时间
+     * @param size 查询大小
+     * @param beginIndex 查询起始位置
+     * @return List<Map<String,Object>> key : repo_id , developer, commit_time , commit_id , message, is_compliance
+     */
+    List<Map<String,Object>> getProjectValidCommitMsgWithPage(@Param("developer") String developer,@Param("repoUuidList")List<String> repoUuidList,@Param("since")String since,@Param("until")String until,@Param("size") int size ,@Param("beginIndex") int beginIndex);
+
+
+    /**
+     * 获取分页查询查询库下的合法 JIRA 提交信息 （不含Merge）
+     * @param repoUuidList 查询库列表
+     * @param developer 查询开发者
+     * @param since 查询起始时间
+     * @param until 查询结束时间
+     * @param size 查询大小
+     * @param beginIndex 查询起始位置
+     * @return List<Map<String,Object>> key : repo_id , developer, commit_time , commit_id , message, is_compliance
+     */
+    List<Map<String,Object>> getProjectValidJiraCommitMsgWithPage(@Param("developer") String developer,@Param("repoUuidList")List<String> repoUuidList,@Param("since")String since,@Param("until")String until,@Param("size") int size ,@Param("beginIndex") int beginIndex);
+
+    /**
+     * 获取分页查询查询库下的合法 非JIRA 提交信息 （不含Merge）
+     * @param repoUuidList 查询库列表
+     * @param developer 查询开发者
+     * @param since 查询起始时间
+     * @param until 查询结束时间
+     * @param size 查询大小
+     * @param beginIndex 查询起始位置
+     * @return List<Map<String,Object>> key : repo_id , developer, commit_time , commit_id , message, is_compliance
+     */
+    List<Map<String,Object>> getProjectValidNotJiraCommitMsgWithPage(@Param("developer") String developer,@Param("repoUuidList")List<String> repoUuidList,@Param("since")String since,@Param("until")String until,@Param("size") int size ,@Param("beginIndex") int beginIndex);
+
+
 }
