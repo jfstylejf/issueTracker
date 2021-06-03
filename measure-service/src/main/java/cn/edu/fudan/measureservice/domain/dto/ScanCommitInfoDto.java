@@ -27,6 +27,8 @@ public class ScanCommitInfoDto {
     private String mailAddress;
     private String firstParentCommitId;
     private String secondParentCommitId;
+    private String message;
+    private int isCompliance;
 
     @Override
     public String toString() {

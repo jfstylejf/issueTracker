@@ -79,50 +79,6 @@ public interface ProjectMapper {
 
 
     /**
-     * 获取开发者参与库的合法提交信息（不含Merge）
-     * @param repoUuidList 查询库列表
-     * @param since 查询起始时间
-     * @param until 查询结束时间
-     * @param accountGitNameList 开发者姓名
-     * @return  List<Map<String,Object>> key : repo_id, developer, commit_time , commit_id , message
-     */
-    List<Map<String,String>> getDeveloperValidCommitMsg(@Param("repoUuidList")List<String> repoUuidList,@Param("since")String since,@Param("until")String until,@Param("accountGitNameList")List<String> accountGitNameList);
-
-
-    /**
-     * 分获取分页查询查询库下该开发者的合法提交信息 （不含Merge）
-     * @param repoUuidList 查询库列表
-     * @param since 查询起始时间
-     * @param until 查询结束时间
-     * @param accountGitNameList 开发者姓名
-     * @param beginIndex 查询起始点
-     * @param size 查询条数
-     * @return  List<Map<String,Object>> key : repo_id, developer, commit_time , commit_id , message
-     */
-    List<Map<String,String>> getDeveloperValidCommitMsgWithPage(@Param("repoUuidList")List<String> repoUuidList,@Param("since")String since,@Param("until")String until,@Param("accountGitNameList")List<String> accountGitNameList,@Param("size") int size ,@Param("beginIndex") int beginIndex);
-
-
-    /**
-     * 获取项目下包含库的合法提交信息 （不含Merge）
-     * @param repoUuidList 查询库列表
-     * @param since 查询起始时间
-     * @param until 查询结束时间
-     * @return List<Map<String,Object>> key : repo_id , developer, commit_time , commit_id , message
-     */
-    List<Map<String,String>> getProjectValidCommitMsg(@Param("repoUuidList")List<String> repoUuidList,@Param("since")String since,@Param("until")String until);
-
-    /**
-     * 获取分页查询查询库下的合法提交信息 （不含Merge）
-     * @param repoUuidList 查询库列表
-     * @param since 查询起始时间
-     * @param until 查询结束时间
-     * @param size 查询大小
-     * @param beginIndex 查询起始位置
-     * @return List<Map<String,Object>> key : repo_id , developer, commit_time , commit_id , message
-     */
-    List<Map<String,String>> getProjectValidCommitMsgWithPage(@Param("repoUuidList")List<String> repoUuidList,@Param("since")String since,@Param("until")String until,@Param("size") int size ,@Param("beginIndex") int beginIndex);
-
-    /**
      * 获取查询库列表中前3位提交次数最多的开发者
      * @param repoUuidList 查询库列表
      * @param since 查询起始时间
