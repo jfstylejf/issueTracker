@@ -195,17 +195,18 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public void addNewAccounts(List<String> gitNames) {
+    public Boolean addNewAccounts(List<String> gitNames) {
         List<Account> accounts = gitNames.stream().
                 filter(gitName -> !accountDao.getAccountGitname().contains(gitName)).
                 map(Account::newInstance).
                 collect(Collectors.toList());
         if(accounts.size() == 0 || accounts == null){
-            return;
+            return false;
         }
         accountDao.addAccounts(accounts);
         accountAuthorMapper.batchInsertAccountAuthor(accounts.stream().map(AccountAuthor::newInstanceOf).collect(Collectors.toList()));
 
+        return true;
         // todo 查询新增人员在哪个项目 后续更新account_project 表
     }
 
