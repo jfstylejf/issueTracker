@@ -78,7 +78,7 @@ public interface AccountService {
      * @param accountName 用户名
      * @return Account
      */
-    Account getAccountByName(String accountName);
+    Account getAccountByName(String accountName, Boolean needAdmin);
 
     /**
      * get account by token

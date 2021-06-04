@@ -89,6 +89,10 @@ public class AccountDao {
     public void resetSubAccount(String subAccountName, String majorAccountName, String majorAccountUuid){
         accountAuthorMapper.resetSubAccount(subAccountName, majorAccountName, majorAccountUuid);}
 
+    public List<String> getGitnameByAccountName(String majorAccountName){
+        return accountAuthorMapper.getGitnameByAccountName(majorAccountName);
+    }
+
     @Autowired
     public void setAccountMapper(AccountMapper accountMapper) {
         this.accountMapper = accountMapper;

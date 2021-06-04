@@ -252,11 +252,13 @@ public class AccountController {
     @ApiOperation(value="获取用户姓名",httpMethod = "GET")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "account_name", value = "用户名", dataType = "String", required = true),
+            @ApiImplicitParam(name = "needAdmin", value = "是否需要显示admin", dataType = "Boolean", required = true)
     })
     @GetMapping(value = "/account/name")
-    public ResponseEntity<Object> getAccount(@RequestParam("account_name") String accountName){
+    public ResponseEntity<Object> getAccount(@RequestParam("account_name") String accountName,
+                                             @RequestParam(value = "needAdmin", defaultValue = "false") Boolean needAdmin){
         try {
-            Account result = accountService.getAccountByName(accountName);
+            Account result = accountService.getAccountByName(accountName, needAdmin);
             if(result == null){
                 return new ResponseEntity<>(412, "account not exist!", null);
             }
@@ -335,8 +337,8 @@ public class AccountController {
                                @RequestParam("subAccountName") String subAccountName,
                                HttpServletRequest request) {
         try{
-            accountService.accountMerge(majorAccountName, subAccountName, request.getHeader(TOKEN));
-            return new ResponseEntity<>(200, "reset success!", null);
+            List<String> accountGitname = accountService.accountMerge(majorAccountName, subAccountName, request.getHeader(TOKEN));
+            return new ResponseEntity<>(200, "reset success!", accountGitname);
         }catch (Exception e){
             return new ResponseEntity<>(401, "reset failed! " + e.getMessage(), null);
         }

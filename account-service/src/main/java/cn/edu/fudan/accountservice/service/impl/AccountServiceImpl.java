@@ -115,9 +115,13 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public Account getAccountByName(String accountName) {
-        if(accountName != null){
-            return accountDao.getAccountByAccountNameExceptAdmin(accountName);
+    public Account getAccountByName(String accountName, Boolean needAdmin) {
+        if(accountName != null ){
+            if(!needAdmin){
+                return  accountDao.getAccountByAccountNameExceptAdmin(accountName);
+            }else{
+                return accountDao.getAccountByAccountName(accountName);
+            }
         }
         return null;
     }
@@ -256,7 +260,9 @@ public class AccountServiceImpl implements AccountService {
         //修改修改被合并人account_author表中的uuid和account_name
         accountDao.resetSubAccount(subAccountName, majorAccountName, majorAccountUuid);
 
-        return null;
+        //返回该人员对应的git账号
+        return  accountDao.getGitnameByAccountName(majorAccountName);
+
     }
 
     private PagedGridResult setterPagedGrid(List<?> list, Integer page) {
