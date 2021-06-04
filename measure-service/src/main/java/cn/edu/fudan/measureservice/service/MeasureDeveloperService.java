@@ -232,17 +232,17 @@ public class MeasureDeveloperService {
         List<Map<String,Object>> developerChangeCodeLifeCycle = restInterfaceManager.getCodeLifeCycle(repoUuid,developer,since,until,Statement_developer,Change);
         List<Map<String,Object>> developerDeleteCodeLifeCycle = restInterfaceManager.getCodeLifeCycle(repoUuid,developer,since,until,Statement_developer,Delete);
         double changedCodeAVGAge = 0;
-        int changedCodeMAXAge = 0;
+        double changedCodeMAXAge = 0;
         double deletedCodeAVGAge = 0;
-        int deletedCodeMAXAge = 0;
+        double deletedCodeMAXAge = 0;
         try {
             if(developerChangeCodeLifeCycle!=null && developerChangeCodeLifeCycle.size()>0) {
                 changedCodeAVGAge = (double) developerChangeCodeLifeCycle.get(0).get("average");
-                changedCodeMAXAge = (int) developerChangeCodeLifeCycle.get(0).get("max");
+                changedCodeMAXAge = (double) developerChangeCodeLifeCycle.get(0).get("max");
             }
             if (developerDeleteCodeLifeCycle!=null && developerDeleteCodeLifeCycle.size()>0) {
                 deletedCodeAVGAge = (double) developerDeleteCodeLifeCycle.get(0).get("average");
-                deletedCodeMAXAge = (int) developerDeleteCodeLifeCycle.get(0).get("max");
+                deletedCodeMAXAge = (double) developerDeleteCodeLifeCycle.get(0).get("max");
             }
         }catch (Exception e) {
             e.printStackTrace();
@@ -662,12 +662,17 @@ public class MeasureDeveloperService {
 
     }
 
-
-    @Cacheable(cacheNames = {"developerRecentNews"})
-    public Object getDeveloperRecentNews(String repoUuid, String developer, String since, String until) {
-        if (until != null) {
-            until = DateTimeUtil.stringToLocalDate(until).plusDays(1).toString();
-        }
+    /**
+     * 获取开发者最新动态
+     * @param repoUuid
+     * @param developer
+     * @param since
+     * @param until
+     * @return
+     */
+    public Object getDeveloperRecentNews(String repoUuids, String developer, String since, String until) {
+        List<String> repoUuidList = repoUuids == null ? new ArrayList<>() : Arrays.asList(repoUuids.split(split));
+        // 获取开发者最新动态
         List<Map<String, Object>> commitMsgList = repoMeasureMapper.getCommitMsgByCondition(repoUuid, developer, since, until);
         for (Map<String, Object> map : commitMsgList) {
             //将数据库中timeStamp/dateTime类型转换成指定格式的字符串 map.get("commit_time") 这个就是数据库中dateTime类型
@@ -695,13 +700,6 @@ public class MeasureDeveloperService {
         return commitMsgList;
     }
 
-    /**
-     * 根据开发者参与库内第一次提交时间排序
-     * @param developerRepoInfos 开发者库信息
-     */
-    private void orderByDeveloperFirstCommitDate(List<DeveloperRepoInfo> developerRepoInfos) {
-        Collections.sort(developerRepoInfos, (o1, o2) -> o1.getFirstCommitDate().compareTo(o2.getFirstCommitDate()));
-    }
 
     /**
      * 返回两时间相差天数

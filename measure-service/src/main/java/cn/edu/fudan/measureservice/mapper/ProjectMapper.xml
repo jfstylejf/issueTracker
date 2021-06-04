@@ -83,7 +83,7 @@
     </select>
 
     <select id="getDeveloperFirstCommitDate" resultType="java.util.HashMap" >
-        SELECT SUBSTRING(min(commit_time),1,10) AS firstCommitDate FROM issueTracker.commit
+        SELECT SUBSTRING(commit_time,1,10) AS firstCommitDate FROM issueTracker.commit
         <where>
             <trim prefixOverrides="and">
                 <if test="repoUuid != null and repoUuid !='' ">
@@ -98,6 +98,8 @@
                 </if>
             </trim>
         </where>
+        order by commit_time asc
+        limit 1
     </select>
 
     <select id="getDeveloperDutyType" resultType="String">

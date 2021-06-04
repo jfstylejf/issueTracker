@@ -419,7 +419,7 @@
         SELECT
             commit_id
         FROM
-            repo_measure
+            issueTracker.repo_measure
         WHERE
             repo_id = #{repo_id}
         ORDER BY
@@ -479,25 +479,6 @@
 
     </select>
 
-    <select id="getFirstCommitDateByCondition" resultType="String">
-        select commit_time from issueTracker.commit_view
-        <where>
-            <trim prefixOverrides="and">
-                <if test="repoUuidList != null and repoUuidList.size > 0">
-                    and repo_uuid in
-                    <foreach collection="repoUuidList" separator="," open="(" close=")" item="repo_id">
-                        #{repo_id}
-                    </foreach>
-                </if>
-
-                <if test="developer != null and developer != '' ">
-                    and developer_unique_name = #{developer}
-                </if>
-            </trim>
-        </where>
-        order by commit_time
-        limit 1
-    </select>
 
     <select id="getLastCommitDateOfOneRepo" parameterType="String" resultType="String">
         select commit_date from scan_result
@@ -547,7 +528,7 @@
     <select id="getRepoAge"  resultType="int">
         select IFNULL( MAX( DATEDIFF(now(),commit_time) ), 0 ) as repoAge
         FROM
-        repo_measure
+        issueTracker.repo_measure
         <where>
             <trim prefixOverrides="and">
                 <if test="repo_id != null and repo_id != '' ">
