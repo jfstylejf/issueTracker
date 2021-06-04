@@ -108,7 +108,7 @@ public class MeasureDeveloperService {
         }
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         if ("".equals(since) || since == null){
-            String dateString = repoMeasureMapper.getFirstCommitDateByCondition(repoList,developer);
+            String dateString = projectDao.getDeveloperFirstCommitDate(developer,null);
             since = dateString.substring(0,10);
         }
         if ("".equals(until) || until == null){
@@ -292,7 +292,7 @@ public class MeasureDeveloperService {
         if ("".equals(since) || since == null){
             List<String> repoUuidList = new ArrayList<>();
             repoUuidList.add(repoUuid);
-            since = repoMeasureMapper.getFirstCommitDateByCondition(repoUuidList,null).substring(0,10);
+            since = projectDao.getDeveloperFirstCommitDate(developer,repoUuid);
         }
         if ("".equals(until) || until == null){
             LocalDate today = LocalDate.now();
@@ -664,7 +664,7 @@ public class MeasureDeveloperService {
 
     /**
      * 获取开发者最新动态
-     * @param repoUuid
+     * @param repoUuids
      * @param developer
      * @param since
      * @param until
@@ -673,23 +673,22 @@ public class MeasureDeveloperService {
     public Object getDeveloperRecentNews(String repoUuids, String developer, String since, String until) {
         List<String> repoUuidList = repoUuids == null ? new ArrayList<>() : Arrays.asList(repoUuids.split(split));
         // 获取开发者最新动态
-        List<Map<String, Object>> commitMsgList = repoMeasureMapper.getCommitMsgByCondition(repoUuid, developer, since, until);
-        for (Map<String, Object> map : commitMsgList) {
-            //将数据库中timeStamp/dateTime类型转换成指定格式的字符串 map.get("commit_time") 这个就是数据库中dateTime类型
-            String commitTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(map.get("commit_time"));
-            map.put("commit_time", commitTime);
+        List<DeveloperRecentNews> developerRecentNewsList = projectDao.getDeveloperRecentNews(developer,repoUuidList,since,until);
+        for (DeveloperRecentNews developerRecentNews : developerRecentNewsList) {
+            String developerUniqueName = accountDao.getDeveloperName(developerRecentNews.getDeveloperName());
+            developerRecentNews.setDeveloperName(developerUniqueName);
             //以下操作是为了获取jira信息
-            String commitMessage = map.get("message").toString();
+            String commitMessage = developerRecentNews.getMessage();
             String jiraID = jiraDao.getJiraIDFromCommitMsg(commitMessage);
             if("noJiraID".equals(jiraID)) {
-                map.put("jira_info", "本次commit不含jira单号");
+                developerRecentNews.setJiraInfo("本次commit不含jira单号");
             }else {
                 try {
                     JSONArray jiraResponse = restInterfaceManager.getJiraInfoByKey("key",jiraID);
                     if (jiraResponse == null || jiraResponse.isEmpty()){
-                        map.put("jira_info", "jira单号内容为空");
+                        developerRecentNews.setJiraInfo("jira单号内容为空");
                     }else {
-                        map.put("jira_info", jiraResponse.get(0));
+                        developerRecentNews.setJiraInfo(jiraResponse.get(0));
                     }
                 }catch (Exception e) {
                     log.info("cannot request Jira");
@@ -697,19 +696,9 @@ public class MeasureDeveloperService {
                 }
             }
         }
-        return commitMsgList;
+        return developerRecentNewsList;
     }
 
-
-    /**
-     * 返回两时间相差天数
-     * @param date1 待查时间
-     * @param date2 比较时间
-     * @return long 相差天数
-     */
-    private long getSumDays(String date1,String date2) {
-        return LocalDate.parse(date1,dtf).toEpochDay() - LocalDate.parse(date2,dtf).toEpochDay();
-    }
 
     /**
      * 获得单个开发者画像
@@ -733,7 +722,7 @@ public class MeasureDeveloperService {
             totalStatement += developerRepoMetric.getTotalStatement();
             developerRepositoryMetrics.add(developerRepoMetric);
         }
-        long days = getSumDays(query.getUntil(),firstCommitDate);
+        long days = DateTimeUtil.getSumDays(query.getUntil(),firstCommitDate);
         int dayAverageStatement = (int) (totalStatement/days);
         return new DeveloperPortrait(firstCommitDate,totalStatement,dayAverageStatement,totalCommitCount,query.getDeveloper(),developerType,developerRepositoryMetrics);
     }

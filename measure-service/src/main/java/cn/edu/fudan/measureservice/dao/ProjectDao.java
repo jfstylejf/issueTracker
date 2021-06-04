@@ -2,6 +2,7 @@ package cn.edu.fudan.measureservice.dao;
 
 import cn.edu.fudan.measureservice.component.RestInterfaceManager;
 import cn.edu.fudan.measureservice.domain.bo.DeveloperLevel;
+import cn.edu.fudan.measureservice.domain.bo.DeveloperRecentNews;
 import cn.edu.fudan.measureservice.domain.dto.*;
 import cn.edu.fudan.measureservice.domain.enums.DutyStatusEnum;
 import cn.edu.fudan.measureservice.domain.enums.ToolEnum;
@@ -71,13 +72,16 @@ public class ProjectDao {
     public Set<String> getDeveloperList(List<String> repoUuidList) {
         Set<String> developerList = new TreeSet<>(String::compareTo);
         for (String repoUuid : repoUuidList) {
+            if (repoUuid == null) {
+                continue;
+            }
             List<String> temp = ((ProjectDao) AopContext.currentProxy()).getDeveloperList(repoUuid);
             developerList.addAll(temp);
         }
         return developerList;
     }
 
-    @Cacheable(value = "repoDeveloper",key = "#repoUuid")
+    @Cacheable(value = "repoDeveloper",key = "#repoUuid" ,condition = "#repoUuid != null")
     public List<String> getDeveloperList(String repoUuid) {
         Objects.requireNonNull(repoUuid);
         List<String> repoDeveloperGitNameList = projectMapper.getRepoCommitGitNameList(repoUuid);
@@ -597,7 +601,8 @@ public class ProjectDao {
      * @return
      */
     public List<String> getDeveloperVisibleRepo(List<String> projectVisibleRepoList,String developer, String since, String until) {
-        List<String> developerRepoList = projectMapper.getDeveloperRepoList(developer,since,until);
+        List<String> developerGitNameList = ((ProjectDao) AopContext.currentProxy()).getDeveloperGitNameList(developer);
+        List<String> developerRepoList = projectMapper.getDeveloperRepoList(developerGitNameList,since,until);
         return mergeBetweenRepo(developerRepoList,projectVisibleRepoList);
     }
 
@@ -622,6 +627,20 @@ public class ProjectDao {
     @Cacheable(value = "repoMsgNum",key = "#repoUuid")
     public int getSingleRepoMsgNum(String repoUuid) {
         return projectMapper.getSingleProjectMsgNum(repoUuid,null,null);
+    }
+
+
+    /**
+     * 获取开发者的最新提交
+     * @param developer 查询开发者
+     * @param repoUuidList 查询库列表
+     * @param since 查询起始时间
+     * @param until 查询截止时间
+     * @return {@link DeveloperRecentNews} 开发者最新提交列表
+     */
+    public List<DeveloperRecentNews> getDeveloperRecentNews(String developer, List<String> repoUuidList, String since, String until) {
+        List<String> developerGitNameList = ((ProjectDao) AopContext.currentProxy()).getDeveloperGitNameList(developer);
+        return projectMapper.getDeveloperRecentNewsList(developerGitNameList,repoUuidList,since,until);
     }
 
 

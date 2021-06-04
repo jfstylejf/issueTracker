@@ -14,6 +14,7 @@ import java.time.temporal.ChronoField;
 import java.time.temporal.TemporalAdjuster;
 import java.time.temporal.TemporalAdjusters;
 import java.util.Date;
+import java.util.Objects;
 
 /**
  * @author WZY
@@ -203,6 +204,21 @@ public class DateTimeUtil {
             e.getMessage();
         }
         return null;
+    }
+
+
+    /**
+     * 返回两时间相差天数
+     * @param date1 待查时间
+     * @param date2 比较时间
+     * @return long 相差天数
+     */
+    public static long getSumDays(String date1,String date2) {
+        Objects.requireNonNull(date2);
+        if (date1 == null || "".equals(date1)) {
+            date1 = dtf.format(LocalDate.now());
+        }
+        return LocalDate.parse(date1,dtf).toEpochDay() - LocalDate.parse(date2,dtf).toEpochDay();
     }
 
 

@@ -1,6 +1,7 @@
 package cn.edu.fudan.measureservice.mapper;
 
 import cn.edu.fudan.measureservice.domain.bo.DeveloperLevel;
+import cn.edu.fudan.measureservice.domain.bo.DeveloperRecentNews;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
@@ -59,12 +60,12 @@ public interface ProjectMapper {
 
     /**
      * 获取开发者参与库列表
-     * @param developer 开发者姓名
+     * @param gitNameList 开发者 gitName 列表
      * @param since 查询起始时间
      * @param until 查询结束时间
      * @return List<String> developerRepoList
      */
-    List<String> getDeveloperRepoList(@Param("developer")String developer,@Param("since")String since,@Param("until")String until);
+    List<String> getDeveloperRepoList(@Param("gitNameList") List<String> gitNameList,@Param("since")String since,@Param("until")String until);
 
 
     /**
@@ -170,5 +171,14 @@ public interface ProjectMapper {
      */
     int getDeveloperInvolvedRepoNum(@Param("gitNameList") List<String> gitNameList);
 
+    /**
+     * 查询开发者最新提交明细
+     * @param gitNameList 查询开发者 gitName 列表
+     * @param repoUuidList 查询库列表
+     * @param since 查询起始时间
+     * @param until 查询截止时间
+     * @return 最新动态列表
+     */
+    List<DeveloperRecentNews> getDeveloperRecentNewsList(@Param("gitNameList") List<String> gitNameList, @Param("repoUuidList") List<String> repoUuidList, @Param("since") String since, @Param("until") String until);
 
 }

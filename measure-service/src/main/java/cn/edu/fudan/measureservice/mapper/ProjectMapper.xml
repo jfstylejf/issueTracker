@@ -14,6 +14,14 @@
         <result property="dutyType" column="duty_type" />
     </resultMap>
 
+    <resultMap id="developerRecentNews" type="DeveloperRecentNews">
+        <id property="developerName" column="developer" />
+        <result property="commitTime" column="commit_time"/>
+        <result property="commitId" column="commit_id"/>
+        <result property="repoUuid" column="repo_id"/>
+        <result property="message" column="message" />
+    </resultMap>
+
     <insert id="insertDeveloperLevel" parameterType="DeveloperLevel">
         insert into issueTracker.developer_level (
             developer_unique_name,
@@ -82,7 +90,7 @@
         where repo_id = #{repoUuid}
     </select>
 
-    <select id="getDeveloperFirstCommitDate" resultType="java.util.HashMap" >
+    <select id="getDeveloperFirstCommitDate" resultType="String" >
         SELECT SUBSTRING(commit_time,1,10) AS firstCommitDate FROM issueTracker.commit
         <where>
             <trim prefixOverrides="and">
@@ -109,13 +117,16 @@
 
     <select id="getDeveloperRepoList" parameterType="String" resultType="String">
         SELECT
-        DISTINCT (repo_uuid)
+        DISTINCT (repo_id)
         FROM
-        issueTracker.commit_view
+        issueTracker.commit
         <where>
             <trim prefixOverrides="and">
-                <if test="developer != null and developer != '' ">
-                    and developer_unique_name = #{developer}
+                <if test="gitNameList != null and gitNameList.size > 0 ">
+                    and developer in
+                    <foreach collection="gitNameList" separator="," open="(" close=")" item="gitName">
+                        #{gitName}
+                    </foreach>
                 </if>
 
                 <if test="since != null and since != '' ">
@@ -269,6 +280,29 @@
                 </if>
             </trim>
         </where>
+    </select>
+
+    <select id="getDeveloperRecentNewsList" resultMap="developerRecentNews">
+        SELECT developer, commit_time, message, commit_id, repo_id FROM issueTracker.commit
+        Where
+              developer in
+              <foreach collection="gitNameList" separator="," open="(" close=")" item="gitName">
+                  #{gitName}
+              </foreach>
+              <if test="repoUuidList != null and repoUuidList.size > 0 ">
+                  AND repo_id in
+                  <foreach collection="repoUuidList" separator="," open="(" close=")" item="repoUuid">
+                     #{repoUuid}
+                  </foreach>
+              </if>
+              <if test="since != null and since != '' ">
+                    and <![CDATA[ commit_time >= #{since} ]]>
+              </if>
+
+              <if test="until != null and until != '' ">
+                    and <![CDATA[ commit_time <= #{until} ]]>
+              </if>
+        ORDER BY commit_time desc
     </select>
 
 </mapper>

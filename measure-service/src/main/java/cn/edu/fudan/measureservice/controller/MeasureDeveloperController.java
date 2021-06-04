@@ -165,7 +165,8 @@ public class MeasureDeveloperController {
 
         try{
             String token = request.getHeader("token");
-            List<String> repoUuidList = projectDao.getVisibleRepoListByProjectNameAndRepo(projectName,repoUuid,token);
+            List<String> visibleRepoList = projectDao.getVisibleRepoListByProjectNameAndRepo(projectName,repoUuid,token);
+            List<String> repoUuidList = projectDao.getDeveloperVisibleRepo(visibleRepoList,developer,null,null);
             // todo 再根据开发者实际参与的库筛选一遍
             Query query = new Query(token,null,null,developer,repoUuidList);
             return new ResponseBean<>(HttpStatus.OK.value(),"success", measureDeveloperService.getDeveloperPortrait(query));
