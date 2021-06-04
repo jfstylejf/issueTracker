@@ -80,7 +80,7 @@ public class ScanInfoServiceImpl implements ScanInfoService {
                     scanStatus.setStatus (ScanStatusEnum.WAITING_FOR_SCAN.getType ());
                     overAllStatus = judgeOverStatus(overAllStatus, ScanStatusEnum.WAITING_FOR_SCAN);
                     // 再次调用该工具进行扫描
-                    reScan(scan, tool);
+//                    reScan(scan, tool);
                     continue;
                 }
 

@@ -301,7 +301,7 @@ public class AccountController {
                                    @RequestParam(value = "is_whole", required = false, defaultValue = "0") Boolean isWhole,
                                    @RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
                                    @RequestParam(value = "ps", required = false, defaultValue = "30") Integer pageSize,
-                                   @RequestParam(value = "order", required = false, defaultValue = "developerName") String order,
+                                   @RequestParam(value = "order", required = false) String order,
                                    @RequestParam(value = "asc", required = false, defaultValue = "1") Boolean isAsc
                                    ){
         String[] repoListArr = repoUuids.split(",");
