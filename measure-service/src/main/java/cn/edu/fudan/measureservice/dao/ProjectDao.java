@@ -2,7 +2,9 @@ package cn.edu.fudan.measureservice.dao;
 
 import cn.edu.fudan.measureservice.component.RestInterfaceManager;
 import cn.edu.fudan.measureservice.domain.bo.DeveloperLevel;
+import cn.edu.fudan.measureservice.domain.bo.DeveloperRecentNews;
 import cn.edu.fudan.measureservice.domain.dto.*;
+import cn.edu.fudan.measureservice.domain.enums.DutyStatusEnum;
 import cn.edu.fudan.measureservice.domain.enums.ToolEnum;
 import cn.edu.fudan.measureservice.mapper.AccountMapper;
 import cn.edu.fudan.measureservice.mapper.MeasureMapper;
@@ -70,13 +72,16 @@ public class ProjectDao {
     public Set<String> getDeveloperList(List<String> repoUuidList) {
         Set<String> developerList = new TreeSet<>(String::compareTo);
         for (String repoUuid : repoUuidList) {
+            if (repoUuid == null) {
+                continue;
+            }
             List<String> temp = ((ProjectDao) AopContext.currentProxy()).getDeveloperList(repoUuid);
             developerList.addAll(temp);
         }
         return developerList;
     }
 
-    @Cacheable(value = "repoDeveloper",key = "#repoUuid")
+    @Cacheable(value = "repoDeveloper",key = "#repoUuid" ,condition = "#repoUuid != null")
     public List<String> getDeveloperList(String repoUuid) {
         Objects.requireNonNull(repoUuid);
         List<String> repoDeveloperGitNameList = projectMapper.getRepoCommitGitNameList(repoUuid);
@@ -87,52 +92,19 @@ public class ProjectDao {
 
 
 
-
-    /**
-     * fixme
-     * 获取开发者在参与库中的信息
-     * @param query 查询条件
-     * @return  Map<String,List<DeveloperRepoInfo>> developerRepoInfos
-     */
-    public Map<String,List<DeveloperRepoInfo>> getDeveloperRepoInfoList(Query query) {
-        Map<String,List<DeveloperRepoInfo>> developerRepoInfos = new HashMap<>(50);
-        List<String> repoUuidList = query.getRepoUuidList();
-        if(repoUuidList.size()==0) {
-            log.warn("do not have repoInfo !\n");
-            return null;
-        }
-        for(String repoUuid : repoUuidList) {
-            if(!repoInfoMap.containsKey(repoUuid)) {
-                insertProjectInfo(query.getToken());
-            }
-            // 获取开发者的 gitName 列表
-            List<Map<String,String>> developerRepoInfoList = projectMapper.getDeveloperRepoInfoList(repoUuid,query.getSince(),query.getUntil());
-            repoInfoMap.get(repoUuid).setInvolvedDeveloperNumber(developerRepoInfoList.size());
-            for(Map<String,String> map : developerRepoInfoList) {
-                String developerName = map.get("developer_unique_name");
-                if(developerName==null || "".equals(developerName)) {
-                    continue;
-                }
-                if(!developerRepoInfos.containsKey(developerName)) {
-                    developerRepoInfos.put(developerName,new ArrayList<>());
-                }
-                developerRepoInfos.get(developerName).add(new DeveloperRepoInfo(developerName,repoInfoMap.get(repoUuid),map.get("firstCommitDate")));
-            }
-        }
-        return developerRepoInfos;
-    }
-
-
     /**
      * 获取开发者在职状态
-     * @param developerList 待验证开发者列表
-     * @return Map<String, String> key : 开发者名，状态
+     * @param developer 待验证开发者
+     * @return 状态
      */
-    public Map<String, String> getDeveloperDutyType(Set<String> developerList) {
-        Map<String,String> dutyType = new HashMap<>(50);
-        List<Map<String,String>> developerDutyList = projectMapper.getDeveloperDutyTypeList();
-        for(Map<String,String> map : developerDutyList) {
-            dutyType.put(map.get("account_name"),map.get("account_status"));
+    @Cacheable(value = "developerDutyType",key = "#developer")
+    public String getDeveloperDutyType(String developer) {
+        String dutyType;
+        String accountStatus = projectMapper.getDeveloperDutyType(developer);
+        if("1".equals(accountStatus)) {
+            dutyType = DutyStatusEnum.InPosition.getStatus();
+        } else{
+            dutyType = DutyStatusEnum.Resign.getStatus();
         }
         return dutyType;
     }
@@ -478,11 +450,29 @@ public class ProjectDao {
         return null;
     }
 
-    //fixme
-    @SneakyThrows
-    public String getDeveloperFirstCommitDate(String developer,String since ,String until, String repoUuid) {
-        Map<String, String> map = projectMapper.getDeveloperFirstCommitDate(repoUuid, since, until, developer);
-        return map.get("firstCommitDate");
+
+    /**
+     * 获取开发者在库下的最早提交时间
+     * @param developer
+     * @param repoUuid
+     * @return
+     */
+    @Cacheable(value = "developerFirstCommitDate",key = "#developer+'_'+#repoUuid")
+    public String getDeveloperFirstCommitDate(String developer, String repoUuid) {
+        Objects.requireNonNull(developer);
+        List<String> developerAccountGitNameList = ((ProjectDao) AopContext.currentProxy()).getDeveloperGitNameList(developer);
+        return projectMapper.getDeveloperFirstCommitDate(repoUuid, developerAccountGitNameList);
+    }
+
+    /**
+     * 获取开发者参与库的数量
+     * @param developer
+     * @return
+     */
+    @Cacheable(value = "developerInvolvedRepoNum",key = "#developer")
+    public int getDeveloperInvolvedRepoNum(String developer) {
+        List<String> gitNameList = ((ProjectDao) AopContext.currentProxy()).getDeveloperGitNameList(developer);
+        return projectMapper.getDeveloperInvolvedRepoNum(gitNameList);
     }
 
     /**
@@ -611,7 +601,8 @@ public class ProjectDao {
      * @return
      */
     public List<String> getDeveloperVisibleRepo(List<String> projectVisibleRepoList,String developer, String since, String until) {
-        List<String> developerRepoList = projectMapper.getDeveloperRepoList(developer,since,until);
+        List<String> developerGitNameList = ((ProjectDao) AopContext.currentProxy()).getDeveloperGitNameList(developer);
+        List<String> developerRepoList = projectMapper.getDeveloperRepoList(developerGitNameList,since,until);
         return mergeBetweenRepo(developerRepoList,projectVisibleRepoList);
     }
 
@@ -636,6 +627,20 @@ public class ProjectDao {
     @Cacheable(value = "repoMsgNum",key = "#repoUuid")
     public int getSingleRepoMsgNum(String repoUuid) {
         return projectMapper.getSingleProjectMsgNum(repoUuid,null,null);
+    }
+
+
+    /**
+     * 获取开发者的最新提交
+     * @param developer 查询开发者
+     * @param repoUuidList 查询库列表
+     * @param since 查询起始时间
+     * @param until 查询截止时间
+     * @return {@link DeveloperRecentNews} 开发者最新提交列表
+     */
+    public List<DeveloperRecentNews> getDeveloperRecentNews(String developer, List<String> repoUuidList, String since, String until) {
+        List<String> developerGitNameList = ((ProjectDao) AopContext.currentProxy()).getDeveloperGitNameList(developer);
+        return projectMapper.getDeveloperRecentNewsList(developerGitNameList,repoUuidList,since,until);
     }
 
 

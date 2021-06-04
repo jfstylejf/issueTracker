@@ -59,4 +59,23 @@ public class DateTimeUtilTest {
         Assert.assertEquals("按月增量时间错误",afterTime3,LocalDate.of(2021,5,14));
         Assert.assertEquals("按年增量时间错误",afterTime4,LocalDate.of(2022,4,14));
     }
+
+    /**
+     *
+     * Method: getSumDays(String date1, String date2)
+     *
+     */
+    @Test
+    public void testGetSumDays() throws Exception {
+        String date1 = "2021-03-01";
+        String date2 = "2021-01-01";
+        int sumDays1 = (int) DateTimeUtil.getSumDays(date1,date2);
+        Assert.assertEquals("两日期差值不对",sumDays1,60);
+        try {
+            DateTimeUtil.getSumDays(null,date2);
+        }catch (Exception e) {
+            e.getMessage();
+            Assert.fail();
+        }
+    }
 }
