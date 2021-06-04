@@ -35,6 +35,8 @@ import java.util.List;
 @CrossOrigin
 @RequestMapping("/user")
 public class AccountController {
+    private final String TOKEN = "token";
+
     @Autowired
     private AccountService accountService;
 
@@ -250,11 +252,13 @@ public class AccountController {
     @ApiOperation(value="获取用户姓名",httpMethod = "GET")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "account_name", value = "用户名", dataType = "String", required = true),
+            @ApiImplicitParam(name = "need_admin", value = "是否需要显示admin", dataType = "Boolean", required = true)
     })
     @GetMapping(value = "/account/name")
-    public ResponseEntity<Object> getAccount(@RequestParam("account_name") String accountName){
+    public ResponseEntity<Object> getAccount(@RequestParam("account_name") String accountName,
+                                             @RequestParam(value = "need_admin", defaultValue = "false") Boolean needAdmin){
         try {
-            Account result = accountService.getAccountByName(accountName);
+            Account result = accountService.getAccountByName(accountName, needAdmin);
             if(result == null){
                 return new ResponseEntity<>(412, "account not exist!", null);
             }
@@ -267,12 +271,15 @@ public class AccountController {
 
     @ApiOperation(value="自动更新人员列表",httpMethod = "POST")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "gitname", value = "更新后的gitname列表", dataType = "List<String>", required = true)
+            @ApiImplicitParam(name = "gitNames", value = "更新后的gitname列表", dataType = "List<String>", required = true)
     })
     @PostMapping(value = "/account")
     public ResponseEntity autoUpdateAccount(@RequestBody List<String> gitNames) {
         try{
-            accountService.addNewAccounts(gitNames);
+            Boolean result = accountService.addNewAccounts(gitNames);
+            if(!result){
+                return new ResponseEntity<>(412, "can't insert reduplicated account!", null);
+            }
             return new ResponseEntity<>(200, "receive success!", null);
         }catch (Exception e){
             e.printStackTrace();
@@ -320,6 +327,23 @@ public class AccountController {
         }catch (Exception e){
             e.printStackTrace();
             return new ResponseEntity<>(401, "failed! " + e.getMessage(), null);
+        }
+    }
+
+    @ApiOperation(value="前端人员聚合", httpMethod = "PUT")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "major_name", value = "主合并人姓名", dataType = "String", required = true),
+            @ApiImplicitParam(name = "sub_name", value = "被合并人姓名", dataType = "String", required = true)
+    })
+    @PutMapping(value = {"/account/merge"})
+    public Object accountMerge(@RequestParam("major_name") String majorAccountName,
+                               @RequestParam("sub_name") String subAccountName,
+                               HttpServletRequest request) {
+        try{
+            List<String> accountGitname = accountService.accountMerge(majorAccountName, subAccountName, request.getHeader(TOKEN));
+            return new ResponseEntity<>(200, "reset success!", accountGitname);
+        }catch (Exception e){
+            return new ResponseEntity<>(401, "reset failed! " + e.getMessage(), null);
         }
     }
 

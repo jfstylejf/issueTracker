@@ -15,6 +15,9 @@ import java.util.Map;
 @AllArgsConstructor
 @NoArgsConstructor
 public class DeveloperCommitStandard implements Serializable {
+    /**
+     * 开发者
+     */
     private String developerName;
     /**
      * 开发者提交次数（不含Merge）
@@ -28,10 +31,8 @@ public class DeveloperCommitStandard implements Serializable {
      * 开发者不规范的提交次数
      */
     private int developerInvalidCommitCount;
-    private double commitStandard;
     /**
-     * 开发者
+     * 开发者提交规范性
      */
-    private List<Map<String,String>> developerJiraCommitInfo;
-    private List<Map<String,String>> developerInvalidCommitInfo;
+    private double commitStandard;
 }

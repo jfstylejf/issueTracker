@@ -137,17 +137,6 @@ public class JGitHelper {
     }
 
 
-    public String getMess(String commit) {
-        String message = null;
-        try {
-            RevCommit revCommit = revWalk.parseCommit(ObjectId.fromString(commit));
-            message = revCommit.getFullMessage();
-        }catch (Exception e) {
-            e.printStackTrace();
-        }
-        return message;
-    }
-
 
     public void close() {
         if (repository != null) {
@@ -502,8 +491,9 @@ public class JGitHelper {
         String commitId = "895af16570bf8515b9b07f87950ca1b87af4f92a";
         String repoPath = "C:\\Users\\wjzho\\Desktop\\web\\issue-tracker-web-dev_duplicate_fdse-0";
         JGitHelper jGitHelper = new JGitHelper(repoPath);
-        List<DiffEntry> entries = jGitHelper.getDiffEntry(commitId);
-        System.out.println(entries);
+        RevCommit revCommit = jGitHelper.getRevCommit(commitId);
+        String message = jGitHelper.getCommitMessage(revCommit);
+        System.out.println(message);
     }
 
 }

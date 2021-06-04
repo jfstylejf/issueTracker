@@ -1,6 +1,7 @@
 package cn.edu.fudan.measureservice.mapper;
 
 import cn.edu.fudan.measureservice.domain.bo.DeveloperLevel;
+import cn.edu.fudan.measureservice.domain.bo.DeveloperRecentNews;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
@@ -30,32 +31,21 @@ public interface ProjectMapper {
      */
     List<String> getRepoCommitGitNameList(@Param("repoUuid") String repoUuid);
 
-    /**
-     * 返回开发者在参与库中的信息
-     * @param repoUuid 查询库
-     * @param since 查询起止时间
-     * @param until 查询结束时间
-     * @return key : developerGitName
-     */
-    List<Map<String,String>> getDeveloperRepoInfoList(@Param("repoUuid") String repoUuid,@Param("since")String since, @Param("until")String until);
 
     /**
-     * fixme 改为从 gitName 查
-     * 返回单个开发者在参与库/项目中的第一次提交时间
+     * 返回单个开发者在参与库中的第一次提交时间
      * @param repoUuid 查询库
-     * @param since 查询起止时间
-     * @param until 查询结束时间
-     * @param developer 查询开发者
+     * @param gitNameList 查询开发者 gitName 列表
      * @return
      */
-    Map<String,String> getDeveloperFirstCommitDate(@Param("repoUuid") String repoUuid, @Param("since") String since, @Param("until") String until, @Param("developer") String developer);
-
+    String getDeveloperFirstCommitDate(@Param("repoUuid") String repoUuid, @Param("gitNameList") List<String> gitNameList);
 
     /**
      * 开发者在职状态
-     * @return List<Map<String,String>> key : account_name,account_status
+     * @param developer 查询开发者
+     * @return 在职 1 ， 离职 0
      */
-    List<Map<String,String>> getDeveloperDutyTypeList();
+    String getDeveloperDutyType(@Param("developer") String developer);
 
 
 
@@ -70,57 +60,13 @@ public interface ProjectMapper {
 
     /**
      * 获取开发者参与库列表
-     * @param developer 开发者姓名
+     * @param gitNameList 开发者 gitName 列表
      * @param since 查询起始时间
      * @param until 查询结束时间
      * @return List<String> developerRepoList
      */
-    List<String> getDeveloperRepoList(@Param("developer")String developer,@Param("since")String since,@Param("until")String until);
+    List<String> getDeveloperRepoList(@Param("gitNameList") List<String> gitNameList,@Param("since")String since,@Param("until")String until);
 
-
-    /**
-     * 获取开发者参与库的合法提交信息（不含Merge）
-     * @param repoUuidList 查询库列表
-     * @param since 查询起始时间
-     * @param until 查询结束时间
-     * @param accountGitNameList 开发者姓名
-     * @return  List<Map<String,Object>> key : repo_id, developer, commit_time , commit_id , message
-     */
-    List<Map<String,String>> getDeveloperValidCommitMsg(@Param("repoUuidList")List<String> repoUuidList,@Param("since")String since,@Param("until")String until,@Param("accountGitNameList")List<String> accountGitNameList);
-
-
-    /**
-     * 分获取分页查询查询库下该开发者的合法提交信息 （不含Merge）
-     * @param repoUuidList 查询库列表
-     * @param since 查询起始时间
-     * @param until 查询结束时间
-     * @param accountGitNameList 开发者姓名
-     * @param beginIndex 查询起始点
-     * @param size 查询条数
-     * @return  List<Map<String,Object>> key : repo_id, developer, commit_time , commit_id , message
-     */
-    List<Map<String,String>> getDeveloperValidCommitMsgWithPage(@Param("repoUuidList")List<String> repoUuidList,@Param("since")String since,@Param("until")String until,@Param("accountGitNameList")List<String> accountGitNameList,@Param("size") int size ,@Param("beginIndex") int beginIndex);
-
-
-    /**
-     * 获取项目下包含库的合法提交信息 （不含Merge）
-     * @param repoUuidList 查询库列表
-     * @param since 查询起始时间
-     * @param until 查询结束时间
-     * @return List<Map<String,Object>> key : repo_id , developer, commit_time , commit_id , message
-     */
-    List<Map<String,String>> getProjectValidCommitMsg(@Param("repoUuidList")List<String> repoUuidList,@Param("since")String since,@Param("until")String until);
-
-    /**
-     * 获取分页查询查询库下的合法提交信息 （不含Merge）
-     * @param repoUuidList 查询库列表
-     * @param since 查询起始时间
-     * @param until 查询结束时间
-     * @param size 查询大小
-     * @param beginIndex 查询起始位置
-     * @return List<Map<String,Object>> key : repo_id , developer, commit_time , commit_id , message
-     */
-    List<Map<String,String>> getProjectValidCommitMsgWithPage(@Param("repoUuidList")List<String> repoUuidList,@Param("since")String since,@Param("until")String until,@Param("size") int size ,@Param("beginIndex") int beginIndex);
 
     /**
      * 获取查询库列表中前3位提交次数最多的开发者
@@ -218,5 +164,21 @@ public interface ProjectMapper {
      */
     List<String> getProjectRepoList(@Param("projectName") String projectName);
 
+    /**
+     * 查询开发者参与库的个数
+     * @param gitNameList 开发者 gitName 列表
+     * @return 参与库个数
+     */
+    int getDeveloperInvolvedRepoNum(@Param("gitNameList") List<String> gitNameList);
+
+    /**
+     * 查询开发者最新提交明细
+     * @param gitNameList 查询开发者 gitName 列表
+     * @param repoUuidList 查询库列表
+     * @param since 查询起始时间
+     * @param until 查询截止时间
+     * @return 最新动态列表
+     */
+    List<DeveloperRecentNews> getDeveloperRecentNewsList(@Param("gitNameList") List<String> gitNameList, @Param("repoUuidList") List<String> repoUuidList, @Param("since") String since, @Param("until") String until);
 
 }

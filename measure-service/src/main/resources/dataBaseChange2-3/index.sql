@@ -10,3 +10,7 @@ ALTER TABLE issueTracker.account_author ADD INDEX idx_account_gitname(account_gi
 ALTER table issueTracker.account_author ADD index idx_account_name(account_name);
 
 ALTER TABLE issueTracker.repo_measure ADD INDEX idx_developer_name(developer_name);
+
+-- 新增is_compliance,判断是否是包含 jira 的提交
+ALTER TABLE issueTracker.repo_measure ADD COLUMN is_compliance INT not NULL AFTER commit_message;
+ALTER TABLE issueTracker.repo_measure ADD INDEX idx_is_compliance(is_compliance);

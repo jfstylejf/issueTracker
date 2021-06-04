@@ -130,7 +130,7 @@ public class ToolInvoker {
                 .single_comment_lines(total.getSingleCommentLines()).multi_comment_lines(total.getMultiCommentLines())
                 .commit_id(scanCommitInfoDto.getCommitId()).commit_time(scanCommitInfoDto.getCommitTime()).repo_id(scanCommitInfoDto.getRepoUuid())
                 .developer_name(scanCommitInfoDto.getDeveloperName())
-                .commit_message(revCommit.getShortMessage())
+                .commit_message(scanCommitInfoDto.getMessage()).is_compliance(scanCommitInfoDto.getIsCompliance())
                 .absoluteLines(total.getAbsoluteLines()).build();
 
         repoMeasure.set_merge(jGitHelper.isMerge(revCommit));

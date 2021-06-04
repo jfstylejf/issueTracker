@@ -150,6 +150,7 @@ public class RedisScheduleTask {
         measureDeveloperService.getHugeLocRemainedDetail(null,null,token);
     }
 
+
     /**
      * 每月1号凌晨1点 删除提交规范性趋势图
      */

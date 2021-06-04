@@ -2,6 +2,7 @@ package cn.edu.fudan.accountservice.service.impl;
 
 import cn.edu.fudan.accountservice.dao.AccountDao;
 import cn.edu.fudan.accountservice.domain.*;
+import cn.edu.fudan.accountservice.exception.RunTimeException;
 import cn.edu.fudan.accountservice.mapper.AccountAuthorMapper;
 import cn.edu.fudan.accountservice.mapper.CommitViewMapper;
 import cn.edu.fudan.accountservice.service.AccountService;
@@ -114,9 +115,13 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public Account getAccountByName(String accountName) {
-        if(accountName != null){
-            return accountDao.getAccountByAccountNameExceptAdmin(accountName);
+    public Account getAccountByName(String accountName, Boolean needAdmin) {
+        if(accountName != null ){
+            if(!needAdmin){
+                return  accountDao.getAccountByAccountNameExceptAdmin(accountName);
+            }else{
+                return accountDao.getAccountByAccountName(accountName);
+            }
         }
         return null;
     }
@@ -190,17 +195,18 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public void addNewAccounts(List<String> gitNames) {
+    public Boolean addNewAccounts(List<String> gitNames) {
         List<Account> accounts = gitNames.stream().
                 filter(gitName -> !accountDao.getAccountGitname().contains(gitName)).
                 map(Account::newInstance).
                 collect(Collectors.toList());
         if(accounts.size() == 0 || accounts == null){
-            return;
+            return false;
         }
         accountDao.addAccounts(accounts);
         accountAuthorMapper.batchInsertAccountAuthor(accounts.stream().map(AccountAuthor::newInstanceOf).collect(Collectors.toList()));
 
+        return true;
         // todo 查询新增人员在哪个项目 后续更新account_project 表
     }
 
@@ -234,6 +240,30 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public List<Map<String, Object>> getDevelopers(List<String> repoList, String since, String until) {
         return commitViewMapper.getDevelopers(repoList, since, until, null);
+    }
+
+    @Override
+    public List<String> accountMerge(String majorAccountName, String subAccountName, String token) throws Exception {
+
+        //只允许管理员身份
+        if(stringRedisTemplate.opsForValue().get("login:" + token) != null){
+            String username = stringRedisTemplate.opsForValue().get("login:" + token);
+            Account recentAccount = accountDao.getAccountByAccountName(username);
+            if(recentAccount.getRight() != 0){
+                throw new RunTimeException("this user has no right to merge account!");
+            }
+        }
+
+        //获取主合并人account表中的基本信息
+        Account majorAccount = accountDao.getAccountByAccountName(majorAccountName);
+        String majorAccountUuid = majorAccount.getUuid();
+
+        //修改修改被合并人account_author表中的uuid和account_name
+        accountDao.resetSubAccount(subAccountName, majorAccountName, majorAccountUuid);
+
+        //返回该人员对应的git账号
+        return  accountDao.getGitnameByAccountName(majorAccountName);
+
     }
 
     private PagedGridResult setterPagedGrid(List<?> list, Integer page) {

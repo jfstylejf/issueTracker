@@ -72,6 +72,7 @@
                end_line    AS endLine,
                file_name   AS filePath,
                method_name AS methodName,
+               offset,
                code
         FROM location
         WHERE rawIssue_uuid = #{uuid}
