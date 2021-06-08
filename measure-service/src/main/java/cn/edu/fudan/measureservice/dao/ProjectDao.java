@@ -176,9 +176,16 @@ public class ProjectDao {
      * @param projectName 项目名
      * @return 项目参与库列表
      */
-    @Cacheable(value = "projectRepo",key = "#projectName")
+    @Cacheable(value = "projectRepo",key = "#projectName",condition = "#projectName != null ")
     public List<String> getProjectRepoList(String projectName) {
-        return projectMapper.getProjectRepoList(projectName);
+        try {
+            List<String> projectRepoList =  projectMapper.getProjectRepoList(projectName);
+            projectRepoList.removeIf(Objects::isNull);
+            return projectRepoList;
+        }catch (Exception e) {
+            e.getMessage();
+            return new ArrayList<>();
+        }
     }
 
     /**
@@ -186,6 +193,7 @@ public class ProjectDao {
      * @param projectName 项目名
      * @return repoUuidList
      */
+    @Deprecated
     public List<String> getProjectRepoList(String projectName,String token) {
         List<String> repoUuidList = new ArrayList<>();
         List<RepoInfo> repoInfos = getProjectInvolvedRepoInfo(projectName,token);
@@ -218,7 +226,7 @@ public class ProjectDao {
 
 
     /**
-     * fixme 方法加个init方法,可以重置项目信息
+     * fixme 改写存储逻辑，由 token 缓存项目
      * 初始化项目信息
      * @param token 查询token
      * @return Boolean 添加状态
@@ -235,7 +243,7 @@ public class ProjectDao {
             }
             for(Map<String,String> repo : entry.getValue()) {
                 String repoUuid = repo.get("repo_id");
-                if(repoInfoMap.containsKey(repoUuid)) {
+                if(repoUuid == null || repoInfoMap.containsKey(repoUuid)) {
                     //已经更新，不存储该库数据
                     continue;
                 }
@@ -583,13 +591,13 @@ public class ProjectDao {
      * @param projectName 查询项目名
      * @return int projectId
      */
-    @SneakyThrows
-    @Cacheable(value = "projectIdByName", key = "#projectName")
+    @Cacheable(value = "projectIdByName", key = "#projectName", condition = "#projectName != null ")
     public int getProjectIdByName(String projectName) {
-        Integer name = projectMapper.getProjectIdByName(projectName);
-        if(name!=null) {
-            return name;
-        }else {
+        try {
+            Integer id = projectMapper.getProjectIdByName(projectName);
+            // 特判 projectName 是否在库种
+            return id == null ? -1 : id;
+        }catch (Exception e) {
             log.error("projectName wrong\n");
             return -1;
         }

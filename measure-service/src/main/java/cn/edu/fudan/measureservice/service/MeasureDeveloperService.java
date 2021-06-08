@@ -770,6 +770,10 @@ public class MeasureDeveloperService {
         return new DeveloperRepositoryMetric(firstCommitDate,developerStatement,developerCommitCount,repoName,repoUuid,developer,efficiency,quality,competence);
     }
 
+    @CacheEvict(value = "developerRepositoryMetric", allEntries=true, beforeInvocation = true)
+    public void deleteDeveloperRepositoryMetric() {
+
+    }
 
     /**
      *
@@ -790,7 +794,7 @@ public class MeasureDeveloperService {
             // 获取开发者任职状态
             String dutyType = projectDao.getDeveloperDutyType(developer);
             int involvedRepoCount = projectDao.getDeveloperInvolvedRepoNum(developer);
-            DeveloperPortrait developerPortrait = ((MeasureDeveloperService) AopContext.currentProxy()).getDeveloperPortrait(temp);
+            DeveloperPortrait developerPortrait = getDeveloperPortrait(temp);
             double totalLevel = developerPortrait.getLevel();
             double value = developerPortrait.getValue();
             double quality = developerPortrait.getQuality();
@@ -1158,7 +1162,6 @@ public class MeasureDeveloperService {
      * @param token 查询权限
      * @return
      */
-    @SneakyThrows
      public List<ProjectBigFileDetail> getHugeLocRemainedDetail(String projectNameList,String repoUuidList,String token) {
          List<ProjectBigFileDetail> result = new ArrayList<>();
          List<String> visibleRepoList = projectDao.getVisibleRepoListByProjectNameAndRepo(projectNameList,repoUuidList,token);
@@ -1166,6 +1169,7 @@ public class MeasureDeveloperService {
              String projectName = projectDao.getProjectName(repoUuid);
              String repoName = projectDao.getRepoName(repoUuid);
              int projectId = projectDao.getProjectIdByName(projectName);
+             // fixme 这边后续分页获取明细
              List<ProjectBigFileDetail> projectBigFileDetailList = measureDao.getCurrentBigFileInfo(repoUuid,null);
              for (ProjectBigFileDetail projectBigFileDetail : projectBigFileDetailList) {
                  projectBigFileDetail.setProjectId(String.valueOf(projectId));
@@ -1303,7 +1307,7 @@ public class MeasureDeveloperService {
         this.methodMeasureAspect = methodMeasureAspect;
     }
 
-    @CacheEvict(cacheNames = {"developerPortrait","developerMetricsNew","portraitCompetence","developerRecentNews","commitStandard"}, allEntries=true, beforeInvocation = true)
+    @CacheEvict(cacheNames = {}, allEntries=true, beforeInvocation = true)
     public void clearCache() {
         log.info("Successfully clear redis cache in db6.");
     }
