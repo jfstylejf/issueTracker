@@ -14,7 +14,7 @@ CREATE TABLE repo_metric (
                              better_max INT(10) COMMENT '较好标准的上界',
                              better_min INT(10) COMMENT '较好标准的下届',
                              normal_max INT(10) COMMENT '中等标准的上界',
-                             noraml_min INT(10) COMMENT '中等标准的下界',
+                             normal_min INT(10) COMMENT '中等标准的下界',
                              worse_max INT(10) COMMENT '较差标准的上界',
                              worse_min INT(10) COMMENT '较差标准的下界',
                              worst_max INT(10) COMMENT '最差标准的上界',
