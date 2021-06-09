@@ -20,7 +20,6 @@ public class RelationServiceImpl implements RelationService {
     @Autowired
     RelationDao relationDao;
 
-
     private Map<String,String> type_C2E;
     @Autowired
     public void setType_C2E(){
