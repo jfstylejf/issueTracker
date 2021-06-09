@@ -56,6 +56,7 @@ public class RestInterfaceManager {
         while (tryCount < 5) {
 
             try{
+                log.info(codeServicePath + "?repo_id=" + repoId);
                 JSONObject response = restTemplate.getForObject(codeServicePath + "?repo_id=" + repoId , JSONObject.class);
                 if (response != null && response.getJSONObject("data") != null && "Successful".equals(response.getJSONObject ("data").getString ("status"))) {
                     repoPath = response.getJSONObject("data").getString ("content");
@@ -97,10 +98,10 @@ public class RestInterfaceManager {
         return restTemplate.getForObject(repoServicePath + "/" + repoId, JSONObject.class);
     }
 
-    public boolean deleteRecall(String repoId, String token) {
+    public boolean deleteRecall(String repoId) {
         String path =  projectServicePath + "/repo?service_name=CLONE&repo_uuid=" + repoId;
         HttpHeaders headers = new HttpHeaders();
-        headers.add("token", token);
+        headers.add("token", "ec15d79e36e14dd258cfff3d48b73d35");
         HttpEntity<HttpHeaders> request = new HttpEntity<>(headers);
         ResponseEntity<JSONObject> responseEntity = restTemplate.exchange(path, HttpMethod.PUT, request, JSONObject.class);
         log.info(responseEntity.toString());
@@ -115,6 +116,8 @@ public class RestInterfaceManager {
 
     public int getAddLines(String repoId, String start, String end, String developer){
         int addLines = 0;
+        log.info(measureServicePath + "/repository/duration?repo_uuid=" + repoId +
+                "&since=" + start + "&until=" + end, JSONObject.class);
         JSONObject response = restTemplate.getForObject(measureServicePath + "/repository/duration?repo_uuid=" + repoId +
                 "&since=" + start + "&until=" + end, JSONObject.class);
         List<CommitInfo> list = response.getJSONObject("data").getJSONArray("commitInfoList").toJavaList(CommitInfo.class);

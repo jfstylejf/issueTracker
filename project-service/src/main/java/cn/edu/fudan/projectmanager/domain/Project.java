@@ -21,4 +21,5 @@ public class Project {
     private Date updateTime;
     private Date createTime;
     private String importAccountUuid;
+    private Integer lifeStatus;
 }

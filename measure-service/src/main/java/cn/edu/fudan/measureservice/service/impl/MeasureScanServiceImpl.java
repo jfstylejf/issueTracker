@@ -3,6 +3,8 @@ package cn.edu.fudan.measureservice.service.impl;
 import cn.edu.fudan.measureservice.annotation.RepoResource;
 import cn.edu.fudan.measureservice.component.RestInterfaceManager;
 import cn.edu.fudan.measureservice.core.ToolInvoker;
+import cn.edu.fudan.measureservice.dao.AccountDao;
+import cn.edu.fudan.measureservice.dao.JiraDao;
 import cn.edu.fudan.measureservice.dao.ProjectDao;
 import cn.edu.fudan.measureservice.domain.core.MeasureScan;
 import cn.edu.fudan.measureservice.domain.dto.RepoResourceDTO;
@@ -38,6 +40,8 @@ public class MeasureScanServiceImpl implements MeasureScanService {
     private RestInterfaceManager restInterfaceManager;
     private ThreadLocal<JGitHelper> jGitHelperT = new ThreadLocal<>();
     private ProjectDao projectDao;
+    private AccountDao accountDao;
+    private JiraDao jiraDao;
     private static final String SCANNING = "scanning";
     private static final String SCANNED = "complete";
 
@@ -122,7 +126,9 @@ public class MeasureScanServiceImpl implements MeasureScanService {
                 String commitTime = jGitHelper.getCommitTime(revCommit);
                 String authorName = jGitHelper.getAuthorName(revCommit);
                 String mailAddress = jGitHelper.getAuthorEmailAddress(revCommit);
-
+                String message = jGitHelper.getCommitMessage(revCommit);
+                // 判断 message 是否包含 jira 单号
+                int isCompliance = !"noJiraID".equals(jiraDao.getJiraIDFromCommitMsg(message)) ? 1 : 0;
                 ScanCommitInfoDto scanCommitInfoDto = ScanCommitInfoDto.builder()
                         .commitId(commit)
                         .branch(branch)
@@ -130,8 +136,9 @@ public class MeasureScanServiceImpl implements MeasureScanService {
                         .toolName(toolName)
                         .repoPath(repoPath)
                         .commitTime(commitTime)
-                        .developerName(getDeveloperName(authorName))
+                        .developerName(accountDao.getDeveloperName(authorName))
                         .mailAddress(mailAddress)
+                        .message(message).isCompliance(isCompliance)
                         .build();
 
                 toolInvoker.invoke(scanCommitInfoDto);
@@ -166,20 +173,6 @@ public class MeasureScanServiceImpl implements MeasureScanService {
     }
 
 
-    private String getDeveloperName(String authorName) {
-        if (authorName == null) {
-            log.error("cannot get authorName\n");
-            return null;
-        }
-        try {
-            String accountName = accountMapper.getAccountName(authorName);
-            return accountName == null ? authorName : accountName;
-        }catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
     private void updateMeasureScan(MeasureScan measureScan, String endCommit, int scannedCommitCount,
                                           int scanTime, String status, Date endScanTime){
         measureScan.setEndCommit(endCommit);
@@ -193,6 +186,16 @@ public class MeasureScanServiceImpl implements MeasureScanService {
     @Autowired
     public void setProjectDao(ProjectDao projectDao) {
         this.projectDao = projectDao;
+    }
+
+    @Autowired
+    public void setAccountDao(AccountDao accountDao) {
+        this.accountDao = accountDao;
+    }
+
+    @Autowired
+    public void setJiraDao(JiraDao jiraDao) {
+        this.jiraDao = jiraDao;
     }
 
     @Autowired

@@ -59,8 +59,11 @@ public class RestInterfaceManager {
         return body.getIntValue("code") == 200;
     }
 
-    public boolean deleteIssueRepo(String repoUuid) {
-        ResponseEntity<JSONObject> exchange = restTemplate.exchange(issueServicePath + "/issue/sonarqube/" + repoUuid, HttpMethod.DELETE, null, JSONObject.class);
+    public boolean deleteIssueRepo(String token, String repoUuid) {
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.add("token", token);
+        HttpEntity<Object> httpEntity = new HttpEntity<>(httpHeaders);
+        ResponseEntity<JSONObject> exchange = restTemplate.exchange(issueServicePath + "/issue/" + repoUuid, HttpMethod.DELETE, httpEntity, JSONObject.class);
         JSONObject body = exchange.getBody();
         assert body != null;
         return body.getIntValue("code") == 200;

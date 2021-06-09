@@ -51,8 +51,4 @@ public class IssueScanDao {
     public Set<String> getScannedCommitList(String repoUuid, String tool) {
         return new HashSet<>(issueScanMapper.getScannedCommitList(repoUuid, tool));
     }
-
-    public String getStartCommitByRepoUuid(String repoUuid) {
-        return issueScanMapper.getStartCommitByRepoUuid(repoUuid);
-    }
 }

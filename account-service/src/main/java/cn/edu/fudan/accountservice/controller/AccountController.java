@@ -35,6 +35,8 @@ import java.util.List;
 @CrossOrigin
 @RequestMapping("/user")
 public class AccountController {
+    private final String TOKEN = "token";
+
     @Autowired
     private AccountService accountService;
 
@@ -250,11 +252,13 @@ public class AccountController {
     @ApiOperation(value="获取用户姓名",httpMethod = "GET")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "account_name", value = "用户名", dataType = "String", required = true),
+            @ApiImplicitParam(name = "need_admin", value = "是否需要显示admin", dataType = "Boolean", required = true)
     })
     @GetMapping(value = "/account/name")
-    public ResponseEntity<Object> getAccount(@RequestParam("account_name") String accountName){
+    public ResponseEntity<Object> getAccount(@RequestParam("account_name") String accountName,
+                                             @RequestParam(value = "need_admin", defaultValue = "false") Boolean needAdmin){
         try {
-            Account result = accountService.getAccountByName(accountName);
+            Account result = accountService.getAccountByName(accountName, needAdmin);
             if(result == null){
                 return new ResponseEntity<>(412, "account not exist!", null);
             }
@@ -267,12 +271,15 @@ public class AccountController {
 
     @ApiOperation(value="自动更新人员列表",httpMethod = "POST")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "gitname", value = "更新后的gitname列表", dataType = "List<String>", required = true)
+            @ApiImplicitParam(name = "gitNames", value = "更新后的gitname列表", dataType = "List<String>", required = true)
     })
     @PostMapping(value = "/account")
     public ResponseEntity autoUpdateAccount(@RequestBody List<String> gitNames) {
         try{
-            accountService.addNewAccounts(gitNames);
+            Boolean result = accountService.addNewAccounts(gitNames);
+            if(!result){
+                return new ResponseEntity<>(412, "can't insert reduplicated account!", null);
+            }
             return new ResponseEntity<>(200, "receive success!", null);
         }catch (Exception e){
             e.printStackTrace();
@@ -286,6 +293,7 @@ public class AccountController {
             @ApiImplicitParam(name = "repo_uuids", value = "repo库", dataType = "String", required = false,defaultValue = "a140dc46-50db-11eb-b7c3-394c0d058805"),
             @ApiImplicitParam(name = "since", value = "起始时间", dataType = "String", required = false,defaultValue = "2020-01-01"),
             @ApiImplicitParam(name = "until", value = "结束时间", dataType = "String", required = false,defaultValue = "2020-12-31"),
+            @ApiImplicitParam(name = "developers", value = "名字搜索", dataType = "String"),
             @ApiImplicitParam(name = "is_whole", value = "是否获取所有数据（不进行分页）", dataType = "Boolean", required = false,defaultValue = "0"),
             @ApiImplicitParam(name = "page", value = "分页的第几页", dataType = "Integer", required = false,defaultValue = "1"),
             @ApiImplicitParam(name = "ps", value = "分页中每页的大小", dataType = "Integer", required = false,defaultValue = "10"),
@@ -296,10 +304,11 @@ public class AccountController {
     public Object getDeveloperList(@RequestParam(value = "repo_uuids", required = false) String repoUuids,
                                    @RequestParam(value = "since", required = false) String since,
                                    @RequestParam(value = "until", required = false) String until,
+                                   @RequestParam(value = "developers", required = false) String developers,
                                    @RequestParam(value = "is_whole", required = false, defaultValue = "0") Boolean isWhole,
                                    @RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
                                    @RequestParam(value = "ps", required = false, defaultValue = "30") Integer pageSize,
-                                   @RequestParam(value = "order", required = false, defaultValue = "developerName") String order,
+                                   @RequestParam(value = "order", required = false) String order,
                                    @RequestParam(value = "asc", required = false, defaultValue = "1") Boolean isAsc
                                    ){
         String[] repoListArr = repoUuids.split(",");
@@ -313,11 +322,28 @@ public class AccountController {
                 return new ResponseEntity<>(200, "success!", accountService.getDevelopers(repoList, since, until));
             }
             // 否则，获取分页数据
-            PagedGridResult result = accountService.getDevelopers(repoList, since, until, page, pageSize, order, isAsc);
+            PagedGridResult result = accountService.getDevelopers(repoList, since, until, developers, page, pageSize, order, isAsc);
             return new ResponseEntity<>(200, "success!", result);
         }catch (Exception e){
             e.printStackTrace();
             return new ResponseEntity<>(401, "failed! " + e.getMessage(), null);
+        }
+    }
+
+    @ApiOperation(value="前端人员聚合", httpMethod = "PUT")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "major_name", value = "主合并人姓名", dataType = "String", required = true),
+            @ApiImplicitParam(name = "sub_name", value = "被合并人姓名", dataType = "String", required = true)
+    })
+    @PutMapping(value = {"/account/merge"})
+    public Object accountMerge(@RequestParam("major_name") String majorAccountName,
+                               @RequestParam("sub_name") String subAccountName,
+                               HttpServletRequest request) {
+        try{
+            List<String> accountGitname = accountService.accountMerge(majorAccountName, subAccountName, request.getHeader(TOKEN));
+            return new ResponseEntity<>(200, "reset success!", accountGitname);
+        }catch (Exception e){
+            return new ResponseEntity<>(401, "reset failed! " + e.getMessage(), null);
         }
     }
 

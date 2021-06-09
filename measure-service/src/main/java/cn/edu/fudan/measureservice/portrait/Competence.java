@@ -45,11 +45,11 @@ public class Competence implements Formula, Serializable {
     @Setter
     private double changedCodeAVGAge;
     @Setter
-    private int changedCodeMAXAge;
+    private double changedCodeMAXAge;
     @Setter
     private double deletedCodeAVGAge;
     @Setter
-    private int deletedCodeMAXAge;
+    private double deletedCodeMAXAge;
     @Setter
     private int repoAge;
 

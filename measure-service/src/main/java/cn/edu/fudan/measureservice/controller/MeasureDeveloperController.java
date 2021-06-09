@@ -161,24 +161,15 @@ public class MeasureDeveloperController {
     public ResponseBean<DeveloperPortrait> getDeveloperPortrait(@RequestParam("developer")String developer,
                                                                 @RequestParam(value = "repo_uuids",required = false) String repoUuid,
                                                                 @RequestParam(value = "project_name",required = false) String projectName,
-                                                                @RequestParam(value = "since", required = false)String since,
-                                                                @RequestParam(value = "until", required = false)String until,
                                                                 HttpServletRequest request){
 
         try{
-            until = DateTimeUtil.processUntil(until);
             String token = request.getHeader("token");
-            List<String> repoUuidList;
-            if(projectName!=null && !"".equals(projectName)) {
-                repoUuidList = projectDao.getProjectRepoList(projectName,token);
-            }else {
-                repoUuidList = projectDao.involvedRepoProcess(repoUuid,token);
-            }
+            List<String> visibleRepoList = projectDao.getVisibleRepoListByProjectNameAndRepo(projectName,repoUuid,token);
+            List<String> repoUuidList = projectDao.getDeveloperVisibleRepo(visibleRepoList,developer,null,null);
             // todo 再根据开发者实际参与的库筛选一遍
-            Query query = new Query(token,since,until,developer,repoUuidList);
-            //fixme
-            Map<String,List<DeveloperRepoInfo>> developerRepoInfos = projectDao.getDeveloperRepoInfoList(query);
-            return new ResponseBean<>(HttpStatus.OK.value(),"success", measureDeveloperService.getDeveloperPortrait(query,developerRepoInfos));
+            Query query = new Query(token,null,null,developer,repoUuidList);
+            return new ResponseBean<>(HttpStatus.OK.value(),"success", measureDeveloperService.getDeveloperPortrait(query));
         }catch (Exception e){
             e.printStackTrace();
             return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(),"failed "+e.getMessage(),null);
@@ -237,21 +228,24 @@ public class MeasureDeveloperController {
                                           @RequestParam(value = "until", required = false)String until,
                                           @RequestParam(required = false, defaultValue = "1")int page,
                                           @RequestParam(required = false, defaultValue = "5")int ps,
-                                          @RequestParam(required = false, defaultValue = "true") boolean asc,
+                                          @RequestParam(required = false, defaultValue = "false") boolean asc,
                                           @RequestParam(required = false, defaultValue = "") String order,
                                           HttpServletRequest request){
 
         try{
             until = DateTimeUtil.processUntil(until);
             String token = request.getHeader("token");
-            List<String> repoUuidList;
-            if(projectName!=null && !"".equals(projectName)) {
-                repoUuidList = projectDao.getProjectRepoList(projectName,token);
+            List<String> repoUuidList = projectDao.getVisibleRepoListByProjectNameAndRepo(projectName,repoUuid,token);
+            List<String> developerList = new ArrayList<>();
+            if (developer!=null && !"".equals(developer)) {
+                developerList.add(developer);
             }else {
-                repoUuidList = projectDao.involvedRepoProcess(repoUuid,token);
+                developerList = projectDao.getDeveloperList(new Query(token,since,until,null,repoUuidList));
             }
-            Query query = new Query(token,since,until,developer,repoUuidList);
-            List<DeveloperCommitStandard> developerCommitStandardList = measureDeveloperService.getCommitStandard(query,developers);
+            List<DeveloperCommitStandard> developerCommitStandardList = new ArrayList<>();
+            for (String committer : developerList) {
+                developerCommitStandardList.add(measureDeveloperService.getDeveloperCommitStandard(new Query(token,since,until,committer,repoUuidList)));
+            }
             if(order!=null && !"".equals(order)) {
                 Collections.sort(developerCommitStandardList, (o1, o2) -> {
                     if(asc) {
@@ -267,8 +261,6 @@ public class MeasureDeveloperController {
             }else if (developer!=null && !"".equals(developer)){
                 // 如果传入单个开发者，此时 page 按照不规范明细进行分页
                 DeveloperCommitStandard developerCommitStandard = developerCommitStandardList.get(0);
-                List<Map<String,String>> developerInvalidCommitList = developerCommitStandard.getDeveloperInvalidCommitInfo().subList((page-1)*ps , Math.min(page * ps, developerCommitStandard.getDeveloperInvalidCommitCount()));
-                developerCommitStandard.setDeveloperInvalidCommitInfo(developerInvalidCommitList);
                 return new ResponseBean<>(HttpStatus.OK.value(),"success",Collections.singletonList(developerCommitStandard));
             }else {
                 return new ResponseBean<>(HttpStatus.OK.value(),"success",developerCommitStandardList);
@@ -291,6 +283,7 @@ public class MeasureDeveloperController {
         try {
             until = DateTimeUtil.processUntil(until);
             String token = request.getHeader("token");
+            log.info("request : /measure/commit-standard/trend-chart");
             return new ResponseBean<>(HttpStatus.OK.value(),"success",measureDeveloperService.getCommitStandardTrendChartIntegratedByProject(projectIds,since,until,token,interval));
         }catch (Exception e) {
             e.getMessage();
@@ -305,31 +298,16 @@ public class MeasureDeveloperController {
                                                         @RequestParam(value = "project_names",required = false) String projectNameList,
                                                         @RequestParam(value = "repo_uuids",required = false)String repoUuidList,
                                                         @RequestParam(value = "committer",required = false) String committer,
-                                                        @RequestParam(value = "since", required = false)String since,
-                                                        @RequestParam(value = "until", required = false)String until,
                                                         @RequestParam(required = false, defaultValue = "1")int page,
                                                         @RequestParam(required = false, defaultValue = "10")int ps,
-                                                        @RequestParam(required = false, defaultValue = "true") boolean asc,
-                                                        @RequestParam(required = false, defaultValue = "false") boolean is_valid,
+                                                        @RequestParam(required = false, defaultValue = "false") boolean asc,
+                                                        @RequestParam(required = false) Boolean is_valid,
                                                         @RequestParam(required = false, defaultValue = "") String order,
                                                         HttpServletRequest request) {
-        try { //todo 增加更具开发者查询功能
-            until = DateTimeUtil.processUntil(until);
+        try {
             String token = request.getHeader("token");
-            List<ProjectCommitStandardDetail> projectCommitStandardDetailList = measureDeveloperService.getCommitStandardDetailIntegratedByProject(projectNameList,repoUuidList,committer,since,until,token);
-            if (is_valid) {
-                projectCommitStandardDetailList.removeIf(projectCommitStandardDetail -> (!projectCommitStandardDetail.getIsValid()));
-            }
-            Collections.sort(projectCommitStandardDetailList, (o1, o2) -> {
-                if(asc) {
-                    return o1.getCommitTime().compareTo(o2.getCommitTime());
-                }else {
-                    return o2.getCommitTime().compareTo(o1.getCommitTime());
-                }
-            });
-            int totalPage = projectCommitStandardDetailList.size() % ps == 0 ? projectCommitStandardDetailList.size()/ps : projectCommitStandardDetailList.size()/ps + 1;
-            List<ProjectCommitStandardDetail> selectedDeveloperCommitStandardList = projectCommitStandardDetailList.subList(ps*(page-1), Math.min(ps * page, projectCommitStandardDetailList.size()));
-            ProjectFrontEnd<ProjectCommitStandardDetail> developerCommitStandardFrontend = new ProjectFrontEnd<>(page,totalPage,projectCommitStandardDetailList.size(),selectedDeveloperCommitStandardList);
+            log.info("request : /measure/commit-standard/detail");
+            ProjectFrontEnd<ProjectCommitStandardDetail> developerCommitStandardFrontend = measureDeveloperService.getCommitStandardDetailIntegratedByProject(projectNameList,repoUuidList,committer,token,page,ps,is_valid);
             return new ResponseBean<>(HttpStatus.OK.value(),"success",developerCommitStandardFrontend);
         }catch (Exception e) {
             e.printStackTrace();
@@ -342,16 +320,15 @@ public class MeasureDeveloperController {
     public void downLoadCommitStandardDetail(
                                          @RequestParam(value = "project_names",required = false) String projectNameList,
                                          @RequestParam(value = "repo_uuids",required = false)String repoUuidList,
-                                         @RequestParam(value = "since", required = false)String since,
-                                         @RequestParam(value = "until", required = false)String until,
+                                         @RequestParam(value = "committer",required = false) String committer,
                                          @RequestParam(required = false, defaultValue = "") String order,
                                          HttpServletResponse response,
                                          HttpServletRequest request)  {
         try {
-            until = DateTimeUtil.processUntil(until);
             String token = request.getHeader("token");
-            List<ProjectCommitStandardDetail> projectCommitStandardDetailList = measureDeveloperService.getCommitStandardDetailIntegratedByProject(projectNameList,repoUuidList,null,since,until,token);
-            projectCommitStandardDetailList.sort((o1, o2) -> o2.getCommitTime().compareTo(o1.getCommitTime()));
+            log.info("request : /measure/commit-standard/detail/download");
+            List<String> visibleRepoList = projectDao.getVisibleRepoListByProjectNameAndRepo(projectNameList,repoUuidList,token);
+            List<ProjectCommitStandardDetail> projectCommitStandardDetailList = measureDeveloperService.getProjectValidCommitStandardDetail(visibleRepoList,committer);
             response.setContentType("application/vnd.ms-excel");
             response.setCharacterEncoding("utf-8");
             // 保证下载到本地文件名不乱码的
@@ -370,8 +347,7 @@ public class MeasureDeveloperController {
                                                 HttpServletRequest request) {
         try {
             String token = request.getHeader("token");
-            List<String> committerList = measureDeveloperService.getCommitStandardCommitterList(projectNameList,repoUuidList,token);
-            committerList.sort(String::compareTo);
+            Set<String> committerList = measureDeveloperService.getCommitStandardCommitterList(projectNameList,repoUuidList,token);
             return new ResponseBean<>(HttpStatus.OK.value(),"success",committerList);
         }catch (Exception e) {
             e.getMessage();
@@ -401,15 +377,11 @@ public class MeasureDeveloperController {
 
     @GetMapping("/measure/big-file/detail")
     @CrossOrigin
-    public ResponseBean<ProjectFrontEnd<ProjectBigFileDetail>> getHugeLocRemainedFileDetail(
+    public ResponseBean<ProjectFrontEnd<ProjectBigFileDetail>> getHugeLocRemainedFileDetail( //todo 改为分页查询
                                         @RequestParam(value = "project_names",required = false) String projectNameList,
                                         @RequestParam(value = "repo_uuids",required = false)String repoUuidList,
-                                        @RequestParam(value = "since", required = false)String since,
-                                        @RequestParam(value = "until", required = false)String until,
                                         @RequestParam(required = false, defaultValue = "1")int page,
                                         @RequestParam(required = false, defaultValue = "10")int ps,
-                                        // 默认降序
-                                        @RequestParam(required = false, defaultValue = "false") boolean asc,
                                         @RequestParam(required = false, defaultValue = "") String order,
                                         HttpServletRequest request) {
 
@@ -417,10 +389,10 @@ public class MeasureDeveloperController {
             String token = request.getHeader("token");
             List<ProjectBigFileDetail> projectBigFileDetailList = measureDeveloperService.getHugeLocRemainedDetail(projectNameList,repoUuidList,token);
             Collections.sort(projectBigFileDetailList, (o1, o2) -> {
-                if(asc) {
-                    return o1.getCurrentModifyTime().compareTo(o2.getCurrentModifyTime());
-                }else {
+                if (!o1.getCurrentModifyTime().equals(o2.getCurrentModifyTime())) {
                     return o2.getCurrentModifyTime().compareTo(o1.getCurrentModifyTime());
+                }else {
+                    return o2.getCurrentLines() - o1.getCurrentLines();
                 }
             });
             int totalPage = projectBigFileDetailList.size() % ps == 0 ? projectBigFileDetailList.size()/ps : projectBigFileDetailList.size()/ps + 1;
@@ -458,7 +430,7 @@ public class MeasureDeveloperController {
         }
     }
 
-    @GetMapping("/developer/data/ccn")
+    @GetMapping("/measure/developer/data/ccn")
     public ResponseBean<ProjectFrontEnd> getDeveloperDataCcn(@RequestParam(value = "project_names",required = false) String projectNameList,
                                               @RequestParam(value = "developers",required = true) String developerList,
                                               @RequestParam(value = "since" , required = false) String since,
@@ -483,21 +455,25 @@ public class MeasureDeveloperController {
         return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(),"failed",null);
     }
 
-    @GetMapping("/developer/data/commit-standard")
+    @GetMapping("/measure/developer/data/commit-standard")
     public ResponseBean<ProjectFrontEnd> getDeveloperDataCommitStandard(@RequestParam(value = "project_names",required = false) String projectNameList,
-                                                               @RequestParam(value = "developers",required = true) String developerList,
+                                                               @RequestParam(value = "developers",required = false,defaultValue = "") String developerList,
                                                                @RequestParam(value = "since" , required = false) String since,
                                                                @RequestParam(value = "until",required = false) String until,
                                                                @RequestParam(required = false, defaultValue = "1")int page,
                                                                @RequestParam(required = false, defaultValue = "10")int ps,
                                                                @RequestParam(required = false, defaultValue = "") String order,
-                                                               @RequestParam(required = false, defaultValue = "") String asc,
+                                                               @RequestParam(required = false, defaultValue = "false") boolean asc,
                                                                HttpServletRequest request )
     {
         try {
             String token = request.getHeader("token");
             List<DeveloperDataCommitStandard> developerDataCommitStandardList = measureDeveloperService.getDeveloperDataCommitStandard(projectNameList,developerList,token,since,until);
-            developerDataCommitStandardList.sort((o1, o2) -> Double.compare(o2.getCommitStandard(), o1.getCommitStandard()));
+            if (asc) {
+                developerDataCommitStandardList.sort((o1, o2) -> Double.compare(o1.getCommitStandard(), o2.getCommitStandard()));
+            }else {
+                developerDataCommitStandardList.sort((o1, o2) -> Double.compare(o2.getCommitStandard(), o1.getCommitStandard()));
+            }
             int totalPage = developerDataCommitStandardList.size() % ps == 0 ? developerDataCommitStandardList.size()/ps : developerDataCommitStandardList.size()/ps + 1;
             List<DeveloperDataCommitStandard> selectedDeveloperDataCommitStandardList = developerDataCommitStandardList.subList(ps*(page-1), Math.min(ps * page, developerDataCommitStandardList.size()));
             ProjectFrontEnd<DeveloperDataCommitStandard> developerDtaCommitStandardProjectFrontEnd = new ProjectFrontEnd<>(page,totalPage,developerDataCommitStandardList.size(),selectedDeveloperDataCommitStandardList);

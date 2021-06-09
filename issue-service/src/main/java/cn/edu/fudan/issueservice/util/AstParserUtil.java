@@ -19,15 +19,21 @@ import java.util.Set;
 @Slf4j
 public class AstParserUtil {
 
-    public static String findMethod(String filePath, int beginLine, int endLine) {
+    public static Object[] findMethodNameAndOffset(String filePath, int beginLine, int endLine) {
         try {
             CompilationUnit compilationUnit = JavaParser.parse(Paths.get(filePath), StandardCharsets.UTF_8);
             List<ClassOrInterfaceDeclaration> classOrInterfaceDeclarationList = compilationUnit.findAll(ClassOrInterfaceDeclaration.class);
             //判断是否是enum
             if (classOrInterfaceDeclarationList.isEmpty()) {
                 List<EnumConstantDeclaration> enumConstantDeclarationList = compilationUnit.findAll(EnumConstantDeclaration.class);
-                if (enumConstantDeclarationList.isEmpty()) {
-                    return "enum";
+                for (EnumConstantDeclaration enumConstantDeclaration : enumConstantDeclarationList) {
+                    if (enumConstantDeclaration.getRange().isPresent()) {
+                        int begin = enumConstantDeclaration.getRange().get().begin.line;
+                        int end = enumConstantDeclaration.getRange().get().end.line;
+                        if (beginLine >= begin && endLine <= end) {
+                            return new Object[]{"enum", beginLine - begin};
+                        }
+                    }
                 }
             }
             for (ClassOrInterfaceDeclaration classOrInterfaceDeclaration : classOrInterfaceDeclarationList) {
@@ -38,7 +44,7 @@ public class AstParserUtil {
                         int begin = constructorDeclaration.getRange().get().begin.line;
                         int end = constructorDeclaration.getRange().get().end.line;
                         if (beginLine >= begin && endLine <= end) {
-                            return constructorDeclaration.getSignature().toString();
+                            return new Object[]{constructorDeclaration.getSignature().toString(), beginLine - begin};
                         }
                     }
                 }
@@ -49,7 +55,7 @@ public class AstParserUtil {
                         int begin = methodDeclaration.getRange().get().begin.line;
                         int end = methodDeclaration.getRange().get().end.line;
                         if (beginLine >= begin && endLine <= end) {
-                            return methodDeclaration.getSignature().toString();
+                            return new Object[]{methodDeclaration.getSignature().toString(), beginLine - begin};
                         }
                     }
                 }
@@ -65,7 +71,7 @@ public class AstParserUtil {
                                 simpleName.append(variableDeclarator.getName());
                                 simpleName.append(" ");
                             }
-                            return simpleName.toString();
+                            return new Object[]{simpleName.toString(), beginLine - begin};
                         }
                     }
                 }

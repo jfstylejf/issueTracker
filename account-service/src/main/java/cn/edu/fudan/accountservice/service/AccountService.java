@@ -78,7 +78,7 @@ public interface AccountService {
      * @param accountName 用户名
      * @return Account
      */
-    Account getAccountByName(String accountName);
+    Account getAccountByName(String accountName, Boolean needAdmin);
 
     /**
      * get account by token
@@ -116,7 +116,7 @@ public interface AccountService {
      * 查询 account_author表中的所有 gitname
      * @param gitname  新增用户的git 名字
      */
-    void addNewAccounts(List<String> gitname);
+    Boolean addNewAccounts(List<String> gitname);
 
     /**
      *
@@ -129,7 +129,7 @@ public interface AccountService {
      * @param isAsc 是否升序
      * @return 根据查询条件获取开发者（聚合后）的列表
      */
-    PagedGridResult getDevelopers(List<String> repoList, String since, String until, Integer page, Integer pageSize, String order, Boolean isAsc);
+    PagedGridResult getDevelopers(List<String> repoList, String since, String until, String developers, Integer page, Integer pageSize, String order, Boolean isAsc);
 
     /**
      *
@@ -139,4 +139,13 @@ public interface AccountService {
      * @return 获取给定条件下 所有的开发者列表 不进行分页
      */
     List<Map<String, Object>> getDevelopers(List<String> repoList, String since, String until);
+
+    /**
+     * 人员手动聚合
+     *
+     * @param majorAccountName 主合并人姓名
+     * @param subAccountName 被合并人姓名
+     * @return List<String>
+     */
+    List<String> accountMerge(String majorAccountName, String subAccountName, String token) throws Exception;
 }

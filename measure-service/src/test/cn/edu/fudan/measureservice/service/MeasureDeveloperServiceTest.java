@@ -36,6 +36,8 @@ public class MeasureDeveloperServiceTest {
    @Resource
    private MeasureDeveloperService measureDeveloperService;
 
+   private String token = "ec15d79e36e14dd258cfff3d48b73d35";
+
 
 @Before
 public void before() throws Exception {
@@ -111,8 +113,8 @@ public void testGetDeveloperPortrait() throws Exception {
 * 
 */ 
 @Test
-public void testGetDeveloperRepositoryMetric() throws Exception { 
-//TODO: Test goes here... 
+public void testGetDeveloperRepositoryMetric() throws Exception {
+
 } 
 
 /** 
@@ -151,18 +153,16 @@ public void testSingleRepoGetCommitStandard() throws Exception {
     // 单库单人测试
     until = "2021-04-16";
     Query query2 = new Query(token,since,until,"zwj", Collections.singletonList(repoUuid0));
-    List<DeveloperCommitStandard> developerCommitStandardList2 = measureDeveloperService.getCommitStandard(query2,Collections.singletonList("zwj"));
-    Assert.assertEquals("查询人数不对",developerCommitStandardList2.size(),1);
-    DeveloperCommitStandard developerCommitStandard1 = developerCommitStandardList2.get(0);
-    Assert.assertEquals("开发者姓名错误",developerCommitStandard1.getDeveloperName(),"zwj");
-    Assert.assertEquals("开发者合法提交数错误",developerCommitStandard1.getDeveloperJiraCommitCount(),6);
-    Assert.assertEquals("开发者不规范提交次数错误",developerCommitStandard1.getDeveloperInvalidCommitCount(),0);
-    Assert.assertEquals("开发者总提交次数有误（去Merge）",developerCommitStandard1.getDeveloperValidCommitCount(),6);
+    DeveloperCommitStandard developerCommitStandard = measureDeveloperService.getDeveloperCommitStandard(query2);
+    Assert.assertEquals("开发者姓名错误",developerCommitStandard.getDeveloperName(),"zwj");
+    Assert.assertEquals("开发者合法提交数错误",developerCommitStandard.getDeveloperJiraCommitCount(),6);
+    Assert.assertEquals("开发者不规范提交次数错误",developerCommitStandard.getDeveloperInvalidCommitCount(),0);
+    Assert.assertEquals("开发者总提交次数有误（去Merge）",developerCommitStandard.getDeveloperValidCommitCount(),6);
 
     // 单库多人测试
     until = "2021-04-14";
     Query query1 = new Query(token,since,until,null, Collections.singletonList(repoUuid0));
-    List<DeveloperCommitStandard> developerCommitStandardList1 = measureDeveloperService.getCommitStandard(query1,null);
+    List<DeveloperCommitStandard> developerCommitStandardList1 = measureDeveloperService.getCommitStandard(query1);
     Assert.assertEquals("开发者人数有误",developerCommitStandardList1.size(),6);
     Map<String,DeveloperCommitStandard> map = new HashMap<>();
     for (DeveloperCommitStandard developerCommitStandard : developerCommitStandardList1) {
@@ -448,25 +448,7 @@ try {
 */ 
 } 
 
-/** 
-* 
-* Method: getSumDays(String date1, String date2) 
-* 
-*/ 
-@Test
-public void testGetSumDays() throws Exception { 
-//TODO: Test goes here... 
-/* 
-try { 
-   Method method = MeasureDeveloperService.getClass().getMethod("getSumDays", String.class, String.class); 
-   method.setAccessible(true); 
-   method.invoke(<Object>, <Parameters>); 
-} catch(NoSuchMethodException e) { 
-} catch(IllegalAccessException e) { 
-} catch(InvocationTargetException e) { 
-} 
-*/ 
-} 
+
 
 /** 
 * 

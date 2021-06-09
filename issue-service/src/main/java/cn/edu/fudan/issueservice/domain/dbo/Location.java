@@ -36,7 +36,7 @@ public class Location {
     /**
      * location 起始位置相对于 所在方法或者属性起始位置的偏移量
      */
-    private int offset = 1;
+    private int offset = 0;
 
     private List<LocationMatchResult> locationMatchResults = new ArrayList<>(0);
     private boolean matched = false;

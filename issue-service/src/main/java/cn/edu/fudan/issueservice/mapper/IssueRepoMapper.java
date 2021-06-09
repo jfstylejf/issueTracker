@@ -1,7 +1,6 @@
 package cn.edu.fudan.issueservice.mapper;
 
 import cn.edu.fudan.common.domain.po.scan.RepoScan;
-import cn.edu.fudan.issueservice.domain.dbo.IssueRepo;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
@@ -21,8 +20,6 @@ public interface IssueRepoMapper {
      */
     void insertOneIssueRepo(@Param("issueRepo") RepoScan issueRepo);
 
-    //void insertOneIssueRepo(@Param("issueRepo") RepoScan issueRepo,String uuid);
-
     /**
      * 更新issueRepo
      *
@@ -34,20 +31,18 @@ public interface IssueRepoMapper {
      * 获取issueRepo
      *
      * @param repoId repoUuid
-     * @param nature nature
      * @param tool   tool
      * @return issueRepo list
      */
-    List<IssueRepo> getIssueRepoByCondition(@Param("repo_uuid") String repoId, @Param("nature") String nature, @Param("tool") String tool);
+    List<RepoScan> getIssueRepoByCondition(@Param("repo_uuid") String repoId, @Param("tool") String tool);
 
     /**
      * 删除issueRepo
      *
      * @param repoId repoUuid
-     * @param nature nature
      * @param tool   tool
      */
-    void deleteIssueRepoByCondition(@Param("repo_uuid") String repoId, @Param("nature") String nature, @Param("tool") String tool);
+    void deleteIssueRepoByCondition(@Param("repo_uuid") String repoId, @Param("tool") String tool);
 
     /**
      * 返回没扫描commit数
@@ -65,5 +60,5 @@ public interface IssueRepoMapper {
      * @param tool     tool
      * @return main issueRepo
      */
-    IssueRepo getMainIssueRepo(String repoUuid, String tool);
+    RepoScan getMainIssueRepo(String repoUuid, String tool);
 }

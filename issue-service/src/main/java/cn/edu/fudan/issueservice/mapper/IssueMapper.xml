@@ -929,7 +929,7 @@
 
     <select id="getDeveloperListLivingIssue" resultType="java.util.Map">
         SELECT COUNT(*) AS issueCount, producer FROM issue
-        WHERE status = 'Open'
+        WHERE status = 'Open' AND manual_status = 'Default'
         <if test="since != null and since != '' ">
             AND <![CDATA[ solve_commit_date >= #{since} ]]>
         </if>

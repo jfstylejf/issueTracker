@@ -24,6 +24,7 @@
         start_line,
         end_line,
         bug_lines,
+        offset,
         start_token,
         end_token,
         file_name,
@@ -39,6 +40,7 @@
             #{item.startLine},
             #{item.endLine},
             #{item.bugLines},
+            #{item.offset},
             #{item.startToken},
             #{item.endToken},
             #{item.filePath},
@@ -70,6 +72,7 @@
                end_line    AS endLine,
                file_name   AS filePath,
                method_name AS methodName,
+               offset,
                code
         FROM location
         WHERE rawIssue_uuid = #{uuid}

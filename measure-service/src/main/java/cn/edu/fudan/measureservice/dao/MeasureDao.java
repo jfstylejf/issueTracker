@@ -10,7 +10,10 @@ import cn.edu.fudan.measureservice.mapper.RepoMeasureMapper;
 import cn.edu.fudan.measureservice.util.DateTimeUtil;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.Assert;
 
@@ -62,6 +65,7 @@ public class MeasureDao {
     }
 
 
+
     /**
      * 查询库下所有大文件最新信息
      * @param repoUuidList 查询库列表
@@ -69,14 +73,31 @@ public class MeasureDao {
      */
     public List<ProjectBigFileDetail> getCurrentBigFileInfo(List<String> repoUuidList,String until) {
         List<ProjectBigFileDetail> projectBigFileDetailList = new ArrayList<>();
-        List<Map<String,Object>> currentFileInfoByRepoUuidList = fileMeasureMapper.getCurrentFileInfoByRepoUuidList(repoUuidList,until);
+        for (String repoUuid : repoUuidList) {
+            List<ProjectBigFileDetail> projectBigFileDetails = ((MeasureDao) AopContext.currentProxy()).getCurrentBigFileInfo(repoUuid,until);
+            projectBigFileDetailList.addAll(projectBigFileDetails);
+        }
+        return projectBigFileDetailList;
+    }
+
+
+    /**
+     * 查询库下所有大文件最新信息
+     * @param repoUuid 查询库
+     * @return new ArrayList<{@link ProjectBigFileDetail}>
+     */
+    @Cacheable(value = "repoBigFileInfo",key = "#repoUuid",condition = "#until == null ")
+    public List<ProjectBigFileDetail> getCurrentBigFileInfo(String repoUuid, String until) {
+        log.info("get Current big file in {} til {}",repoUuid,until);
+        Objects.requireNonNull(repoUuid);
+        List<ProjectBigFileDetail> projectBigFileDetailList = new ArrayList<>();
+        List<Map<String,Object>> currentFileInfoByRepoUuidList = fileMeasureMapper.getCurrentFileInfoByRepoUuidList(Collections.singletonList(repoUuid),until);
         for (Map<String,Object> map : currentFileInfoByRepoUuidList) {
             ProjectBigFileDetail projectBigFileDetail = new ProjectBigFileDetail();
             String filePath = (String) map.get("file_path");
-            int totalLines = (int) map.get("total_lines");
+            int totalLines = (int) map.get("absolute_lines");
             Timestamp currentModifyTime = (Timestamp) map.get("currentModifyTime");
             LocalDate temp = currentModifyTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-            String repoUuid = (String) map.get("repo_id");
             projectBigFileDetail.setCurrentLines(totalLines);
             projectBigFileDetail.setFilePath(filePath);
             projectBigFileDetail.setRepoUuid(repoUuid);
@@ -86,6 +107,54 @@ public class MeasureDao {
         return projectBigFileDetailList;
     }
 
+
+    /**
+     * 获取项目包含库的合法提交信息（去除Merge）
+     * @param query 查询条件
+     * @return List<Map<String,Object>> key : repo_id, developer , repo_id, commit_time , commit_id , message , is_compliance
+     */
+    public List<Map<String,Object>> getProjectValidCommitMsg(Query query) {
+        return repoMeasureMapper.getProjectValidCommitMsg(query.getDeveloper(),query.getRepoUuidList(),query.getSince(),query.getUntil());
+    }
+
+    /**
+     * 分页获取项目包括库的合法提交明细（去除Merge）
+     * @param query 查询条件
+     * @param beginIndex 查询起始位置
+     * @param ps 每页大小
+     * @return 分页查询后合法提交明细 key : developer , repo_id, commit_time , commit_id , message
+     */
+    public List<Map<String,Object>> getProjectValidCommitMsg(Query query,int beginIndex, int ps) {
+        return repoMeasureMapper.getProjectValidCommitMsgWithPage(query.getDeveloper(),query.getRepoUuidList(),query.getSince(),query.getUntil(),ps,beginIndex);
+    }
+
+    /**
+     * 分页获取项目包括库的合法提交 JIRA 明细（去除Merge）
+     * @param query 查询条件
+     * @param beginIndex 查询起始位置
+     * @param ps 每页大小
+     * @return 分页查询后合法提交明细 key : developer , repo_id, commit_time , commit_id , message
+     */
+    public List<Map<String,Object>> getProjectValidJiraCommitMsg(Query query,int beginIndex, int ps) {
+        return repoMeasureMapper.getProjectValidJiraCommitMsgWithPage(query.getDeveloper(),query.getRepoUuidList(),query.getSince(),query.getUntil(),ps,beginIndex);
+    }
+
+    /**
+     * 分页获取项目包括库的合法提交 非JIRA 明细（去除Merge）
+     * @param query 查询条件
+     * @param beginIndex 查询起始位置
+     * @param ps 每页大小
+     * @return 分页查询后合法提交明细 key : developer , repo_id, commit_time , commit_id , message
+     */
+    public List<Map<String,Object>> getProjectValidNotJiraCommitMsg(Query query,int beginIndex, int ps) {
+        return repoMeasureMapper.getProjectValidNotJiraCommitMsgWithPage(query.getDeveloper(),query.getRepoUuidList(),query.getSince(),query.getUntil(),ps,beginIndex);
+    }
+
+
+    @CacheEvict(value = "repoBigFileInfo", allEntries=true, beforeInvocation = true)
+    public void deleteRepoBigFileTrendChart() {
+
+    }
 
     /**
      * 删除所属repo下repo_measure,file_measure表数据

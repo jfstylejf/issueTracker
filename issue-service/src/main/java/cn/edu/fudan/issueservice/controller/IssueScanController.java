@@ -1,9 +1,9 @@
 package cn.edu.fudan.issueservice.controller;
 
+import cn.edu.fudan.common.domain.po.scan.RepoScan;
 import cn.edu.fudan.issueservice.component.RestInterfaceManager;
 import cn.edu.fudan.issueservice.core.IssueScanProcess;
 import cn.edu.fudan.issueservice.domain.ResponseBean;
-import cn.edu.fudan.issueservice.domain.dbo.IssueRepo;
 import cn.edu.fudan.issueservice.domain.dto.ScanRequestDTO;
 import cn.edu.fudan.issueservice.service.IssueScanService;
 import io.swagger.annotations.Api;
@@ -78,13 +78,14 @@ public class IssueScanController {
             @ApiImplicitParam(name = "repo_uuid", value = "代码库uuid", required = true)
     })
     @GetMapping(value = {"/issue/{tool}/scan-status"})
-    public ResponseBean<IssueRepo> scanStatus(@PathVariable(value = "tool") String tools, @RequestParam("repo_uuid") String repoUuid) {
+    public ResponseBean<RepoScan> scanStatus(@PathVariable(value = "tool") String tools, @RequestParam("repo_uuid") String repoUuid) {
         String tool = restInterfaceManager.getToolByRepoUuid(repoUuid);
         try {
-            IssueRepo issueRepo = issueScanService.getScanStatus(repoUuid, tool);
+            RepoScan issueRepo = issueScanService.getScanStatus(repoUuid, tool);
             return new ResponseBean<>(200, "success!", issueRepo);
         } catch (Exception e) {
             log.error(INVOKE_TOOL_FAILED_MESSAGE, tool, e.getMessage());
+            e.printStackTrace();
             return new ResponseBean<>(500, e.getMessage(), null);
         }
     }
@@ -102,7 +103,8 @@ public class IssueScanController {
         }
 
         try {
-            issueScanService.stopScan(repoUuid, tool);
+            IssueScanProcess issueScanProcess = applicationContext.getBean(IssueScanProcess.class);
+            issueScanProcess.stopScan(repoUuid, tool);
             return new ResponseBean<>(200, SUCCESS, "stop success!");
         } catch (Exception e) {
             log.error(INVOKE_TOOL_FAILED_MESSAGE, tool, e.getMessage());
@@ -131,7 +133,7 @@ public class IssueScanController {
         try {
             return new ResponseBean<>(200, SUCCESS, size == 0 ? issueScanService.getCommitsCount(repoUuid, tool) : issueScanService.getCommits(repoUuid, page, size, isWhole, tool));
         } catch (Exception e) {
-            log.error("invoke tool:[{}] failed! repoId:{} !message is {}", tool, repoUuid, e.getMessage());
+            e.printStackTrace();
             return new ResponseBean<>(500, e.getMessage(), null);
         }
     }

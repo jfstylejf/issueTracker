@@ -37,10 +37,17 @@ public class RepoMeasure {
     private int add_comment_lines;
     private int del_comment_lines;
     private int changed_files;
+    /**
+     * 此条 commit 是否是 merge
+     */
     private boolean is_merge;
     private String commit_message;
     private String first_parent_commit_id;
     private String second_parent_commit_id;
+    /**
+     * 提交信息是否包含 jira 单号， 0 for false, 1 for true
+     */
+    private int is_compliance;
     /**
      * 全部代码行（包含注释、空白行）
      */

@@ -8,6 +8,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 /**
  * @ClassName: ProjectBigFileDetail
  * @Description: 项目总览页面 超大文件数明细
@@ -18,7 +20,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ProjectBigFileDetail {
+public class ProjectBigFileDetail implements Serializable {
     /**
      * 项目id
      */

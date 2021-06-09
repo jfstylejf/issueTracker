@@ -78,7 +78,7 @@ public class IssueServiceImpl implements IssueService {
         }
         //删除issue,issue_repo,issue_scan,scan_result表记录
         issueDao.deleteIssueByRepoIdAndTool(repoUuid, tool);
-        issueRepoDao.delIssueRepo(repoUuid, null, tool);
+        issueRepoDao.delIssueRepo(repoUuid, tool);
         issueScanDao.deleteIssueScanByRepoIdAndTool(repoUuid, tool);
         scanResultDao.deleteScanResultsByRepoIdAndCategory(repoUuid, tool);
 

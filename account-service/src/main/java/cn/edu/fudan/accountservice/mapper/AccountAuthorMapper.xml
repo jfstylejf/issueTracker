@@ -15,5 +15,22 @@
         </foreach>
     </insert>
 
+    <update id="resetSubAccount" parameterType="String">
+        update account_author
+        <set>
+            account_name = #{majorAccountName},
+            account_uuid = #{majorAccountUuid}
+        </set>
+        <where>
+            account_name = #{subAccountName}
+        </where>
+    </update>
+
+    <select id="getGitnameByAccountName"  parameterType="String" resultType="String">
+        select account_gitname from account_author
+        <where>
+            account_name = #{majorAccountName}
+        </where>
+    </select>
 
 </mapper>
