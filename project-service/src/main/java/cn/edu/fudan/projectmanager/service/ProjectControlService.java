@@ -148,4 +148,14 @@ public interface ProjectControlService {
      * @throws Exception e
      */
     Boolean deleteRepoInfo(String token, String repoUuid) throws Exception;
+
+    /**
+     * 更新项目生命状态
+     *
+     * @param token     用户token
+     * @param projectName  项目名称
+     * @param lifeStatus 项目生命状态
+     * @throws Exception e
+     */
+    Integer updateProjectLifeStatus(String token, String projectName, Integer lifeStatus)throws Exception ;
 }

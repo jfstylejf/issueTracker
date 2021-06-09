@@ -46,6 +46,12 @@ public class ProjectDao {
 
     public List<String> getProjectRepo(String projectName){return projectMapper.getRepoByProjectName(projectName); };
 
+    public void updateLifeStatus(String projectName, Integer lifeStatus){ projectMapper.updateLifeStatus(projectName, lifeStatus); }
+
+    public Integer getProjectLifeStatus(String projectName) {
+        return projectMapper.getProjectLifeStatus(projectName);
+    }
+
     @Autowired
     public void setProjectMapper(ProjectMapper projectMapper) {
         this.projectMapper = projectMapper;

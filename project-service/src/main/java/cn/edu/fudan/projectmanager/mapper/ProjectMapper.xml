@@ -68,4 +68,20 @@
         </where>
     </select>
 
+    <update id="updateLifeStatus" >
+        update project
+        <set>
+            life_status = #{lifeStatus}
+        </set>
+        where project_name = #{projectName}
+
+    </update>
+
+    <select id="getProjectLifeStatus" resultType="Integer">
+        select life_status from project
+        <where>
+            project_name = #{projectName}
+        </where>
+    </select>
+
 </mapper>
