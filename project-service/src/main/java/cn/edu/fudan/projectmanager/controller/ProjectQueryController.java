@@ -74,11 +74,15 @@ public class ProjectQueryController {
      * @return
      */
     @ApiOperation(value = " 得到所有项目名和ID", notes = "@return List<Map<String, Object>>")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "life_status", value = "项目状态", dataType = "int", required = true, defaultValue = "1"),
+    })
     @GetMapping(value = {"/project/list"})
-    public ResponseBean<List<Map<String, Object>>> getProjectList(HttpServletRequest request) {
+    public ResponseBean<List<Map<String, Object>>> getProjectList(HttpServletRequest request,
+                                                                  @RequestParam(name = "life_status", required = true, defaultValue = "1") Integer lifeStatus) {
         String token = request.getHeader(TOKEN);
         try {
-            return new ResponseBean<>(200, "add success", accountRepository.getProjectAll(token));
+            return new ResponseBean<>(200, "add success", accountRepository.getProjectAll(token, lifeStatus));
         } catch (Exception e) {
             return new ResponseBean<>(401, "add failed :" + e.getMessage(), null);
         }

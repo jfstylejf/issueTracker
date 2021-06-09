@@ -81,17 +81,31 @@ public class AccountRepositoryServiceImpl implements AccountRepositoryService {
     }
 
     @Override
-    public List<Map<String, Object>> getProjectAll(String token) throws Exception {
-        List<Project> projectList = projectDao.getProjectList();
-        List<Map<String, Object>> results = new ArrayList<>();
-        projectList.forEach(project -> {
-            Map<String, Object> entity = new HashMap<>();
-            entity.put("projectId", project.getId());
-            entity.put("projectName", project.getProjectName());
-            entity.put("leaders", accountProjectDao.getLeaderListByProjectId(project.getId()));
-            results.add(entity);
-        });
-        return results;
+    public List<Map<String, Object>> getProjectAll(String token ,Integer lifeStatus) throws Exception {
+        if(lifeStatus == 0){
+            List<Project> projectListAll = projectDao.getProjectList();
+            List<Map<String, Object>> resultAll = new ArrayList<>();
+            projectListAll.forEach(project -> {
+                Map<String, Object> entity = new HashMap<>();
+                entity.put("projectId", project.getId());
+                entity.put("projectName", project.getProjectName());
+                entity.put("leaders", accountProjectDao.getLeaderListByProjectId(project.getId()));
+                resultAll.add(entity);
+            });
+            return resultAll;
+        }else{
+            List<Project> projectList = projectDao.getProjectListByLifeStatus(lifeStatus);
+            List<Map<String, Object>> results = new ArrayList<>();
+            projectList.forEach(project -> {
+                Map<String, Object> entity = new HashMap<>();
+                entity.put("projectId", project.getId());
+                entity.put("projectName", project.getProjectName());
+                entity.put("leaders", accountProjectDao.getLeaderListByProjectId(project.getId()));
+                results.add(entity);
+            });
+            return results;
+        }
+
     }
 
     @Override

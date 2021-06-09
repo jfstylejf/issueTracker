@@ -30,6 +30,10 @@ public class ProjectDao {
         return projectMapper.getProjectListP();
     }
 
+    public List<Project> getProjectListByLifeStatus(Integer lifeStatus) {
+        return projectMapper.getProjectListPByLifeStatus(lifeStatus);
+    }
+
     public Project getProjectByName(String projectName) {
         return projectMapper.getProjectByNameP(projectName);
     }
