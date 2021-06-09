@@ -5,6 +5,7 @@ import cn.edu.fudan.measureservice.dao.MeasureDao;
 import cn.edu.fudan.measureservice.dao.ProjectDao;
 import cn.edu.fudan.measureservice.domain.*;
 import cn.edu.fudan.measureservice.domain.bo.DeveloperWorkLoad;
+import cn.edu.fudan.measureservice.domain.bo.RepoTagMetric;
 import cn.edu.fudan.measureservice.domain.dto.Query;
 import cn.edu.fudan.measureservice.mapper.RepoMeasureMapper;
 import cn.edu.fudan.measureservice.util.DateTimeUtil;
@@ -275,6 +276,14 @@ public class MeasureRepoService {
         }
     }
 
+    /**
+     * 获取该库的维度基线值
+     * @param repoUuid 查询库
+     * @return List {@link RepoTagMetric}
+     */
+    public List<RepoTagMetric> getRepoMetricList(String repoUuid) {
+        return measureDao.getRepoMetric(repoUuid);
+    }
 
     @Autowired
     public void setProjectDao(ProjectDao projectDao) {this.projectDao = projectDao;}

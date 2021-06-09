@@ -1,6 +1,7 @@
 package cn.edu.fudan.measureservice.dao;
 
 import cn.edu.fudan.measureservice.domain.bo.DeveloperWorkLoad;
+import cn.edu.fudan.measureservice.domain.bo.RepoTagMetric;
 import cn.edu.fudan.measureservice.domain.dto.Query;
 import cn.edu.fudan.measureservice.domain.vo.ProjectBigFileDetail;
 import cn.edu.fudan.measureservice.mapper.FileMeasureMapper;
@@ -204,6 +205,21 @@ public class MeasureDao {
             log.error("delete repoMsg from file_measure Failed");
         }
         return false;
+    }
+
+    /**
+     * 查询对应 repoUuid 下的库维度基线， 若 repoUuid 为 null ，则查询基本数据，若不为空，则查询对应的库自定义数据基线
+     * @param repoUuid 查询库
+     * @return 该库的各维度基线
+     */
+    public List<RepoTagMetric> getRepoMetric(String repoUuid) {
+        try {
+            return repoMeasureMapper.getRepoTagMetricList(repoUuid);
+        }catch (Exception e) {
+            e.getMessage();
+            log.error("get RepoMetric in {} failed\n",repoUuid);
+            return null;
+        }
     }
 
 

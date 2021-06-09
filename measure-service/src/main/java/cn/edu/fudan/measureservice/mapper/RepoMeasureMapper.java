@@ -4,6 +4,7 @@ import cn.edu.fudan.measureservice.annotation.MethodMeasureAnnotation;
 import cn.edu.fudan.measureservice.domain.CommitBase;
 import cn.edu.fudan.measureservice.domain.CommitInfoDeveloper;
 import cn.edu.fudan.measureservice.domain.RepoMeasure;
+import cn.edu.fudan.measureservice.domain.bo.RepoTagMetric;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
@@ -192,5 +193,24 @@ public interface RepoMeasureMapper {
      */
     List<Map<String,Object>> getProjectValidNotJiraCommitMsgWithPage(@Param("developer") String developer,@Param("repoUuidList")List<String> repoUuidList,@Param("since")String since,@Param("until")String until,@Param("size") int size ,@Param("beginIndex") int beginIndex);
 
+
+    /**
+     * 获取获取对应库下相应衡量指标的基线列表
+     * @param repoUuid 查询库
+     * @return 对应库下衡量指标的基线列表
+     */
+    List<RepoTagMetric> getRepoTagMetricList(@Param("repoUuid") String repoUuid);
+
+    /**
+     * 插入库维度基线数据
+     * @param repoTagMetric 对应的库下该维度数据基线
+     */
+    void insertRepoTagMetric(@Param("repoTagMetric") RepoTagMetric repoTagMetric);
+
+    /**
+     * 更新库维度基线数据
+     * @param repoTagMetric 对应的库下该维度数据基线
+     */
+    void updateRepoTagMetric(@Param("repoTagMetric") RepoTagMetric repoTagMetric);
 
 }

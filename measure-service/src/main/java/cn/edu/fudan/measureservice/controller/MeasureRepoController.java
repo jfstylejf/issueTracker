@@ -5,6 +5,7 @@ import cn.edu.fudan.measureservice.domain.CommitBaseInfoDuration;
 import cn.edu.fudan.measureservice.domain.Granularity;
 import cn.edu.fudan.measureservice.domain.RepoMeasure;
 import cn.edu.fudan.measureservice.domain.ResponseBean;
+import cn.edu.fudan.measureservice.domain.bo.RepoTagMetric;
 import cn.edu.fudan.measureservice.domain.dto.Query;
 import cn.edu.fudan.measureservice.service.MeasureRepoService;
 import cn.edu.fudan.measureservice.util.DateTimeUtil;
@@ -216,6 +217,21 @@ public class MeasureRepoController {
         }
     }
 
+
+    @GetMapping("/measure/repo-metric")
+    public ResponseBean<Object> getRepoMetricList(@RequestParam(value = "repo_uuid",required = false) String repoUuid) {
+        try {
+            List<RepoTagMetric> repoTagMetricList = measureRepoService.getRepoMetricList(repoUuid);
+            if(repoTagMetricList != null) {
+                return new ResponseBean<>(HttpStatus.OK.value(),"get repoMetric success",repoTagMetricList);
+            }else {
+                return new ResponseBean<>(HttpStatus.NO_CONTENT.value(),"check the repo , it seems that no related data in database ",null);
+            }
+        }catch (Exception e) {
+            e.getMessage();
+            return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(),"measure failed",e.getMessage());
+        }
+    }
 
     @Autowired
     public MeasureRepoController(MeasureRepoService measureRepoService) {

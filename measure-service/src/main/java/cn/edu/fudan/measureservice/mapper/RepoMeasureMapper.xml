@@ -88,6 +88,24 @@
         <result property="self_index" column="self_index"/>
     </resultMap>
 
+
+    <resultMap id="repoTagMetric" type="RepoTagMetric">
+        <result property="tag" column="tag"/>
+        <result property="repoUuid" column="repo_uuid"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="updater" column="updater"/>
+        <result property="bestMax" column="best_max"/>
+        <result property="bestMin" column="best_min"/>
+        <result property="betterMax" column="better_max"/>
+        <result property="betterMin" column="better_min"/>
+        <result property="normalMax" column="normal_max"/>
+        <result property="normalMin" column="normal_min"/>
+        <result property="worseMax" column="worse_max"/>
+        <result property="worseMin" column="worse_min"/>
+        <result property="worstMax" column="worst_max"/>
+        <result property="worstMin" column="worst_min"/>
+    </resultMap>
+
     <insert id="insertOneRepoMeasure" >
         insert into issueTracker.repo_measure
             (
@@ -714,5 +732,83 @@
         ORDER By commit_time desc
         limit ${beginIndex}, ${size}
     </select>
+
+    <select id="getRepoTagMetricList" resultMap="repoTagMetric">
+        SELECT  tag, repo_uuid, update_time, updater, best_max, best_min, better_max, better_min, normal_max, normal_min, worse_max, worse_min, worst_max, worst_min FROM issueTracker.repo_metric
+        <where>
+            <if test="repoUuid != null and repoUuid != ''">
+                 repo_uuid = #{repoUuid}
+            </if>
+
+            <if test="repoUuid == null or repoUuid == ''">
+                 repo_uuid is null
+            </if>
+        </where>
+        GROUP BY tag
+    </select>
+
+    <insert id="insertRepoTagMetric" parameterType="repoTagMetric">
+        INSERT INTO issueTracker.repo_metric
+        (
+         tag,
+         repo_uuid,
+         update_time,
+         updater,
+         best_max,
+         best_min,
+         better_max,
+         better_min,
+         normal_max,
+         normal_min,
+         worse_max,
+         worse_min,
+         worst_max,
+         worst_min
+        )
+        VALUES
+        (
+         #{tag},
+         #{repoUuid},
+         #{updateTime},
+         #{updater},
+         #{bestMax},
+         #{bestMin},
+         #{betterMax},
+         #{betterMin},
+         #{normalMax},
+         #{normalMin},
+         #{worseMax},
+         #{worseMin},
+         #{worstMax},
+         #{worstMin}
+        )
+    </insert>
+
+    <update id="updateRepoTagMetric" parameterType="repoTagMetric" >
+        UPDATE issueTracker.repo_metric
+        SET
+            update_time = #{updateTime},
+            updater = #{updater},
+            best_max = #{bestMax},
+            best_min = #{bestMin},
+            better_max = #{betterMax},
+            better_min = #{betterMin},
+            normal_max = #{normalMax},
+            normal_min = #{normalMin},
+            worse_max = #{worseMax},
+            worse_min = #{worseMin},
+            worst_max = #{worstMax},
+            worst_min = #{worstMin}
+        WHERE
+              tag = #{tag}
+            <if test="repoUuid != null and repoUuid != ''">
+                and repo_uuid = #{repoUuid}
+            </if>
+
+            <if test="repoUuid == null or repoUuid == ''">
+                and repo_uuid is null
+            </if>
+    </update>
+
 
 </mapper>
