@@ -8,6 +8,7 @@
         <result property="updateTime" column="update_time"/>
         <result property="createTime" column="create_time"/>
         <result property="importAccountUuid" column="import_account_uuid"/>
+        <result property="lifeStatus" column="life_status"/>
     </resultMap>
 
 
@@ -30,12 +31,12 @@
     </update>
 
     <select id="getProjectListP" resultMap="project">
-        select project_name, id
+        select project_name, id, life_status
         from project
     </select>
 
     <select id="getProjectListPByLifeStatus" resultMap="project">
-        select project_name, id
+        select project_name, id, life_status
         from project
         where life_status = #{lifeStatus}
     </select>

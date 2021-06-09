@@ -79,7 +79,7 @@ public class ProjectQueryController {
     })
     @GetMapping(value = {"/project/list"})
     public ResponseBean<List<Map<String, Object>>> getProjectList(HttpServletRequest request,
-                                                                  @RequestParam(name = "life_status", required = true, defaultValue = "1") Integer lifeStatus) {
+                                                                  @RequestParam(name = "life_status", defaultValue = "1") Integer lifeStatus) {
         String token = request.getHeader(TOKEN);
         try {
             return new ResponseBean<>(200, "add success", accountRepository.getProjectAll(token, lifeStatus));

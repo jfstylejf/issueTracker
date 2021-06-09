@@ -90,6 +90,7 @@ public class AccountRepositoryServiceImpl implements AccountRepositoryService {
                 entity.put("projectId", project.getId());
                 entity.put("projectName", project.getProjectName());
                 entity.put("leaders", accountProjectDao.getLeaderListByProjectId(project.getId()));
+                entity.put("lifeStatus",project.getLifeStatus());
                 resultAll.add(entity);
             });
             return resultAll;
@@ -101,6 +102,7 @@ public class AccountRepositoryServiceImpl implements AccountRepositoryService {
                 entity.put("projectId", project.getId());
                 entity.put("projectName", project.getProjectName());
                 entity.put("leaders", accountProjectDao.getLeaderListByProjectId(project.getId()));
+                entity.put("lifeStatus",project.getLifeStatus());
                 results.add(entity);
             });
             return results;
