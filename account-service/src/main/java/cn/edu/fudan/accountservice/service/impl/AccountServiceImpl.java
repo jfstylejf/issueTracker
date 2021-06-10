@@ -149,6 +149,7 @@ public class AccountServiceImpl implements AccountService {
 
         account.setUuid(UUID.randomUUID().toString());
         account.setPassword(MD5Util.md5(account.getAccountName() + account.getPassword()));
+        account.setRight(0);
         accountDao.addAccount(account);
     }
 
