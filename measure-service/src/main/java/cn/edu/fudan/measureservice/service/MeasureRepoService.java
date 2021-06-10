@@ -5,8 +5,9 @@ import cn.edu.fudan.measureservice.dao.MeasureDao;
 import cn.edu.fudan.measureservice.dao.ProjectDao;
 import cn.edu.fudan.measureservice.domain.*;
 import cn.edu.fudan.measureservice.domain.bo.DeveloperWorkLoad;
-import cn.edu.fudan.measureservice.domain.bo.RepoTagMetric;
+import cn.edu.fudan.measureservice.domain.metric.RepoTagMetric;
 import cn.edu.fudan.measureservice.domain.dto.Query;
+import cn.edu.fudan.measureservice.domain.metric.TagBaseMetric;
 import cn.edu.fudan.measureservice.mapper.RepoMeasureMapper;
 import cn.edu.fudan.measureservice.util.DateTimeUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -283,6 +284,34 @@ public class MeasureRepoService {
      */
     public List<RepoTagMetric> getRepoMetricList(String repoUuid) {
         return measureDao.getRepoMetric(repoUuid);
+    }
+
+    /**
+     * 插入或更新 库下各维度初始数据
+     * @param repoTagMetric 待插入或更新的库下各维度基础数据
+     */
+    public void insertRepoTagMetric(RepoTagMetric repoTagMetric) throws Exception {
+        String repoUuid = repoTagMetric.getRepoUuid();
+        String tag = repoTagMetric.getTag();
+        TagBaseMetric tagBaseMetric = new TagBaseMetric();
+        Map<String,TagBaseMetric> tagBaseMetricMap = tagBaseMetric.getTagBaseMetricMap();
+        if (!tagBaseMetricMap.containsKey(tag)) {
+            log.error("check the tag name : {}, may be you get the wrong tag name",tag);
+            throw new Exception();
+        }else {
+            TagBaseMetric target = tagBaseMetricMap.get(tag);
+            repoTagMetric.setBestMax(target.getBestMax());
+            repoTagMetric.setWorstMin(target.getWorstMin());
+            // 插入时 tag 是英文
+            repoTagMetric.setTag(target.getTagMetricEnum().name());
+            if (measureDao.containRepoMetricOrNot(repoUuid,tag)) {
+                // 若已经存在记录，则更新
+                measureDao.updateRepoMetric(repoTagMetric);
+            }else {
+                // 否则插入
+                measureDao.insertRepoMetric(repoTagMetric);
+            }
+        }
     }
 
     @Autowired

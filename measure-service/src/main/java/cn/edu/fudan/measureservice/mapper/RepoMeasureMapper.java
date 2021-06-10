@@ -1,10 +1,9 @@
 package cn.edu.fudan.measureservice.mapper;
 
-import cn.edu.fudan.measureservice.annotation.MethodMeasureAnnotation;
 import cn.edu.fudan.measureservice.domain.CommitBase;
 import cn.edu.fudan.measureservice.domain.CommitInfoDeveloper;
 import cn.edu.fudan.measureservice.domain.RepoMeasure;
-import cn.edu.fudan.measureservice.domain.bo.RepoTagMetric;
+import cn.edu.fudan.measureservice.domain.metric.RepoTagMetric;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
@@ -200,6 +199,14 @@ public interface RepoMeasureMapper {
      * @return 对应库下衡量指标的基线列表
      */
     List<RepoTagMetric> getRepoTagMetricList(@Param("repoUuid") String repoUuid);
+
+    /**
+     * 查询相应库的维度数据是否有记录，并返回记录数
+     * @param repoUuid 查询库
+     * @param tag 查询维度标签
+     * @return 记录个数
+     */
+    int containsRepoTagMetricOrNot(@Param("repoUuid") String repoUuid, @Param("tag") String tag);
 
     /**
      * 插入库维度基线数据

@@ -1,4 +1,9 @@
-package cn.edu.fudan.measureservice.domain.bo;
+package cn.edu.fudan.measureservice.domain.metric;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
@@ -8,7 +13,10 @@ import java.time.LocalDate;
  * @Author wjzho
  * @Date 2021/6/8
  */
-
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class RepoTagMetric {
 
     /**
@@ -30,41 +38,41 @@ public class RepoTagMetric {
     /**
      * 该指标最好标准的上界
      */
-    private int bestMax;
+    private double bestMax;
     /**
      * 该指标最好标准的下届
      */
-    private int bestMin;
+    private double bestMin;
     /**
      * 该指标较好标准的上界
      */
-    private int betterMax;
+    private double betterMax;
     /**
      * 该指标较好标准的下届
      */
-    private int betterMin;
+    private double betterMin;
     /**
      * 该指标一般标准的上界
      */
-    private int normalMax;
+    private double normalMax;
     /**
      * 该指标一般标准的下届
      */
-    private int normalMin;
+    private double normalMin;
     /**
      * 该指标较差标准的上界
      */
-    private int worseMax;
+    private double worseMax;
     /**
      * 该指标较差标准的下届
      */
-    private int worseMin;
+    private double worseMin;
     /**
      * 该指标最差标准的上界
      */
-    private int worstMax;
+    private double worstMax;
     /**
      * 该指标最差标准的下届
      */
-    private int worstMin;
+    private double worstMin;
 }

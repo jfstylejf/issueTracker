@@ -1,7 +1,7 @@
 package cn.edu.fudan.measureservice.dao;
 
 import cn.edu.fudan.measureservice.domain.bo.DeveloperWorkLoad;
-import cn.edu.fudan.measureservice.domain.bo.RepoTagMetric;
+import cn.edu.fudan.measureservice.domain.metric.RepoTagMetric;
 import cn.edu.fudan.measureservice.domain.dto.Query;
 import cn.edu.fudan.measureservice.domain.vo.ProjectBigFileDetail;
 import cn.edu.fudan.measureservice.mapper.FileMeasureMapper;
@@ -16,12 +16,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
-import org.springframework.util.Assert;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 /**
@@ -222,6 +220,48 @@ public class MeasureDao {
         }
     }
 
+    /**
+     * 判断是否有该库该维度的记录存在
+     * @param repoUuid 查询库
+     * @param tag 查询维度标签
+     * @return true: 已存在， false: 尚未插入
+     */
+    public boolean containRepoMetricOrNot(String repoUuid,String tag) {
+        int num = repoMeasureMapper.containsRepoTagMetricOrNot(repoUuid,tag);
+        return num >= 1;
+    }
+
+    /**
+     * 更新 repo_metric 表中该维度对应库的数据基线
+     * @param repoTagMetric 库维度基线数据
+     * @return true : 更新成功， false : 更新失败
+     */
+    public boolean updateRepoMetric(RepoTagMetric repoTagMetric) {
+        try {
+            repoMeasureMapper.updateRepoTagMetric(repoTagMetric);
+            log.info("update repoMetric success in {} with tag : {}",repoTagMetric.getRepoUuid(),repoTagMetric.getTag());
+            return true;
+        }catch (Exception e) {
+            log.error("update repoMetric failed in {} with tag : {}",repoTagMetric.getRepoUuid(),repoTagMetric.getTag());
+            return false;
+        }
+    }
+
+    /**
+     * 插入 repo_metric 表中该维度对应库的数据基线
+     * @param repoTagMetric 库维度基线数据
+     * @return true : 插入成功， false : 插入失败
+     */
+    public boolean insertRepoMetric(RepoTagMetric repoTagMetric) {
+        try {
+            repoMeasureMapper.insertRepoTagMetric(repoTagMetric);
+            log.info("insert repoMetric success in {} with tag : {}",repoTagMetric.getRepoUuid(),repoTagMetric.getTag());
+            return true;
+        }catch (Exception e) {
+            log.error("insert repoMetric failed in {} with tag : {}",repoTagMetric.getRepoUuid(),repoTagMetric.getTag());
+            return false;
+        }
+    }
 
 
     @SneakyThrows

@@ -800,15 +800,13 @@
             worst_max = #{worstMax},
             worst_min = #{worstMin}
         WHERE
-              tag = #{tag}
-            <if test="repoUuid != null and repoUuid != ''">
-                and repo_uuid = #{repoUuid}
-            </if>
-
-            <if test="repoUuid == null or repoUuid == ''">
-                and repo_uuid is null
-            </if>
+              tag = #{tag} and repo_uuid = #{repoUuid}
     </update>
 
+    <select id="containsRepoTagMetricOrNot" resultType="int">
+        SELECT count(id) FROM issueTracker.repo_metric
+        WHERE tag = #{tag}
+        AND repo_uuid = #{repoUuid}
+    </select>
 
 </mapper>
