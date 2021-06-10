@@ -304,7 +304,7 @@ public class MeasureRepoService {
             repoTagMetric.setWorstMin(target.getWorstMin());
             // 插入时 tag 是英文
             repoTagMetric.setTag(target.getTagMetricEnum().name());
-            if (measureDao.containRepoMetricOrNot(repoUuid,tag)) {
+            if (measureDao.containRepoMetricOrNot(repoUuid,target.getTagMetricEnum().name())) {
                 // 若已经存在记录，则更新
                 measureDao.updateRepoMetric(repoTagMetric);
             }else {

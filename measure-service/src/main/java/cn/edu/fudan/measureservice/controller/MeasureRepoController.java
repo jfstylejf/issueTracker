@@ -238,7 +238,7 @@ public class MeasureRepoController {
                                                  @RequestParam(value = "normal_min") double normalMin,
                                                  @RequestParam(value = "worse_max") double worseMax,
                                                  @RequestParam(value = "worse_min") double worseMin,
-                                                 @RequestParam(value = "worst_min") double worstMax,
+                                                 @RequestParam(value = "worst_max") double worstMax,
                                                  HttpServletRequest request)
     {
         try {

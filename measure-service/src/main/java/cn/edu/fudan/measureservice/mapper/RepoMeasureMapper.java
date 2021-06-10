@@ -212,12 +212,12 @@ public interface RepoMeasureMapper {
      * 插入库维度基线数据
      * @param repoTagMetric 对应的库下该维度数据基线
      */
-    void insertRepoTagMetric(@Param("repoTagMetric") RepoTagMetric repoTagMetric);
+    void insertRepoTagMetric(RepoTagMetric repoTagMetric);
 
     /**
      * 更新库维度基线数据
      * @param repoTagMetric 对应的库下该维度数据基线
      */
-    void updateRepoTagMetric(@Param("repoTagMetric") RepoTagMetric repoTagMetric);
+    void updateRepoTagMetric(RepoTagMetric repoTagMetric);
 
 }

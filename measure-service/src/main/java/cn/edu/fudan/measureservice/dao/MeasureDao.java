@@ -1,6 +1,7 @@
 package cn.edu.fudan.measureservice.dao;
 
 import cn.edu.fudan.measureservice.domain.bo.DeveloperWorkLoad;
+import cn.edu.fudan.measureservice.domain.enums.TagMetricEnum;
 import cn.edu.fudan.measureservice.domain.metric.RepoTagMetric;
 import cn.edu.fudan.measureservice.domain.dto.Query;
 import cn.edu.fudan.measureservice.domain.vo.ProjectBigFileDetail;
@@ -206,13 +207,32 @@ public class MeasureDao {
     }
 
     /**
-     * 查询对应 repoUuid 下的库维度基线， 若 repoUuid 为 null ，则查询基本数据，若不为空，则查询对应的库自定义数据基线
+     * 查询对应 repoUuid 下的库维度基线， 若存在维度对应的 repo, 则获取该自定义基线数据， 否则取初始化基线数据
      * @param repoUuid 查询库
      * @return 该库的各维度基线
      */
     public List<RepoTagMetric> getRepoMetric(String repoUuid) {
+        List<RepoTagMetric> repoTagMetricList = new ArrayList<>();
+        // 用来判断该库下哪些维度尚未更新
+        List<String> isValid = new ArrayList<>();
         try {
-            return repoMeasureMapper.getRepoTagMetricList(repoUuid);
+            List<RepoTagMetric> initialTagMetricList = repoMeasureMapper.getRepoTagMetricList(null);
+            if (repoUuid != null) {
+                List<RepoTagMetric> tempList = repoMeasureMapper.getRepoTagMetricList(repoUuid);
+                for (RepoTagMetric repoTagMetric : tempList) {
+                    isValid.add(repoTagMetric.getTag());
+                    repoTagMetricList.add(repoTagMetric);
+                }
+            }
+            for (RepoTagMetric repoTagMetric : initialTagMetricList) {
+                String tag = repoTagMetric.getTag();
+                if (isValid.contains(tag)) {
+                    continue;
+                }
+                repoTagMetricList.add(repoTagMetric);
+            }
+            log.info("get RepoMetric in {} success\n",repoUuid);
+            return repoTagMetricList;
         }catch (Exception e) {
             e.getMessage();
             log.error("get RepoMetric in {} failed\n",repoUuid);

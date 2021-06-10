@@ -15,7 +15,6 @@ import java.util.Map;
 @Data
 public class TagBaseMetric {
 
-    private final Map<String,TagBaseMetric> tagBaseMetricMap = new HashMap<>();
 
     protected TagMetricEnum tagMetricEnum;
 
@@ -45,6 +44,7 @@ public class TagBaseMetric {
      * @return
      */
     public Map<String,TagBaseMetric> getTagBaseMetricMap() {
+        Map<String,TagBaseMetric> tagBaseMetricMap = new HashMap<>();
         // 获取 工作量初始基线数据
         WorkLoadBaseMetric workLoadBaseMetric = new WorkLoadBaseMetric();
         tagBaseMetricMap.put(TagMetricEnum.WorkLoad.getTag(),workLoadBaseMetric);

@@ -747,11 +747,11 @@
         GROUP BY tag
     </select>
 
-    <insert id="insertRepoTagMetric" parameterType="repoTagMetric">
+    <insert id="insertRepoTagMetric" parameterType="cn.edu.fudan.measureservice.domain.metric.RepoTagMetric">
         INSERT INTO issueTracker.repo_metric
         (
-         tag,
          repo_uuid,
+         tag,
          update_time,
          updater,
          best_max,
@@ -767,8 +767,8 @@
         )
         VALUES
         (
-         #{tag},
          #{repoUuid},
+         #{tag},
          #{updateTime},
          #{updater},
          #{bestMax},
@@ -784,7 +784,7 @@
         )
     </insert>
 
-    <update id="updateRepoTagMetric" parameterType="repoTagMetric" >
+    <update id="updateRepoTagMetric" parameterType="RepoTagMetric" >
         UPDATE issueTracker.repo_metric
         SET
             update_time = #{updateTime},
