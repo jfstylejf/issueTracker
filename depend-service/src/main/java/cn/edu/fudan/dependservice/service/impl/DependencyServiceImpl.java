@@ -29,8 +29,6 @@ public class DependencyServiceImpl implements DependencyService {
     ApplicationContext applicationContext;
     public static  String TIME_FORMAT = "yyyy-MM-dd";
 
-
-
     private StatisticsDao statisticsDao;
 
     @Autowired

@@ -10,6 +10,7 @@
         <id property="groupId" column="group_id"/>
         <id property="sourceFile" column="file"/>
         <id property="targetFile" column="depend_on"/>
+        <id property="commit_id" column="commit_id"/>
         <id property="relationType" column="depend_details"/>
     </resultMap>
 
@@ -38,6 +39,7 @@
                         d.repo_uuid,
                         d.group_id,
                         d.depend_details,
+                        d.commit_id,
                         s.project_name,
                         s.repo_name
         from issueTracker.dependency_detail d
@@ -55,6 +57,22 @@
             where s.repo_uuid is not null
               and rl.mxtime is not null
         );
+    </select>
+
+    <select id="getRelationsdInGroup" resultMap="RelationView">
+        select distinct d.id,
+                        d.file,
+                        d.depend_on,
+                        d.repo_uuid,
+                        d.commit_id,
+                        d.group_id,
+                        d.depend_details,
+                        s.project_name,
+                        s.repo_name
+        from issueTracker.dependency_detail d
+                 left join issueTracker.sub_repository s
+                           on d.repo_uuid = s.repo_uuid
+        where d.repo_uuid= #{repoUuid} and d.commit_id= #{commitId} and d.group_id= #{groupId};
     </select>
 
     <select id="getRelationBydateAndProjectIds" resultMap="RelationView">

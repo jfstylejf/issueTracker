@@ -87,6 +87,7 @@ public class RequestController {
                                                                 @RequestParam(value = "interval", required = false) String interval,
                                                                 @RequestParam(value = "detail", required = false) String showDetail) {
         String projectIds=project_ids;
+        log.info("RequestController");
 
         try {
             if (beginDate.isEmpty() || endDate.isEmpty()) {
