@@ -52,6 +52,7 @@ public class StatisticsDao implements PublicConstants {
     }
     //todo  Query the database once
     public List<DependencyInfo> getDependencyNum2(String endDate, String projectIds, String showDetail) {
+        log.info("in getDependencyNum2()");
         Map<String,DependencyInfo> resMap =new HashMap<>();
         for(String s:projectIds.split(",")){
             resMap.put(s,null);
@@ -65,6 +66,8 @@ public class StatisticsDao implements PublicConstants {
             projectIdToName.put(p.getProjectId(),p.getProjectName());
         }
         List<RelationView> relationViews = relationshipMapper.getRelationBydate(endDate);
+        log.info("relationViews.size():"+relationViews.size());
+
         Map<String,Set<File>> map =new HashMap<>();
         for(RelationView r:relationViews){
             File source = new File(r.getSourceFile(), r.getRepoUuid(), r.getCommit_id());
@@ -95,6 +98,8 @@ public class StatisticsDao implements PublicConstants {
             }
 
         }
+        System.out.println("res.size() "+res.size());
+
         return res;
     }
     public DependencyInfo getZeroOrNoScan(String projectId,String projectName,String endDate){
@@ -123,7 +128,7 @@ public class StatisticsDao implements PublicConstants {
         res.setDate(endDate.split(" ")[0]);
         return res;
     }
-
+    @Deprecated
     public DependencyInfo getDependencyNum(String beginDate, String endDate, String projectId, String showDetail) {
         String projectName = locationMapper.getProjectName(projectId);
         List<RepoInfo> repoInfo = locationMapper.getRepoUuids(projectName);

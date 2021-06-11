@@ -56,7 +56,7 @@ public interface AccountRepositoryService {
      *
      * @throws Exception e
      */
-    List<Map<String, Object>> getProjectAll(String token) throws Exception;
+    List<Map<String, Object>> getProjectAll(String token, Integer lifeStatus) throws Exception;
 
     /**
      * 更新库所属项目

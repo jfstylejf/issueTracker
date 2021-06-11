@@ -337,6 +337,26 @@ public class ProjectController {
         }
     }
 
+    @ApiOperation(value = "修改项目生命状态", httpMethod = "PUT")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "project_name", value = "项目名称", dataType = "String", required = true),
+            @ApiImplicitParam(name = "life_status", value = "项目的生命状态", dataType = "int", required = true)
+    })
+    @PutMapping(value = {"/project/life-status"})
+    public ResponseBean<Integer> updateProjectLifeStatus(HttpServletRequest request,
+                                                     @RequestParam("project_name") String projectName,
+                                                     @RequestParam("life_status") Integer lifeStatus) {
+        try {
+            Integer projectLifeStatus  = projectControl.updateProjectLifeStatus(request.getHeader(TOKEN), projectName, lifeStatus);
+            if(projectLifeStatus == 0){
+                return new ResponseBean<>(412, "life status is wrong!", null);
+            }
+            return new ResponseBean<>(200, "update success", projectLifeStatus);
+        } catch (Exception e) {
+            return new ResponseBean<>(401, "update failed :" + e.getMessage(), null);
+        }
+    }
+
     @Autowired
     public void setAccountRepository(AccountRepositoryService accountRepository) {
         this.accountRepository = accountRepository;

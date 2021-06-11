@@ -538,6 +538,25 @@ public class ProjectControlServiceImpl implements ProjectControlService {
             return false;
         }
     }
+
+    @Override
+    public Integer updateProjectLifeStatus(String token, String projectName, Integer lifeStatus) throws Exception {
+        UserInfoDTO userInfoDTO = getUserInfoByToken(token);
+
+        // 0 表示超级管理员 只有超级管理员能操作
+        if (userInfoDTO.getRight() != 0) {
+            throw new RunTimeException("this user has no right to change repo recycled");
+        }
+
+        if (lifeStatus != 1 && lifeStatus != 2) {
+            return 0;
+        }else{
+            projectDao.updateLifeStatus(projectName, lifeStatus);
+            return projectDao.getProjectLifeStatus(projectName);
+        }
+
+    }
+
     /**
      * setter
      */
