@@ -43,6 +43,7 @@ public final class FileFilter {
                 path.toLowerCase().contains("target/") ||
                 path.toLowerCase().contains("build/") ||
                 path.toLowerCase().contains("dist/") ||
+                path.toLowerCase().contains("src/assets/") ||
                 str.endsWith("test.java") ||
                 str.endsWith("tests.java") ||
                 str.startsWith("test") ||
