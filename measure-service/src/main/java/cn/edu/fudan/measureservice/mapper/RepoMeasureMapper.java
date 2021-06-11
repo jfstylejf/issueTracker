@@ -201,6 +201,14 @@ public interface RepoMeasureMapper {
     List<RepoTagMetric> getRepoTagMetricList(@Param("repoUuid") String repoUuid);
 
     /**
+     * 获取对应库对应维度的基线数据
+     * @param repoUuid 查询库
+     * @param tag 查询维度
+     * @return 该库下该指标的基线数据
+     */
+    RepoTagMetric getRepoTagMetric(@Param("repoUuid") String repoUuid, @Param("tag") String tag);
+
+    /**
      * 查询相应库的维度数据是否有记录，并返回记录数
      * @param repoUuid 查询库
      * @param tag 查询维度标签

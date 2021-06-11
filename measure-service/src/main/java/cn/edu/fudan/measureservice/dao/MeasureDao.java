@@ -241,6 +241,29 @@ public class MeasureDao {
     }
 
     /**
+     * 查询对应 repoUuid 下对应 tag 的基线， 若存在维度对应的 repo, 则获取该自定义基线数据， 否则取初始化基线数据
+     * @param repoUuid 查询库
+     * @param tag  查询维度
+     * @return 该库的各维度基线
+     */
+    public RepoTagMetric getRepoMetric(String repoUuid, String tag) {
+        try {
+            RepoTagMetric repoTagMetric = repoMeasureMapper.getRepoTagMetric(repoUuid, tag);
+            if (repoTagMetric == null) {
+                // 若该库的该维度数据未更新， 则获取初始化的库维度数据
+                repoTagMetric = repoMeasureMapper.getRepoTagMetric(null, tag);
+            }
+            log.info("get RepoMetric in {} success with tag : {}\n",repoUuid,tag);
+            return repoTagMetric;
+        }catch (Exception e) {
+            e.getMessage();
+            log.error("get RepoMetric in {} failed  with tag : {}\n",repoUuid, tag);
+            return null;
+        }
+    }
+
+
+    /**
      * 判断是否有该库该维度的记录存在
      * @param repoUuid 查询库
      * @param tag 查询维度标签

@@ -2,22 +2,34 @@ package cn.edu.fudan.measureservice.domain.bo;
 
 import cn.edu.fudan.measureservice.domain.enums.LevelEnum;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
-
 /**
- * @author wjzho
+ * @ClassName: DeveloperRepoCommitStandard
+ * @Description: 开发者单个库的提交规范性相关数据
+ * @Author wjzho
+ * @Date 2021/6/11
  */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class DeveloperCommitStandard implements Serializable {
+@Builder
+public class DeveloperRepoCommitStandard  {
+
     /**
      * 开发者
      */
     private String developerName;
+    /**
+     * 代码库 id
+     */
+    private String repoUuid;
+    /**
+     * 库名称
+     */
+    private String repoName;
     /**
      * 开发者提交次数（不含Merge）
      */
@@ -35,8 +47,9 @@ public class DeveloperCommitStandard implements Serializable {
      */
     private double commitStandard;
     /**
-     * 开发者综合等级
+     * 开发者该库等级
      */
-    private LevelEnum level;
+    private int level;
+
 
 }

@@ -747,6 +747,19 @@
         GROUP BY tag
     </select>
 
+    <select id="getRepoTagMetric" resultMap="repoTagMetric">
+        SELECT  tag, repo_uuid, update_time, updater, best_max, best_min, better_max, better_min, normal_max, normal_min, worse_max, worse_min, worst_max, worst_min FROM issueTracker.repo_metric
+        WHERE
+        tag = #{tag}
+            <if test="repoUuid != null and repoUuid != ''">
+                and repo_uuid = #{repoUuid}
+            </if>
+
+            <if test="repoUuid == null or repoUuid == ''">
+                and repo_uuid is null
+            </if>
+    </select>
+
     <insert id="insertRepoTagMetric" parameterType="cn.edu.fudan.measureservice.domain.metric.RepoTagMetric">
         INSERT INTO issueTracker.repo_metric
         (

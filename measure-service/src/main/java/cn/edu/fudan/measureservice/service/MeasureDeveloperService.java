@@ -17,6 +17,8 @@ import cn.edu.fudan.measureservice.domain.dto.Query;
 import cn.edu.fudan.measureservice.domain.dto.RepoInfo;
 import cn.edu.fudan.measureservice.domain.enums.GranularityEnum;
 import cn.edu.fudan.measureservice.domain.enums.LevelEnum;
+import cn.edu.fudan.measureservice.domain.enums.TagMetricEnum;
+import cn.edu.fudan.measureservice.domain.metric.RepoTagMetric;
 import cn.edu.fudan.measureservice.domain.vo.*;
 import cn.edu.fudan.measureservice.mapper.RepoMeasureMapper;
 import cn.edu.fudan.measureservice.portrait.*;
@@ -67,7 +69,7 @@ public class MeasureDeveloperService {
     private static final String Loss = "loss";
     private static final String TOOL = "sonarqube";
     private static final String split = ",";
-    private static final DecimalFormat df = new DecimalFormat("0.000");
+    private static final DecimalFormat df = new DecimalFormat("0.00");
     /**
      *
      * @param query 查询条件
@@ -868,6 +870,77 @@ public class MeasureDeveloperService {
     }
 
     /**
+     * 按照开发者聚合获取提交规范性, 并统计该开发者该维度的评级
+     * @param query 查询条件
+     * @return
+     */
+    private DeveloperCommitStandard getDeveloperCommitStandardWithLevel(Query query) {
+        int developerValidCommitCount = 0;
+        int developerJiraCommitCount = 0;
+        int developerInvalidCommitCount = 0;
+        // 总等级
+        double totalLevel = 0;
+        for (String repoUuid : query.getRepoUuidList()) {
+            // 获取开发者对应库的合法提交信息
+            log.info("start to get {} in repo : {}",query.getDeveloper(),repoUuid);
+            List<Map<String,Object>> developerValidCommitInfo = measureDao.getProjectValidCommitMsg(new Query(query.getToken(),query.getSince(),query.getUntil(),query.getDeveloper(),Collections.singletonList(repoUuid)));
+            int repoDeveloperValidCommitCount = developerValidCommitInfo.size();
+            int repoDeveloperJiraCommitCount = 0;
+            int repoDeveloperInvalidCommitCount = 0;
+            for(Map<String,Object> commitInfo : developerValidCommitInfo) {
+                boolean isValid = (int) commitInfo.get("is_compliance") == 1;
+                if (isValid) {
+                    repoDeveloperJiraCommitCount++;
+                }else {
+                    repoDeveloperInvalidCommitCount++;
+                }
+            }
+            double repoCommitStandard = repoDeveloperValidCommitCount != 0 ? repoDeveloperJiraCommitCount * 1.0 / repoDeveloperValidCommitCount : 0;
+            totalLevel += getRepoCommitStandardLevel(Double.parseDouble(df.format(repoCommitStandard)),repoUuid);
+            developerValidCommitCount += repoDeveloperValidCommitCount;
+            developerJiraCommitCount += repoDeveloperJiraCommitCount;
+            developerInvalidCommitCount += repoDeveloperInvalidCommitCount;
+        }
+        // 封装 DeveloperCommitStandard
+        DeveloperCommitStandard developerCommitStandard = new DeveloperCommitStandard();
+        totalLevel = totalLevel * 1.0 / query.getRepoUuidList().size();
+        developerCommitStandard.setDeveloperName(query.getDeveloper());
+        developerCommitStandard.setDeveloperInvalidCommitCount(developerInvalidCommitCount);
+        developerCommitStandard.setDeveloperJiraCommitCount(developerJiraCommitCount);
+        developerCommitStandard.setDeveloperValidCommitCount(developerValidCommitCount);
+        double commitStandard = developerValidCommitCount != 0 ? developerJiraCommitCount * 1.0 / developerValidCommitCount : 0;
+        developerCommitStandard.setCommitStandard(Double.parseDouble(df.format(commitStandard)));
+        // 获取开发者综合等级
+        developerCommitStandard.setLevel(getLevel(totalLevel));
+        return developerCommitStandard;
+    }
+
+    private LevelEnum getLevel(double level) {
+        if (level <= 2.33)  {
+            return LevelEnum.Low;
+        }else if (level <= 3.66) {
+            return LevelEnum.Medium;
+        }else {
+            return LevelEnum.High;
+        }
+    }
+
+    private int getRepoCommitStandardLevel(double commitStandard, String repoUuid) {
+        RepoTagMetric repoTagMetric = measureDao.getRepoMetric(repoUuid, TagMetricEnum.WorkLoad.name());
+        if (commitStandard >= repoTagMetric.getBestMin() && commitStandard <= repoTagMetric.getBestMax()) {
+            return 5;
+        }else if (commitStandard >= repoTagMetric.getBetterMin() && commitStandard <= repoTagMetric.getBetterMax()) {
+            return 4;
+        }else if (commitStandard >= repoTagMetric.getNormalMin() && commitStandard <= repoTagMetric.getBetterMax()) {
+            return 3;
+        }else if (commitStandard >= repoTagMetric.getWorseMin() && commitStandard <= repoTagMetric.getWorseMax()) {
+            return 2;
+        }else {
+            return 1;
+        }
+    }
+
+    /**
      * 按照项目对开发者提交数信息按照 interval 对查询时间 分组聚合
      * @param projectIds 查询项目列表
      * @param since 查询起始时间
@@ -1257,7 +1330,7 @@ public class MeasureDeveloperService {
          Set<String> developerNameList = !"".equals(developers) ? new HashSet<>(Arrays.asList(developers.split(split))) : projectDao.getDeveloperList(visibleRepoList);
          List<DeveloperCommitStandard> developerCommitStandardList = new ArrayList<>();
          for (String developer : developerNameList) {
-             DeveloperCommitStandard developerCommitStandard = ((MeasureDeveloperService) AopContext.currentProxy()).getDeveloperCommitStandard(new Query(token,since,until,developer,visibleRepoList));
+             DeveloperCommitStandard developerCommitStandard = ((MeasureDeveloperService) AopContext.currentProxy()).getDeveloperCommitStandardWithLevel(new Query(token,since,until,developer,visibleRepoList));
              developerCommitStandardList.add(developerCommitStandard);
          }
          // 构建人员总览提交规范性类
@@ -1270,7 +1343,7 @@ public class MeasureDeveloperService {
                      .developerValidCommitCount(developerCommitStandard.getDeveloperValidCommitCount())
                      .commitStandard(developerCommitStandard.getCommitStandard())
                      .detail(null)
-                     .level(LevelEnum.Medium.getType()).build();
+                     .level(developerCommitStandard.getLevel().getType()).build();
              developerDataCommitStandardList.add(developerDataCommitStandard);
          }
          return developerDataCommitStandardList;
