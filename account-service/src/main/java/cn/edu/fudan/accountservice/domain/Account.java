@@ -46,7 +46,8 @@ public class Account implements Serializable {
         account.setAccountName(gitName);
         account.setStatus("1");
         account.setUuid(UUID.randomUUID().toString());
-        account.setPassword(MD5Util.md5(gitName + gitName + PASSWORD_POSTFIX));
+        account.setPassword(MD5Util.md5(gitName  + PASSWORD_POSTFIX));
+        account.setRight(2);
         return account;
     }
 }

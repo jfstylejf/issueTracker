@@ -252,11 +252,11 @@ public class AccountController {
     @ApiOperation(value="获取用户姓名",httpMethod = "GET")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "account_name", value = "用户名", dataType = "String", required = true),
-            @ApiImplicitParam(name = "needAdmin", value = "是否需要显示admin", dataType = "Boolean", required = true)
+            @ApiImplicitParam(name = "need_admin", value = "是否需要显示admin", dataType = "Boolean", required = true)
     })
     @GetMapping(value = "/account/name")
     public ResponseEntity<Object> getAccount(@RequestParam("account_name") String accountName,
-                                             @RequestParam(value = "needAdmin", defaultValue = "false") Boolean needAdmin){
+                                             @RequestParam(value = "need_admin", defaultValue = "false") Boolean needAdmin){
         try {
             Account result = accountService.getAccountByName(accountName, needAdmin);
             if(result == null){
@@ -271,12 +271,15 @@ public class AccountController {
 
     @ApiOperation(value="自动更新人员列表",httpMethod = "POST")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "gitname", value = "更新后的gitname列表", dataType = "List<String>", required = true)
+            @ApiImplicitParam(name = "gitNames", value = "更新后的gitname列表", dataType = "List<String>", required = true)
     })
     @PostMapping(value = "/account")
     public ResponseEntity autoUpdateAccount(@RequestBody List<String> gitNames) {
         try{
-            accountService.addNewAccounts(gitNames);
+            Boolean result = accountService.addNewAccounts(gitNames);
+            if(!result){
+                return new ResponseEntity<>(412, "can't insert reduplicated account!", null);
+            }
             return new ResponseEntity<>(200, "receive success!", null);
         }catch (Exception e){
             e.printStackTrace();
@@ -305,7 +308,7 @@ public class AccountController {
                                    @RequestParam(value = "is_whole", required = false, defaultValue = "0") Boolean isWhole,
                                    @RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
                                    @RequestParam(value = "ps", required = false, defaultValue = "30") Integer pageSize,
-                                   @RequestParam(value = "order", required = false, defaultValue = "developerName") String order,
+                                   @RequestParam(value = "order", required = false) String order,
                                    @RequestParam(value = "asc", required = false, defaultValue = "1") Boolean isAsc
                                    ){
         String[] repoListArr = repoUuids.split(",");
@@ -329,12 +332,12 @@ public class AccountController {
 
     @ApiOperation(value="前端人员聚合", httpMethod = "PUT")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "majorAccountName", value = "主合并人姓名", dataType = "String", required = true),
-            @ApiImplicitParam(name = "subAccountName", value = "被合并人姓名", dataType = "String", required = true)
+            @ApiImplicitParam(name = "major_name", value = "主合并人姓名", dataType = "String", required = true),
+            @ApiImplicitParam(name = "sub_name", value = "被合并人姓名", dataType = "String", required = true)
     })
     @PutMapping(value = {"/account/merge"})
-    public Object accountMerge(@RequestParam("majorAccountName") String majorAccountName,
-                               @RequestParam("subAccountName") String subAccountName,
+    public Object accountMerge(@RequestParam("major_name") String majorAccountName,
+                               @RequestParam("sub_name") String subAccountName,
                                HttpServletRequest request) {
         try{
             List<String> accountGitname = accountService.accountMerge(majorAccountName, subAccountName, request.getHeader(TOKEN));

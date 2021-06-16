@@ -38,6 +38,13 @@ public interface ProjectMapper {
     List<Project> getProjectListP();
 
     /**
+     * 通过生命状态获取项目列表
+     *
+     * @param lifeStatus 项目生命状态
+     */
+    List<Project> getProjectListPByLifeStatus(Integer lifeStatus);
+
+    /**
      * 根据项目名获取项目信息
      */
     Project getProjectByNameP(String projectName);
@@ -61,4 +68,20 @@ public interface ProjectMapper {
      * @param projectName 项目名
      */
     List<String> getRepoByProjectName(String projectName);
+
+    /**
+     * 更新项目生命状态
+     *
+     * @param projectName   项目名称
+     * @param lifeStatus 项目生命状态
+     */
+    void updateLifeStatus(String projectName, Integer lifeStatus);
+
+    /**
+     * 根据项目名获取项目生命状态
+     *
+     * @param projectName 项目名
+     * @return 项目生命状态
+     */
+    Integer getProjectLifeStatus(String projectName);
 }

@@ -30,6 +30,10 @@ public class ProjectDao {
         return projectMapper.getProjectListP();
     }
 
+    public List<Project> getProjectListByLifeStatus(Integer lifeStatus) {
+        return projectMapper.getProjectListPByLifeStatus(lifeStatus);
+    }
+
     public Project getProjectByName(String projectName) {
         return projectMapper.getProjectByNameP(projectName);
     }
@@ -41,6 +45,12 @@ public class ProjectDao {
     public void deleteProject(String projectName){ projectMapper.deleteProjectByName(projectName); };
 
     public List<String> getProjectRepo(String projectName){return projectMapper.getRepoByProjectName(projectName); };
+
+    public void updateLifeStatus(String projectName, Integer lifeStatus){ projectMapper.updateLifeStatus(projectName, lifeStatus); }
+
+    public Integer getProjectLifeStatus(String projectName) {
+        return projectMapper.getProjectLifeStatus(projectName);
+    }
 
     @Autowired
     public void setProjectMapper(ProjectMapper projectMapper) {

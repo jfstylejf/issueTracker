@@ -15,6 +15,10 @@ public class RelationDao {
 
     @Autowired
     GroupMapper groupMapper;
+    public List<RelationView>  getRelationsdInGroup(String repoUuid,String commitId,int groupId){
+        return relationshipMapper.getRelationsdInGroup(repoUuid, commitId, groupId);
+    }
+
 
     public  List<RelationView> getRelationBydate(String date){
          return relationshipMapper.getRelationBydate(date);

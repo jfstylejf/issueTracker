@@ -44,6 +44,14 @@ public class ToolStatus {
             status = ScanStatusEnum.SCANNING.getType();
         }
 
+        if (status.contains("waiting for scan")) {
+            status = ScanStatusEnum.WAITING_FOR_SCAN.getType();
+        }
+
+        if (status.contains("complete")) {
+            status = ScanStatusEnum.COMPLETE.getType();
+        }
+
 
         startScanTime = toolStatus.getString ("startScanTime");
         endScanTime = toolStatus.getString ("endScanTime");
