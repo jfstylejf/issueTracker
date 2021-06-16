@@ -1379,7 +1379,7 @@ public class MeasureDeveloperService {
                             .developerProjectCcnList(developerProjectCcnList)
                             .since(since).until(until)
                             .totalDiffCcn(0)
-                            .level(LevelEnum.Medium.getType()).build();
+                            .level(LevelEnum.Normal.getType()).build();
             developerDataCcn.cal();
             developerDataCcnList.add(developerDataCcn);
         }
