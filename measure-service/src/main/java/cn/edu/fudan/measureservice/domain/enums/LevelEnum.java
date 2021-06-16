@@ -8,12 +8,16 @@ package cn.edu.fudan.measureservice.domain.enums;
  */
 
 public enum LevelEnum {
-    // 评级 : 高
-    High("high"),
-    // 评级 : 中
-    Medium("medium"),
-    // 评级 : 低
-    Low("low"),
+    // 评级 : 好
+    Best("best"),
+    // 评级 : 较好
+    Better("better"),
+    // 评级 : 一般
+    Normal("normal"),
+    // 评级 : 较差
+    Worse("worse"),
+    // 评级 : 差
+    Worst("worst"),
     // 评价 : 不做评价
     NoNeedToEvaluate("nothing");
 

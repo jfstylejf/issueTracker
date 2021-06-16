@@ -146,8 +146,9 @@ public class MeasureDeveloperService {
         developerWorkLoad.setTotalLoc(developerTotalLoc);
         developerWorkLoad.setChangedFiles(developerChangedFiles);
         developerWorkLoad.setCommitCount(developerCommitCount);
+        LevelEnum levelEnum = developerInvolvedRepoNum != 0 ? getLevel(totalLevel) : LevelEnum.NoNeedToEvaluate;
         // 获取开发者综合等级
-        developerWorkLoad.setLevel(getLevel(totalLevel));
+        developerWorkLoad.setLevel(levelEnum);
         return developerWorkLoad;
     }
 
@@ -979,18 +980,23 @@ public class MeasureDeveloperService {
         developerCommitStandard.setDeveloperValidCommitCount(developerValidCommitCount);
         double commitStandard = developerValidCommitCount != 0 ? developerJiraCommitCount * 1.0 / developerValidCommitCount : 0;
         developerCommitStandard.setCommitStandard(Double.parseDouble(df.format(commitStandard)));
+        LevelEnum levelEnum = developerInvolvedRepoNum != 0 ? getLevel(totalLevel) : LevelEnum.NoNeedToEvaluate;
         // 获取开发者综合等级
-        developerCommitStandard.setLevel(getLevel(totalLevel));
+        developerCommitStandard.setLevel(levelEnum);
         return developerCommitStandard;
     }
 
     private LevelEnum getLevel(double level) {
-        if (level <= 2.33)  {
-            return LevelEnum.Low;
-        }else if (level <= 3.66) {
-            return LevelEnum.Medium;
+        if (level >= 4.2 && level <= 5)  {
+            return LevelEnum.Best;
+        }else if (level >= 3.4 && level <= 4.2) {
+            return LevelEnum.Better;
+        }else if (level >= 2.6 && level <= 3.4) {
+            return LevelEnum.Normal;
+        }else if (level >= 1.8 && level <= 2.6) {
+            return LevelEnum.Worse;
         }else {
-            return LevelEnum.High;
+            return LevelEnum.Worst;
         }
     }
 
