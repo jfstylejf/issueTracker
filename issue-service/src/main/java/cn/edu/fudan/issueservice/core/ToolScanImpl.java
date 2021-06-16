@@ -198,7 +198,7 @@ public class ToolScanImpl extends ToolScan {
 
     @Override
     public void cleanUpForOneScan(String commit) {
-
+        issueMatcher.cleanParentRawIssueResult();
     }
 
     @Override

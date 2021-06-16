@@ -399,6 +399,11 @@ public class IssueMatcher {
         return new ArrayList<>(scannedParents);
     }
 
+
+    public void cleanParentRawIssueResult() {
+        parentRawIssuesResult.clear();
+    }
+
     @Autowired
     public IssueMatcher(IssueScanDao issueScanDao, RawIssueDao rawIssueDao, IssueDao issueDao, IssueTypeDao issueTypeDao, LocationDao locationDao) {
         IssueMatcher.issueScanDao = issueScanDao;
