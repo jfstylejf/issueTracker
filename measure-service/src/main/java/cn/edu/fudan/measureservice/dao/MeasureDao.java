@@ -260,7 +260,7 @@ public class MeasureDao {
             log.info("get RepoMetric in {} success with tag : {}\n",repoUuid,tag);
             return repoTagMetric;
         }catch (Exception e) {
-            e.getMessage();
+            log.error(e.getMessage());
             log.error("get RepoMetric in {} failed  with tag : {}\n",repoUuid, tag);
             return null;
         }
