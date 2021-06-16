@@ -126,6 +126,10 @@ public abstract class CommonScanProcess implements CommonScanService {
 
         if (StringUtils.isEmpty(beginCommit)) {
             beginCommit = getLastedScannedCommit(repoUuid, tool);
+            if (beginCommit == null) {
+                log.error("get begin commit error");
+                return;
+            }
         }
         JGitHelper jGitHelper = new JGitHelper(repoPath);
         List<String> toScanCommitList = jGitHelper.getScanCommitListByBranchAndBeginCommit(branch, beginCommit, scannedCommitList);
@@ -148,12 +152,29 @@ public abstract class CommonScanProcess implements CommonScanService {
 
         log.info("commit size : {}", toScanCommitList.size());
 
-        RepoScan repoScan = getRepoScan(repoUuid, tool, branch, toScanCommitList.size(), toScanCommitList.get(0));
+        RepoScan repoScan = getRepoScan(repoUuid, tool, branch, toScanCommitList.size());
         if (repoScan == null) {
-            log.error("please check the repo last time why failed!");
-            return;
+            repoScan = RepoScan.builder()
+                    .repoUuid(repoUuid)
+                    .branch(branch)
+                    .status(ScanInfo.Status.SCANNING.getStatus())
+                    .initialScan(true)
+                    .tool(tool)
+                    .scannedCommitCount(0)
+                    .startScanTime(new Date())
+                    .endScanTime(new Date())
+                    .totalCommitCount(toScanCommitList.size())
+                    .scanTime(0)
+                    .startCommit(toScanCommitList.get(0))
+                    .build();
+            insertRepoScan(repoScan);
+        } else {
+            if (ScanInfo.Status.FAILED.getStatus().equals(repoScan.getStatus())) {
+                log.error("please check the repo last time why failed!");
+                return;
+            }
+            updateRepoScan(repoScan);
         }
-        insertRepoScan(repoScan);
 
         try {
             // loadData 用于传输扫描的信息
@@ -238,10 +259,11 @@ public abstract class CommonScanProcess implements CommonScanService {
      *
      * @param repoUuid
      * @param tool
+     * @param branch
      * @param needScanCommit
      * @return
      */
-    protected abstract RepoScan getRepoScan(String repoUuid, String tool, String branch, int needScanCommit, String startCommit);
+    protected abstract RepoScan getRepoScan(String repoUuid, String tool, String branch, int needScanCommit);
 
     @Override
     public boolean stopScan(String repoUuid, String toolName) {

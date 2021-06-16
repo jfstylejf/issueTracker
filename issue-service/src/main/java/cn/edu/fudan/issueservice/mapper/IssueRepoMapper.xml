@@ -45,7 +45,8 @@
         SET end_scan_time        = #{issueRepo.endScanTime},
             scanned_commit_count = #{issueRepo.scannedCommitCount},
             scan_time            = #{issueRepo.scanTime},
-            status               = #{issueRepo.status}
+            status               = #{issueRepo.status},
+            total_commit_count   = #{issueRepo.totalCommitCount}
         WHERE repo_uuid = #{issueRepo.repoUuid}
           AND branch = #{issueRepo.branch}
           AND start_commit = #{issueRepo.startCommit}

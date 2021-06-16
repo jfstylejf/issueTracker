@@ -7,6 +7,7 @@ import cn.edu.fudan.common.scan.ToolScan;
 import cn.edu.fudan.issueservice.component.RestInterfaceManager;
 import cn.edu.fudan.issueservice.dao.IssueRepoDao;
 import cn.edu.fudan.issueservice.dao.IssueScanDao;
+import cn.edu.fudan.issueservice.domain.dbo.IssueScan;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
@@ -44,7 +45,11 @@ public class IssueScanProcess extends CommonScanProcess {
 
     @Override
     protected String getLastedScannedCommit(String repoUuid, String tool) {
-        return null;
+        IssueScan latestIssueScan = issueScanDao.getLatestIssueScanByRepoIdAndTool(repoUuid, tool);
+        if (latestIssueScan == null) {
+            return null;
+        }
+        return latestIssueScan.getCommitId();
     }
 
     @Override
@@ -69,26 +74,15 @@ public class IssueScanProcess extends CommonScanProcess {
     }
 
     @Override
-    protected RepoScan getRepoScan(String repoUuid, String tool, String branch, int needScanCommit, String startCommit) {
+    protected RepoScan getRepoScan(String repoUuid, String tool, String branch, int needScanCommit) {
 
         RepoScan repoScan = issueRepoDao.getRepoScan(repoUuid, tool);
         if (repoScan == null) {
-            return RepoScan.builder()
-                    .repoUuid(repoUuid)
-                    .branch(branch)
-                    .status(ScanInfo.Status.SCANNING.getStatus())
-                    .initialScan(true)
-                    .tool(tool)
-                    .scannedCommitCount(0)
-                    .startScanTime(new Date())
-                    .endScanTime(new Date())
-                    .totalCommitCount(needScanCommit)
-                    .scanTime(0)
-                    .build();
+            return null;
         }
 
-        if (repoScan.getStatus().equals(ScanInfo.Status.FAILED.getStatus())) {
-            return null;
+        if (ScanInfo.Status.FAILED.getStatus().equals(repoScan.getStatus())) {
+            return repoScan;
         }
 
         repoScan.setStatus(ScanInfo.Status.SCANNING.getStatus());
