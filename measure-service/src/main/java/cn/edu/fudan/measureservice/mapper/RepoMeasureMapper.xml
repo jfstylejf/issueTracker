@@ -620,6 +620,10 @@
         from issueTracker.repo_measure
         <where>
             <trim prefixOverrides="and">
+                <if test="developer != null and developer != ''">
+                    and developer_name = #{developer}
+                </if>
+
                 <if test="repoUuidList != null and repoUuidList.size >0 ">
                     and repo_id in
                     <foreach collection="repoUuidList" separator="," open="(" close=")" item="repoUuid">

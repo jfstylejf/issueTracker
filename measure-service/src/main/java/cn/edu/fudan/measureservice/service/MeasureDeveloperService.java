@@ -874,28 +874,29 @@ public class MeasureDeveloperService {
      * @param query 查询条件
      * @return
      */
-    private DeveloperCommitStandard getDeveloperCommitStandardWithLevel(Query query) {
+    public DeveloperCommitStandard getDeveloperCommitStandardWithLevel(Query query) {
         int developerValidCommitCount = 0;
         int developerJiraCommitCount = 0;
         int developerInvalidCommitCount = 0;
+        int developerInvolvedRepoNum = query.getRepoUuidList().size();
         // 总等级
         double totalLevel = 0;
         for (String repoUuid : query.getRepoUuidList()) {
             // 获取开发者对应库的合法提交信息
             log.info("start to get {} in repo : {}",query.getDeveloper(),repoUuid);
-            List<Map<String,Object>> developerValidCommitInfo = measureDao.getProjectValidCommitMsg(new Query(query.getToken(),query.getSince(),query.getUntil(),query.getDeveloper(),Collections.singletonList(repoUuid)));
-            int repoDeveloperValidCommitCount = developerValidCommitInfo.size();
-            int repoDeveloperJiraCommitCount = 0;
-            int repoDeveloperInvalidCommitCount = 0;
-            for(Map<String,Object> commitInfo : developerValidCommitInfo) {
-                boolean isValid = (int) commitInfo.get("is_compliance") == 1;
-                if (isValid) {
-                    repoDeveloperJiraCommitCount++;
-                }else {
-                    repoDeveloperInvalidCommitCount++;
-                }
+            Query tempQuery = new Query(query.getToken(),query.getSince(),query.getUntil(),query.getDeveloper(),Collections.singletonList(repoUuid));
+            List<Map<String,Object>> developerValidCommitInfo = measureDao.getProjectValidCommitMsg(tempQuery);
+            if (developerValidCommitInfo == null || developerValidCommitInfo.size() == 0) {
+                // todo 物理行数小于 1000 或者 未提交的不计算 level
+                developerInvolvedRepoNum --;
+                continue;
             }
-            double repoCommitStandard = repoDeveloperValidCommitCount != 0 ? repoDeveloperJiraCommitCount * 1.0 / repoDeveloperValidCommitCount : 0;
+            int repoDeveloperValidCommitCount = developerValidCommitInfo.size();
+            List<Map<String,Object>> developerValidJiraCommitInfo = measureDao.getProjectValidJiraCommitMsg(tempQuery);
+            int repoDeveloperJiraCommitCount = developerValidJiraCommitInfo == null ? 0 : developerValidJiraCommitInfo.size();
+            int repoDeveloperInvalidCommitCount = repoDeveloperValidCommitCount - repoDeveloperJiraCommitCount;
+
+            double repoCommitStandard =  repoDeveloperJiraCommitCount * 1.0 / repoDeveloperValidCommitCount ;
             totalLevel += getRepoCommitStandardLevel(Double.parseDouble(df.format(repoCommitStandard)),repoUuid);
             developerValidCommitCount += repoDeveloperValidCommitCount;
             developerJiraCommitCount += repoDeveloperJiraCommitCount;
@@ -903,7 +904,7 @@ public class MeasureDeveloperService {
         }
         // 封装 DeveloperCommitStandard
         DeveloperCommitStandard developerCommitStandard = new DeveloperCommitStandard();
-        totalLevel = totalLevel * 1.0 / query.getRepoUuidList().size();
+        totalLevel = developerInvolvedRepoNum == 0 ? 1 : totalLevel * 1.0 / developerInvolvedRepoNum;
         developerCommitStandard.setDeveloperName(query.getDeveloper());
         developerCommitStandard.setDeveloperInvalidCommitCount(developerInvalidCommitCount);
         developerCommitStandard.setDeveloperJiraCommitCount(developerJiraCommitCount);
@@ -926,7 +927,7 @@ public class MeasureDeveloperService {
     }
 
     private int getRepoCommitStandardLevel(double commitStandard, String repoUuid) {
-        RepoTagMetric repoTagMetric = measureDao.getRepoMetric(repoUuid, TagMetricEnum.WorkLoad.name());
+        RepoTagMetric repoTagMetric = measureDao.getRepoMetric(repoUuid, TagMetricEnum.CommitStandard.name());
         if (commitStandard >= repoTagMetric.getBestMin() && commitStandard <= repoTagMetric.getBestMax()) {
             return 5;
         }else if (commitStandard >= repoTagMetric.getBetterMin() && commitStandard <= repoTagMetric.getBetterMax()) {
@@ -1326,11 +1327,12 @@ public class MeasureDeveloperService {
          // 获取开发者查询项目下可看库
          List<String> visibleRepoList = projectDao.getVisibleRepoListByProjectName(projectNameList,token);
          // 获取开发者提交规范列表
-         Query query = new Query(token,since,until,null,visibleRepoList);
          Set<String> developerNameList = !"".equals(developers) ? new HashSet<>(Arrays.asList(developers.split(split))) : projectDao.getDeveloperList(visibleRepoList);
          List<DeveloperCommitStandard> developerCommitStandardList = new ArrayList<>();
          for (String developer : developerNameList) {
-             DeveloperCommitStandard developerCommitStandard = ((MeasureDeveloperService) AopContext.currentProxy()).getDeveloperCommitStandardWithLevel(new Query(token,since,until,developer,visibleRepoList));
+             // 获取开发者查询项目下可看库
+             List<String> developerRepoList = projectDao.getDeveloperVisibleRepo(visibleRepoList,developer,null,null);
+             DeveloperCommitStandard developerCommitStandard = ((MeasureDeveloperService) AopContext.currentProxy()).getDeveloperCommitStandardWithLevel(new Query(token,since,until,developer,developerRepoList));
              developerCommitStandardList.add(developerCommitStandard);
          }
          // 构建人员总览提交规范性类

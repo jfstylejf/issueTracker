@@ -213,6 +213,10 @@ public class MeasureRepoController {
         }
     }
 
+    @ApiOperation(value = "获取对应库下相应维度的基线值", notes = "@return List<RepoTagMetric>", httpMethod = "GET")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "repo_uuid", value = "查询库 id", dataType = "String",  required = false)
+    })
 
     @GetMapping("/measure/repo-metric")
     public ResponseBean<Object> getRepoMetricList(@RequestParam(value = "repo_uuid",required = false) String repoUuid) {

@@ -22,7 +22,10 @@ public enum TagMetricEnum {
     // 克隆行
     CloneLine("克隆行"),
     // 超大方法个数
-    BigMethodNum("超大方法个数");
+    BigMethodNum("超大方法个数"),
+    // 设计贡献
+    DesignContribution("设计贡献");
+
 
     private String tag;
 

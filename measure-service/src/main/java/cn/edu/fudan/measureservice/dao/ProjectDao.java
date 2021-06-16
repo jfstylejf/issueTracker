@@ -614,6 +614,7 @@ public class ProjectDao {
         return mergeBetweenRepo(developerRepoList,projectVisibleRepoList);
     }
 
+
     /**
      * 获取库列表所包含的提交次数
      * @param repoUuidList 查询库列表

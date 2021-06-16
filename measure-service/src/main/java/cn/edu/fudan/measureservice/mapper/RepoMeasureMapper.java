@@ -148,11 +148,12 @@ public interface RepoMeasureMapper {
     /**
      * 获取项目下包含库的合法 JIRA 提交信息 （不含Merge）
      * @param repoUuidList 查询库列表
+     * @param developer 查询开发者
      * @param since 查询起始时间
      * @param until 查询结束时间
      * @return List<Map<String,Object>> key : repo_id , developer, commit_time , commit_id , message
      */
-    List<Map<String,String>> getProjectValidJiraCommitMsg(@Param("repoUuidList")List<String> repoUuidList,@Param("since")String since,@Param("until")String until);
+    List<Map<String,Object>> getProjectValidJiraCommitMsg(@Param("developer") String developer,@Param("repoUuidList")List<String> repoUuidList,@Param("since")String since,@Param("until")String until);
 
 
     /**

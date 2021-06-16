@@ -108,6 +108,10 @@ public class MeasureDao {
     }
 
 
+    public List<Map<String,Object>> getProjectValidJiraCommitMsg(Query query) {
+        return repoMeasureMapper.getProjectValidJiraCommitMsg(query.getDeveloper(),query.getRepoUuidList(),query.getSince(),query.getUntil());
+    }
+
     /**
      * 获取项目包含库的合法提交信息（去除Merge）
      * @param query 查询条件

@@ -66,6 +66,10 @@ public class TagBaseMetric {
         // 获取 超大方法数初始基础数据
         BigMethodNumBaseMetric bigMethodNumBaseMetric = new BigMethodNumBaseMetric();
         tagBaseMetricMap.put(TagMetricEnum.BigMethodNum.getTag(),bigMethodNumBaseMetric);
+        // 获取 设计贡献初始基础数据
+        DesignContributionBaseMetric designContributionBaseMetric = new DesignContributionBaseMetric();
+        tagBaseMetricMap.put(TagMetricEnum.DesignContribution.getTag(),designContributionBaseMetric);
+
         return tagBaseMetricMap;
     }
 
