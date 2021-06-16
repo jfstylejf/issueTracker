@@ -11,25 +11,25 @@ import cn.edu.fudan.measureservice.domain.enums.TagMetricEnum;
 
 public class CloneLineBaseMetric extends TagBaseMetric{
 
-    private final static int CLONE_LINE_INITIAL_BEST_MAX = 0;
+    private final static double CLONE_LINE_INITIAL_BEST_MAX = 0;
 
-    private final static int CLONE_LINE_INITIAL_BEST_MIN = 40;
+    private final static double CLONE_LINE_INITIAL_BEST_MIN = 0.05;
 
-    private final static int CLONE_LINE_INITIAL_BETTER_MAX = 41;
+    private final static double CLONE_LINE_INITIAL_BETTER_MAX = 0.06;
 
-    private final static int CLONE_LINE_INITIAL_BETTER_MIN = 100;
+    private final static double CLONE_LINE_INITIAL_BETTER_MIN = 0.10;
 
-    private final static int CLONE_LINE_INITIAL_NORMAL_MAX = 101;
+    private final static double CLONE_LINE_INITIAL_NORMAL_MAX = 0.11;
 
-    private final static int CLONE_LINE_INITIAL_NORMAL_MIN = 150;
+    private final static double CLONE_LINE_INITIAL_NORMAL_MIN = 0.15;
 
-    private final static int CLONE_LINE_INITIAL_WORSE_MAX = 151;
+    private final static double CLONE_LINE_INITIAL_WORSE_MAX = 0.16;
 
-    private final static int CLONE_LINE_INITIAL_WORSE_MIN = 300;
+    private final static double CLONE_LINE_INITIAL_WORSE_MIN = 0.20;
 
-    private final static int CLONE_LINE_INITIAL_WORST_MAX = 301;
+    private final static double CLONE_LINE_INITIAL_WORST_MAX = 0.21;
 
-    private final static int CLONE_LINE_INITIAL_WORST_MIN = Integer.MAX_VALUE;
+    private final static double CLONE_LINE_INITIAL_WORST_MIN = 1;
 
     /**
      * 初始化克隆行基线数据
