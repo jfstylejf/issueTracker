@@ -1,12 +1,11 @@
 package cn.edu.fudan.measureservice.domain.bo;
 
+import cn.edu.fudan.measureservice.domain.enums.LevelEnum;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author wjzho
@@ -35,4 +34,9 @@ public class DeveloperCommitStandard implements Serializable {
      * 开发者提交规范性
      */
     private double commitStandard;
+    /**
+     * 开发者综合等级
+     */
+    private LevelEnum level;
+
 }

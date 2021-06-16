@@ -1,25 +1,24 @@
 package cn.edu.fudan.measureservice.domain.vo;
 
 import cn.edu.fudan.measureservice.domain.bo.DeveloperCommitStandard;
-import cn.edu.fudan.measureservice.domain.bo.DeveloperProjectCcn;
+import cn.edu.fudan.measureservice.domain.bo.DeveloperWorkLoad;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 /**
- * @ClassName: DeveloperDataCommitStandard
- * @Description: 人员总览界面 开发者提交规范性
+ * @ClassName: DeveloperDataWorkLoad
+ * @Description:
  * @Author wjzho
- * @Date 2021/5/20
+ * @Date 2021/6/16
  */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class DeveloperDataCommitStandard {
+public class DeveloperDataWorkLoad {
+
     /**
      * 开发者姓名
      */
@@ -33,23 +32,23 @@ public class DeveloperDataCommitStandard {
      */
     private String until;
     /**
-     * 开发者提交规范性明细
+     * 开发者工作量明细
      */
-    private DeveloperCommitStandard detail;
+    private DeveloperWorkLoad detail;
     /**
-     * 开发者合法提交次数
+     * 开发者新增物理行数
      */
-    private int developerValidCommitCount;
+    private int addLines;
     /**
-     * 开发者包含 Jira 单号的提交次数
+     * 开发者删除代码行数
      */
-    private int developerJiraCommitCount;
+    private int deleteLines;
     /**
-     * 开发者提交规范性
+     * 开发者增删总物理行数
      */
-    private double commitStandard;
+    private int totalLoc;
     /**
-     * 开发者提交规范性评级
+     * 开发者工作量评级
      */
     private String level;
 

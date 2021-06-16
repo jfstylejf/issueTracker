@@ -1,6 +1,8 @@
 package cn.edu.fudan.measureservice.dao;
 
 import cn.edu.fudan.measureservice.domain.bo.DeveloperWorkLoad;
+import cn.edu.fudan.measureservice.domain.enums.TagMetricEnum;
+import cn.edu.fudan.measureservice.domain.metric.RepoTagMetric;
 import cn.edu.fudan.measureservice.domain.dto.Query;
 import cn.edu.fudan.measureservice.domain.vo.ProjectBigFileDetail;
 import cn.edu.fudan.measureservice.mapper.FileMeasureMapper;
@@ -15,12 +17,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
-import org.springframework.util.Assert;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 /**
@@ -107,6 +107,10 @@ public class MeasureDao {
         return projectBigFileDetailList;
     }
 
+
+    public List<Map<String,Object>> getProjectValidJiraCommitMsg(Query query) {
+        return repoMeasureMapper.getProjectValidJiraCommitMsg(query.getDeveloper(),query.getRepoUuidList(),query.getSince(),query.getUntil());
+    }
 
     /**
      * 获取项目包含库的合法提交信息（去除Merge）
@@ -206,6 +210,105 @@ public class MeasureDao {
         return false;
     }
 
+    /**
+     * 查询对应 repoUuid 下的库维度基线， 若存在维度对应的 repo, 则获取该自定义基线数据， 否则取初始化基线数据
+     * @param repoUuid 查询库
+     * @return 该库的各维度基线
+     */
+    public List<RepoTagMetric> getRepoMetric(String repoUuid) {
+        List<RepoTagMetric> repoTagMetricList = new ArrayList<>();
+        // 用来判断该库下哪些维度尚未更新
+        List<String> isValid = new ArrayList<>();
+        try {
+            List<RepoTagMetric> initialTagMetricList = repoMeasureMapper.getRepoTagMetricList(null);
+            if (repoUuid != null) {
+                List<RepoTagMetric> tempList = repoMeasureMapper.getRepoTagMetricList(repoUuid);
+                for (RepoTagMetric repoTagMetric : tempList) {
+                    isValid.add(repoTagMetric.getTag());
+                    repoTagMetricList.add(repoTagMetric);
+                }
+            }
+            for (RepoTagMetric repoTagMetric : initialTagMetricList) {
+                String tag = repoTagMetric.getTag();
+                if (isValid.contains(tag)) {
+                    continue;
+                }
+                repoTagMetricList.add(repoTagMetric);
+            }
+            log.info("get RepoMetric in {} success\n",repoUuid);
+            return repoTagMetricList;
+        }catch (Exception e) {
+            e.getMessage();
+            log.error("get RepoMetric in {} failed\n",repoUuid);
+            return null;
+        }
+    }
+
+    /**
+     * 查询对应 repoUuid 下对应 tag 的基线， 若存在维度对应的 repo, 则获取该自定义基线数据， 否则取初始化基线数据
+     * @param repoUuid 查询库
+     * @param tag  查询维度
+     * @return 该库的各维度基线
+     */
+    public RepoTagMetric getRepoMetric(String repoUuid, String tag) {
+        try {
+            RepoTagMetric repoTagMetric = repoMeasureMapper.getRepoTagMetric(repoUuid, tag);
+            if (repoTagMetric == null) {
+                // 若该库的该维度数据未更新， 则获取初始化的库维度数据
+                repoTagMetric = repoMeasureMapper.getRepoTagMetric(null, tag);
+            }
+            log.info("get RepoMetric in {} success with tag : {}\n",repoUuid,tag);
+            return repoTagMetric;
+        }catch (Exception e) {
+            e.getMessage();
+            log.error("get RepoMetric in {} failed  with tag : {}\n",repoUuid, tag);
+            return null;
+        }
+    }
+
+
+    /**
+     * 判断是否有该库该维度的记录存在
+     * @param repoUuid 查询库
+     * @param tag 查询维度标签
+     * @return true: 已存在， false: 尚未插入
+     */
+    public boolean containRepoMetricOrNot(String repoUuid,String tag) {
+        int num = repoMeasureMapper.containsRepoTagMetricOrNot(repoUuid,tag);
+        return num >= 1;
+    }
+
+    /**
+     * 更新 repo_metric 表中该维度对应库的数据基线
+     * @param repoTagMetric 库维度基线数据
+     * @return true : 更新成功， false : 更新失败
+     */
+    public boolean updateRepoMetric(RepoTagMetric repoTagMetric) {
+        try {
+            repoMeasureMapper.updateRepoTagMetric(repoTagMetric);
+            log.info("update repoMetric success in {} with tag : {}",repoTagMetric.getRepoUuid(),repoTagMetric.getTag());
+            return true;
+        }catch (Exception e) {
+            log.error("update repoMetric failed in {} with tag : {}",repoTagMetric.getRepoUuid(),repoTagMetric.getTag());
+            return false;
+        }
+    }
+
+    /**
+     * 插入 repo_metric 表中该维度对应库的数据基线
+     * @param repoTagMetric 库维度基线数据
+     * @return true : 插入成功， false : 插入失败
+     */
+    public boolean insertRepoMetric(RepoTagMetric repoTagMetric) {
+        try {
+            repoMeasureMapper.insertRepoTagMetric(repoTagMetric);
+            log.info("insert repoMetric success in {} with tag : {}",repoTagMetric.getRepoUuid(),repoTagMetric.getTag());
+            return true;
+        }catch (Exception e) {
+            log.error("insert repoMetric failed in {} with tag : {}",repoTagMetric.getRepoUuid(),repoTagMetric.getTag());
+            return false;
+        }
+    }
 
 
     @SneakyThrows
