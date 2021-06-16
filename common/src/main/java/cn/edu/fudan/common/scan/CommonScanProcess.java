@@ -119,54 +119,45 @@ public abstract class CommonScanProcess implements CommonScanService {
             log.error("{} : can't get repoPath", repoUuid);
             throw new CodePathGetFailedException("can't get repo path");
         }
-        List<String> scannedCommitList = getScannedCommitList(repoUuid, tool);
 
+        List<String> scannedCommitList = getScannedCommitList(repoUuid, tool);
         log.info("scannedCommitList.size():{}", scannedCommitList.size());
         boolean initialScan = scannedCommitList.isEmpty();
-        int scannedCommitCount = 0;
-        RepoScan repoScan = RepoScan.builder()
-                .repoUuid(repoUuid)
-                .branch(branch)
-                .status(ScanInfo.Status.SCANNING.getStatus())
-                .initialScan(initialScan)
-                .tool(tool)
-                .scannedCommitCount(scannedCommitCount)
-                .startScanTime(new Date())
-                .endScanTime(new Date())
-                .scanTime(0)
-                .build();
+
+        if (StringUtils.isEmpty(beginCommit)) {
+            beginCommit = getLastedScannedCommit(repoUuid, tool);
+        }
+        JGitHelper jGitHelper = new JGitHelper(repoPath);
+        List<String> toScanCommitList = jGitHelper.getScanCommitListByBranchAndBeginCommit(branch, beginCommit, scannedCommitList);
+        jGitHelper.close();
+
+        // 筛选出end commit
+        if (!StringUtils.isEmpty(endCommit)) {
+            int end = toScanCommitList.indexOf(endCommit);
+            if (end == -1) {
+                log.error("cannot find end commit {}", endCommit);
+            } else {
+                toScanCommitList = toScanCommitList.subList(0, end + 1);
+                log.info("setting end commit {}", endCommit);
+            }
+        }
+
+        if (toScanCommitList.isEmpty()) {
+            return;
+        }
+
+        log.info("commit size : {}", toScanCommitList.size());
+
+        RepoScan repoScan = getRepoScan(repoUuid, tool, branch, toScanCommitList.size(), toScanCommitList.get(0));
+        if (repoScan == null) {
+            log.error("please check the repo last time why failed!");
+            return;
+        }
+        insertRepoScan(repoScan);
+
         try {
-            if (StringUtils.isEmpty(beginCommit)) {
-                beginCommit = getLastedScannedCommit(repoUuid, tool);
-            }
-            JGitHelper jGitHelper = new JGitHelper(repoPath);
-            List<String> toScanCommitList = jGitHelper.getScanCommitListByBranchAndBeginCommit(branch, beginCommit, scannedCommitList);
-            jGitHelper.close();
-
-            // 筛选出end commit
-            if (!StringUtils.isEmpty(endCommit)) {
-                int end = toScanCommitList.indexOf(endCommit);
-                if (end == -1) {
-                    log.error("cannot find end commit {}", endCommit);
-                } else {
-                    toScanCommitList = toScanCommitList.subList(0, end + 1);
-                    log.info("setting end commit {}", endCommit);
-                }
-            }
-
-            if (toScanCommitList.isEmpty()) {
-                return;
-            }
-            String firstCommit = toScanCommitList.get(0);
-            repoScan.setTotalCommitCount(toScanCommitList.size());
-            repoScan.setStartCommit(firstCommit);
-
-            log.info("commit size : {}", toScanCommitList.size());
-
-            insertRepoScan(repoScan);
-
             // loadData 用于传输扫描的信息
-            specificTool.loadData(repoUuid, branch, repoPath, initialScan, toScanCommitList, repoScan, scannedCommitCount);
+            specificTool.loadData(repoUuid, branch, repoPath, initialScan, toScanCommitList, repoScan, repoScan.getScannedCommitCount());
 
             specificTool.prepareForScan();
             for (String commit : toScanCommitList) {
@@ -182,7 +173,7 @@ public abstract class CommonScanProcess implements CommonScanService {
                     break;
                 }
                 repoScan.setEndScanTime(new Date());
-                repoScan.setScannedCommitCount(++scannedCommitCount);
+                repoScan.setScannedCommitCount(repoScan.getScannedCommitCount() + 1);
                 repoScan.setScanTime((repoScan.getEndScanTime().getTime() - repoScan.getStartScanTime().getTime()) / 1000);
                 updateRepoScan(repoScan);
             }
@@ -242,6 +233,15 @@ public abstract class CommonScanProcess implements CommonScanService {
      */
     protected abstract void insertRepoScan(RepoScan repoScan);
 
+    /**
+     * 获取已扫描的的repo信息
+     *
+     * @param repoUuid
+     * @param tool
+     * @param needScanCommit
+     * @return
+     */
+    protected abstract RepoScan getRepoScan(String repoUuid, String tool, String branch, int needScanCommit, String startCommit);
 
     @Override
     public boolean stopScan(String repoUuid, String toolName) {

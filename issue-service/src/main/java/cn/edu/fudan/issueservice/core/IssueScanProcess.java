@@ -1,5 +1,6 @@
 package cn.edu.fudan.issueservice.core;
 
+import cn.edu.fudan.common.domain.ScanInfo;
 import cn.edu.fudan.common.domain.po.scan.RepoScan;
 import cn.edu.fudan.common.scan.CommonScanProcess;
 import cn.edu.fudan.common.scan.ToolScan;
@@ -11,6 +12,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -64,6 +66,34 @@ public class IssueScanProcess extends CommonScanProcess {
     @Override
     public void deleteRepo(String repoUuid) {
 
+    }
+
+    @Override
+    protected RepoScan getRepoScan(String repoUuid, String tool, String branch, int needScanCommit, String startCommit) {
+
+        RepoScan repoScan = issueRepoDao.getRepoScan(repoUuid, tool);
+        if (repoScan == null) {
+            return RepoScan.builder()
+                    .repoUuid(repoUuid)
+                    .branch(branch)
+                    .status(ScanInfo.Status.SCANNING.getStatus())
+                    .initialScan(true)
+                    .tool(tool)
+                    .scannedCommitCount(0)
+                    .startScanTime(new Date())
+                    .endScanTime(new Date())
+                    .totalCommitCount(needScanCommit)
+                    .scanTime(0)
+                    .build();
+        }
+
+        if (repoScan.getStatus().equals(ScanInfo.Status.FAILED.getStatus())) {
+            return null;
+        }
+
+        repoScan.setStatus(ScanInfo.Status.SCANNING.getStatus());
+        repoScan.setTotalCommitCount(repoScan.getTotalCommitCount() + needScanCommit);
+        return repoScan;
     }
 
     @Override
