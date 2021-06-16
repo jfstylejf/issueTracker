@@ -16,6 +16,7 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
@@ -30,6 +31,7 @@ import java.util.stream.Stream;
 @Slf4j
 @Data
 @Component
+@Scope("prototype")
 public class IssueMatcher {
 
     private final ThreadLocal<List<String>> parentCommitsThreadLocal = new ThreadLocal<>();
