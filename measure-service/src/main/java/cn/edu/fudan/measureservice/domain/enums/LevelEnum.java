@@ -19,7 +19,7 @@ public enum LevelEnum {
     // 评级 : 差
     Worst("worst"),
     // 评价 : 不做评价
-    NoNeedToEvaluate("nothing");
+    NoNeedToEvaluate("none");
 
     private final String type;
 
