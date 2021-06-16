@@ -20,6 +20,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
@@ -29,6 +30,7 @@ import java.util.Date;
  * @date 2021-04-25 16:56:35
  */
 @Component
+@Scope("prototype")
 @Slf4j
 public class ToolScanImpl extends ToolScan {
 
