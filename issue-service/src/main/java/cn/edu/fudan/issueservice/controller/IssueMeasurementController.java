@@ -368,7 +368,6 @@ public class IssueMeasurementController {
             @ApiImplicitParam(name = "page", value = "页号"),
             @ApiImplicitParam(name = "ps", value = "页大小"),
             @ApiImplicitParam(name = "order", value = "排序规则", allowableValues = "num , level")
-
     })
     @GetMapping("/developer/data/living-issue")
     public ResponseBean<PagedGridResult<DeveloperLivingIssueVO>> getDeveloperListLivingIssue(@RequestParam(value = "since", required = false) String since,
