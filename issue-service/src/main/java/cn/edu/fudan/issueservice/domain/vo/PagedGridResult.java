@@ -50,4 +50,13 @@ public class PagedGridResult<T> {
         grid.setRecords(pageList.getTotal());
         return grid;
     }
+
+    public static PagedGridResult<?> getPagedGridResult(int page, int records, int size, List<Object> list) {
+        PagedGridResult<Object> result = new PagedGridResult<>();
+        result.page = page;
+        result.records = records;
+        result.total = size;
+        result.rows = list;
+        return result;
+    }
 }
