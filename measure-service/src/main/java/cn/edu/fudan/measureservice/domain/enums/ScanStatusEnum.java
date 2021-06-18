@@ -22,6 +22,14 @@ public enum ScanStatusEnum {
      */
     ANALYZE_FAILED("analyze failed"),
     /**
+     * 程序内部除扫描解析过程出现异常
+     */
+    BUG_Failed("bug failed"),
+    /**
+     *  流程正常但外因异常中止
+     */
+    SUSPEND("suspend"),
+    /**
      * 扫描完成
      */
     DONE("complete");
