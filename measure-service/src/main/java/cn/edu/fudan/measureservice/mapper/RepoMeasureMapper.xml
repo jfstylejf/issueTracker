@@ -826,4 +826,9 @@
         AND repo_uuid = #{repoUuid}
     </select>
 
+    <select id="getRepoStartCommit" resultType="String">
+        SELECT start_commit FROM issueTracker.scan
+        WHERE repo_uuid = #{repoUuid}
+    </select>
+
 </mapper>

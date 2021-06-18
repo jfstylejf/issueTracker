@@ -229,4 +229,11 @@ public interface RepoMeasureMapper {
      */
     void updateRepoTagMetric(RepoTagMetric repoTagMetric);
 
+    /**
+     * 获取这个库下的扫描起始 commit
+     * @param repoUuid 查询库 id
+     * @return 起始commitId
+     */
+    String getRepoStartCommit(@Param("repoUuid") String repoUuid);
+
 }

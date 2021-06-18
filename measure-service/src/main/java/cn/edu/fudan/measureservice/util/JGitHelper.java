@@ -169,7 +169,7 @@ public class JGitHelper {
 
             }
         } catch (GitAPIException e) {
-            e.getMessage();
+            log.error(e.getMessage());
         }
         return new ArrayList<>(sortByValue(commitMap).keySet());
     }

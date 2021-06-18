@@ -479,9 +479,9 @@ public class MeasureDeveloperController {
             ProjectFrontEnd<DeveloperDataCommitStandard> developerDtaCommitStandardProjectFrontEnd = new ProjectFrontEnd<>(page,totalPage,developerDataCommitStandardList.size(),selectedDeveloperDataCommitStandardList);
             return new ResponseBean<>(HttpStatus.OK.value(),"success",developerDtaCommitStandardProjectFrontEnd);
         }catch (Exception e) {
-            e.getMessage();
+            log.error(e.getMessage());
+            return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(),"failed",null);
         }
-        return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(),"failed",null);
     }
 
 
@@ -509,9 +509,9 @@ public class MeasureDeveloperController {
             ProjectFrontEnd<DeveloperDataWorkLoad> developerDtaWorkLoadProjectFrontEnd = new ProjectFrontEnd<>(page,totalPage,developerDataWorkLoadList.size(),selectedDeveloperDataWorkLoadList);
             return new ResponseBean<>(HttpStatus.OK.value(),"success",developerDtaWorkLoadProjectFrontEnd);
         }catch (Exception e) {
-            e.getMessage();
+            log.error(e.getMessage());
+            return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(),"failed",null);
         }
-        return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(),"failed",null);
     }
 
 

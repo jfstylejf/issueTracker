@@ -58,7 +58,7 @@ public class MethodMeasureAspect {
             costList.add((int)costTime);
             methodCost.put(methodName, costList);
         }
-        System.out.println(this);
+        //System.out.println(this);
         return obj;
     }
 
