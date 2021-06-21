@@ -13,7 +13,9 @@ public enum LevelEnum {
     // 评级 : 中
     Medium("medium"),
     // 评级 : 低
-    Low("low");
+    Low("low"),
+    // 评价 : 不做评价
+    NoNeedToEvaluate("nothing");
 
     private final String type;
 

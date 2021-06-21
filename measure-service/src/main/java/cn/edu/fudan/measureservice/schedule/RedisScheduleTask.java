@@ -89,7 +89,6 @@ public class RedisScheduleTask {
             Map<String,Object> map = developerList.get(i);
             String developerName = map.get("developer_name").toString();
             measureDeveloperService.getPortraitCompetence(developerName,null,null,null,token);
-            measureDeveloperService.getDeveloperRecentNews(null,developerName,null,null);
         }
 
 

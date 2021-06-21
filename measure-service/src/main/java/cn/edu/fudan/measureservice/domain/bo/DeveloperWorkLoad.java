@@ -1,5 +1,6 @@
 package cn.edu.fudan.measureservice.domain.bo;
 
+import cn.edu.fudan.measureservice.domain.enums.LevelEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,4 +22,8 @@ public class DeveloperWorkLoad implements Serializable {
     private int totalLoc;
     private int commitCount;
     private int changedFiles;
+    /**
+     * 开发者综合等级
+     */
+    private LevelEnum level;
 }

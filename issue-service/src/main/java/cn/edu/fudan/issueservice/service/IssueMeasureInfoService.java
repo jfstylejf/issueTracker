@@ -146,7 +146,8 @@ public interface IssueMeasureInfoService {
      * @param page       page
      * @param ps         ps
      * @param asc        asc
+     * @param order      order
      * @return living issue count
      */
-    PagedGridResult<DeveloperLivingIssueVO> getDeveloperListLivingIssue(String since, String until, List<String> repoUuids, List<String> developers, int page, int ps, Boolean asc);
+    PagedGridResult<DeveloperLivingIssueVO> getDeveloperListLivingIssue(String since, String until, List<String> repoUuids, List<String> developers, int page, int ps, Boolean asc, String order);
 }

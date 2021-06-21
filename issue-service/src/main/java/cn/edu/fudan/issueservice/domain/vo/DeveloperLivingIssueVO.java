@@ -14,24 +14,32 @@ public class DeveloperLivingIssueVO {
 
     private String developerName;
     private Long num;
-    private String level;
+    private Level level;
 
     @Getter
-    private enum Level {
+    public enum Level {
         /**
          * level
          */
-        HIGH("high"),
-        MEDIUM("medium"),
-        LOW("low");
-        private final String type;
+        worst(1),
+        worse(2),
+        normal(3),
+        better(4),
+        best(5);
 
-        Level(String type) {
+        private final int type;
+
+        Level(int type) {
             this.type = type;
         }
     }
 
-    private void setLevel(Level level) {
-        this.level = level.getType();
+    public static Level getLevel(int level) {
+        for (Level value : Level.values()) {
+            if (value.type == level) {
+                return value;
+            }
+        }
+        return null;
     }
 }

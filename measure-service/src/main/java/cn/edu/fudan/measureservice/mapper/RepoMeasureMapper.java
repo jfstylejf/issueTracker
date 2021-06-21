@@ -1,9 +1,9 @@
 package cn.edu.fudan.measureservice.mapper;
 
-import cn.edu.fudan.measureservice.annotation.MethodMeasureAnnotation;
 import cn.edu.fudan.measureservice.domain.CommitBase;
 import cn.edu.fudan.measureservice.domain.CommitInfoDeveloper;
 import cn.edu.fudan.measureservice.domain.RepoMeasure;
+import cn.edu.fudan.measureservice.domain.metric.RepoTagMetric;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
@@ -148,11 +148,12 @@ public interface RepoMeasureMapper {
     /**
      * 获取项目下包含库的合法 JIRA 提交信息 （不含Merge）
      * @param repoUuidList 查询库列表
+     * @param developer 查询开发者
      * @param since 查询起始时间
      * @param until 查询结束时间
      * @return List<Map<String,Object>> key : repo_id , developer, commit_time , commit_id , message
      */
-    List<Map<String,String>> getProjectValidJiraCommitMsg(@Param("repoUuidList")List<String> repoUuidList,@Param("since")String since,@Param("until")String until);
+    List<Map<String,Object>> getProjectValidJiraCommitMsg(@Param("developer") String developer,@Param("repoUuidList")List<String> repoUuidList,@Param("since")String since,@Param("until")String until);
 
 
     /**
@@ -192,5 +193,40 @@ public interface RepoMeasureMapper {
      */
     List<Map<String,Object>> getProjectValidNotJiraCommitMsgWithPage(@Param("developer") String developer,@Param("repoUuidList")List<String> repoUuidList,@Param("since")String since,@Param("until")String until,@Param("size") int size ,@Param("beginIndex") int beginIndex);
 
+
+    /**
+     * 获取获取对应库下相应衡量指标的基线列表
+     * @param repoUuid 查询库
+     * @return 对应库下衡量指标的基线列表
+     */
+    List<RepoTagMetric> getRepoTagMetricList(@Param("repoUuid") String repoUuid);
+
+    /**
+     * 获取对应库对应维度的基线数据
+     * @param repoUuid 查询库
+     * @param tag 查询维度
+     * @return 该库下该指标的基线数据
+     */
+    RepoTagMetric getRepoTagMetric(@Param("repoUuid") String repoUuid, @Param("tag") String tag);
+
+    /**
+     * 查询相应库的维度数据是否有记录，并返回记录数
+     * @param repoUuid 查询库
+     * @param tag 查询维度标签
+     * @return 记录个数
+     */
+    int containsRepoTagMetricOrNot(@Param("repoUuid") String repoUuid, @Param("tag") String tag);
+
+    /**
+     * 插入库维度基线数据
+     * @param repoTagMetric 对应的库下该维度数据基线
+     */
+    void insertRepoTagMetric(RepoTagMetric repoTagMetric);
+
+    /**
+     * 更新库维度基线数据
+     * @param repoTagMetric 对应的库下该维度数据基线
+     */
+    void updateRepoTagMetric(RepoTagMetric repoTagMetric);
 
 }

@@ -297,9 +297,9 @@ public interface IssueMapper {
      *
      * @param since      since
      * @param until      until
-     * @param repoUuids  repoUuids
+     * @param repoUuid  repoUuid
      * @param developers developers
      * @return developers living issues count
      */
-    List<Map<String, Object>> getDeveloperListLivingIssue(String since, String until, List<String> repoUuids, List<String> developers);
+    List<Map<String, Object>> getDeveloperListLivingIssue(String since, String until, String repoUuid, List<String> developers);
 }
