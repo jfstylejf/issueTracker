@@ -212,7 +212,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public PagedGridResult getDevelopers(List<String> repoList, String since, String until, String developers, Integer page, Integer pageSize, String order, Boolean isAsc) {
+    public PagedGridResult getDevelopers(List<String> repoList, String since, String until, String developers, Integer page, Integer pageSize, String order, Boolean isAsc, String accountStatus) {
         /**
          * page: 第几页
          * pageSize: 每页显示条数
@@ -233,14 +233,14 @@ public class AccountServiceImpl implements AccountService {
             PageHelper.startPage(page, pageSize, orderBy);
         }
 
-        List<Map<String, Object>> result = commitViewMapper.getDevelopers(repoList, since, until, developers);
+        List<Map<String, Object>> result = commitViewMapper.getDevelopers(repoList, since, until, developers, accountStatus);
 
         return setterPagedGrid(result, page);
     }
 
     @Override
-    public List<Map<String, Object>> getDevelopers(List<String> repoList, String since, String until) {
-        return commitViewMapper.getDevelopers(repoList, since, until, null);
+    public List<Map<String, Object>> getDevelopers(List<String> repoList, String since, String until, String accountStatus) {
+        return commitViewMapper.getDevelopers(repoList, since, until, null, accountStatus);
     }
 
     @Override
