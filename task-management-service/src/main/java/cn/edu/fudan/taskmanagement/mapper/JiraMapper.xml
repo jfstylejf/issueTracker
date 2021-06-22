@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.edu.fudan.taskmanagement.mapper.JiraMapper">
+
+    <insert id="insertHistoryJiraMsg" parameterType="cn.edu.fudan.taskmanagement.domain.JiraMsg">
+        replace into jira_history
+        (
+        developer,
+        jira_id,
+        commit_id,
+        status,
+        commit_time,
+        summary,
+        issue_type,
+        repo_id,
+        unique_name,
+        due_date,
+        work_load,
+        priority
+        )
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{developer},
+            #{jiraUuid},
+            #{commitUuid},
+            #{status},
+            #{commitTime},
+            #{summary},
+            #{issueType},
+            #{repoUuid},
+            #{uniqueName},
+            #{dueDate},
+            #{workLoad},
+            #{priority}
+            )
+        </foreach>
+    </insert>
+
+    <insert id="insertCurrentJiraMsg" parameterType="cn.edu.fudan.taskmanagement.domain.JiraMsg">
+        replace into jira_current
+        (
+        jira_id,
+        current_status,
+        summary,
+        assignee,
+        issue_type,
+        created_time,
+        unique_name,
+        due_date,
+        work_load,
+        priority
+        )
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{jiraUuid},
+            #{currentStatus},
+            #{summary},
+            #{developer},
+            #{issueType},
+            #{createdTime},
+            #{uniqueName},
+            #{dueDate},
+            #{workLoad},
+            #{priority}
+            )
+        </foreach>>
+    </insert>
+
+    <select id="getCommitMsgByCondition" parameterType="String" resultType="java.util.HashMap">
+        SELECT
+        developer,repo_uuid as repoUuid, commit_id as commitUuid, commit_time as commitTime, message
+
+        FROM
+        commit_view
+        <where>
+            <trim prefixOverrides="and">
+                <if test="developer_name != null and developer_name != '' ">
+                    and developer = #{developer_name}
+                </if>
+
+                <if test="repo_id != null and repo_id != '' ">
+                    and repo_id = #{repo_id}
+                </if>
+
+                <if test="since != null and since != '' ">
+                    and <![CDATA[ commitTime >= #{since} ]]>
+                </if>
+
+                <if test="until != null and until != '' ">
+                    and <![CDATA[ commitTime <= #{until} ]]>
+                </if>
+            </trim>
+        </where>
+        ORDER BY commit_time
+    </select>
+
+    <select id="getJiraIdList" parameterType="String" resultType="string">
+        select
+        distinct jira_id
+        from
+        jira_history
+        <where>
+            <trim prefixOverrides="and">
+                <if test="developer != null and developer != '' ">
+                    and unique_name = #{developer}
+                </if>
+                <if test="repo_id != null and repo_id != '' ">
+                    and repo_id = #{repo_id}
+                </if>
+                <if test="begin_date != null and begin_date != '' ">
+                    and <![CDATA[ commit_time >= #{begin_date} ]]>
+                </if>
+
+                <if test="end_date != null and end_date != '' ">
+                    and <![CDATA[ commit_time <= #{end_date} ]]>
+                </if>
+            </trim>
+        </where>
+        order by commit_time desc
+    </select>
+
+    <select id="getLastCommitTimeByJiraHistory" resultType="String">
+        SELECT
+        commit_time
+        FROM
+        jira_history
+
+        ORDER BY commit_time DESC
+
+        LIMIT 1
+    </select>
+
+    <select id="getJiraInfoFromDatabase" parameterType="String" resultType="cn.edu.fudan.taskmanagement.domain.JiraMsg">
+        SELECT
+        jira_id as jiraUuid, current_status as currentStatus, summary, assignee, issue_type as issueType, created_time as createdTime, unique_name as UniqueName
+        FROM
+        jira_current
+        <where>
+            <trim prefixOverrides="and">
+
+                <if test="jira_id != null and jira_id != '' ">
+                    and jira_id = #{jira_id}
+                </if>
+
+            </trim>
+        </where>
+    </select>
+
+    <select id="getJiraMsgFromHistoryDatabase" parameterType="String" resultType="cn.edu.fudan.taskmanagement.domain.JiraMsg">
+        SELECT
+        developer, jira_id as jiraUuid, commit_id as commitUuid, status, commit_time as commitTime, summary, issue_type as issueType, repo_id as repoUuid, unique_name as uniqueTime
+        FROM
+        jira_history
+        <where>
+            <trim prefixOverrides="and">
+
+                <if test="jira_id != null and jira_id != '' ">
+                    and jira_id = #{jira_id}
+                </if>
+
+            </trim>
+        </where>
+    </select>
+
+    <select id="getJiraDetailFromHistoryDatabase" parameterType="String" resultType="cn.edu.fudan.taskmanagement.domain.JiraDetail">
+        SELECT
+        jira_id as jiraUuid, commit_id as commitUuid, status, commit_time as commitTime, issue_type as issueType, unique_name as developer
+        FROM
+        jira_history
+        <where>
+            <trim prefixOverrides="and">
+
+                <if test="jira_id != null and jira_id != '' ">
+                    and jira_id = #{jira_id}
+                </if>
+
+            </trim>
+        </where>
+    </select>
+
+    <select id="getJiraMsgFromCurrentDatabase" parameterType="String" resultType="cn.edu.fudan.taskmanagement.domain.JiraMsg">
+        SELECT
+        assignee, jira_id as jiraUuid, current_status as currentStatus, created_time as createdTime, summary, issue_type as issueType, unique_name as uniqueTime
+        FROM
+        jira_current
+        <where>
+            <trim prefixOverrides="and">
+
+                <if test="jira_id != null and jira_id != '' ">
+                    and jira_id = #{jira_id}
+                </if>
+
+            </trim>
+        </where>
+    </select>
+
+    <select id="getTeamJiraMsgFromCurrentDatabase" parameterType="String" resultType="cn.edu.fudan.taskmanagement.domain.TeamJiraMsg">
+        SELECT
+        current_status as currentStatus, issue_type as issueType
+        FROM
+        jira_current
+        <where>
+            <trim prefixOverrides="and">
+
+                <if test="jira_id != null and jira_id != '' ">
+                    and jira_id = #{jira_id}
+                </if>
+
+            </trim>
+        </where>
+    </select>
+
+    <select id="getDeveloperJiraCommitFromDatabase" parameterType="String" resultType="int">
+        SELECT
+        count(*)
+        FROM
+        jira_history
+
+        <where>
+
+            <trim prefixOverrides="and">
+
+                <if test="developer != null and developer != '' ">
+                    and unique_name = #{developer}
+                </if>
+
+                <if test="jira_id != null and jira_id != '' ">
+                    and jira_id = #{jira_id}
+                </if>
+
+            </trim>
+
+        </where>
+
+    </select>
+
+    <select id="getFirstCommitDate" resultType="String">
+        SELECT
+        commit_time
+        FROM
+        jira_history
+        <where>
+            <trim prefixOverrides="and">
+
+                <if test="jira_id != null and jira_id != '' ">
+                    and jira_id = #{jira_id}
+                </if>
+
+                <if test="developer != null and developer != '' ">
+                    and unique_name = #{developer}
+                </if>
+
+            </trim>
+        </where>
+        ORDER BY commit_time DESC
+        LIMIT 1
+    </select>
+
+    <select id="getGitName" parameterType="String" resultType="String">
+        SELECT
+        account_gitname
+        FROM
+        account_info
+        <where>
+            <trim prefixOverrides="and">
+
+                <if test="name != null and name != '' ">
+                    and name = #{name}
+                </if>
+
+            </trim>
+        </where>
+    </select>
+
+    <select id="getUniqueName" parameterType="String" resultType="String">
+        SELECT
+        name
+        FROM
+        account_info
+        <where>
+            <trim prefixOverrides="and">
+
+                <if test="developer != null and developer != '' ">
+                    and account_gitname = #{developer}
+                </if>
+            </trim>
+        </where>
+    </select>
+
+    <select id="getRepoUuidByDeveloper" parameterType="String" resultType="String">
+            SELECT
+            DISTINCT repo_uuid
+            FROM
+            commit_view
+            <where>
+                <trim prefixOverrides="and">
+                    <if test="developer != null and developer != ''">
+                        and developer_unique_name = #{developer}
+                    </if>
+                </trim>
+            </where>
+    </select>
+</mapper>
