@@ -291,6 +291,7 @@ public class AccountController {
     @ApiOperation(value="获取给定条件下的开发人员（聚合后）列表",httpMethod = "GET")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "repo_uuids", value = "repo库", dataType = "String", required = false,defaultValue = "a140dc46-50db-11eb-b7c3-394c0d058805"),
+            @ApiImplicitParam(name = "account_status", value = "人员在职状态", dataType = "String"),
             @ApiImplicitParam(name = "since", value = "起始时间", dataType = "String", required = false,defaultValue = "2020-01-01"),
             @ApiImplicitParam(name = "until", value = "结束时间", dataType = "String", required = false,defaultValue = "2020-12-31"),
             @ApiImplicitParam(name = "developers", value = "名字搜索", dataType = "String"),
@@ -302,6 +303,7 @@ public class AccountController {
     })
     @GetMapping(value = "/developers")
     public Object getDeveloperList(@RequestParam(value = "repo_uuids", required = false) String repoUuids,
+                                   @RequestParam(value = "account_status", required = false, defaultValue = "1") String accountStatus,
                                    @RequestParam(value = "since", required = false) String since,
                                    @RequestParam(value = "until", required = false) String until,
                                    @RequestParam(value = "developers", required = false) String developers,
@@ -319,10 +321,10 @@ public class AccountController {
         try{
             // 获取所有数据，不进行分页
             if (isWhole) {
-                return new ResponseEntity<>(200, "success!", accountService.getDevelopers(repoList, since, until));
+                return new ResponseEntity<>(200, "success!", accountService.getDevelopers(repoList, since, until, accountStatus));
             }
             // 否则，获取分页数据
-            PagedGridResult result = accountService.getDevelopers(repoList, since, until, developers, page, pageSize, order, isAsc);
+            PagedGridResult result = accountService.getDevelopers(repoList, since, until, developers, page, pageSize, order, isAsc, accountStatus);
             return new ResponseEntity<>(200, "success!", result);
         }catch (Exception e){
             e.printStackTrace();

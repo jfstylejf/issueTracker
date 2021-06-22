@@ -61,4 +61,13 @@ public interface IssueRepoMapper {
      * @return main issueRepo
      */
     RepoScan getMainIssueRepo(String repoUuid, String tool);
+
+    /**
+     * get repo scan info
+     *
+     * @param repoUuid
+     * @param tool
+     * @return
+     */
+    RepoScan getRepoScan(String repoUuid, String tool);
 }

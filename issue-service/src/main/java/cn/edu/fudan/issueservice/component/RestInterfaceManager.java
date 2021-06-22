@@ -112,7 +112,7 @@ public class RestInterfaceManager extends BaseRepoRestManager {
     public String getRepoUrl(String repoUuid) {
         JSONObject projectInfo = restTemplate.getForObject(projectServicePath + PROJECT_URL + repoUuid, JSONObject.class);
         assert projectInfo != null;
-        return projectInfo.getJSONObject("data").getString("url");
+        return projectInfo.getJSONObject(DATA).getString("url");
     }
 
     /**
@@ -417,6 +417,29 @@ public class RestInterfaceManager extends BaseRepoRestManager {
     }
 
     // --------------------------------------------------------measure api ---------------------------------------------------------
+
+    public Map<String, List<int[]>> getDeveloperLivingIssueLevel(List<String> repoUuids) {
+        Map<String, List<int[]>> result = new HashMap<>(16);
+        for (String repoUuid : repoUuids) {
+            JSONObject response = restTemplate.getForObject(measureServicePath + "/measure/repo-metric?repo_uuid=" + repoUuid, JSONObject.class);
+            assert response != null;
+            JSONArray data = response.getJSONArray(DATA);
+            for (Object tempData : data) {
+                JSONObject temp = (JSONObject) tempData;
+                if ("LivingStaticIssue".equals(temp.getString("tag"))) {
+                    List<int[]> ints = new ArrayList<>();
+                    ints.add(new int[]{temp.getIntValue("worstMax"), temp.getIntValue("worstMin"), 1});
+                    ints.add(new int[]{temp.getIntValue("worseMax"), temp.getIntValue("worseMin"), 2});
+                    ints.add(new int[]{temp.getIntValue("normalMax"), temp.getIntValue("normalMin"), 3});
+                    ints.add(new int[]{temp.getIntValue("betterMax"), temp.getIntValue("betterMin"), 4});
+                    ints.add(new int[]{temp.getIntValue("bestMax"), temp.getIntValue("bestMin"), 5});
+                    result.put(repoUuid, ints);
+                }
+            }
+        }
+
+        return result;
+    }
 
     @SuppressWarnings("unchecked")
     public Map<String, Integer> getDeveloperWorkload(Map<String, Object> query, String token) {

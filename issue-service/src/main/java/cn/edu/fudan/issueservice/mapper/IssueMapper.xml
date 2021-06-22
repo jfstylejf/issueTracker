@@ -942,11 +942,8 @@
                 #{developer}
             </foreach>
         </if>
-        <if test="repoUuids != null and repoUuids.size > 0">
-            AND repo_uuid IN
-            <foreach collection="repoUuids" separator="," open="(" close=")" item="repoUuid">
-                #{repoUuid}
-            </foreach>
+        <if test="repoUuid != null">
+            AND repo_uuid = #{repoUuid}
         </if>
         GROUP BY producer
     </select>

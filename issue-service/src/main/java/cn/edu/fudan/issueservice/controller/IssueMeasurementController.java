@@ -331,9 +331,6 @@ public class IssueMeasurementController {
         }
     }
 
-    /**
-     * 留存静态缺陷趋势图
-     */
     @ApiOperation(value = "留存静态缺陷趋势图", httpMethod = "GET", notes = "@return Map{\"code\": String, \"msg\": String, \"data\": List<Map>}")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "since", value = "起始时间(yyyy-MM-dd)", required = true, dataType = "String", defaultValue = "1990-01-01"),
@@ -361,6 +358,17 @@ public class IssueMeasurementController {
         }
     }
 
+    @ApiOperation(value = "人员总览缺陷评价", httpMethod = "GET", notes = "@return PagedGridResult<DeveloperLivingIssueVO>")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "since", value = "起始时间(yyyy-MM-dd)", dataType = "String"),
+            @ApiImplicitParam(name = "until", value = "截止时间(yyyy-MM-dd)", dataType = "String"),
+            @ApiImplicitParam(name = "project_names", value = "项目名", dataType = "String"),
+            @ApiImplicitParam(name = "developers", value = "开发者,可多选", dataType = "String"),
+            @ApiImplicitParam(name = "asc", value = "是否升序", dataType = "Boolean"),
+            @ApiImplicitParam(name = "page", value = "页号"),
+            @ApiImplicitParam(name = "ps", value = "页大小"),
+            @ApiImplicitParam(name = "order", value = "排序规则", allowableValues = "num , level")
+    })
     @GetMapping("/developer/data/living-issue")
     public ResponseBean<PagedGridResult<DeveloperLivingIssueVO>> getDeveloperListLivingIssue(@RequestParam(value = "since", required = false) String since,
                                                                                              @RequestParam(value = "until", required = false) String until,
@@ -369,11 +377,12 @@ public class IssueMeasurementController {
                                                                                              @RequestParam(value = "asc", required = false) Boolean asc,
                                                                                              @RequestParam(value = "page", required = false, defaultValue = "1") int page,
                                                                                              @RequestParam(value = "ps", required = false, defaultValue = "10") int ps,
+                                                                                             @RequestParam(value = "order", required = false) String order,
                                                                                              HttpServletRequest httpServletRequest) {
         try {
             List<String> repoUuids = restInterfaceManager.getAllRepoByProjectNames(httpServletRequest.getHeader(TOKEN), StringsUtil.splitStringList(projectNames));
             List<String> developerNames = StringUtils.isEmpty(developers) ? restInterfaceManager.getDeveloperInRepo(StringsUtil.unionStringList(repoUuids), since, until) : StringsUtil.splitStringList(developers);
-            PagedGridResult<DeveloperLivingIssueVO> result = issueMeasureInfoService.getDeveloperListLivingIssue(since, until, repoUuids, developerNames, page, ps, asc);
+            PagedGridResult<DeveloperLivingIssueVO> result = issueMeasureInfoService.getDeveloperListLivingIssue(since, until, repoUuids, developerNames, page, ps, asc, order);
             return new ResponseBean<>(200, SUCCESS, result);
         } catch (Exception e) {
             e.printStackTrace();
