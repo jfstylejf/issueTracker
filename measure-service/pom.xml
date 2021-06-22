@@ -187,7 +187,9 @@
             <resource>
                 <directory>src/main/resources</directory>
                 <includes>
-                    <include>**/*</include>
+                    <include>logback.xml</include>
+                    <include>application.properties</include>
+                    <include>banner.txt</include>
                 </includes>
             </resource>
             <resource>
@@ -195,8 +197,10 @@
                 <includes>
                     <include>**/*.xml</include>
                 </includes>
+                <filtering>false</filtering>
             </resource>
         </resources>
+
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>

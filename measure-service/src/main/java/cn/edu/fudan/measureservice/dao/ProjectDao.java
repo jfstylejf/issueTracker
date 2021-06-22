@@ -349,10 +349,10 @@ public class ProjectDao {
      */
     private synchronized UserInfoDTO getUserInfoByToken(String token) throws Exception{
         if (org.springframework.util.StringUtils.isEmpty(token)) {
-            throw new RuntimeException("need user token");
-        }
-        if (userInfos.containsKey(token)) {
-            return userInfos.get(token);
+                throw new RuntimeException("need user token");
+            }
+            if (userInfos.containsKey(token)) {
+                return userInfos.get(token);
         }
         UserInfoDTO userInfoDTO = restInterface.getUserInfoByToken(token);
         if (userInfoDTO == null) {
