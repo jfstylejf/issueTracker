@@ -171,8 +171,7 @@ public class MeasureDeveloperController {
             Query query = new Query(token,null,null,developer,repoUuidList);
             return new ResponseBean<>(HttpStatus.OK.value(),"success", measureDeveloperService.getDeveloperPortrait(query));
         }catch (Exception e){
-            e.printStackTrace();
-            return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(),"failed "+e.getMessage(),null);
+            return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(),e.getMessage(),null);
         }
     }
 

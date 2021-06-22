@@ -236,4 +236,14 @@ public interface RepoMeasureMapper {
      */
     String getRepoStartCommit(@Param("repoUuid") String repoUuid);
 
+    /**
+     * 获取开发者当前库下的提交次数（repo_measure中）
+     * @param developer 查询开发者
+     * @param repoUuid 查询库 id
+     * @param since 查询起始时间
+     * @param until 查询截止时间
+     * @return 开发者当前库下提交次数
+     */
+    int getRepoDeveloperCommitCount(@Param("developer") String developer, @Param("repoUuid") String repoUuid, @Param("since") String since, @Param("until") String until);
+
 }

@@ -776,7 +776,6 @@ public class MeasureDeveloperService {
      * @param
      * @return Developer
      */
-    // fixme 新版本 获得一个开发者的画像 (Contribution,Quality,Effiency)
     public DeveloperPortrait getDeveloperPortrait(Query query) {
         Objects.requireNonNull(query.getDeveloper());
         // 获取开发者所参与库下最早的提交时间
@@ -809,36 +808,31 @@ public class MeasureDeveloperService {
     public DeveloperRepositoryMetric getDeveloperRepositoryMetric(String developer,String repoUuid,String token) {
         String projectName = projectDao.getProjectName(repoUuid);
         String repoName = projectDao.getRepoName(repoUuid);
-        int developerNumber = projectDao.getDeveloperList(repoUuid).size();
         String firstCommitDate = projectDao.getDeveloperFirstCommitDate(developer,repoUuid);
-        // fixme 数据经由Repostory类自动获取
-        // Repository repository = new Repository(query,repoName,projectName);
         int developerStatement = 0;
-        List<Map<String,Object>> developerStatements = restInterfaceManager.getStatements(repoUuid,null,null,developer,Statement_developer);
-        if (developerStatements.size()>0) {
-            developerStatement = (int) developerStatements.get(0).get("total");
+        // 获取开发者该库下的逻辑行数
+        try {
+            List<Map<String,Object>> developerStatements = restInterfaceManager.getStatements(repoUuid,null,null,developer,Statement_developer);
+            if (developerStatements.size()>0) {
+                developerStatement = (int) developerStatements.get(0).get("total");
+            }
+        }catch (Exception e) {
+            log.error(e.getMessage());
         }
-        //----------------------------------开发效率相关指标-------------------------------------
-        // fixme 这边等project/all接口更新后加入branch字段
-        Efficiency efficiency = getDeveloperEfficiency(new Query(token,null,null,developer,Collections.singletonList(repoUuid)), "", developerNumber);
-        log.info(efficiency.toString());
-        int totalLOC = efficiency.getTotalLOC();
-        int developerAddStatement = efficiency.getDeveloperAddStatement();
-        int totalAddStatement = efficiency.getTotalAddStatement();
-        int developerValidLine = efficiency.getDeveloperValidLine();
-        int totalValidLine = efficiency.getTotalValidLine();
-        int developerLOC = efficiency.getDeveloperLOC();
-        int developerCommitCount = efficiency.getDeveloperCommitCount();
-
-        //----------------------------------代码质量相关指标-------------------------------------
-        Quality quality = getDeveloperQuality(repoUuid,developer,null,null,TOOL,token,developerNumber,totalLOC);
-        log.info(quality.toString());
-
-        //----------------------------------开发能力相关指标-------------------------------------
-        Competence competence = getDeveloperCompetence(repoUuid,null,null,developer,developerNumber,developerAddStatement,totalAddStatement,developerValidLine,totalValidLine);
-        log.info(competence.toString());
-
-        return new DeveloperRepositoryMetric(firstCommitDate,developerStatement,developerCommitCount,repoName,repoUuid,developer,efficiency,quality,competence);
+        // 获取开发者该库下的提交次数
+        int developerCommitCount = 0;
+        try {
+            developerCommitCount = measureDao.getDeveloperRepoCommitCount(developer,repoUuid,null,null);
+        }catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        return DeveloperRepositoryMetric.builder()
+                .firstCommitDate(firstCommitDate)
+                .developer(developer)
+                .totalCommitCount(developerCommitCount)
+                .totalStatement(developerStatement)
+                .repoName(repoName)
+                .repoUuid(repoUuid).build();
     }
 
     @CacheEvict(value = "developerRepositoryMetric", allEntries=true, beforeInvocation = true)
@@ -866,11 +860,12 @@ public class MeasureDeveloperService {
             String dutyType = projectDao.getDeveloperDutyType(developer);
             int involvedRepoCount = projectDao.getDeveloperInvolvedRepoNum(developer);
             DeveloperPortrait developerPortrait = getDeveloperPortrait(temp);
-            double totalLevel = developerPortrait.getLevel();
+            // fixme 现在业务更改不需要相关 level数据，先暂定为 0，若日后需要，再做修改
+            /*double totalLevel = developerPortrait.getLevel();
             double value = developerPortrait.getValue();
             double quality = developerPortrait.getQuality();
-            double efficiency = developerPortrait.getEfficiency();
-            DeveloperLevel developerLevel = new DeveloperLevel(developer,efficiency,quality,value,totalLevel,involvedRepoCount,dutyType);
+            double efficiency = developerPortrait.getEfficiency();*/
+            DeveloperLevel developerLevel = new DeveloperLevel(developer,0,0,0,0,involvedRepoCount,dutyType);
             developerLevelList.add(developerLevel);
         }
         try {

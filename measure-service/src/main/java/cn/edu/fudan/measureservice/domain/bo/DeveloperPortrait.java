@@ -1,8 +1,9 @@
 package cn.edu.fudan.measureservice.domain.bo;
 
-import cn.edu.fudan.measureservice.portrait.DeveloperMetrics;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.Serializable;
@@ -16,21 +17,41 @@ import java.util.List;
  **/
 @Data
 @Slf4j
+@NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class DeveloperPortrait implements Serializable {
-
+    /**
+     * 开发者第一次提交时间（所有库下）
+     */
     private String firstCommitDate;
+    /**
+     * 开发者全部逻辑行数
+     */
     private int totalStatement;
+    /**
+     * 开发者日均逻辑行数
+     */
     private int dayAverageStatement;
+    /**
+     * 开发者总提交数
+     */
     private int totalCommitCount;
+    /**
+     * 开发者姓名
+     */
     private String developerName;
+    /**
+     * 开发者类别
+     */
     private String developerType;
-
-
+    /**
+     * 开发者各库下的画像数据
+     */
     private List<DeveloperRepositoryMetric> developerMetricsList;
 
 
-    private static double defaultLevel = -1;
+    /*private static double defaultLevel = -1;
     private double level = defaultLevel;
     private double value = defaultLevel;
     private double quality = defaultLevel;
@@ -51,20 +72,9 @@ public class DeveloperPortrait implements Serializable {
     private double nonSelfRepetitiveCodeRateLevel = defaultLevel;
     private double eliminateDuplicateCodeRateLevel = defaultLevel;
     private double oldCodeModificationLevel = defaultLevel;
+*/
 
-
-
-    public DeveloperPortrait(String firstCommitDate, int totalStatement, int dayAverageStatement, int totalCommitCount, String developerName, String developerType, List<DeveloperRepositoryMetric> developerMetricsList) {
-        this.firstCommitDate = firstCommitDate;
-        this.totalStatement = totalStatement;
-        this.dayAverageStatement = dayAverageStatement;
-        this.totalCommitCount = totalCommitCount;
-        this.developerName = developerName;
-        this.developerType = developerType;
-        this.developerMetricsList = developerMetricsList;
-    }
-
-    public double getLevel() {
+    /* public double getLevel() {
         if (defaultLevel != level) {
             return level;
         }
@@ -302,5 +312,5 @@ public class DeveloperPortrait implements Serializable {
         oldCodeModificationLevel = totalLevel*1.0/developerMetricsList.size();
         return oldCodeModificationLevel;
     }
-
+*/
 }

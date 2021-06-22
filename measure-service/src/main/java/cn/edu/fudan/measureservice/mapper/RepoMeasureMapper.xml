@@ -831,4 +831,22 @@
         WHERE repo_uuid = #{repoUuid}
     </select>
 
+    <select id="getRepoDeveloperCommitCount" resultType="int">
+        select
+        COUNT(uuid) as commit_counts
+        from issueTracker.repo_measure
+        WHERE
+            developer_name = #{developer}
+            <if test="repoUuid != null and repoUuid != '' ">
+                and repo_id = #{repoUuid}
+            </if>
+            <if test="since != null and since != '' ">
+                and <![CDATA[ commit_time >= #{since} ]]>
+            </if>
+
+            <if test="until != null and until != '' ">
+                and <![CDATA[ commit_time <= #{until} ]]>
+            </if>
+    </select>
+
 </mapper>

@@ -309,6 +309,24 @@ public class MeasureDao {
         }
     }
 
+    /**
+     * 获取开发者相应条件下的提交次数
+     * @param developer 查询开发者
+     * @param repoUuid 查询库 id
+     * @param since 查询起始时间
+     * @param until 查询截止时间
+     * @return 开发者提交次数
+     */
+    public int getDeveloperRepoCommitCount(String developer, String repoUuid, String since, String until) {
+        Objects.requireNonNull(developer);
+        try {
+            return repoMeasureMapper.getRepoDeveloperCommitCount(developer,repoUuid,since,until);
+        }catch (Exception e) {
+            log.error(e.getMessage());
+            return 0;
+        }
+    }
+
 
     @SneakyThrows
     public int getDeveloperDiffCcn(String repoUuid,String since,String until,String developer) {
