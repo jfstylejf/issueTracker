@@ -24,6 +24,7 @@
         <module>measure-service</module>
         <module>common</module>
         <module>depend-service</module>
+        <module>task-management-service</module>
     </modules>
 
     <parent>
