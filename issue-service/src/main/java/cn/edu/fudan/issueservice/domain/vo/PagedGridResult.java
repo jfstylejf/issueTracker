@@ -53,7 +53,7 @@ public class PagedGridResult<T> {
         return grid;
     }
 
-    public static PagedGridResult<?> getPagedGridResult(int page, int records, int size, List<Object> list) {
+    public static PagedGridResult<?> getPagedGridResult(int page, int records, int size, List<?> list) {
         PagedGridResult<Object> result = new PagedGridResult<>();
         result.page = page;
         result.records = records;

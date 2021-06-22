@@ -3,11 +3,11 @@ package cn.edu.fudan.issueservice.component;
 import cn.edu.fudan.common.component.BaseRepoRestManager;
 import cn.edu.fudan.issueservice.domain.enums.ToolEnum;
 import cn.edu.fudan.issueservice.exception.AuthException;
+import cn.edu.fudan.issueservice.exception.MeasureServiceException;
 import cn.edu.fudan.issueservice.util.StringsUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -27,9 +27,8 @@ import java.util.concurrent.TimeUnit;
  * @version 1.0
  **/
 @Component
+@Slf4j
 public class RestInterfaceManager extends BaseRepoRestManager {
-
-    private static final Logger logger = LoggerFactory.getLogger(RestInterfaceManager.class);
 
     @Value("${account.service.path}")
     private String accountServicePath;
@@ -258,7 +257,7 @@ public class RestInterfaceManager extends BaseRepoRestManager {
                 if (response != null) {
                     repoPath = response;
                 } else {
-                    logger.error("code service response null!");
+                    log.error("code service response null!");
                 }
                 break;
             } catch (Exception e) {
@@ -287,13 +286,13 @@ public class RestInterfaceManager extends BaseRepoRestManager {
 
             try {
                 String urlPath = codeServicePath + "?repo_id=" + repoId;
-                logger.debug(urlPath);
+                log.debug(urlPath);
                 JSONObject response = restTemplate.getForObject(urlPath, JSONObject.class);
                 if (response != null && response.getJSONObject(DATA) != null && "Successful".equals(response.getJSONObject(DATA).getString("status"))) {
                     repoPath = response.getJSONObject(DATA).getString("content");
                 } else {
-                    logger.error("code service response null!");
-                    logger.error("request url is : {}", urlPath);
+                    log.error("code service response null!");
+                    log.error("request url is : {}", urlPath);
                 }
                 break;
             } catch (Exception e) {
@@ -320,7 +319,7 @@ public class RestInterfaceManager extends BaseRepoRestManager {
             }
             restTemplate.getForObject(codeServicePath + "/free?repo_id=" + repoId + "&path=" + repoPath, JSONObject.class);
         } catch (Exception e) {
-            logger.error(e.getMessage());
+            log.error(e.getMessage());
         }
     }
 
@@ -347,7 +346,7 @@ public class RestInterfaceManager extends BaseRepoRestManager {
                 String requestTypes = stringBuilder.toString().substring(0, stringBuilder.toString().length() - 1);
                 map.put("types", requestTypes);
             } else {
-                logger.error("this request type --> {} is not available in sonar api", type);
+                log.error("this request type --> {} is not available in sonar api", type);
                 return null;
             }
         }
@@ -367,7 +366,7 @@ public class RestInterfaceManager extends BaseRepoRestManager {
             ResponseEntity<JSONObject> entity = restTemplate.getForEntity(url, JSONObject.class, map);
             return JSONObject.parseObject(Objects.requireNonNull(entity.getBody()).toString());
         } catch (RuntimeException e) {
-            logger.error("repo name : {}  ----> request sonar api failed", repoName);
+            log.error("repo name : {}  ----> request sonar api failed", repoName);
             throw e;
         }
 
@@ -379,7 +378,7 @@ public class RestInterfaceManager extends BaseRepoRestManager {
 
         String baseRequestUrl = sonarServicePath + "/api/rules/show";
         if (ruleKey == null) {
-            logger.error("ruleKey is missing");
+            log.error("ruleKey is missing");
             return null;
         } else {
             map.put("key", ruleKey);
@@ -394,7 +393,7 @@ public class RestInterfaceManager extends BaseRepoRestManager {
         try {
             return restTemplate.getForObject(baseRequestUrl + "?key=" + ruleKey, JSONObject.class);
         } catch (RuntimeException e) {
-            logger.error("ruleKey : {}  ----> request sonar  rule infomation api failed", ruleKey);
+            log.error("ruleKey : {}  ----> request sonar  rule infomation api failed", ruleKey);
             throw e;
         }
 
@@ -406,11 +405,11 @@ public class RestInterfaceManager extends BaseRepoRestManager {
 
         try {
             String urlPath = sonarServicePath + "/api/components/show?component=" + projectName;
-            logger.debug(urlPath);
+            log.debug(urlPath);
             return restTemplate.getForObject(urlPath, JSONObject.class);
         } catch (Exception e) {
-            logger.error(e.getMessage());
-            logger.error("projectName: {} ---> request sonar api failed 获取最新版本时间API 失败", projectName);
+            log.error(e.getMessage());
+            log.error("projectName: {} ---> request sonar api failed 获取最新版本时间API 失败", projectName);
         }
 
         return error;
@@ -418,12 +417,15 @@ public class RestInterfaceManager extends BaseRepoRestManager {
 
     // --------------------------------------------------------measure api ---------------------------------------------------------
 
-    public Map<String, List<int[]>> getDeveloperLivingIssueLevel(List<String> repoUuids) {
+    public Map<String, List<int[]>> getDeveloperLivingIssueLevel(List<String> repoUuids) throws MeasureServiceException {
         Map<String, List<int[]>> result = new HashMap<>(16);
         for (String repoUuid : repoUuids) {
             JSONObject response = restTemplate.getForObject(measureServicePath + "/measure/repo-metric?repo_uuid=" + repoUuid, JSONObject.class);
             assert response != null;
             JSONArray data = response.getJSONArray(DATA);
+            if (data == null) {
+                throw new MeasureServiceException("get repo metric failed!");
+            }
             for (Object tempData : data) {
                 JSONObject temp = (JSONObject) tempData;
                 if ("LivingStaticIssue".equals(temp.getString("tag"))) {
@@ -442,7 +444,7 @@ public class RestInterfaceManager extends BaseRepoRestManager {
     }
 
     @SuppressWarnings("unchecked")
-    public Map<String, Integer> getDeveloperWorkload(Map<String, Object> query, String token) {
+    public Map<String, Integer> getDeveloperWorkload(Map<String, Object> query, String token) throws MeasureServiceException {
 
         HttpEntity<HttpHeaders> request = new HttpEntity<>(new HttpHeaders() {{
             add(TOKEN, token);
@@ -463,8 +465,8 @@ public class RestInterfaceManager extends BaseRepoRestManager {
 
         assert body != null;
         if (body.getIntValue("code") != 200) {
-            logger.error("request /measure/developer/workLoad failed");
-            throw new RuntimeException("get data from /measure/developer/work-load failed!");
+            log.error("request /measure/developer/workLoad failed");
+            throw new MeasureServiceException("get data from /measure/developer/work-load failed!");
         }
 
         Map<String, Integer> developerWorkLoad = new HashMap<>(16);
