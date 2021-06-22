@@ -5,8 +5,11 @@
 
 
     <select id="getDevelopers" resultType="java.util.HashMap">
-        select distinct developer_unique_name as developerName from commit_view
+        select distinct developer_unique_name as developerName from issueTracker.commit_view as cv
+        inner join issueTracker.account as a
+        on cv.developer_unique_name = a.account_name
         <trim prefix="where" prefixOverrides="and">
+            a.account_status = #{accountStatus}
             <if test="repoUuids != null and repoUuids.size > 0">
                 AND repo_uuid IN
                 <foreach collection="repoUuids" separator="," open="(" close=")" item="repoUuid">
