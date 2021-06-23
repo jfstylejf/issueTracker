@@ -1,6 +1,7 @@
 package cn.edu.fudan.issueservice.config;
 
-import cn.edu.fudan.issueservice.interceptor.MapF2FInterceptor;
+
+import cn.edu.fudan.issueservice.domain.dbo.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.plugin.Interceptor;
 import org.mybatis.spring.SqlSessionFactoryBean;
@@ -10,6 +11,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
 import javax.sql.DataSource;
+
+import cn.edu.fudan.issueservice.interceptor.MapF2FInterceptor;
 
 /**
  * @author beethoven
@@ -46,7 +49,9 @@ public class SqlSessionFactoryConfig {
 
             sqlSessionFactoryBean.setMapperLocations(resourcePatternResolver.getResources("classpath*:cn/edu/fudan/issueservice/mapper/*.xml"));
 
-            sqlSessionFactoryBean.setTypeAliasesPackage("cn/edu/fudan/issueservice/domain");
+            sqlSessionFactoryBean.setTypeAliasesPackage("cn.edu.fudan.issueservice.domain");
+
+            sqlSessionFactoryBean.setTypeAliases(new Class[]{Commit.class, IgnoreRecord.class, Issue.class, IssueAnalyzer.class, IssueScan.class, IssueType.class, Location.class, RawIssue.class, RawIssueMatchInfo.class, ScanResult.class});
 
             sqlSessionFactoryBean.setPlugins(new Interceptor[]{interceptor});
         } catch (Exception e) {
