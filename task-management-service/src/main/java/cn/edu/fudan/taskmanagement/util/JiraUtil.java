@@ -1,6 +1,9 @@
 package cn.edu.fudan.taskmanagement.util;
 
+import cn.edu.fudan.taskmanagement.JiraDao.UserInfoDTO;
+import cn.edu.fudan.taskmanagement.component.JiraAPI;
 import cn.edu.fudan.taskmanagement.mapper.JiraMapper;
+import cn.edu.fudan.taskmanagement.mapper.RepoCommitMapper;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -18,8 +21,11 @@ import java.util.regex.Pattern;
 public class JiraUtil {
 
     @Autowired
+    private RepoCommitMapper repoCommitMapper;
+    @Autowired
     private JiraMapper jiraMapper;
-
+    @Autowired
+    private JiraAPI jiraAPI;
     public String getJiraIdFromCommitMsg(String commitMsg) {
 
         // 使用Pattern类的compile方法，传入jira单号的正则表达式，得到一个Pattern对象
@@ -88,6 +94,7 @@ public class JiraUtil {
         return jiraUuidList;
     }
 
+
 //    public Repository union(List<Repository> repositories) {
 //
 //        List<BaseData> unionBaseDataList = new ArrayList<>();
@@ -130,5 +137,23 @@ public class JiraUtil {
 //        }
 //        return null;
 //    }
-
+public List<Integer> getVisibleProjectByToken(String token) {
+    UserInfoDTO userInfoDTO = null;
+    try {
+        userInfoDTO = jiraAPI.getUserInfoByToken(token);
+    }catch (Exception e) {
+    }
+    if(userInfoDTO == null) {
+        return new ArrayList<>();
+    }
+    //用户权限为admin时 查询所有的repo
+    if (userInfoDTO.getRight().equals(0)) {
+        List<Integer> list = new ArrayList<>();
+        list.addAll(repoCommitMapper.getProjectIds());
+        return list;
+    }else {
+        String userUuid = userInfoDTO.getUuid();
+        return jiraMapper.getProjectByAccountId(userUuid);
+    }
+}
 }

@@ -1,4 +1,4 @@
-package cn.edu.fudan.cloneservice.domain;
+package cn.edu.fudan.taskmanagement.domain;
 
 import lombok.*;
 
@@ -14,7 +14,7 @@ public class JiraCount implements Comparable<JiraCount>, Serializable {
     private int num = 0;
 
     @Override
-    public int compareTo(JiraCount o) {
+    public int compareTo(cn.edu.fudan.taskmanagement.domain.JiraCount o) {
         int thisValue = this.num;
         int objectValue = o.num;
         if(thisValue > objectValue){

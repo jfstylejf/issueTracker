@@ -1,5 +1,6 @@
-package cn.edu.fudan.cloneservice.mapper;
+package cn.edu.fudan.taskmanagement.mapper;
 
+import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 import org.springframework.stereotype.Repository;
 
@@ -11,7 +12,7 @@ import java.util.Map;
  * @author fancying
  * create: 2020-08-01 16:01
  **/
-@Repository
+@Mapper
 public interface RepoCommitMapper {
 
     /**

@@ -1,4 +1,4 @@
-package cn.edu.fudan.cloneservice.dao;
+package cn.edu.fudan.taskmanagement.JiraDao;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
