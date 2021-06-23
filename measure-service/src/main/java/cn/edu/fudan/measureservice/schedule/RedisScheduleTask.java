@@ -54,9 +54,7 @@ public class RedisScheduleTask {
 
 //    RedisTemplate
 
-    private MeasureDeveloperController measureDeveloperController;
     private MeasureDeveloperService measureDeveloperService;
-    private RepoMeasureMapper repoMeasureMapper;
 
     /**
      * Springboot 默认是用 newSingleThreadScheduledExecutor() 创建，若没有给定TaskScheduler，则无法在同一时间内执行多个任务
@@ -151,11 +149,6 @@ public class RedisScheduleTask {
     }
 
     @Autowired
-    public void setRepoMeasureMapper(RepoMeasureMapper repoMeasureMapper) {
-        this.repoMeasureMapper = repoMeasureMapper;
-    }
-
-    @Autowired
     public void setProjectDao(ProjectDao projectDao) {
         this.projectDao = projectDao;
     }
@@ -165,9 +158,5 @@ public class RedisScheduleTask {
         this.measureDao = measureDao;
     }
 
-    @Autowired
-    public void setMeasureDeveloperController(MeasureDeveloperController measureDeveloperController) {
-        this.measureDeveloperController = measureDeveloperController;
-    }
 
 }
