@@ -17,13 +17,13 @@ import java.io.Serializable;
 @AllArgsConstructor
 public class Commit implements Serializable {
 
-    String commitId;
-    String commitTime;
-    String developer;
-    String developerEmail;
-    String message;
-    String repoId;
-    String uuid;
-    boolean scanned = true;
+    protected String commitId;
+    protected String commitTime;
+    protected String developer;
+    protected String developerEmail;
+    protected String message;
+    protected String repoId;
+    protected String uuid;
+    protected Boolean scanned = true;
 
 }

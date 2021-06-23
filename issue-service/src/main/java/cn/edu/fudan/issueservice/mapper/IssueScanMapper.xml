@@ -15,6 +15,11 @@
         <result property="resultSummary" column="result_summary"/>
     </resultMap>
 
+    <resultMap id="commit2Status" type="cn.edu.fudan.issueservice.domain.dto.Commit2Status">
+        <result property="commit" column="commit_id"/>
+        <result property="status" column="status"/>
+    </resultMap>
+
     <insert id="insertOneScan" parameterType="cn.edu.fudan.issueservice.domain.dbo.IssueScan">
         insert into issue_scan
         (uuid,
@@ -104,5 +109,11 @@
                 and tool = #{tool}
             </if>
         </trim>
+    </select>
+
+    <select id="getScanStatusInRepo" resultMap="commit2Status">
+        SELECT commit_id, status
+        FROM issue_scan
+        WHERE repo_uuid = #{repoUuid}
     </select>
 </mapper>

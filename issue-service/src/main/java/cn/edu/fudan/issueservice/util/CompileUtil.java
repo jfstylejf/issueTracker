@@ -44,7 +44,7 @@ public class CompileUtil {
     }
 
     private static final String[] VAR = {"compile", "-Dmaven.test.skip=true", "-ff",
-            "-B", "-q", "-l /dev/null", "-Dmaven.compile.fork=true", "-T 2C"};
+            "-B", "-q", "-l /dev/null", "-Dmaven.compile.fork=true", "-T 2C", "-pl account-service,project-service,scan-service,issue-service,tag-service,event-service,measure-service,common,depend-service,task-management-service"};
 
     private static final List<String> var = java.util.Arrays.asList(VAR);
 

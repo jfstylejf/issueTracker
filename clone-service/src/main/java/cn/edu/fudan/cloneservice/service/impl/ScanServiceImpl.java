@@ -13,7 +13,6 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.io.IOException;
@@ -103,15 +102,16 @@ public class ScanServiceImpl implements ScanService {
         //fixme beginScan if update,begin 1.
         List<String> commitList = jGitHelper.getCommitListByBranchAndBeginCommit(branch, beginCommit, isUpdate);
         List<String> commitListWeekly = jGitHelper.getCommitListByBranchAndBeginCommitWeekly(branch, beginCommit, isUpdate);
-        log.info("commitListWeekly contains: "+ commitListWeekly.toString());
+        log.debug("commitListWeekly contains: "+ commitListWeekly.toString());
         int commitSize = commitList.size();
         int lastCommitIndex = commitSize - 1;
-        log.info("commit size : " + commitSize);
+        log.debug("commit size : " + commitSize);
 
         // 先执行粒度为method，仅需执行一次最近的commit
         String uuid = UUID.randomUUID().toString();
 
-//        executeLastCommit(uuid, repoUuid, commitList, repoPath);
+
+        executeLastCommit(uuid, repoUuid, commitList, repoPath);
         CloneRepo cloneRepo = new CloneRepo();
         cloneRepo.setUuid(uuid);
 
@@ -123,9 +123,9 @@ public class ScanServiceImpl implements ScanService {
             cloneMeasureService.insertCloneMeasure(repoUuid, commitId, repoPath);
             if(!commitListWeekly.contains(commitId)){
                 cloneLocationDao.deleteCloneLocationByCommitId(commitId);
-                log.info("delete commit " + commitId + " success");
+                log.debug("delete commit " + commitId + " success");
             }else {
-                log.info("insert "+commitId+" success");
+                log.debug("insert "+commitId+" success");
             }
             cloneRepo.setScannedCommitCount(i + 1);
             cloneRepo.setEndScanTime(new Date());
@@ -142,7 +142,7 @@ public class ScanServiceImpl implements ScanService {
 
     private void executeLastCommit(String uuid, String repoUuid, List<String> commitList, String repoPath) throws IOException {
         String latestCommitId = commitList.get(commitList.size() - 1);
-        scanTask.runSynchronously(repoUuid, latestCommitId, "snippet", repoPath);
+//        scanTask.runSynchronously(repoUuid, latestCommitId, "snippet", repoPath);
         CloneRepo cloneRepo = initCloneRepo(repoUuid);
         cloneRepo.setUuid(uuid);
         cloneRepo.setStartScanTime(new Date());
