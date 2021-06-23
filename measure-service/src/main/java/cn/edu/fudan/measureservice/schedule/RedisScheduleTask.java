@@ -70,30 +70,6 @@ public class RedisScheduleTask {
     }
 
 
-    /**
-     * 缓存的过期时间配置为24小时
-     * 每天凌晨两点刷新数据
-     * fixme 存在问题之后改
-     * todo 添加每日删除developerValidMsg相关信息
-     */
-    @Scheduled(cron = "0 0 2 * * ?")
-    private void configureTasks() throws ParseException {
-        String until = dtf.format(LocalDate.now().plusDays(1));
-        List<String> leaderIntegratedRepoList = projectDao.getVisibleRepoInfoByToken(token);
-        Query query = new Query(token,null,until,null,leaderIntegratedRepoList);
-        measureDeveloperService.clearCache();
-        log.info("start to get developerList with query : {}",query);
-        measureDeveloperService.getDeveloperList(query);
-        List<Map<String, Object>> developerList = repoMeasureMapper.getDeveloperListByrepoUuidList(null);
-        for (int i = 0; i < developerList.size(); i++){
-            Map<String,Object> map = developerList.get(i);
-            String developerName = map.get("developer_name").toString();
-            measureDeveloperService.getPortraitCompetence(developerName,null,null,null,token);
-        }
-
-
-        log.info("Successfully re request developerList, portrait, recentNews API.");
-    }
 
     /**
      *  每天凌晨2点 缓存开发者列表
