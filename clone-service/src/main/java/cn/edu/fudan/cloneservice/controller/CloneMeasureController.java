@@ -195,7 +195,8 @@ public class CloneMeasureController {
                                                            @RequestParam(value = "since") String start,
                                                            @RequestParam(value = "until") String end,
                                                            @RequestParam(value = "interval", defaultValue = "week") String interval,
-                                                           HttpServletRequest httpServletRequest) {
+                                                           HttpServletRequest httpServletRequest
+    ) {
         try {
             String token = httpServletRequest.getHeader("token");
             if (StringUtils.isEmpty(end)) {
@@ -212,6 +213,44 @@ public class CloneMeasureController {
         }
     }
 
+    @GetMapping(value = {"/jira/data/completed-jira-num"})
+    public ResponseBean<Object> getJiraCount(@RequestParam(value = "project_ids", defaultValue = "") String projectIds,
+                                                      @RequestParam(value = "project_names", required = false, defaultValue = "") String projectNames,
+                                                      @RequestParam(value = "repo_uuids", defaultValue = "") String repoId,
+                                                      @RequestParam(value = "developers", required = false) String developers,
+                                                      @RequestParam(value = "since", required = false, defaultValue = "2000-01-01") String start,
+                                                      @RequestParam(value = "until", required = false) String end,
+                                                      @RequestParam(value = "order", required = false, defaultValue = "") String order,
+                                                      @RequestParam(value = "page", required = false, defaultValue = "1") String page,
+                                                      @RequestParam(value = "ps", required = false, defaultValue = "5") String size,
+                                                      @RequestParam(value = "asc", required = false) Boolean isAsc,
+                                                      HttpServletRequest httpServletRequest) {
+        try {
+            String token = httpServletRequest.getHeader("token");
+            projectIds = getProjectIds(projectIds, projectNames);
+
+            if (StringUtils.isEmpty(start)) {
+                start = "2000-01-01";
+            }
+            if (StringUtils.isEmpty(end)) {
+                Date today = new Date();
+                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                end = simpleDateFormat.format(today);
+            }
+
+            List<JiraCount> result = cloneMeasureService.getJiraCountList(developers, "done", projectIds, repoId, start, end, token);
+            if (StringUtils.isEmpty(developers)) {
+                return new ResponseBean<>(200, "developers required", result);
+            } else {
+                Collections.sort(result);
+                Map<String, Object> data = getPagingMap(page, size, isAsc, result);
+                return new ResponseBean<>(200, "success", data);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseBean<>(401, "failed", null);
+        }
+    }
     /**
      * 对结果进行分页操作
      *

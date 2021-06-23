@@ -1,10 +1,8 @@
 package cn.edu.fudan.cloneservice.mapper;
 
-import lombok.Setter;
 import org.apache.ibatis.annotations.Select;
 import org.springframework.stereotype.Repository;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -99,4 +97,11 @@ public interface RepoCommitMapper {
 
     @Select("SELECT distinct developer_unique_name from issueTracker.commit_view")
     List<String> getDevelopers();
+
+    @Select("SELECT count(distinct(jira_id)) FROM issueTracker.jira_history" +
+            " where unique_name = #{developer} " +
+            "and status = #{status} and repo_id = #{repoId} " +
+            "AND commit_time >= #{start} " +
+            "AND commit_time <= #{end};")
+    int getJiraCountByDeveloperAndRepoId(String developer, String status, String repoId, String start, String end);
 }
