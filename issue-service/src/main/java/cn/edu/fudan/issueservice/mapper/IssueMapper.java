@@ -297,7 +297,7 @@ public interface IssueMapper {
      *
      * @param since      since
      * @param until      until
-     * @param repoUuid  repoUuid
+     * @param repoUuid   repoUuid
      * @param developers developers
      * @return developers living issues count
      */
