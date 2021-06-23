@@ -47,11 +47,10 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
     private final UserUtil userUtil;
     private final RepoCommitDao repoCommitDao;
     private final RepoMeasureDao repoMeasureDao;
-    private final JiraDao jiraDao;
     private final RepoMetricMapper repoMetricMapper;
 
     @Autowired
-    public CloneMeasureServiceImpl(RepoCommitMapper repoCommitMapper, RestInterfaceManager restInterfaceManager, CloneMeasureDao cloneMeasureDao, CloneInfoDao cloneInfoDao, CloneLocationDao cloneLocationDao, ForkJoinRecursiveTask forkJoinRecursiveTask, CloneMeasureMapper cloneMeasureMapper, UserUtil userUtil, RepoCommitDao repoCommitDao, RepoMeasureDao repoMeasureDao, JiraDao jiraDao, RepoMetricMapper repoMetricMapper) {
+    public CloneMeasureServiceImpl(RepoCommitMapper repoCommitMapper, RestInterfaceManager restInterfaceManager, CloneMeasureDao cloneMeasureDao, CloneInfoDao cloneInfoDao, CloneLocationDao cloneLocationDao, ForkJoinRecursiveTask forkJoinRecursiveTask, CloneMeasureMapper cloneMeasureMapper, UserUtil userUtil, RepoCommitDao repoCommitDao, RepoMeasureDao repoMeasureDao, RepoMetricMapper repoMetricMapper) {
         this.repoCommitMapper = repoCommitMapper;
         this.restInterfaceManager = restInterfaceManager;
         this.cloneMeasureDao = cloneMeasureDao;
@@ -62,7 +61,6 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
         this.repoMeasureDao = repoMeasureDao;
         this.userUtil = userUtil;
         this.repoCommitDao = repoCommitDao;
-        this.jiraDao = jiraDao;
         this.repoMetricMapper = repoMetricMapper;
     }
     @Override
@@ -497,20 +495,6 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
             results.addAll(cloneLocationDao.getCloneDetailOverall(aProjectId, projectName, getRepoUuids(projectList, repoUuid), commitId, localDate.format(dtf)));
         }
         return results;
-    }
-
-    @Override
-    public List<JiraCount> getJiraCountList(String developers, String status, String projectId, String repoId, String start, String end, String token){
-        List<String> projectList = getProjectIds(projectId, token);
-        List<String> repoIdList = getRepoUuids(projectList, repoId);
-        List<String> developerList = getDeveloperListByParam(developers);
-        List<JiraCount> res = new ArrayList<>();
-        for(String developer: developerList){
-            int num = jiraDao.getJiraCount(developer, status, repoIdList, start, end);
-            JiraCount jiraCount = new JiraCount(developer, num);
-            res.add(jiraCount);
-        }
-        return res;
     }
 
     private List<LocalDate> getTimeList(String since, String until, String interval) {

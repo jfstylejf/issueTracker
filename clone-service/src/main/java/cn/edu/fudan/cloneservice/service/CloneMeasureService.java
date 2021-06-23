@@ -61,6 +61,4 @@ public interface CloneMeasureService {
 
     List<CloneMessage> getCloneLine(String projectId, String repoUuid, String developers, String since, String until, String token);
 
-    List<JiraCount> getJiraCountList(String developers, String status, String projectId, String repoId, String start, String end, String token);
-
 }

@@ -1,11 +1,8 @@
-package cn.edu.fudan.cloneservice.dao;
+package cn.edu.fudan.taskmanagement.JiraDao;
 
-import cn.edu.fudan.cloneservice.mapper.CloneLocationMapper;
-import cn.edu.fudan.cloneservice.mapper.RepoCommitMapper;
+import cn.edu.fudan.taskmanagement.mapper.RepoCommitMapper;
 import com.alibaba.druid.util.StringUtils;
-import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
