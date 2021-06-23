@@ -14,10 +14,8 @@ import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
-import static org.reflections.Reflections.log;
 
 /**
  * @author zyh
@@ -50,7 +48,6 @@ public class CloneLocationDao {
 
     @Cacheable(value = "group_sum_by_group_single", key = "#repoUuid + '_' + #until")
     public int getCloneLocationGroupSingle(String until, String repoUuid) {
-        log.info(repoUuid.concat(" start"));
         String commitId = cloneLocationMapper.getLatestCommitId(repoUuid, "", until);
         int res = 0;
         if (!StringUtils.isEmpty(commitId)) {
@@ -62,7 +59,6 @@ public class CloneLocationDao {
     public List<CloneOverallView> getCloneOverall(List<String> repoUuids, String initDate, String projectId, String projectName) {
         List<CloneOverallView> result = new ArrayList<>();
         for (String repoUuid : repoUuids) {
-            log.info("repo_uuid:".concat(repoUuid));
 
             if (!StringUtils.isEmpty(repoUuid)) {
                 String commitId = cloneLocationMapper.getLatestCommitId(repoUuid, "", initDate);

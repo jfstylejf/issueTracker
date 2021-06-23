@@ -41,21 +41,5 @@
         delete from clone_info where repo_id=#{repo_id}
     </delete>
 
-    <select id="getGitName" parameterType="String" resultType="String">
-        SELECT
-        account_gitname
-        FROM
-        account_info
-        <where>
-            <trim prefixOverrides="and">
-
-                <if test="name != null and name != '' ">
-                    and name = #{name}
-                </if>
-
-            </trim>
-        </where>
-    </select>
-
 </mapper>
 

@@ -59,10 +59,9 @@
     </appender>
 
     <!-- 日志输出级别 -->
-    <root level="INFO">
+    <root level="WARN">
         <appender-ref ref="STDOUT" />
         <appender-ref ref="FILE"/>
     </root>
 
-    <logger name="cn.edu.fudan.codetracker.core.tree.parser" level="off" />
 </configuration>
