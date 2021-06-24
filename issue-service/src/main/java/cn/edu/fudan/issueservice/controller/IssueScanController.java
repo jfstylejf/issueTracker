@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -135,6 +136,16 @@ public class IssueScanController {
         } catch (Exception e) {
             e.printStackTrace();
             return new ResponseBean<>(500, e.getMessage(), null);
+        }
+    }
+
+    @GetMapping(value = "/issue/scan/failed")
+    public ResponseBean<Map<String, String>> getScanFailedCommitList(@RequestParam(name = "repo_uuid") String repoUuid) {
+        try {
+            return new ResponseBean<>(200,SUCCESS, issueScanService.getScanFailedCommitList(repoUuid));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseBean<>(500, FAILED + e.getMessage(), null);
         }
     }
 

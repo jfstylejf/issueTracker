@@ -83,6 +83,11 @@ public class IssueScanServiceImpl implements IssueScanService {
         }};
     }
 
+    @Override
+    public Map<String, String> getScanFailedCommitList(String repoUuid) {
+        return issueScanDao.getScanFailedCommitList(repoUuid);
+    }
+
     @Autowired
     public void setIssueScanDao(IssueScanDao issueScanDao) {
         this.issueScanDao = issueScanDao;
