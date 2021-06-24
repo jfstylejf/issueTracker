@@ -4,6 +4,24 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class StringUtil {
+    @Autowired
+    private JiraMapper jiraMapper;
+
+    public String getJiraIdFromCommitMsg(String commitMsg) {
+
+        // 使用Pattern类的compile方法，传入jira单号的正则表达式，得到一个Pattern对象
+        Pattern pattern = Pattern.compile("[A-Z][A-Z0-9]*-[0-9]+");
+        // 调用pattern对象的matcher方法，传入需要匹配的字符串， 得到一个匹配器对象
+        Matcher matcher = pattern.matcher(commitMsg);
+
+        // 从字符串开头，返回匹配到的第一个字符串
+        if (matcher.find()) {
+            // 输出第一次匹配的内容
+            // log.info("jira ID is : {}",matcher.group());
+            return matcher.group();
+        }
+        return "noJiraUuid";
+    }
 
     public StringUtil() {
     }
