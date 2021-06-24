@@ -217,22 +217,6 @@
         LIMIT 1
     </select>
 
-    <select id="getGitName" parameterType="String" resultType="String">
-        SELECT
-        account_gitname
-        FROM
-        account_info
-        <where>
-            <trim prefixOverrides="and">
-
-                <if test="name != null and name != '' ">
-                    and name = #{name}
-                </if>
-
-            </trim>
-        </where>
-    </select>
-
     <select id="getUniqueName" parameterType="String" resultType="String">
         SELECT
         name

@@ -1,6 +1,8 @@
 package cn.edu.fudan.taskmanagement.service.impl;
 
+import cn.edu.fudan.taskmanagement.JiraDao.JiraCurrentDao;
 import cn.edu.fudan.taskmanagement.JiraDao.JiraDao;
+import cn.edu.fudan.taskmanagement.JiraDao.JiraHistoryDao;
 import cn.edu.fudan.taskmanagement.component.JiraAPI;
 import cn.edu.fudan.taskmanagement.domain.*;
 import cn.edu.fudan.taskmanagement.domain.taskinfo.Fields;
@@ -12,6 +14,7 @@ import cn.edu.fudan.taskmanagement.domain.Task;
 import cn.edu.fudan.taskmanagement.util.StringUtil;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -35,6 +38,10 @@ public class JiraServiceImpl implements JiraService {
     private RepoCommitMapper repoCommitMapper;
     @Autowired
     private StringUtil stringUtil;
+    @Autowired
+    private JiraHistoryDao jiraHistoryDao;
+    @Autowired
+    private JiraCurrentDao jiraCurrentDao;
     // jira raw data transfer
     @Override
     public List<Task> getTaskInfoByJql(String type, String keyword) {
@@ -444,5 +451,13 @@ public class JiraServiceImpl implements JiraService {
             repoIds = Arrays.asList(targetRepos);
         }
         return repoIds;
+    }
+
+    @Override
+    @Async("taskExecutor")
+    public void deleteJiraScan(String repoId) {
+        jiraCurrentDao.deleteJiraCurrent(repoId);
+        jiraHistoryDao.deleteJiraHistory(repoId);
+        boolean recallRes = jiraAPI.deleteRecall(repoId);
     }
 }

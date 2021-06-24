@@ -31,6 +31,9 @@ import java.util.Objects;
 @Component
 public class JiraAPI {
 
+    @Value("${project.service.path}")
+    private String projectServicePath;
+
     @Value("${server.ip}")
     private  String serverIp;
 
@@ -142,6 +145,16 @@ public class JiraAPI {
         }
         Map<String,Object> data =  (Map<String, Object>) result.getData();
         return new UserInfoDTO(token, (String) data.get("uuid"), (Integer) data.get("right"));
+    }
+
+    public boolean deleteRecall(String repoId) {
+        String path =  projectServicePath + "/repo?service_name=JIRA&repo_uuid=" + repoId;
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("token", "ec15d79e36e14dd258cfff3d48b73d35");
+        HttpEntity<HttpHeaders> request = new HttpEntity<>(headers);
+        ResponseEntity<JSONObject> responseEntity = restTemplate.exchange(path, HttpMethod.PUT, request, JSONObject.class);
+        log.info(responseEntity.toString());
+        return Objects.requireNonNull(responseEntity.getBody()).getIntValue("code") == 200;
     }
 }
 

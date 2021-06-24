@@ -30,4 +30,7 @@ public interface JiraService {
     List<JiraCount> getJiraCountList(String developers, String status, String projectId, String repoId, String start, String end, String token);
 
     void insertJiraMsg(String repoUuid, String developer, String since, String until);
+
+    void deleteJiraScan(String repoId);
+
 }

@@ -10,6 +10,7 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
@@ -159,5 +160,15 @@ public class JiraController {
         data.put("records", source.size());
         data.put("rows", target);
         return data;
+    }
+
+    @DeleteMapping("/jira/{repo_uuid}")
+    public Object deleteJiraScan(@PathVariable("repo_uuid") String repoId){
+        try {
+            jiraService.deleteJiraScan(repoId);
+            return new ResponseBean<>(HttpStatus.OK.value(), "scan msg send success!", null);
+        } catch (Exception e) {
+            return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null);
+        }
     }
 }
