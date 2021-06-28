@@ -49,10 +49,10 @@ public interface AccountService {
     /**
      * get status by accountName
      *
-     * @param name get user status
+     * @param accountName 用户名
      * @return status and accountName
      */
-    Object getStatusByName(List name);
+    Map<String, Integer> getStatusByName(List<String> accountName);
 
     /**
      * update status

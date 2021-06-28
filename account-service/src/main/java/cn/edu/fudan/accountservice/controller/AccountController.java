@@ -20,6 +20,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 //@ApiOperation注解 value添加该api的说明，用note表示该api的data返回类型，httpMethod表示请求方式
 //@ApiImplicitParams 参数列表集合注解
@@ -50,8 +51,17 @@ public class AccountController {
             @ApiImplicitParam(name = "accountName", value = "开发人员姓名", dataType = "String", required = true,defaultValue = "chenyuan"),
     })
     @GetMapping("/account-name/check")
-    public Object checkUserName(@RequestParam("accountName") String accountName) {
-        return new ResponseEntity<>(200, "success", accountService.isAccountNameExist(accountName));
+    public ResponseEntity<Boolean> checkUserName(@RequestParam("accountName") String accountName) {
+        try {
+            Boolean result = accountService.isAccountNameExist(accountName);
+            if(!result){
+                return new ResponseEntity<>(412, "account name is duplicate!", false);
+            }else{
+                return new ResponseEntity<>(200, "account name can be used!", true);
+            }
+        } catch (Exception e) {
+            return new ResponseEntity<>(401, "check failed! " + e.getMessage(), null);
+        }
     }
 
     @ApiOperation(value="检查邮箱是否存在",notes="@return boolean",httpMethod = "GET")
@@ -59,25 +69,31 @@ public class AccountController {
             @ApiImplicitParam(name = "email", value = "开发人员邮箱", dataType = "String", required = true,defaultValue = "chenyuan@163.com"),
     })
     @GetMapping("/email/check")
-    public Object checkEmail(@RequestParam("email") String email) {
-        return new ResponseEntity<>(200, "success", accountService.isEmailExist(email));
-    }
-
-    /* 用户昵称=真实姓名=界面显示姓名 */
-    //废弃接口
-    @GetMapping("/nick-name/check")
-    @Deprecated
-    public Object checkNickName(@RequestParam("nickName") String nickName) {
-        return new ResponseEntity<>(200, "success","false");
+    public ResponseEntity<Boolean> checkEmail(@RequestParam("email") String email) {
+        try {
+            Boolean result = accountService.isEmailExist(email);
+            if(!result){
+                return new ResponseEntity<>(412, "email is duplicate!", false);
+            }else{
+                return new ResponseEntity<>(200, "email can be used!", true);
+            }
+        } catch (Exception e) {
+            return new ResponseEntity<>(401, "check failed! " + e.getMessage(), null);
+        }
     }
 
     @ApiOperation(value="获取用户在职状态",notes="@return Object",httpMethod = "GET")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "accountName", value = "开发人员姓名列表", dataType = "List<String>", required = true,defaultValue = "[\"admin\",\"chenyuan\",\"王贵成\"]"),
+            @ApiImplicitParam(name = "accountName", value = "开发人员姓名列表", dataType = "List<String>", required = true,defaultValue = "[\"admin\",\"chenyuan\",\"heyue\"]"),
     })
     @GetMapping("/status")
-    public Object getStatusByName(@RequestBody List<String> name) {
-        return new ResponseEntity<>(200, "success",accountService.getStatusByName(name));
+    public ResponseEntity<Map<String, Integer>> getStatusByName(@RequestBody List<String> accountNameList) {
+        try {
+            Map<String, Integer> result = accountService.getStatusByName(accountNameList);
+            return new ResponseEntity<>(200, "get account status success", result);
+        } catch (Exception e) {
+            return new ResponseEntity<>(401, "get failed! " + e.getMessage(), null);
+        }
     }
 
     @ApiOperation(value="获取用户信息",notes="@return List<Account>",httpMethod = "GET")

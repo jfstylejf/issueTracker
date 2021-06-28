@@ -32,12 +32,12 @@ public interface AccountMapper {
     Account getAccountByEmail(@Param("email") String email);
 
     /**
-     * get account by status
+     * get account status by account name
      *
-     * @param name get user accountName
-     * @return Account
+     * @param accountName 用户名
+     * @return String 状态
      */
-    List<Map<String,String>> getStatusByName(@Param("name_list") List<String> name);
+    String getStatusByName(@Param("accountName") String accountName);
 
     List<Account> getAllAccount();
 

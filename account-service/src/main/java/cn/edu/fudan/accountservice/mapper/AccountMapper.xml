@@ -56,15 +56,10 @@
               email = #{email}
     </select>
 
-    <select id="getStatusByName" parameterType="String" resultType="Map">
+    <select id="getStatusByName" parameterType="String" resultType="String">
         select account_status from account
         <where>
-            <if test="name_list != null">
-                name in
-                <foreach collection="name_list" separator="," open="(" close=")" item="item">
-                    #{item}
-                </foreach>
-            </if>
+          account_name = #{accountName}
         </where>
     </select>
 

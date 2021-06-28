@@ -86,13 +86,12 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public Object getStatusByName(List name) {
-        List<Map<String,String>> result = accountDao.getStatusByName(name);
-        Map<String, Integer> nameStatus = new HashMap<>(8);
-        for(Map<String,String> m : result){
-            String authorName = m.get("accountName");
-            String authorStatus = m.get("account_status");
-            nameStatus.put(authorName,Integer.valueOf(authorStatus));
+    public Map<String, Integer> getStatusByName(List<String> accountNameList) {
+
+        Map<String, Integer> nameStatus = new HashMap<>(accountNameList.size());
+        for(String accountName : accountNameList){
+            String status = accountDao.getStatusByName(accountName);
+            nameStatus.put(accountName, Integer.valueOf(status));
         }
         return nameStatus;
     }
