@@ -5,6 +5,7 @@ target/
 !**/src/test/**
 log/
 /src/test/dependency/repo/**
+.java-version
 
 ### STS ###
 .apt_generated
