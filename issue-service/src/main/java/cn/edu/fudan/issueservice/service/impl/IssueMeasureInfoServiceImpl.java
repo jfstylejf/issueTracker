@@ -3,6 +3,7 @@ package cn.edu.fudan.issueservice.service.impl;
 import cn.edu.fudan.issueservice.component.RestInterfaceManager;
 import cn.edu.fudan.issueservice.dao.IssueDao;
 import cn.edu.fudan.issueservice.dao.ProjectDao;
+import cn.edu.fudan.issueservice.dao.RepoMetricDao;
 import cn.edu.fudan.issueservice.domain.dbo.Issue;
 import cn.edu.fudan.issueservice.domain.enums.IgnoreTypeEnum;
 import cn.edu.fudan.issueservice.domain.enums.JavaIssuePriorityEnum;
@@ -41,6 +42,8 @@ import java.util.stream.Collectors;
 public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
 
     private IssueDao issueDao;
+
+    private RepoMetricDao repoMetricDao;
 
     private ProjectDao projectDao;
 
@@ -480,7 +483,7 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
     @Override
     public PagedGridResult<DeveloperLivingIssueVO> getDeveloperListLivingIssue(String since, String until, List<String> repoUuids, List<String> developers, int page, int ps, Boolean asc) throws MeasureServiceException {
 
-        Map<String, List<int[]>> developerLivingIssueLevel = restInterfaceManager.getDeveloperLivingIssueLevel(repoUuids);
+        Map<String, List<int[]>> developerLivingIssueLevel = repoMetricDao.getDeveloperLivingIssueLevel(repoUuids);
         Map<String, Integer> developersScore = new HashMap<>(16);
         Map<String, Long> developerIssueCount = new HashMap<>(16);
 
@@ -551,5 +554,10 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
     @Autowired
     public void setRestInterfaceManager(RestInterfaceManager restInterfaceManager) {
         this.restInterfaceManager = restInterfaceManager;
+    }
+
+    @Autowired
+    public void setRepoMetricDao(RepoMetricDao repoMetricDao) {
+        this.repoMetricDao = repoMetricDao;
     }
 }
