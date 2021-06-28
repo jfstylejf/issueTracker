@@ -156,9 +156,8 @@ public class MeasureScanServiceImpl implements MeasureScanService {
                 String status = i != commitList.size() ? SCANNING : SCANNED;
                 updateMeasureScan(measureScan, commit, i++, scanTime, status, currentTime);
             }
-        }finally {
-            log.info("free repo:{}, path:{}", repoUuid, repoPath);
-            restInterfaceManager.freeRepoPath(repoUuid, repoPath);
+        } catch (Exception e) {
+            log.error(e.getMessage());
         }
         log.info("Measure scan complete!");
     }

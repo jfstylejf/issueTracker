@@ -4,7 +4,7 @@
 <mapper namespace="cn.edu.fudan.measureservice.mapper.AccountMapper">
 
     <select id="getAccountName" parameterType="String" resultType="String">
-        select account_name from issueTracker.account_author where account_gitname=#{gitName}
+        select account_name from issueTracker.account_author where binary account_gitname=#{gitName}
     </select>
 
 
