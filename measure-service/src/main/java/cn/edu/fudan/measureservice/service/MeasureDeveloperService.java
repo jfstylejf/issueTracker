@@ -91,7 +91,7 @@ public class MeasureDeveloperService {
             query.setDeveloper(member);
             DeveloperWorkLoad developerWorkLoad = measureDao.getDeveloperWorkLoadData(query);
             developerWorkLoad.setDeveloperName(member);
-            developerWorkLoad.setTotalLoc(developerWorkLoad.getAddLines() + developerWorkLoad.getDeleteLines());
+            developerWorkLoad.setTotalLoc(developerWorkLoad.getAddLines());
             developerWorkLoadList.add(developerWorkLoad);
         }
         return developerWorkLoadList;
@@ -130,12 +130,12 @@ public class MeasureDeveloperService {
             developerTotalLoc += repoTotalLoc;
             developerCommitCount += repoDeveloperWorkLoad.getCommitCount();
             developerChangedFiles += repoDeveloperWorkLoad.getChangedFiles();
-            if (repoTotalLoc < 1000 ) {
+            if (repoDeveloperAddLines < 1000 ) {
                 // todo 物理行数小于 1000 或者 未提交的不计算 level
                 developerInvolvedRepoNum --;
                 continue;
             }
-            totalLevel += getRepoWorkLoadLevel(repoTotalLoc,repoUuid);
+            totalLevel += getRepoWorkLoadLevel(repoDeveloperAddLines,repoUuid);
         }
         // 封装 DeveloperWorkLoad
         DeveloperWorkLoad developerWorkLoad = new DeveloperWorkLoad();
@@ -1120,6 +1120,7 @@ public class MeasureDeveloperService {
         // 获取查询条件下可见的库列表
         List<String> visibleRepoList = projectDao.getVisibleRepoListByProjectNameAndRepo(projectNameList,repoUuidList,token);
         // 获取查询条件下的提交规范性明细 （分页查询）
+        // fixme 总页数要根据筛选条件来定
         int totalMsgSize = projectDao.getRepoListMsgNum(visibleRepoList);
         int totalPage = totalMsgSize % ps == 0 ? totalMsgSize / ps : totalMsgSize / ps + 1;
         // 起始查询位置
@@ -1452,7 +1453,7 @@ public class MeasureDeveloperService {
                     .until(until)
                     .addLines(developerWorkLoad.getAddLines())
                     .deleteLines(developerWorkLoad.getDeleteLines())
-                    .totalLoc(developerWorkLoad.getTotalLoc())
+                    .totalLoc(developerWorkLoad.getAddLines())
                     .detail(null)
                     .level(developerWorkLoad.getLevel().getType()).build();
             developerDataWorkLoadList.add(developerDataWorkLoad);
