@@ -55,6 +55,7 @@ public interface JiraMapper {
 
     String getUniqueName(@Param("developer") String developer);
 
+    List<Integer> getProjectByAccountId(@Param("account_uuid") String accountUuid);
 
 }
 

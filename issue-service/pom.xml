@@ -17,15 +17,8 @@
         <version>1.0.1</version>
     </parent>
 
-    <repositories>
-        <repository>
-            <id>Spring Lib</id>
-            <url>https://repo.spring.io/libs-release/</url>
-        </repository>
-    </repositories>
 
     <dependencies>
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
@@ -266,9 +259,6 @@
         <dependency>
             <groupId>cn.edu.fudan</groupId>
             <artifactId>common</artifactId>
-            <version>1.0.1</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/../common/target/common-1.0.1.jar</systemPath>
         </dependency>
 
     </dependencies>

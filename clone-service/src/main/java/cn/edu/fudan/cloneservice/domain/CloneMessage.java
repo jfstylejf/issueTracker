@@ -27,6 +27,19 @@ public class CloneMessage implements Comparable<CloneMessage>, Serializable {
     private Integer eliminateCloneLines;
     private Integer allEliminateCloneLines;
     private Integer addLines;
+    private String level;
+
+    public CloneMessage(String repoUuid, String developerName, Integer increasedCloneLines, Integer selfIncreasedCloneLines, Integer othersIncreasedCloneLines, String increasedCloneLinesRate, Integer eliminateCloneLines, Integer allEliminateCloneLines, Integer addLines) {
+        this.repoUuid = repoUuid;
+        this.developerName = developerName;
+        this.increasedCloneLines = increasedCloneLines;
+        this.selfIncreasedCloneLines = selfIncreasedCloneLines;
+        this.othersIncreasedCloneLines = othersIncreasedCloneLines;
+        this.increasedCloneLinesRate = increasedCloneLinesRate;
+        this.eliminateCloneLines = eliminateCloneLines;
+        this.allEliminateCloneLines = allEliminateCloneLines;
+        this.addLines = addLines;
+    }
 
     @Override
     public int compareTo(CloneMessage o) {

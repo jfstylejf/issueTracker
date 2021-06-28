@@ -1,5 +1,6 @@
 package cn.edu.fudan.taskmanagement.service;
 
+import cn.edu.fudan.taskmanagement.domain.JiraCount;
 import cn.edu.fudan.taskmanagement.domain.Task;
 import org.springframework.stereotype.Service;
 
@@ -26,5 +27,10 @@ public interface JiraService {
 
     Map<String, Object> getDeveloperMsg(String repoUuidPara, String developer, String since, String until) throws ParseException;
 
+    List<JiraCount> getJiraCountList(String developers, String status, String projectId, String repoId, String start, String end, String token);
+
     void insertJiraMsg(String repoUuid, String developer, String since, String until);
+
+    void deleteJiraScan(String repoId);
+
 }

@@ -60,4 +60,5 @@ public interface CloneMeasureService {
     List<CloneDetailOverall> getCloneDetailOverall(String projectId, String commitId, String repoUuid,String until, String token);
 
     List<CloneMessage> getCloneLine(String projectId, String repoUuid, String developers, String since, String until, String token);
+
 }

@@ -122,48 +122,6 @@
         order by commit_time desc
     </select>
 
-    <select id="getLastCommitTimeByJiraHistory" resultType="String">
-        SELECT
-        commit_time
-        FROM
-        jira_history
-
-        ORDER BY commit_time DESC
-
-        LIMIT 1
-    </select>
-
-    <select id="getJiraInfoFromDatabase" parameterType="String" resultType="cn.edu.fudan.taskmanagement.domain.JiraMsg">
-        SELECT
-        jira_id as jiraUuid, current_status as currentStatus, summary, assignee, issue_type as issueType, created_time as createdTime, unique_name as UniqueName
-        FROM
-        jira_current
-        <where>
-            <trim prefixOverrides="and">
-
-                <if test="jira_id != null and jira_id != '' ">
-                    and jira_id = #{jira_id}
-                </if>
-
-            </trim>
-        </where>
-    </select>
-
-    <select id="getJiraMsgFromHistoryDatabase" parameterType="String" resultType="cn.edu.fudan.taskmanagement.domain.JiraMsg">
-        SELECT
-        developer, jira_id as jiraUuid, commit_id as commitUuid, status, commit_time as commitTime, summary, issue_type as issueType, repo_id as repoUuid, unique_name as uniqueTime
-        FROM
-        jira_history
-        <where>
-            <trim prefixOverrides="and">
-
-                <if test="jira_id != null and jira_id != '' ">
-                    and jira_id = #{jira_id}
-                </if>
-
-            </trim>
-        </where>
-    </select>
 
     <select id="getJiraDetailFromHistoryDatabase" parameterType="String" resultType="cn.edu.fudan.taskmanagement.domain.JiraDetail">
         SELECT
@@ -259,22 +217,6 @@
         LIMIT 1
     </select>
 
-    <select id="getGitName" parameterType="String" resultType="String">
-        SELECT
-        account_gitname
-        FROM
-        account_info
-        <where>
-            <trim prefixOverrides="and">
-
-                <if test="name != null and name != '' ">
-                    and name = #{name}
-                </if>
-
-            </trim>
-        </where>
-    </select>
-
     <select id="getUniqueName" parameterType="String" resultType="String">
         SELECT
         name
@@ -288,6 +230,12 @@
                 </if>
             </trim>
         </where>
+    </select>
+
+    <select id="getProjectByAccountId" resultType="java.lang.Integer">
+    SELECT project_id
+    FROM issueTracker.account_project AS p
+    WHERE p.account_uuid = #{account_uuid} AND p.account_role = 'LEADER'
     </select>
 
     <select id="getRepoUuidByDeveloper" parameterType="String" resultType="String">

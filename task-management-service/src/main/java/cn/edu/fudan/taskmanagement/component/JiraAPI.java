@@ -1,5 +1,7 @@
 package cn.edu.fudan.taskmanagement.component;
 
+import cn.edu.fudan.taskmanagement.JiraDao.UserInfoDTO;
+import cn.edu.fudan.taskmanagement.domain.ResponseBean;
 import com.alibaba.fastjson.JSONArray;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
@@ -15,6 +17,8 @@ import org.springframework.web.client.RestTemplate;
 import com.alibaba.fastjson.JSONObject;
 import javax.validation.constraints.Null;
 import java.util.Base64;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * todo 后续的JSONArray JSONObject 一律换成定义的对象 用于与具体的任务管理系统解耦
@@ -26,6 +30,9 @@ import java.util.Base64;
 @Slf4j
 @Component
 public class JiraAPI {
+
+    @Value("${project.service.path}")
+    private String projectServicePath;
 
     @Value("${server.ip}")
     private  String serverIp;
@@ -44,6 +51,9 @@ public class JiraAPI {
 
     @Value("${server.host}")
     private String serverHost;
+
+    @Value("${account.service.path}")
+    private String accountServicePath;
 
     @Autowired
     private RestTemplate restTemplate;
@@ -119,6 +129,32 @@ public class JiraAPI {
             return response.getJSONArray("data");
         }
         return new JSONArray();
+    }
+
+    public UserInfoDTO getUserInfoByToken(String token) {
+        Objects.requireNonNull(token);
+        ResponseBean result = restTemplate.getForObject(accountServicePath + "/user/right/" + token, ResponseBean.class);
+        if (result == null) {
+            log.error("Response is null");
+            return null;
+        }
+
+        if (result.getCode() != 200) {
+            log.error(result.getMsg());
+            return null;
+        }
+        Map<String,Object> data =  (Map<String, Object>) result.getData();
+        return new UserInfoDTO(token, (String) data.get("uuid"), (Integer) data.get("right"));
+    }
+
+    public boolean deleteRecall(String repoId) {
+        String path =  projectServicePath + "/repo?service_name=JIRA&repo_uuid=" + repoId;
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("token", "ec15d79e36e14dd258cfff3d48b73d35");
+        HttpEntity<HttpHeaders> request = new HttpEntity<>(headers);
+        ResponseEntity<JSONObject> responseEntity = restTemplate.exchange(path, HttpMethod.PUT, request, JSONObject.class);
+        log.info(responseEntity.toString());
+        return Objects.requireNonNull(responseEntity.getBody()).getIntValue("code") == 200;
     }
 }
 

@@ -195,7 +195,8 @@ public class CloneMeasureController {
                                                            @RequestParam(value = "since") String start,
                                                            @RequestParam(value = "until") String end,
                                                            @RequestParam(value = "interval", defaultValue = "week") String interval,
-                                                           HttpServletRequest httpServletRequest) {
+                                                           HttpServletRequest httpServletRequest
+    ) {
         try {
             String token = httpServletRequest.getHeader("token");
             if (StringUtils.isEmpty(end)) {

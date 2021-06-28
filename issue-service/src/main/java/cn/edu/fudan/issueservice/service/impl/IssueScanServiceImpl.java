@@ -5,6 +5,7 @@ import cn.edu.fudan.issueservice.dao.CommitDao;
 import cn.edu.fudan.issueservice.dao.IssueRepoDao;
 import cn.edu.fudan.issueservice.dao.IssueScanDao;
 import cn.edu.fudan.issueservice.domain.dbo.Commit;
+import cn.edu.fudan.issueservice.domain.vo.CommitVO;
 import cn.edu.fudan.issueservice.service.IssueScanService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +32,7 @@ public class IssueScanServiceImpl implements IssueScanService {
     @Override
     public RepoScan getScanStatus(String repoId, String toolName) {
         List<RepoScan> issueRepos = issueRepoDao.getIssueRepoByCondition(repoId, toolName);
-        return issueRepos == null || issueRepos.isEmpty() ?  null : issueRepos.get(0);
+        return issueRepos == null || issueRepos.isEmpty() ? null : issueRepos.get(0);
     }
 
     @Override
@@ -56,11 +57,16 @@ public class IssueScanServiceImpl implements IssueScanService {
         List<Commit> wholeCommits = commitDao.getCommits(repoUuid, null);
 
         if (isWhole) {
-            wholeCommits.forEach(commit -> commit.setScanned(scannedCommitList.contains(commit.getCommitId())));
+            List<CommitVO> commitVOList = new ArrayList<>();
+            Map<String, String> scanStatusInRepo = issueScanDao.getScanStatusInRepo(repoUuid);
+            for (Commit commit : wholeCommits) {
+                commit.setScanned(scannedCommitList.contains(commit.getCommitId()));
+                commitVOList.add(new CommitVO(commit, scanStatusInRepo.get(commit.getCommitId())));
+            }
             return new HashMap<>(8) {{
-                put(TOTAL, wholeCommits.size());
-                put("commitList", wholeCommits.subList((page - 1) * size, Math.min(page * size, wholeCommits.size())));
-                put("pageCount", wholeCommits.size() % size != 0 ? wholeCommits.size() / size + 1 : wholeCommits.size() / size);
+                put(TOTAL, commitVOList.size());
+                put("commitList", commitVOList.subList((page - 1) * size, Math.min(page * size, commitVOList.size())));
+                put("pageCount", commitVOList.size() % size != 0 ? commitVOList.size() / size + 1 : commitVOList.size() / size);
             }};
         }
         RepoScan mainIssueRepo = issueRepoDao.getMainIssueRepo(repoUuid, tool);
@@ -75,6 +81,11 @@ public class IssueScanServiceImpl implements IssueScanService {
             put("commitList", commits.subList((page - 1) * size, Math.min(page * size, commits.size())));
             put("pageCount", commits.size() % size != 0 ? commits.size() / size + 1 : commits.size() / size);
         }};
+    }
+
+    @Override
+    public Map<String, String> getScanFailedCommitList(String repoUuid) {
+        return issueScanDao.getScanFailedCommitList(repoUuid);
     }
 
     @Autowired

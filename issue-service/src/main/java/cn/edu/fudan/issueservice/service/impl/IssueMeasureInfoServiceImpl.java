@@ -3,12 +3,14 @@ package cn.edu.fudan.issueservice.service.impl;
 import cn.edu.fudan.issueservice.component.RestInterfaceManager;
 import cn.edu.fudan.issueservice.dao.IssueDao;
 import cn.edu.fudan.issueservice.dao.ProjectDao;
+import cn.edu.fudan.issueservice.dao.RepoMetricDao;
 import cn.edu.fudan.issueservice.domain.dbo.Issue;
 import cn.edu.fudan.issueservice.domain.enums.IgnoreTypeEnum;
 import cn.edu.fudan.issueservice.domain.enums.JavaIssuePriorityEnum;
 import cn.edu.fudan.issueservice.domain.enums.*;
 import cn.edu.fudan.issueservice.domain.vo.DeveloperLivingIssueVO;
 import cn.edu.fudan.issueservice.domain.vo.IssueTopVO;
+import cn.edu.fudan.issueservice.exception.MeasureServiceException;
 import cn.edu.fudan.issueservice.service.IssueMeasureInfoService;
 import cn.edu.fudan.issueservice.util.DateTimeUtil;
 import cn.edu.fudan.issueservice.util.JGitHelper;
@@ -40,6 +42,8 @@ import java.util.stream.Collectors;
 public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
 
     private IssueDao issueDao;
+
+    private RepoMetricDao repoMetricDao;
 
     private ProjectDao projectDao;
 
@@ -105,7 +109,7 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
     }
 
     @Override
-    public Map<String, Object> getDayAvgSolvedIssue(Map<String, Object> query, String token) {
+    public Map<String, Object> getDayAvgSolvedIssue(Map<String, Object> query, String token) throws MeasureServiceException {
         Map<String, Object> developerCodeQuality = getDeveloperCodeQuality(query, false, token);
 
         JSONObject solvedDetail = (JSONObject) developerCodeQuality.get(SOLVE);
@@ -120,7 +124,7 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
     }
 
     @Override
-    public Map<String, Object> getDeveloperCodeQuality(Map<String, Object> query, Boolean needAll, String token) {
+    public Map<String, Object> getDeveloperCodeQuality(Map<String, Object> query, Boolean needAll, String token) throws MeasureServiceException {
 
         Map<String, Integer> developerWorkload = restInterfaceManager.getDeveloperWorkload(query, token);
 
@@ -477,9 +481,9 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
     }
 
     @Override
-    public PagedGridResult<DeveloperLivingIssueVO> getDeveloperListLivingIssue(String since, String until, List<String> repoUuids, List<String> developers, int page, int ps, Boolean asc, String order) {
+    public PagedGridResult<DeveloperLivingIssueVO> getDeveloperListLivingIssue(String since, String until, List<String> repoUuids, List<String> developers, int page, int ps, Boolean asc) throws MeasureServiceException {
 
-        Map<String, List<int[]>> developerLivingIssueLevel = restInterfaceManager.getDeveloperLivingIssueLevel(repoUuids);
+        Map<String, List<int[]>> developerLivingIssueLevel = repoMetricDao.getDeveloperLivingIssueLevel(repoUuids);
         Map<String, Integer> developersScore = new HashMap<>(16);
         Map<String, Long> developerIssueCount = new HashMap<>(16);
 
@@ -508,10 +512,10 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
 
         developersScore.keySet().forEach(key -> developersScore.put(key, (int) Math.round(developersScore.get(key) * 1.0 / repoUuids.size())));
 
-        return handleSortDeveloperLivingIssues(developersScore, developerIssueCount, developers, page, ps, order, asc);
+        return handleSortDeveloperLivingIssues(developersScore, developerIssueCount, developers, page, ps, asc);
     }
 
-    private PagedGridResult<DeveloperLivingIssueVO> handleSortDeveloperLivingIssues(Map<String, Integer> developersScore, Map<String, Long> developerIssueCount, List<String> developers, int page, int ps, String order, boolean asc) {
+    private PagedGridResult<DeveloperLivingIssueVO> handleSortDeveloperLivingIssues(Map<String, Integer> developersScore, Map<String, Long> developerIssueCount, List<String> developers, int page, int ps, Boolean asc) {
 
         List<DeveloperLivingIssueVO> developerLivingIssues = new ArrayList<>();
 
@@ -524,17 +528,11 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
             developerLivingIssues.add(developerLivingIssueVO);
         }
 
-        if ("num".equals(order)) {
+        if (asc != null) {
             if (asc) {
                 developerLivingIssues.sort((o1, o2) -> (int) (o1.getNum() - o2.getNum()));
             } else {
                 developerLivingIssues.sort((o1, o2) -> (int) (o2.getNum() - o1.getNum()));
-            }
-        } else if ("level".equals(order)) {
-            if (asc) {
-                developerLivingIssues.sort(Comparator.comparingInt(o -> o.getLevel().getType()));
-            } else {
-                developerLivingIssues.sort((o1, o2) -> o2.getLevel().getType() - o1.getLevel().getType());
             }
         }
 
@@ -556,5 +554,10 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
     @Autowired
     public void setRestInterfaceManager(RestInterfaceManager restInterfaceManager) {
         this.restInterfaceManager = restInterfaceManager;
+    }
+
+    @Autowired
+    public void setRepoMetricDao(RepoMetricDao repoMetricDao) {
+        this.repoMetricDao = repoMetricDao;
     }
 }
