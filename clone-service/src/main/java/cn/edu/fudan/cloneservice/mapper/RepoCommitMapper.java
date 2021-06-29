@@ -1,10 +1,8 @@
 package cn.edu.fudan.cloneservice.mapper;
 
-import lombok.Setter;
 import org.apache.ibatis.annotations.Select;
 import org.springframework.stereotype.Repository;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 

@@ -35,9 +35,10 @@ public class AccountDao {
             String accountName = accountMapper.getAccountName(gitName);
             return accountName == null ? gitName : accountName;
         }catch (Exception e) {
-            e.printStackTrace();
+            log.error("failed to get accountName with gitName : {}\n",gitName);
+            log.error(e.getMessage());
+            return null;
         }
-        return null;
     }
 
     /**

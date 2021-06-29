@@ -3,6 +3,7 @@ package cn.edu.fudan.issueservice.service;
 import cn.edu.fudan.issueservice.domain.vo.DeveloperLivingIssueVO;
 import cn.edu.fudan.issueservice.domain.vo.IssueTopVO;
 import cn.edu.fudan.issueservice.domain.vo.PagedGridResult;
+import cn.edu.fudan.issueservice.exception.MeasureServiceException;
 import com.alibaba.fastjson.JSONObject;
 
 import java.util.List;
@@ -40,8 +41,9 @@ public interface IssueMeasureInfoService {
      * @param query 条件
      * @param token token
      * @return 根据条件获取开发者日均解决缺陷数量
+     * @throws MeasureServiceException MeasureServiceException
      */
-    Map<String, Object> getDayAvgSolvedIssue(Map<String, Object> query, String token);
+    Map<String, Object> getDayAvgSolvedIssue(Map<String, Object> query, String token) throws MeasureServiceException;
 
     /**
      * 返回developer code quality
@@ -50,8 +52,9 @@ public interface IssueMeasureInfoService {
      * @param needAll needAll
      * @param token   token
      * @return developer code quality
+     * @throws MeasureServiceException MeasureServiceException
      */
-    Map<String, Object> getDeveloperCodeQuality(Map<String, Object> query, Boolean needAll, String token);
+    Map<String, Object> getDeveloperCodeQuality(Map<String, Object> query, Boolean needAll, String token) throws MeasureServiceException;
 
     /**
      * 清空缓存
@@ -147,6 +150,7 @@ public interface IssueMeasureInfoService {
      * @param ps         ps
      * @param asc        asc
      * @return living issue count
+     * @throws MeasureServiceException MeasureServiceException
      */
-    PagedGridResult<DeveloperLivingIssueVO> getDeveloperListLivingIssue(String since, String until, List<String> repoUuids, List<String> developers, int page, int ps, Boolean asc);
+    PagedGridResult<DeveloperLivingIssueVO> getDeveloperListLivingIssue(String since, String until, List<String> repoUuids, List<String> developers, int page, int ps, Boolean asc) throws MeasureServiceException;
 }

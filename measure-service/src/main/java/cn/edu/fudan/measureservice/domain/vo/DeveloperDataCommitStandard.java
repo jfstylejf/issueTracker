@@ -49,7 +49,7 @@ public class DeveloperDataCommitStandard {
      */
     private double commitStandard;
     /**
-     * 开发者圈复杂度评级
+     * 开发者提交规范性评级
      */
     private String level;
 

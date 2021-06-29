@@ -5,6 +5,7 @@ import cn.edu.fudan.measureservice.component.RestInterfaceManager;
 import cn.edu.fudan.measureservice.core.ToolInvoker;
 import cn.edu.fudan.measureservice.dao.AccountDao;
 import cn.edu.fudan.measureservice.dao.JiraDao;
+import cn.edu.fudan.measureservice.dao.MeasureScanDao;
 import cn.edu.fudan.measureservice.dao.ProjectDao;
 import cn.edu.fudan.measureservice.domain.core.MeasureScan;
 import cn.edu.fudan.measureservice.domain.dto.RepoResourceDTO;
@@ -42,6 +43,7 @@ public class MeasureScanServiceImpl implements MeasureScanService {
     private ProjectDao projectDao;
     private AccountDao accountDao;
     private JiraDao jiraDao;
+    private MeasureScanDao measureScanDao;
     private static final String SCANNING = "scanning";
     private static final String SCANNED = "complete";
 
@@ -95,6 +97,8 @@ public class MeasureScanServiceImpl implements MeasureScanService {
             if (StringUtils.isEmpty(beginCommit)){
                 isUpdate = true;
                 beginCommit = repoMeasureMapper.getLastScannedCommitId(repoUuid);
+                //若库中本身就没有数据，需要去取 scan 表中的 startCommit
+                beginCommit = beginCommit == null ? measureScanDao.getRepoStartCommit(repoUuid) : beginCommit;
             }
             jGitHelperT.remove();
             JGitHelper jGitHelper = new JGitHelper(repoPath);
@@ -108,6 +112,7 @@ public class MeasureScanServiceImpl implements MeasureScanService {
             }
             //todo 移至measureScanDao 初始化本次扫描状态信息
             Date startScanTime = new Date();
+            // fixme 完善 更新measureScan过程扫描情况
             MeasureScan measureScan = MeasureScan.builder()
                     .uuid(UUID.randomUUID().toString()).repoUuid(repoUuid).tool(toolName)
                     .startScanTime(startScanTime).endScanTime(startScanTime)
@@ -151,9 +156,8 @@ public class MeasureScanServiceImpl implements MeasureScanService {
                 String status = i != commitList.size() ? SCANNING : SCANNED;
                 updateMeasureScan(measureScan, commit, i++, scanTime, status, currentTime);
             }
-        }finally {
-            log.info("free repo:{}, path:{}", repoUuid, repoPath);
-            restInterfaceManager.freeRepoPath(repoUuid, repoPath);
+        } catch (Exception e) {
+            log.error(e.getMessage());
         }
         log.info("Measure scan complete!");
     }
@@ -196,6 +200,11 @@ public class MeasureScanServiceImpl implements MeasureScanService {
     @Autowired
     public void setJiraDao(JiraDao jiraDao) {
         this.jiraDao = jiraDao;
+    }
+
+    @Autowired
+    public void setMeasureScanDao(MeasureScanDao measureScanDao) {
+        this.measureScanDao = measureScanDao;
     }
 
     @Autowired

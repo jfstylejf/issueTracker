@@ -17,6 +17,8 @@ import cn.edu.fudan.measureservice.domain.dto.Query;
 import cn.edu.fudan.measureservice.domain.dto.RepoInfo;
 import cn.edu.fudan.measureservice.domain.enums.GranularityEnum;
 import cn.edu.fudan.measureservice.domain.enums.LevelEnum;
+import cn.edu.fudan.measureservice.domain.enums.TagMetricEnum;
+import cn.edu.fudan.measureservice.domain.metric.RepoTagMetric;
 import cn.edu.fudan.measureservice.domain.vo.*;
 import cn.edu.fudan.measureservice.mapper.RepoMeasureMapper;
 import cn.edu.fudan.measureservice.portrait.*;
@@ -33,12 +35,10 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -67,9 +67,9 @@ public class MeasureDeveloperService {
     private static final String Loss = "loss";
     private static final String TOOL = "sonarqube";
     private static final String split = ",";
-    private static final DecimalFormat df = new DecimalFormat("0.000");
+    private static final DecimalFormat df = new DecimalFormat("0.00");
     /**
-     *
+     * 获取开发者工作量
      * @param query 查询条件
      * @return
      */
@@ -91,11 +91,82 @@ public class MeasureDeveloperService {
             query.setDeveloper(member);
             DeveloperWorkLoad developerWorkLoad = measureDao.getDeveloperWorkLoadData(query);
             developerWorkLoad.setDeveloperName(member);
-            developerWorkLoad.setTotalLoc(developerWorkLoad.getAddLines() + developerWorkLoad.getDeleteLines());
+            developerWorkLoad.setTotalLoc(developerWorkLoad.getAddLines());
             developerWorkLoadList.add(developerWorkLoad);
         }
         return developerWorkLoadList;
     }
+
+    /**
+     * 获取开发者工作量并计算其等级
+     * @param query 查询条件
+     * @return
+     */
+    public DeveloperWorkLoad getDeveloperWorkLoadWithLevel(Query query) {
+        // 开发者总新增行数
+        int developerAddLines = 0;
+        // 开发者总删除行数
+        int developerDeleteLines = 0;
+        // 开发者总增删行数
+        int developerTotalLoc = 0;
+        // 开发者总提交次数
+        int developerCommitCount = 0;
+        // 开发者总修改文件数
+        int developerChangedFiles = 0;
+        // 开发者参与库数
+        int developerInvolvedRepoNum = query.getRepoUuidList().size();
+        // 总等级
+        double totalLevel = 0;
+        for (String repoUuid : query.getRepoUuidList()) {
+            // 获取开发者对应库的工作量信息
+            log.info("start to get {} in repo : {}",query.getDeveloper(),repoUuid);
+            Query tempQuery = new Query(query.getToken(),query.getSince(),query.getUntil(),query.getDeveloper(),Collections.singletonList(repoUuid));
+            DeveloperWorkLoad repoDeveloperWorkLoad = measureDao.getDeveloperWorkLoadData(tempQuery);
+            int repoDeveloperAddLines = repoDeveloperWorkLoad.getAddLines();
+            int repoDeveloperDeleteLines = repoDeveloperWorkLoad.getDeleteLines();
+            int repoTotalLoc = repoDeveloperAddLines + repoDeveloperDeleteLines;
+            developerAddLines += repoDeveloperAddLines;
+            developerDeleteLines += repoDeveloperDeleteLines;
+            developerTotalLoc += repoTotalLoc;
+            developerCommitCount += repoDeveloperWorkLoad.getCommitCount();
+            developerChangedFiles += repoDeveloperWorkLoad.getChangedFiles();
+            if (repoDeveloperAddLines < 1000 ) {
+                // todo 物理行数小于 1000 或者 未提交的不计算 level
+                developerInvolvedRepoNum --;
+                continue;
+            }
+            totalLevel += getRepoWorkLoadLevel(repoDeveloperAddLines,repoUuid);
+        }
+        // 封装 DeveloperWorkLoad
+        DeveloperWorkLoad developerWorkLoad = new DeveloperWorkLoad();
+        developerWorkLoad.setDeveloperName(query.getDeveloper());
+        totalLevel = developerInvolvedRepoNum == 0 ? 1 : totalLevel * 1.0 / developerInvolvedRepoNum;
+        developerWorkLoad.setAddLines(developerAddLines);
+        developerWorkLoad.setDeleteLines(developerDeleteLines);
+        developerWorkLoad.setTotalLoc(developerTotalLoc);
+        developerWorkLoad.setChangedFiles(developerChangedFiles);
+        developerWorkLoad.setCommitCount(developerCommitCount);
+        LevelEnum levelEnum = developerInvolvedRepoNum != 0 ? getLevel(totalLevel) : LevelEnum.NoNeedToEvaluate;
+        // 获取开发者综合等级
+        developerWorkLoad.setLevel(levelEnum);
+        return developerWorkLoad;
+    }
+
+    private int getRepoWorkLoadLevel(int totalLoc, String repoUuid) {
+        RepoTagMetric repoTagMetric = measureDao.getRepoMetric(repoUuid, TagMetricEnum.WorkLoad.name());
+        if (totalLoc >= repoTagMetric.getBestMin() && totalLoc <= repoTagMetric.getBestMax()) {
+            return 5;
+        }else if (totalLoc >= repoTagMetric.getBetterMin() && totalLoc <= repoTagMetric.getBetterMax()) {
+            return 4;
+        }else if (totalLoc >= repoTagMetric.getNormalMin() && totalLoc <= repoTagMetric.getBetterMax()) {
+            return 3;
+        }else if (totalLoc >= repoTagMetric.getWorseMin() && totalLoc <= repoTagMetric.getWorseMax()) {
+            return 2;
+        }else {
+            return 1;
+        }
+    }
+
 
     public Object getStatementByCondition(String repoUuidList, String developer, String since, String until) throws ParseException {
         List<String> repoList = new ArrayList<>();
@@ -705,7 +776,6 @@ public class MeasureDeveloperService {
      * @param
      * @return Developer
      */
-    // fixme 新版本 获得一个开发者的画像 (Contribution,Quality,Effiency)
     public DeveloperPortrait getDeveloperPortrait(Query query) {
         Objects.requireNonNull(query.getDeveloper());
         // 获取开发者所参与库下最早的提交时间
@@ -738,38 +808,37 @@ public class MeasureDeveloperService {
     public DeveloperRepositoryMetric getDeveloperRepositoryMetric(String developer,String repoUuid,String token) {
         String projectName = projectDao.getProjectName(repoUuid);
         String repoName = projectDao.getRepoName(repoUuid);
-        int developerNumber = projectDao.getDeveloperList(repoUuid).size();
         String firstCommitDate = projectDao.getDeveloperFirstCommitDate(developer,repoUuid);
-        // fixme 数据经由Repostory类自动获取
-        // Repository repository = new Repository(query,repoName,projectName);
         int developerStatement = 0;
-        List<Map<String,Object>> developerStatements = restInterfaceManager.getStatements(repoUuid,null,null,developer,Statement_developer);
-        if (developerStatements.size()>0) {
-            developerStatement = (int) developerStatements.get(0).get("total");
+        // 获取开发者该库下的逻辑行数
+        try {
+            List<Map<String,Object>> developerStatements = restInterfaceManager.getStatements(repoUuid,null,null,developer,Statement_developer);
+            if (developerStatements.size()>0) {
+                developerStatement = (int) developerStatements.get(0).get("total");
+            }
+        }catch (Exception e) {
+            log.error(e.getMessage());
         }
-        //----------------------------------开发效率相关指标-------------------------------------
-        // fixme 这边等project/all接口更新后加入branch字段
-        Efficiency efficiency = getDeveloperEfficiency(new Query(token,null,null,developer,Collections.singletonList(repoUuid)), "", developerNumber);
-        log.info(efficiency.toString());
-        int totalLOC = efficiency.getTotalLOC();
-        int developerAddStatement = efficiency.getDeveloperAddStatement();
-        int totalAddStatement = efficiency.getTotalAddStatement();
-        int developerValidLine = efficiency.getDeveloperValidLine();
-        int totalValidLine = efficiency.getTotalValidLine();
-        int developerLOC = efficiency.getDeveloperLOC();
-        int developerCommitCount = efficiency.getDeveloperCommitCount();
-
-        //----------------------------------代码质量相关指标-------------------------------------
-        Quality quality = getDeveloperQuality(repoUuid,developer,null,null,TOOL,token,developerNumber,totalLOC);
-        log.info(quality.toString());
-
-        //----------------------------------开发能力相关指标-------------------------------------
-        Competence competence = getDeveloperCompetence(repoUuid,null,null,developer,developerNumber,developerAddStatement,totalAddStatement,developerValidLine,totalValidLine);
-        log.info(competence.toString());
-
-        return new DeveloperRepositoryMetric(firstCommitDate,developerStatement,developerCommitCount,repoName,repoUuid,developer,efficiency,quality,competence);
+        // 获取开发者该库下的提交次数
+        int developerCommitCount = 0;
+        try {
+            developerCommitCount = measureDao.getDeveloperRepoCommitCount(developer,repoUuid,null,null);
+        }catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        return DeveloperRepositoryMetric.builder()
+                .firstCommitDate(firstCommitDate)
+                .developer(developer)
+                .totalCommitCount(developerCommitCount)
+                .totalStatement(developerStatement)
+                .repoName(repoName)
+                .repoUuid(repoUuid).build();
     }
 
+    @CacheEvict(value = "developerRepositoryMetric", allEntries=true, beforeInvocation = true)
+    public void deleteDeveloperRepositoryMetric() {
+
+    }
 
     /**
      *
@@ -790,12 +859,13 @@ public class MeasureDeveloperService {
             // 获取开发者任职状态
             String dutyType = projectDao.getDeveloperDutyType(developer);
             int involvedRepoCount = projectDao.getDeveloperInvolvedRepoNum(developer);
-            DeveloperPortrait developerPortrait = ((MeasureDeveloperService) AopContext.currentProxy()).getDeveloperPortrait(temp);
-            double totalLevel = developerPortrait.getLevel();
+            DeveloperPortrait developerPortrait = getDeveloperPortrait(temp);
+            // fixme 现在业务更改不需要相关 level数据，先暂定为 0，若日后需要，再做修改
+            /*double totalLevel = developerPortrait.getLevel();
             double value = developerPortrait.getValue();
             double quality = developerPortrait.getQuality();
-            double efficiency = developerPortrait.getEfficiency();
-            DeveloperLevel developerLevel = new DeveloperLevel(developer,efficiency,quality,value,totalLevel,involvedRepoCount,dutyType);
+            double efficiency = developerPortrait.getEfficiency();*/
+            DeveloperLevel developerLevel = new DeveloperLevel(developer,0,0,0,0,involvedRepoCount,dutyType);
             developerLevelList.add(developerLevel);
         }
         try {
@@ -861,6 +931,83 @@ public class MeasureDeveloperService {
         developerCommitStandard.setCommitStandard(Double.parseDouble(df.format(commitStandard)));
 
         return developerCommitStandard;
+    }
+
+    /**
+     * 按照开发者聚合获取提交规范性, 并统计该开发者该维度的评级
+     * @param query 查询条件
+     * @return
+     */
+    public DeveloperCommitStandard getDeveloperCommitStandardWithLevel(Query query) {
+        int developerValidCommitCount = 0;
+        int developerJiraCommitCount = 0;
+        int developerInvalidCommitCount = 0;
+        int developerInvolvedRepoNum = query.getRepoUuidList().size();
+        // 总等级
+        double totalLevel = 0;
+        for (String repoUuid : query.getRepoUuidList()) {
+            // 获取开发者对应库的合法提交信息
+            log.info("start to get {} in repo : {}",query.getDeveloper(),repoUuid);
+            Query tempQuery = new Query(query.getToken(),query.getSince(),query.getUntil(),query.getDeveloper(),Collections.singletonList(repoUuid));
+            List<Map<String,Object>> developerValidCommitInfo = measureDao.getProjectValidCommitMsg(tempQuery);
+            if (developerValidCommitInfo == null || developerValidCommitInfo.size() == 0) {
+                // todo 物理行数小于 1000 或者 未提交的不计算 level
+                developerInvolvedRepoNum --;
+                continue;
+            }
+            int repoDeveloperValidCommitCount = developerValidCommitInfo.size();
+            List<Map<String,Object>> developerValidJiraCommitInfo = measureDao.getProjectValidJiraCommitMsg(tempQuery);
+            int repoDeveloperJiraCommitCount = developerValidJiraCommitInfo == null ? 0 : developerValidJiraCommitInfo.size();
+            int repoDeveloperInvalidCommitCount = repoDeveloperValidCommitCount - repoDeveloperJiraCommitCount;
+
+            double repoCommitStandard =  repoDeveloperJiraCommitCount * 1.0 / repoDeveloperValidCommitCount ;
+            totalLevel += getRepoCommitStandardLevel(Double.parseDouble(df.format(repoCommitStandard)),repoUuid);
+            developerValidCommitCount += repoDeveloperValidCommitCount;
+            developerJiraCommitCount += repoDeveloperJiraCommitCount;
+            developerInvalidCommitCount += repoDeveloperInvalidCommitCount;
+        }
+        // 封装 DeveloperCommitStandard
+        DeveloperCommitStandard developerCommitStandard = new DeveloperCommitStandard();
+        totalLevel = developerInvolvedRepoNum == 0 ? 1 : totalLevel * 1.0 / developerInvolvedRepoNum;
+        developerCommitStandard.setDeveloperName(query.getDeveloper());
+        developerCommitStandard.setDeveloperInvalidCommitCount(developerInvalidCommitCount);
+        developerCommitStandard.setDeveloperJiraCommitCount(developerJiraCommitCount);
+        developerCommitStandard.setDeveloperValidCommitCount(developerValidCommitCount);
+        double commitStandard = developerValidCommitCount != 0 ? developerJiraCommitCount * 1.0 / developerValidCommitCount : 0;
+        developerCommitStandard.setCommitStandard(Double.parseDouble(df.format(commitStandard)));
+        LevelEnum levelEnum = developerInvolvedRepoNum != 0 ? getLevel(totalLevel) : LevelEnum.NoNeedToEvaluate;
+        // 获取开发者综合等级
+        developerCommitStandard.setLevel(levelEnum);
+        return developerCommitStandard;
+    }
+
+    private LevelEnum getLevel(double level) {
+        if (level >= 4.2 && level <= 5)  {
+            return LevelEnum.Best;
+        }else if (level >= 3.4 && level <= 4.2) {
+            return LevelEnum.Better;
+        }else if (level >= 2.6 && level <= 3.4) {
+            return LevelEnum.Normal;
+        }else if (level >= 1.8 && level <= 2.6) {
+            return LevelEnum.Worse;
+        }else {
+            return LevelEnum.Worst;
+        }
+    }
+
+    private int getRepoCommitStandardLevel(double commitStandard, String repoUuid) {
+        RepoTagMetric repoTagMetric = measureDao.getRepoMetric(repoUuid, TagMetricEnum.CommitStandard.name());
+        if (commitStandard >= repoTagMetric.getBestMin() && commitStandard <= repoTagMetric.getBestMax()) {
+            return 5;
+        }else if (commitStandard >= repoTagMetric.getBetterMin() && commitStandard <= repoTagMetric.getBetterMax()) {
+            return 4;
+        }else if (commitStandard >= repoTagMetric.getNormalMin() && commitStandard <= repoTagMetric.getBetterMax()) {
+            return 3;
+        }else if (commitStandard >= repoTagMetric.getWorseMin() && commitStandard <= repoTagMetric.getWorseMax()) {
+            return 2;
+        }else {
+            return 1;
+        }
     }
 
     /**
@@ -973,6 +1120,7 @@ public class MeasureDeveloperService {
         // 获取查询条件下可见的库列表
         List<String> visibleRepoList = projectDao.getVisibleRepoListByProjectNameAndRepo(projectNameList,repoUuidList,token);
         // 获取查询条件下的提交规范性明细 （分页查询）
+        // fixme 总页数要根据筛选条件来定
         int totalMsgSize = projectDao.getRepoListMsgNum(visibleRepoList);
         int totalPage = totalMsgSize % ps == 0 ? totalMsgSize / ps : totalMsgSize / ps + 1;
         // 起始查询位置
@@ -1158,7 +1306,6 @@ public class MeasureDeveloperService {
      * @param token 查询权限
      * @return
      */
-    @SneakyThrows
      public List<ProjectBigFileDetail> getHugeLocRemainedDetail(String projectNameList,String repoUuidList,String token) {
          List<ProjectBigFileDetail> result = new ArrayList<>();
          List<String> visibleRepoList = projectDao.getVisibleRepoListByProjectNameAndRepo(projectNameList,repoUuidList,token);
@@ -1166,6 +1313,7 @@ public class MeasureDeveloperService {
              String projectName = projectDao.getProjectName(repoUuid);
              String repoName = projectDao.getRepoName(repoUuid);
              int projectId = projectDao.getProjectIdByName(projectName);
+             // fixme 这边后续分页获取明细
              List<ProjectBigFileDetail> projectBigFileDetailList = measureDao.getCurrentBigFileInfo(repoUuid,null);
              for (ProjectBigFileDetail projectBigFileDetail : projectBigFileDetailList) {
                  projectBigFileDetail.setProjectId(String.valueOf(projectId));
@@ -1227,7 +1375,7 @@ public class MeasureDeveloperService {
                             .developerProjectCcnList(developerProjectCcnList)
                             .since(since).until(until)
                             .totalDiffCcn(0)
-                            .level(LevelEnum.Medium.getType()).build();
+                            .level(LevelEnum.Normal.getType()).build();
             developerDataCcn.cal();
             developerDataCcnList.add(developerDataCcn);
         }
@@ -1249,11 +1397,12 @@ public class MeasureDeveloperService {
          // 获取开发者查询项目下可看库
          List<String> visibleRepoList = projectDao.getVisibleRepoListByProjectName(projectNameList,token);
          // 获取开发者提交规范列表
-         Query query = new Query(token,since,until,null,visibleRepoList);
          Set<String> developerNameList = !"".equals(developers) ? new HashSet<>(Arrays.asList(developers.split(split))) : projectDao.getDeveloperList(visibleRepoList);
          List<DeveloperCommitStandard> developerCommitStandardList = new ArrayList<>();
          for (String developer : developerNameList) {
-             DeveloperCommitStandard developerCommitStandard = ((MeasureDeveloperService) AopContext.currentProxy()).getDeveloperCommitStandard(new Query(token,since,until,developer,visibleRepoList));
+             // 获取开发者查询项目下可看库
+             List<String> developerRepoList = projectDao.getDeveloperVisibleRepo(visibleRepoList,developer,null,null);
+             DeveloperCommitStandard developerCommitStandard = ((MeasureDeveloperService) AopContext.currentProxy()).getDeveloperCommitStandardWithLevel(new Query(token,since,until,developer,developerRepoList));
              developerCommitStandardList.add(developerCommitStandard);
          }
          // 构建人员总览提交规范性类
@@ -1266,11 +1415,53 @@ public class MeasureDeveloperService {
                      .developerValidCommitCount(developerCommitStandard.getDeveloperValidCommitCount())
                      .commitStandard(developerCommitStandard.getCommitStandard())
                      .detail(null)
-                     .level(LevelEnum.Medium.getType()).build();
+                     .level(developerCommitStandard.getLevel().getType()).build();
              developerDataCommitStandardList.add(developerDataCommitStandard);
          }
          return developerDataCommitStandardList;
      }
+
+
+    /**
+     * 获得开发者人员总览工作量等级
+     * @param projectNameList 查询项目列表
+     * @param developers 查询开发者
+     * @param token 查询权限
+     * @param since 起始时间
+     * @param until 截止时间
+     * @return
+     */
+    @SneakyThrows
+    public List<DeveloperDataWorkLoad> getDeveloperDataWorkLoad(String projectNameList, String developers, String token , String since, String until) {
+        List<DeveloperDataWorkLoad> developerDataWorkLoadList = new ArrayList<>();
+        // 获取开发者查询项目下可看库
+        List<String> visibleRepoList = projectDao.getVisibleRepoListByProjectName(projectNameList,token);
+        // 获取开发者提交规范列表
+        Set<String> developerNameList = !"".equals(developers) ? new HashSet<>(Arrays.asList(developers.split(split))) : projectDao.getDeveloperList(visibleRepoList);
+        List<DeveloperWorkLoad> developerWorkLoadList = new ArrayList<>();
+        for (String developer : developerNameList) {
+            // 获取开发者查询项目下可看库
+            List<String> developerRepoList = projectDao.getDeveloperVisibleRepo(visibleRepoList,developer,null,null);
+            DeveloperWorkLoad developerWorkLoad = ((MeasureDeveloperService) AopContext.currentProxy()).getDeveloperWorkLoadWithLevel(new Query(token,since,until,developer,developerRepoList));
+            developerWorkLoadList.add(developerWorkLoad);
+        }
+        // 构建人员总览提交规范性类
+        for (DeveloperWorkLoad developerWorkLoad : developerWorkLoadList) {
+            DeveloperDataWorkLoad developerDataWorkLoad = DeveloperDataWorkLoad.builder()
+                    .developerName(developerWorkLoad.getDeveloperName())
+                    .since(since)
+                    .until(until)
+                    .addLines(developerWorkLoad.getAddLines())
+                    .deleteLines(developerWorkLoad.getDeleteLines())
+                    .totalLoc(developerWorkLoad.getAddLines())
+                    .detail(null)
+                    .level(developerWorkLoad.getLevel().getType()).build();
+            developerDataWorkLoadList.add(developerDataWorkLoad);
+        }
+        return developerDataWorkLoadList;
+    }
+
+
 
 
     /**
@@ -1303,7 +1494,7 @@ public class MeasureDeveloperService {
         this.methodMeasureAspect = methodMeasureAspect;
     }
 
-    @CacheEvict(cacheNames = {"developerPortrait","developerMetricsNew","portraitCompetence","developerRecentNews","commitStandard"}, allEntries=true, beforeInvocation = true)
+    @CacheEvict(cacheNames = {}, allEntries=true, beforeInvocation = true)
     public void clearCache() {
         log.info("Successfully clear redis cache in db6.");
     }

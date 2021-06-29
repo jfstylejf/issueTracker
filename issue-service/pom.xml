@@ -17,20 +17,8 @@
         <version>1.0.1</version>
     </parent>
 
-    <properties>
-        <brave.version>3.16.0</brave.version>
-        <zipkin-reporter.version>0.6.9</zipkin-reporter.version>
-    </properties>
-
-    <repositories>
-        <repository>
-            <id>Spring Lib</id>
-            <url>https://repo.spring.io/libs-release/</url>
-        </repository>
-    </repositories>
 
     <dependencies>
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
@@ -271,9 +259,6 @@
         <dependency>
             <groupId>cn.edu.fudan</groupId>
             <artifactId>common</artifactId>
-            <version>1.0.1</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/../common/target/common-1.0.1.jar</systemPath>
         </dependency>
 
     </dependencies>
@@ -317,10 +302,6 @@
                     <includeSystemScope>true</includeSystemScope>
                     <mainClass>cn.edu.fudan.issueservice.IssueServiceApplication</mainClass>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
         </plugins>
     </build>

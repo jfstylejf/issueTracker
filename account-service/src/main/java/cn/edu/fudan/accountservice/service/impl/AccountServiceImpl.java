@@ -86,13 +86,12 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public Object getStatusByName(List name) {
-        List<Map<String,String>> result = accountDao.getStatusByName(name);
-        Map<String, Integer> nameStatus = new HashMap<>(8);
-        for(Map<String,String> m : result){
-            String authorName = m.get("accountName");
-            String authorStatus = m.get("account_status");
-            nameStatus.put(authorName,Integer.valueOf(authorStatus));
+    public Map<String, Integer> getStatusByName(List<String> accountNameList) {
+
+        Map<String, Integer> nameStatus = new HashMap<>(accountNameList.size());
+        for(String accountName : accountNameList){
+            String status = accountDao.getStatusByName(accountName);
+            nameStatus.put(accountName, Integer.valueOf(status));
         }
         return nameStatus;
     }
@@ -105,8 +104,33 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public List<Account> getAccountStatus(){
-        return accountDao.getAccountStatus();
+    public List<Account> getAccountList(String accountStatus, String accountName){
+        return accountDao.getAccountList(accountStatus, accountName);
+    }
+
+    @Override
+    public PagedGridResult getAccountList(String accountStatus, String accountName, Integer page, Integer pageSize, String order, Boolean isAsc) {
+        /**
+         * page: 第几页
+         * pageSize: 每页显示条数
+         * orderBy: 要排序字段+空格+asc/desc   指定排序字段和排序方式
+         */
+
+        if (StringUtils.isEmpty(order)) {
+            PageHelper.startPage(page, pageSize);
+        } else {
+            String orderBy = order;
+            if (isAsc != null && isAsc){
+                orderBy = order + ' ' + "asc";
+            }
+            if (isAsc != null && !isAsc){
+                orderBy = order + ' ' + "desc";
+            }
+            PageHelper.startPage(page, pageSize, orderBy);
+        }
+
+        List<Account> result = accountDao.getAccountList(accountStatus, accountName);
+        return setterPagedGrid(result, page);
     }
 
     @Override
@@ -149,6 +173,7 @@ public class AccountServiceImpl implements AccountService {
 
         account.setUuid(UUID.randomUUID().toString());
         account.setPassword(MD5Util.md5(account.getAccountName() + account.getPassword()));
+        account.setRight(0);
         accountDao.addAccount(account);
     }
 
@@ -211,7 +236,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public PagedGridResult getDevelopers(List<String> repoList, String since, String until, String developers, Integer page, Integer pageSize, String order, Boolean isAsc) {
+    public PagedGridResult getDevelopers(List<String> repoList, String since, String until, String developers, Integer page, Integer pageSize, String order, Boolean isAsc, String accountStatus) {
         /**
          * page: 第几页
          * pageSize: 每页显示条数
@@ -232,14 +257,14 @@ public class AccountServiceImpl implements AccountService {
             PageHelper.startPage(page, pageSize, orderBy);
         }
 
-        List<Map<String, Object>> result = commitViewMapper.getDevelopers(repoList, since, until, developers);
+        List<Map<String, Object>> result = commitViewMapper.getDevelopers(repoList, since, until, developers, accountStatus);
 
         return setterPagedGrid(result, page);
     }
 
     @Override
-    public List<Map<String, Object>> getDevelopers(List<String> repoList, String since, String until) {
-        return commitViewMapper.getDevelopers(repoList, since, until, null);
+    public List<Map<String, Object>> getDevelopers(List<String> repoList, String since, String until, String accountStatus) {
+        return commitViewMapper.getDevelopers(repoList, since, until, null, accountStatus);
     }
 
     @Override

@@ -2,6 +2,7 @@ package cn.edu.fudan.issueservice.service;
 
 import cn.edu.fudan.common.domain.po.scan.RepoScan;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -39,4 +40,12 @@ public interface IssueScanService {
      * @return Map<String, Object>
      */
     Map<String, Object> getCommits(String repoUuid, Integer page, Integer size, Boolean isWhole, String tool);
+
+    /**
+     * 获取扫描失败的commit list
+     *
+     * @param repoUuid
+     * @return
+     */
+    Map<String, String> getScanFailedCommitList(String repoUuid);
 }

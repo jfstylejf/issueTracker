@@ -3,12 +3,14 @@ package cn.edu.fudan.issueservice.service.impl;
 import cn.edu.fudan.issueservice.component.RestInterfaceManager;
 import cn.edu.fudan.issueservice.dao.IssueDao;
 import cn.edu.fudan.issueservice.dao.ProjectDao;
+import cn.edu.fudan.issueservice.dao.RepoMetricDao;
 import cn.edu.fudan.issueservice.domain.dbo.Issue;
 import cn.edu.fudan.issueservice.domain.enums.IgnoreTypeEnum;
 import cn.edu.fudan.issueservice.domain.enums.JavaIssuePriorityEnum;
 import cn.edu.fudan.issueservice.domain.enums.*;
 import cn.edu.fudan.issueservice.domain.vo.DeveloperLivingIssueVO;
 import cn.edu.fudan.issueservice.domain.vo.IssueTopVO;
+import cn.edu.fudan.issueservice.exception.MeasureServiceException;
 import cn.edu.fudan.issueservice.service.IssueMeasureInfoService;
 import cn.edu.fudan.issueservice.util.DateTimeUtil;
 import cn.edu.fudan.issueservice.util.JGitHelper;
@@ -36,9 +38,12 @@ import java.util.stream.Collectors;
  **/
 @Slf4j
 @Service
+@SuppressWarnings("unchecked")
 public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
 
     private IssueDao issueDao;
+
+    private RepoMetricDao repoMetricDao;
 
     private ProjectDao projectDao;
 
@@ -104,14 +109,14 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
     }
 
     @Override
-    public Map<String, Object> getDayAvgSolvedIssue(Map<String, Object> query, String token) {
+    public Map<String, Object> getDayAvgSolvedIssue(Map<String, Object> query, String token) throws MeasureServiceException {
         Map<String, Object> developerCodeQuality = getDeveloperCodeQuality(query, false, token);
 
         JSONObject solvedDetail = (JSONObject) developerCodeQuality.get(SOLVE);
 
         double days = (DateTimeUtil.stringToLocalDate(query.get("until").toString()).toEpochDay() - DateTimeUtil.stringToLocalDate(query.get("since").toString()).toEpochDay()) * 5.0 / 7;
 
-        return new HashMap<String, Object>(6) {{
+        return new HashMap<>(6) {{
             put("solvedIssuesCount", solvedDetail.getInteger(ISSUE_COUNT));
             put("days", days);
             put("dayAvgSolvedIssue", solvedDetail.getInteger(ISSUE_COUNT) / days);
@@ -119,7 +124,7 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
     }
 
     @Override
-    public Map<String, Object> getDeveloperCodeQuality(Map<String, Object> query, Boolean needAll, String token) {
+    public Map<String, Object> getDeveloperCodeQuality(Map<String, Object> query, Boolean needAll, String token) throws MeasureServiceException {
 
         Map<String, Integer> developerWorkload = restInterfaceManager.getDeveloperWorkload(query, token);
 
@@ -162,7 +167,7 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
 
         if (Boolean.TRUE.equals(needAll)) {
             if (loc.intValue() == 0) {
-                return new HashMap<String, Object>(8) {{
+                return new HashMap<>(8) {{
                     put("eliminatedIssuePerHundredLine", 0);
                     put("notedIssuePreHundredLine", 0);
                     put("addedIssueCount", allAddedIssueCount);
@@ -170,7 +175,7 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
                     put("loc", loc.intValue());
                 }};
             }
-            return new HashMap<String, Object>(8) {{
+            return new HashMap<>(8) {{
                 put("eliminatedIssuePerHundredLine", allSolvedIssueCount.doubleValue() / loc.intValue());
                 put("notedIssuePreHundredLine", allAddedIssueCount.doubleValue() / loc.intValue());
                 put("addedIssueCount", allAddedIssueCount);
@@ -273,7 +278,7 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
                     : temp2.getIntValue(ISSUE_COUNT) - temp1.getIntValue(ISSUE_COUNT);
         });
 
-        return new HashMap<String, Object>(8) {{
+        return new HashMap<>(8) {{
             put("page", page);
             put("total", result.size() / ps + 1);
             put("record", (page - 1) * ps > result.size() ? 0 : Math.min(result.size(), ps));
@@ -304,7 +309,7 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
         String time2 = " 24:00:00";
 
         // since 可能为空 所以需要判断一下
-        if  (!StringUtils.isEmpty(beginDate)) {
+        if (!StringUtils.isEmpty(beginDate)) {
             beginDate = beginDate + time1;
         }
 
@@ -320,7 +325,7 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
                 String tempDateEnd;
                 switch (interval) {
                     case "day":
-                        if  (StringUtils.isEmpty(beginDate)) {
+                        if (StringUtils.isEmpty(beginDate)) {
                             // 不传since的情况
                             result.add(issueDao.getLivingIssueTendency(endDate, projectId, showDetail));
                         } else {
@@ -334,12 +339,11 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
                         }
                         break;
                     case "month":
-                        if  (StringUtils.isEmpty(beginDate)) {
+                        if (StringUtils.isEmpty(beginDate)) {
                             // 不传since的情况
                             result.add(issueDao.getLivingIssueTendency(endDate, projectId, showDetail));
                         } else {
                             tempDateBegin = beginDate.split(" ")[0] + time1;
-                            tempDateEnd = beginDate.split(" ")[0] + time2;
                             while (tempDateBegin.compareTo(endDate) < 1) {
                                 tempDateEnd = tempDateBegin;
                                 int year = Integer.parseInt(tempDateEnd.split(" ")[0].split("-")[0]);
@@ -351,12 +355,11 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
                         }
                         break;
                     case "year":
-                        if  (StringUtils.isEmpty(beginDate)) {
+                        if (StringUtils.isEmpty(beginDate)) {
                             // 不传since的情况
                             result.add(issueDao.getLivingIssueTendency(endDate, projectId, showDetail));
                         } else {
                             tempDateBegin = beginDate.split(" ")[0] + time1;
-                            tempDateEnd = beginDate.split(" ")[0] + time2;
                             while (tempDateBegin.compareTo(endDate) < 1) {
                                 tempDateEnd = tempDateBegin;
                                 int year = Integer.parseInt(tempDateEnd.split(" ")[0].split("-")[0]);
@@ -367,13 +370,12 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
                         }
                         break;
                     default:
-                        if  (StringUtils.isEmpty(beginDate)) {
+                        if (StringUtils.isEmpty(beginDate)) {
                             // 不传since的情况
                             result.add(issueDao.getLivingIssueTendency(endDate, projectId, showDetail));
                         } else {
                             // 传since的情况
                             tempDateBegin = beginDate.split(" ")[0] + time1;
-                            tempDateEnd = beginDate.split(" ")[0] + time2;
                             while (tempDateBegin.compareTo(endDate) < 1) {
                                 tempDateEnd = tempDateBegin;
                                 try {
@@ -479,42 +481,64 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
     }
 
     @Override
-    public PagedGridResult<DeveloperLivingIssueVO> getDeveloperListLivingIssue(String since, String until, List<String> repoUuids, List<String> developers, int page, int ps, Boolean asc) {
-        PagedGridResult.handlePageHelper(page, ps, PRODUCER, true);
+    public PagedGridResult<DeveloperLivingIssueVO> getDeveloperListLivingIssue(String since, String until, List<String> repoUuids, List<String> developers, int page, int ps, Boolean asc) throws MeasureServiceException {
 
-        List<Map<String, Object>> developersDetail = issueDao.getDeveloperListLivingIssue(since, until, repoUuids, developers);
+        Map<String, List<int[]>> developerLivingIssueLevel = repoMetricDao.getDeveloperLivingIssueLevel(repoUuids);
+        Map<String, Integer> developersScore = new HashMap<>(16);
+        Map<String, Long> developerIssueCount = new HashMap<>(16);
 
-//        Map<String, Long> developerIssueCount = new HashMap<>(32);
-//        for (Map<String, Object> developerDetail : developersDetail) {
-//            developerIssueCount.put((String) developerDetail.get(PRODUCER), (Long) developerDetail.get(ISSUE_COUNT));
-//        }
-//        Map<String, Integer> sortMap = new HashMap<>();
-//        developerIssueCount.entrySet().stream()
-//                .sorted(Map.Entry.comparingByValue())
-//                .forEachOrdered(b -> sortMap.put(b.getKey(), Math.toIntExact(b.getValue())));
+        for (Map.Entry<String, List<int[]>> entry : developerLivingIssueLevel.entrySet()) {
+            List<Map<String, Object>> developersDetail = issueDao.getDeveloperListLivingIssue(since, until, entry.getKey(), developers);
 
-        List<DeveloperLivingIssueVO> developerListLivingIssue = new ArrayList<>();
-        for (String developer : developers) {
-            long issueCount = 0;
-            for (Map<String, Object> developerDetail : developersDetail) {
-                if (developerDetail.get(PRODUCER).equals(developer)) {
-                    issueCount = (long) developerDetail.get(ISSUE_COUNT);
+            for (String developer : developers) {
+                long issueCount = 0;
+                for (Map<String, Object> developerDetail : developersDetail) {
+                    if (developerDetail.get(PRODUCER).equals(developer)) {
+                        issueCount = (long) developerDetail.get(ISSUE_COUNT);
+                    }
                 }
-            }
+                developerIssueCount.put(developer, developerIssueCount.getOrDefault(developer, 0L) + issueCount);
 
+                int value = 0;
+                for (int[] ints : entry.getValue()) {
+                    if (issueCount <= ints[1] && issueCount >= ints[0]) {
+                        value = ints[2];
+                        break;
+                    }
+                }
+                developersScore.put(developer, developersScore.getOrDefault(developer, 0) + value);
+            }
+        }
+
+        developersScore.keySet().forEach(key -> developersScore.put(key, (int) Math.round(developersScore.get(key) * 1.0 / repoUuids.size())));
+
+        return handleSortDeveloperLivingIssues(developersScore, developerIssueCount, developers, page, ps, asc);
+    }
+
+    private PagedGridResult<DeveloperLivingIssueVO> handleSortDeveloperLivingIssues(Map<String, Integer> developersScore, Map<String, Long> developerIssueCount, List<String> developers, int page, int ps, Boolean asc) {
+
+        List<DeveloperLivingIssueVO> developerLivingIssues = new ArrayList<>();
+
+        for (String developer : developers) {
             DeveloperLivingIssueVO developerLivingIssueVO = DeveloperLivingIssueVO.builder()
                     .developerName(developer)
-                    .num(issueCount)
+                    .num(developerIssueCount.get(developer))
+                    .level(DeveloperLivingIssueVO.getLevel(developersScore.get(developer)))
                     .build();
-            developerListLivingIssue.add(developerLivingIssueVO);
+            developerLivingIssues.add(developerLivingIssueVO);
         }
 
         if (asc != null) {
-            developerListLivingIssue.sort((o1, o2) -> (int) (asc ? o1.getNum() - o2.getNum() : o2.getNum() - o1.getNum()));
+            if (asc) {
+                developerLivingIssues.sort((o1, o2) -> (int) (o1.getNum() - o2.getNum()));
+            } else {
+                developerLivingIssues.sort((o1, o2) -> (int) (o2.getNum() - o1.getNum()));
+            }
         }
 
-        PagedGridResult<DeveloperLivingIssueVO> pagedGridResult = new PagedGridResult<>();
-        return pagedGridResult.setterPagedGrid(developerListLivingIssue, page);
+        return (PagedGridResult<DeveloperLivingIssueVO>) PagedGridResult.getPagedGridResult(page, developers.size(),
+                developers.size() % ps == 0 ? developers.size() / ps : developers.size() / ps + 1,
+                Collections.singletonList(developerLivingIssues.subList((page - 1) * ps, Math.min(page * ps, developerLivingIssues.size()))));
     }
 
     @Autowired
@@ -530,5 +554,10 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
     @Autowired
     public void setRestInterfaceManager(RestInterfaceManager restInterfaceManager) {
         this.restInterfaceManager = restInterfaceManager;
+    }
+
+    @Autowired
+    public void setRepoMetricDao(RepoMetricDao repoMetricDao) {
+        this.repoMetricDao = repoMetricDao;
     }
 }

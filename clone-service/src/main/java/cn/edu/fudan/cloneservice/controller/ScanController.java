@@ -47,7 +47,6 @@ public class ScanController {
             CloneRepo result = scanService.getLatestCloneRepo(repoId);
             if(result == null){
                 result = new CloneRepo();
-                result.setStatus("failed");
             }
             return new ResponseBean<>(200, "scan msg send success!", result);
         } catch (Exception e) {

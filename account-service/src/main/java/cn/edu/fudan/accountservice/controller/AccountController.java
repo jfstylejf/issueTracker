@@ -20,6 +20,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 //@ApiOperation注解 value添加该api的说明，用note表示该api的data返回类型，httpMethod表示请求方式
 //@ApiImplicitParams 参数列表集合注解
@@ -50,8 +51,17 @@ public class AccountController {
             @ApiImplicitParam(name = "accountName", value = "开发人员姓名", dataType = "String", required = true,defaultValue = "chenyuan"),
     })
     @GetMapping("/account-name/check")
-    public Object checkUserName(@RequestParam("accountName") String accountName) {
-        return new ResponseEntity<>(200, "success", accountService.isAccountNameExist(accountName));
+    public ResponseEntity<Boolean> checkUserName(@RequestParam("accountName") String accountName) {
+        try {
+            Boolean result = accountService.isAccountNameExist(accountName);
+            if(!result){
+                return new ResponseEntity<>(412, "account name is duplicate!", false);
+            }else{
+                return new ResponseEntity<>(200, "account name can be used!", true);
+            }
+        } catch (Exception e) {
+            return new ResponseEntity<>(401, "check failed! " + e.getMessage(), null);
+        }
     }
 
     @ApiOperation(value="检查邮箱是否存在",notes="@return boolean",httpMethod = "GET")
@@ -59,31 +69,65 @@ public class AccountController {
             @ApiImplicitParam(name = "email", value = "开发人员邮箱", dataType = "String", required = true,defaultValue = "chenyuan@163.com"),
     })
     @GetMapping("/email/check")
-    public Object checkEmail(@RequestParam("email") String email) {
-        return new ResponseEntity<>(200, "success", accountService.isEmailExist(email));
-    }
-
-    /* 用户昵称=真实姓名=界面显示姓名 */
-    //废弃接口
-    @GetMapping("/nick-name/check")
-    @Deprecated
-    public Object checkNickName(@RequestParam("nickName") String nickName) {
-        return new ResponseEntity<>(200, "success","false");
+    public ResponseEntity<Boolean> checkEmail(@RequestParam("email") String email) {
+        try {
+            Boolean result = accountService.isEmailExist(email);
+            if(!result){
+                return new ResponseEntity<>(412, "email is duplicate!", false);
+            }else{
+                return new ResponseEntity<>(200, "email can be used!", true);
+            }
+        } catch (Exception e) {
+            return new ResponseEntity<>(401, "check failed! " + e.getMessage(), null);
+        }
     }
 
     @ApiOperation(value="获取用户在职状态",notes="@return Object",httpMethod = "GET")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "accountName", value = "开发人员姓名列表", dataType = "List<String>", required = true,defaultValue = "[\"admin\",\"chenyuan\",\"王贵成\"]"),
+            @ApiImplicitParam(name = "accountName", value = "开发人员姓名列表", dataType = "List<String>", required = true,defaultValue = "[\"admin\",\"chenyuan\",\"heyue\"]"),
     })
     @GetMapping("/status")
-    public Object getStatusByName(@RequestBody List<String> name) {
-        return new ResponseEntity<>(200, "success",accountService.getStatusByName(name));
+    public ResponseEntity<Map<String, Integer>> getStatusByName(@RequestBody List<String> accountNameList) {
+        try {
+            Map<String, Integer> result = accountService.getStatusByName(accountNameList);
+            return new ResponseEntity<>(200, "get account status success", result);
+        } catch (Exception e) {
+            return new ResponseEntity<>(401, "get failed! " + e.getMessage(), null);
+        }
     }
 
     @ApiOperation(value="获取用户信息",notes="@return List<Account>",httpMethod = "GET")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "account_status", value = "人员在职状态", dataType = "String"),
+            @ApiImplicitParam(name = "accountName", value = "名字搜索", dataType = "String"),
+            @ApiImplicitParam(name = "is_whole", value = "是否获取所有数据（不进行分页）", dataType = "Boolean", required = false,defaultValue = "0"),
+            @ApiImplicitParam(name = "page", value = "分页的第几页", dataType = "Integer", required = false,defaultValue = "1"),
+            @ApiImplicitParam(name = "ps", value = "分页中每页的大小", dataType = "Integer", required = false,defaultValue = "10"),
+            @ApiImplicitParam(name = "order", value = "要排序的字段", dataType = "String", required = false,defaultValue = "developerName"),
+            @ApiImplicitParam(name = "asc", value = "是否升序", dataType = "Boolean", required = false,defaultValue = "1")
+    })
+
     @GetMapping("/status/getData")
-    public Object getAccountStatus(){
-        return new ResponseEntity<>(200, " ",accountService.getAccountStatus());
+    public Object getAccountStatus(
+                                   @RequestParam(value = "account_status", defaultValue = "1") String accountStatus,
+                                   @RequestParam(value = "accountName", required = false) String accountName,
+                                   @RequestParam(value = "is_whole", required = false, defaultValue = "0") Boolean isWhole,
+                                   @RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
+                                   @RequestParam(value = "ps", required = false, defaultValue = "30") Integer pageSize,
+                                   @RequestParam(value = "order", required = false) String order,
+                                   @RequestParam(value = "asc", required = false, defaultValue = "1") Boolean isAsc){
+        try{
+            // 获取所有数据，不进行分页
+            if (isWhole) {
+                return new ResponseEntity<>(200, "success!", accountService.getAccountList(accountStatus, accountName));
+            }
+            // 否则，获取分页数据
+            PagedGridResult result = accountService.getAccountList(accountStatus, accountName, page, pageSize, order, isAsc);
+            return new ResponseEntity<>(200, "get account success!", result);
+        }catch (Exception e){
+            e.printStackTrace();
+            return new ResponseEntity<>(401, "get account failed! " + e.getMessage(), null);
+        }
     }
 
     @ApiOperation(value="更改用户角色、部门、在职状态",httpMethod = "PUT")
@@ -291,6 +335,7 @@ public class AccountController {
     @ApiOperation(value="获取给定条件下的开发人员（聚合后）列表",httpMethod = "GET")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "repo_uuids", value = "repo库", dataType = "String", required = false,defaultValue = "a140dc46-50db-11eb-b7c3-394c0d058805"),
+            @ApiImplicitParam(name = "account_status", value = "人员在职状态", dataType = "String"),
             @ApiImplicitParam(name = "since", value = "起始时间", dataType = "String", required = false,defaultValue = "2020-01-01"),
             @ApiImplicitParam(name = "until", value = "结束时间", dataType = "String", required = false,defaultValue = "2020-12-31"),
             @ApiImplicitParam(name = "developers", value = "名字搜索", dataType = "String"),
@@ -302,6 +347,7 @@ public class AccountController {
     })
     @GetMapping(value = "/developers")
     public Object getDeveloperList(@RequestParam(value = "repo_uuids", required = false) String repoUuids,
+                                   @RequestParam(value = "account_status", required = false, defaultValue = "1") String accountStatus,
                                    @RequestParam(value = "since", required = false) String since,
                                    @RequestParam(value = "until", required = false) String until,
                                    @RequestParam(value = "developers", required = false) String developers,
@@ -319,10 +365,10 @@ public class AccountController {
         try{
             // 获取所有数据，不进行分页
             if (isWhole) {
-                return new ResponseEntity<>(200, "success!", accountService.getDevelopers(repoList, since, until));
+                return new ResponseEntity<>(200, "success!", accountService.getDevelopers(repoList, since, until, accountStatus));
             }
             // 否则，获取分页数据
-            PagedGridResult result = accountService.getDevelopers(repoList, since, until, developers, page, pageSize, order, isAsc);
+            PagedGridResult result = accountService.getDevelopers(repoList, since, until, developers, page, pageSize, order, isAsc, accountStatus);
             return new ResponseEntity<>(200, "success!", result);
         }catch (Exception e){
             e.printStackTrace();

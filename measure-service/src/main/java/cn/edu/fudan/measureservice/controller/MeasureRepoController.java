@@ -5,6 +5,7 @@ import cn.edu.fudan.measureservice.domain.CommitBaseInfoDuration;
 import cn.edu.fudan.measureservice.domain.Granularity;
 import cn.edu.fudan.measureservice.domain.RepoMeasure;
 import cn.edu.fudan.measureservice.domain.ResponseBean;
+import cn.edu.fudan.measureservice.domain.metric.RepoTagMetric;
 import cn.edu.fudan.measureservice.domain.dto.Query;
 import cn.edu.fudan.measureservice.service.MeasureRepoService;
 import cn.edu.fudan.measureservice.util.DateTimeUtil;
@@ -15,14 +16,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.*;
 
 @RestController
 public class MeasureRepoController {
@@ -213,6 +210,55 @@ public class MeasureRepoController {
         }catch (Exception e) {
             e.printStackTrace();
             return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(),"measure failed",e.getMessage());
+        }
+    }
+
+    @ApiOperation(value = "获取对应库下相应维度的基线值", notes = "@return List<RepoTagMetric>", httpMethod = "GET")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "repo_uuid", value = "查询库 id", dataType = "String",  required = false)
+    })
+
+    @GetMapping("/measure/repo-metric")
+    public ResponseBean<Object> getRepoMetricList(@RequestParam(value = "repo_uuid",required = false) String repoUuid) {
+        try {
+            List<RepoTagMetric> repoTagMetricList = measureRepoService.getRepoMetricList(repoUuid);
+            if(repoTagMetricList != null) {
+                return new ResponseBean<>(HttpStatus.OK.value(),"get repoMetric success",repoTagMetricList);
+            }else {
+                return new ResponseBean<>(HttpStatus.NO_CONTENT.value(),"check the repo , it seems that no related data in database ",null);
+            }
+        }catch (Exception e) {
+            return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(),"measure failed",e.getMessage());
+        }
+    }
+
+    @PostMapping("/measure/post/repo-metric")
+    public ResponseBean<Object> insertRepoMetric(@RequestParam String tag,
+                                                 @RequestParam(value = "repo_uuid") String repoUuid,
+                                                 @RequestParam(value = "best_min") double bestMin,
+                                                 @RequestParam(value = "better_max") double betterMax,
+                                                 @RequestParam(value = "better_min") double betterMin,
+                                                 @RequestParam(value = "normal_max") double normalMax,
+                                                 @RequestParam(value = "normal_min") double normalMin,
+                                                 @RequestParam(value = "worse_max") double worseMax,
+                                                 @RequestParam(value = "worse_min") double worseMin,
+                                                 @RequestParam(value = "worst_max") double worstMax,
+                                                 HttpServletRequest request)
+    {
+        try {
+            String token = request.getHeader("token");
+            RepoTagMetric repoTagMetric = RepoTagMetric.builder()
+                    .repoUuid(repoUuid).tag(tag).updater(token).updateTime(LocalDate.now())
+                    .bestMin(bestMin)
+                    .betterMax(betterMax).betterMin(betterMin)
+                    .normalMax(normalMax).normalMin(normalMin)
+                    .worseMax(worseMax).worseMin(worseMin)
+                    .worstMax(worstMax)
+                    .build();
+            measureRepoService.insertRepoTagMetric(repoTagMetric);
+            return new ResponseBean<>(HttpStatus.OK.value(),"insert success",null);
+        }catch (Exception e) {
+            return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(),"insert failed",e.getMessage());
         }
     }
 

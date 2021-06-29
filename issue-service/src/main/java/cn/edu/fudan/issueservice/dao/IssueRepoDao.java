@@ -44,6 +44,10 @@ public class IssueRepoDao {
         return issueRepoMapper.getMainIssueRepo(repoUuid, tool);
     }
 
+    public RepoScan getRepoScan(String repoUuid, String tool) {
+        return issueRepoMapper.getRepoScan(repoUuid, tool);
+    }
+
     @Autowired
     public void setIssueRepoMapper(IssueRepoMapper issueRepoMapper) {
         this.issueRepoMapper = issueRepoMapper;

@@ -389,43 +389,58 @@ public class ProjectControlServiceImpl implements ProjectControlService {
             if (subRepositoryDao.getSubRepoByRepoUuid(repoUuid) == null) {
                 return false;
             } else {
+                // RECYCLED, JIRA, DEPENDENCY, CLONE, MEASURE, CODETRACKER, ISSUE, SCAN, REPOSITORY;
+
+                //JIRA
+                boolean deleteJiraRepoSuccess = rest.deleteJiraRepo(repoUuid);
+                if (!deleteJiraRepoSuccess) {
+                    log.error("jira repo delete failed!");
+                }
+
+                //CLONE
                 boolean deleteCloneRepoSuccess = rest.deleteCloneRepo(repoUuid);
                 if (!deleteCloneRepoSuccess) {
                     log.error("clone repo delete failed!");
                 }
 
+                //CODETRACKER
                 boolean deleteCodetrackerRepoSuccess = rest.deleteCodetrackerRepo(repoUuid);
                 if (!deleteCodetrackerRepoSuccess) {
                     log.error("codetracker repo delete failed!");
                 }
 
+                //REPOSITORY
                 boolean deleteCommitRepoSucess = rest.deleteCommitRepo(repoUuid);
                 if (!deleteCommitRepoSucess) {
                     log.error("commit repo delete failed!");
                 }
 
+                //ISSUE
                 boolean deleteIssueRepoSuccess = rest.deleteIssueRepo(token, repoUuid);
                 if (!deleteIssueRepoSuccess) {
                     log.error("issue repo delete failed!");
                 }
 
+                //MEASURE
                 boolean deleteMeasureRepoSucess = rest.deleteMeasureRepo(repoUuid);
                 if (!deleteMeasureRepoSucess) {
                     log.error("measure repo delete failed!");
                 }
 
+                //SCAN
                 boolean deleteScanRepoSucess = rest.deleteScanRepo(token, repoUuid);
                 if (!deleteScanRepoSucess) {
                     log.error("scan repo delete failed!");
                 }
 
+                //DEPENDENCY
                 boolean deleteDependencyRepoSucess = rest.deleteDependencyRepo(repoUuid);
                 if (!deleteDependencyRepoSucess) {
                     log.error("scan repo delete failed!");
                 }
 
                 if (!deleteCloneRepoSuccess || !deleteCodetrackerRepoSuccess || !deleteCommitRepoSucess || !deleteIssueRepoSuccess
-                        || !deleteMeasureRepoSucess || !deleteScanRepoSucess || !deleteDependencyRepoSucess) {
+                        || !deleteMeasureRepoSucess || !deleteScanRepoSucess || !deleteDependencyRepoSucess || !deleteJiraRepoSuccess) {
                     throw new RunTimeException("delete failed!");
                 }
 
@@ -469,19 +484,12 @@ public class ProjectControlServiceImpl implements ProjectControlService {
     }
 
     @Override
-    public Integer updateRecycled(String token, String repoUuid, String serviceName) throws Exception {
-
-        UserInfoDTO userInfoDTO = getUserInfoByToken(token);
-        String accountUuid = userInfoDTO.getUuid();
-        // 0 表示超级管理员 只有超级管理员能操作
-        if (userInfoDTO.getRight() != 0) {
-            throw new RunTimeException("this user has no right to delete repo!");
-        }
-
+    public Integer updateRecycled(String repoUuid, String serviceName) throws Exception {
         EnumMap<ServicesManager.Services, Character> serviceStatus = new EnumMap<>(ServicesManager.Services.class);
 
         Integer recycledStatus = subRepositoryDao.getRecycledStatus(repoUuid);
         //recycledStatus = new Scanner(System.in).nextInt();
+        //RECYCLED, JIRA, DEPENDENCY, CLONE, MEASURE, CODETRACKER, ISSUE, SCAN, REPOSITORY;
         char[] deleteStatus = String.valueOf(recycledStatus).toCharArray();
         serviceStatus.put(ServicesManager.Services.RECYCLED, deleteStatus[0]);
         serviceStatus.put(ServicesManager.Services.JIRA, deleteStatus[1]);

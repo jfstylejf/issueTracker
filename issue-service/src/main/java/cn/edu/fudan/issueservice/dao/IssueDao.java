@@ -175,7 +175,7 @@ public class IssueDao {
         return issueCount == 0 && rawIssueCount == 0;
     }
 
-    public List<Map<String, Object>> getDeveloperListLivingIssue(String since, String until, List<String> repoUuids, List<String> developers) {
-        return issueMapper.getDeveloperListLivingIssue(since, until, repoUuids, developers);
+    public List<Map<String, Object>> getDeveloperListLivingIssue(String since, String until, String repoUuid, List<String> developers) {
+        return issueMapper.getDeveloperListLivingIssue(since, until, repoUuid, developers);
     }
 }

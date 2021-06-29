@@ -5,6 +5,8 @@ import com.github.pagehelper.PageInfo;
 import lombok.Data;
 import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -49,5 +51,15 @@ public class PagedGridResult<T> {
         grid.setTotal(pageList.getPages());
         grid.setRecords(pageList.getTotal());
         return grid;
+    }
+
+    public static PagedGridResult<?> getPagedGridResult(int page, int records, int size, List<?> list) {
+        PagedGridResult<Object> result = new PagedGridResult<>();
+        result.page = page;
+        result.records = records;
+        result.total = size;
+        result.rows = new ArrayList<>();
+        list.forEach(r -> result.rows.addAll((Collection<?>) r));
+        return result;
     }
 }

@@ -49,10 +49,10 @@ public interface AccountService {
     /**
      * get status by accountName
      *
-     * @param name get user status
+     * @param accountName 用户名
      * @return status and accountName
      */
-    Object getStatusByName(List name);
+    Map<String, Integer> getStatusByName(List<String> accountName);
 
     /**
      * update status
@@ -62,7 +62,25 @@ public interface AccountService {
      */
     void updateAccountStatus(List<Account> statusInfo);
 
-    List<Account> getAccountStatus();
+    /**
+     * 分页获取人员列表
+     * @param accountStatus 用户在职状态
+     * @param accountName 用户在职状态
+     * @return List<Account> 人员列表
+     */
+    List<Account> getAccountList(String accountStatus, String accountName);
+
+    /**
+     * 获取人员列表
+     * @param accountStatus 用户在职状态
+     * @param accountName 用户在职状态
+     * @param page 分页的第几页
+     * @param pageSize 每页的大小
+     * @param order 排序的字段
+     * @param isAsc 是否升序
+     * @return PagedGridResult 获取分页后的人员列表
+     */
+    PagedGridResult getAccountList(String accountStatus, String accountName, Integer page, Integer pageSize, String order, Boolean isAsc);
 
     /**
      * auth by token
@@ -127,18 +145,20 @@ public interface AccountService {
      * @param pageSize 每页的大小
      * @param order 排序的字段
      * @param isAsc 是否升序
+     * @param accountStatus 用户在职状态
      * @return 根据查询条件获取开发者（聚合后）的列表
      */
-    PagedGridResult getDevelopers(List<String> repoList, String since, String until, String developers, Integer page, Integer pageSize, String order, Boolean isAsc);
+    PagedGridResult getDevelopers(List<String> repoList, String since, String until, String developers, Integer page, Integer pageSize, String order, Boolean isAsc, String accountStatus);
 
     /**
      *
      * @param repoList 参与的库
      * @param since 起始时间
      * @param until 结束时间
+     * @param accountStatus 用户在职状态
      * @return 获取给定条件下 所有的开发者列表 不进行分页
      */
-    List<Map<String, Object>> getDevelopers(List<String> repoList, String since, String until);
+    List<Map<String, Object>> getDevelopers(List<String> repoList, String since, String until, String accountStatus);
 
     /**
      * 人员手动聚合

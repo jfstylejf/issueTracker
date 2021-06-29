@@ -21,8 +21,9 @@ public interface CommitViewMapper {
      * @param since 起始时间
      * @param until 结束时间
      * @param developers 名字搜索
+     * @param accountStatus 用户在职状态
      * @return
      */
-    List<Map<String, Object>> getDevelopers(@Param("repoUuids") List<String> repoUuids, @Param("since") String since, @Param("until") String until, @Param("developers") String developers);
+    List<Map<String, Object>> getDevelopers(@Param("repoUuids") List<String> repoUuids, @Param("since") String since, @Param("until") String until, @Param("developers") String developers, @Param("accountStatus") String accountStatus);
 
 }

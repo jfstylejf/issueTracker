@@ -236,10 +236,10 @@ public class IssueMeasurementController {
         try {
             if (asc != null) {
                 List<String> developers = restInterfaceManager.getDeveloperInRepo(repoList, since, until);
-                developers.forEach(r -> {
+                for (String r : developers) {
                     query.put(DEVELOPER, r);
                     result.add(issueMeasureInfoService.getDeveloperCodeQuality(query, needAll, token));
-                });
+                }
                 return new ResponseBean<>(200, SUCCESS, issueMeasureInfoService.handleSortCodeQuality(result, asc, ps, page));
             }
 
@@ -249,10 +249,10 @@ public class IssueMeasurementController {
                 return new ResponseBean<>(200, SUCCESS, issueMeasureInfoService.getDeveloperCodeQuality(query, needAll, token));
             }
 
-            developers.forEach(r -> {
+            for (String r : developers) {
                 query.put(DEVELOPER, r);
                 result.add(issueMeasureInfoService.getDeveloperCodeQuality(query, needAll, token));
-            });
+            }
             return new ResponseBean<>(200, SUCCESS, result);
         } catch (Exception e) {
             e.printStackTrace();
@@ -331,9 +331,6 @@ public class IssueMeasurementController {
         }
     }
 
-    /**
-     * 留存静态缺陷趋势图
-     */
     @ApiOperation(value = "留存静态缺陷趋势图", httpMethod = "GET", notes = "@return Map{\"code\": String, \"msg\": String, \"data\": List<Map>}")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "since", value = "起始时间(yyyy-MM-dd)", required = true, dataType = "String", defaultValue = "1990-01-01"),
@@ -361,6 +358,16 @@ public class IssueMeasurementController {
         }
     }
 
+    @ApiOperation(value = "人员总览缺陷评价", httpMethod = "GET", notes = "@return PagedGridResult<DeveloperLivingIssueVO>")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "since", value = "起始时间(yyyy-MM-dd)", dataType = "String"),
+            @ApiImplicitParam(name = "until", value = "截止时间(yyyy-MM-dd)", dataType = "String"),
+            @ApiImplicitParam(name = "project_names", value = "项目名", dataType = "String"),
+            @ApiImplicitParam(name = "developers", value = "开发者,可多选", dataType = "String"),
+            @ApiImplicitParam(name = "asc", value = "是否升序", dataType = "Boolean"),
+            @ApiImplicitParam(name = "page", value = "页号"),
+            @ApiImplicitParam(name = "ps", value = "页大小")
+    })
     @GetMapping("/developer/data/living-issue")
     public ResponseBean<PagedGridResult<DeveloperLivingIssueVO>> getDeveloperListLivingIssue(@RequestParam(value = "since", required = false) String since,
                                                                                              @RequestParam(value = "until", required = false) String until,

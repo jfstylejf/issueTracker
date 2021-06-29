@@ -171,8 +171,7 @@ public class MeasureDeveloperController {
             Query query = new Query(token,null,null,developer,repoUuidList);
             return new ResponseBean<>(HttpStatus.OK.value(),"success", measureDeveloperService.getDeveloperPortrait(query));
         }catch (Exception e){
-            e.printStackTrace();
-            return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(),"failed "+e.getMessage(),null);
+            return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(),e.getMessage(),null);
         }
     }
 
@@ -479,10 +478,41 @@ public class MeasureDeveloperController {
             ProjectFrontEnd<DeveloperDataCommitStandard> developerDtaCommitStandardProjectFrontEnd = new ProjectFrontEnd<>(page,totalPage,developerDataCommitStandardList.size(),selectedDeveloperDataCommitStandardList);
             return new ResponseBean<>(HttpStatus.OK.value(),"success",developerDtaCommitStandardProjectFrontEnd);
         }catch (Exception e) {
-            e.getMessage();
+            log.error(e.getMessage());
+            return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(),"failed",null);
         }
-        return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(),"failed",null);
     }
+
+
+    @GetMapping("/measure/developer/data/work-load")
+    public ResponseBean<ProjectFrontEnd> getDeveloperDataWorkLoad(@RequestParam(value = "project_names",required = false) String projectNameList,
+                                                                        @RequestParam(value = "developers",required = false,defaultValue = "") String developerList,
+                                                                        @RequestParam(value = "since" , required = false) String since,
+                                                                        @RequestParam(value = "until",required = false) String until,
+                                                                        @RequestParam(required = false, defaultValue = "1")int page,
+                                                                        @RequestParam(required = false, defaultValue = "10")int ps,
+                                                                        @RequestParam(required = false, defaultValue = "") String order,
+                                                                        @RequestParam(required = false, defaultValue = "false") boolean asc,
+                                                                        HttpServletRequest request )
+    {
+        try {
+            String token = request.getHeader("token");
+            List<DeveloperDataWorkLoad> developerDataWorkLoadList = measureDeveloperService.getDeveloperDataWorkLoad(projectNameList,developerList,token,since,until);
+            if (asc) {
+                developerDataWorkLoadList.sort(Comparator.comparingInt(DeveloperDataWorkLoad::getTotalLoc));
+            }else {
+                developerDataWorkLoadList.sort((o1, o2) -> o2.getTotalLoc() - o1.getTotalLoc());
+            }
+            int totalPage = developerDataWorkLoadList.size() % ps == 0 ? developerDataWorkLoadList.size()/ps : developerDataWorkLoadList.size()/ps + 1;
+            List<DeveloperDataWorkLoad> selectedDeveloperDataWorkLoadList = developerDataWorkLoadList.subList(ps*(page-1), Math.min(ps * page, developerDataWorkLoadList.size()));
+            ProjectFrontEnd<DeveloperDataWorkLoad> developerDtaWorkLoadProjectFrontEnd = new ProjectFrontEnd<>(page,totalPage,developerDataWorkLoadList.size(),selectedDeveloperDataWorkLoadList);
+            return new ResponseBean<>(HttpStatus.OK.value(),"success",developerDtaWorkLoadProjectFrontEnd);
+        }catch (Exception e) {
+            log.error(e.getMessage());
+            return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(),"failed",null);
+        }
+    }
+
 
     @ApiOperation(value = "返回用户画像页面得代码行数数据，包括所有项目和单个项目的 To codeTracker", notes = "@return Map<String,Object>", httpMethod = "GET")
     @ApiImplicitParams({
