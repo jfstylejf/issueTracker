@@ -484,15 +484,7 @@ public class ProjectControlServiceImpl implements ProjectControlService {
     }
 
     @Override
-    public Integer updateRecycled(String token, String repoUuid, String serviceName) throws Exception {
-
-        UserInfoDTO userInfoDTO = getUserInfoByToken(token);
-        String accountUuid = userInfoDTO.getUuid();
-        // 0 表示超级管理员 只有超级管理员能操作
-        if (userInfoDTO.getRight() != 0) {
-            throw new RunTimeException("this user has no right to delete repo!");
-        }
-
+    public Integer updateRecycled(String repoUuid, String serviceName) throws Exception {
         EnumMap<ServicesManager.Services, Character> serviceStatus = new EnumMap<>(ServicesManager.Services.class);
 
         Integer recycledStatus = subRepositoryDao.getRecycledStatus(repoUuid);
