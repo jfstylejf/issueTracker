@@ -38,7 +38,7 @@ public class AccountDao {
 
     public String getStatusByName(String accountName){return accountMapper.getStatusByName(accountName);}
 
-    public List<Account> getAccountStatus(){ return accountMapper.getAllAccount(); }
+    public List<Account> getAccountList(String accountStatus, String accountName){ return accountMapper.getAllAccount(accountStatus, accountName); }
 
     public void updateAccountStatus(List<Account> statusInfo){
         accountMapper.updateStatusInfo(statusInfo);

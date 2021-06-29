@@ -39,7 +39,14 @@ public interface AccountMapper {
      */
     String getStatusByName(@Param("accountName") String accountName);
 
-    List<Account> getAllAccount();
+    /**
+     * get account list
+     *
+     * @param accountStatus 用户状态
+     * @param accountName 用户名
+     * @return String 状态
+     */
+    List<Account> getAllAccount(String accountStatus, String accountName);
 
     /**
      * update statusInfo by account accountName

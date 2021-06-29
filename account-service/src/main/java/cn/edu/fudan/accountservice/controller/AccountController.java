@@ -97,9 +97,37 @@ public class AccountController {
     }
 
     @ApiOperation(value="获取用户信息",notes="@return List<Account>",httpMethod = "GET")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "account_status", value = "人员在职状态", dataType = "String"),
+            @ApiImplicitParam(name = "accountName", value = "名字搜索", dataType = "String"),
+            @ApiImplicitParam(name = "is_whole", value = "是否获取所有数据（不进行分页）", dataType = "Boolean", required = false,defaultValue = "0"),
+            @ApiImplicitParam(name = "page", value = "分页的第几页", dataType = "Integer", required = false,defaultValue = "1"),
+            @ApiImplicitParam(name = "ps", value = "分页中每页的大小", dataType = "Integer", required = false,defaultValue = "10"),
+            @ApiImplicitParam(name = "order", value = "要排序的字段", dataType = "String", required = false,defaultValue = "developerName"),
+            @ApiImplicitParam(name = "asc", value = "是否升序", dataType = "Boolean", required = false,defaultValue = "1")
+    })
+
     @GetMapping("/status/getData")
-    public Object getAccountStatus(){
-        return new ResponseEntity<>(200, " ",accountService.getAccountStatus());
+    public Object getAccountStatus(
+                                   @RequestParam(value = "account_status", defaultValue = "1") String accountStatus,
+                                   @RequestParam(value = "accountName", required = false) String accountName,
+                                   @RequestParam(value = "is_whole", required = false, defaultValue = "0") Boolean isWhole,
+                                   @RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
+                                   @RequestParam(value = "ps", required = false, defaultValue = "30") Integer pageSize,
+                                   @RequestParam(value = "order", required = false) String order,
+                                   @RequestParam(value = "asc", required = false, defaultValue = "1") Boolean isAsc){
+        try{
+            // 获取所有数据，不进行分页
+            if (isWhole) {
+                return new ResponseEntity<>(200, "success!", accountService.getAccountList(accountStatus, accountName));
+            }
+            // 否则，获取分页数据
+            PagedGridResult result = accountService.getAccountList(accountStatus, accountName, page, pageSize, order, isAsc);
+            return new ResponseEntity<>(200, "get account success!", result);
+        }catch (Exception e){
+            e.printStackTrace();
+            return new ResponseEntity<>(401, "get account failed! " + e.getMessage(), null);
+        }
     }
 
     @ApiOperation(value="更改用户角色、部门、在职状态",httpMethod = "PUT")

@@ -104,8 +104,33 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public List<Account> getAccountStatus(){
-        return accountDao.getAccountStatus();
+    public List<Account> getAccountList(String accountStatus, String accountName){
+        return accountDao.getAccountList(accountStatus, accountName);
+    }
+
+    @Override
+    public PagedGridResult getAccountList(String accountStatus, String accountName, Integer page, Integer pageSize, String order, Boolean isAsc) {
+        /**
+         * page: 第几页
+         * pageSize: 每页显示条数
+         * orderBy: 要排序字段+空格+asc/desc   指定排序字段和排序方式
+         */
+
+        if (StringUtils.isEmpty(order)) {
+            PageHelper.startPage(page, pageSize);
+        } else {
+            String orderBy = order;
+            if (isAsc != null && isAsc){
+                orderBy = order + ' ' + "asc";
+            }
+            if (isAsc != null && !isAsc){
+                orderBy = order + ' ' + "desc";
+            }
+            PageHelper.startPage(page, pageSize, orderBy);
+        }
+
+        List<Account> result = accountDao.getAccountList(accountStatus, accountName);
+        return setterPagedGrid(result, page);
     }
 
     @Override
