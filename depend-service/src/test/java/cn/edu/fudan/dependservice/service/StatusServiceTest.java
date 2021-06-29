@@ -23,7 +23,7 @@ public class StatusServiceTest {
     public void getScanStatusTest(){
         ScanStatus scanStatus= statusService.getScanStatus("60930a84-4f50-11eb-b7c3-394c0d058805");
         System.out.println("status: "+scanStatus.getStatus());
-         Assert.assertThat(scanStatus.getStatus(), Matchers.is("complete"));
+         Assert.assertThat(scanStatus.getStatus(), Matchers.is("fail"));
     }
     
 }
