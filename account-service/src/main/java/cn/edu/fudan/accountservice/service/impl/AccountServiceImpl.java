@@ -183,16 +183,6 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public List<String> getGroupsByAccountName(String accountName) {
-//        String group = accountDao.getAccountByAccountName(accountName).getGroups();
-//        if(null!=group){
-//            List<String> groups = Arrays.asList(group.split(",")).stream().map(s -> (s.trim())).collect(Collectors.toList());
-//            return groups;
-//        }
-        return null;
-    }
-
-    @Override
     public void updateToolsEnable(List<Tool> tools) {
         String accountName = tools.get(0).getAccountName();
         int right = accountDao.getAccountByAccountName(accountName).getRight();

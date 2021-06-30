@@ -17,7 +17,8 @@ public interface AccountService {
      *
      * @param username get user accountName
      * @param password get user password
-     * @return ResponseEntity
+     * @param email get user email
+     * @return AccountVO
      */
     AccountVO login(String username, String password, String email);
 
@@ -26,12 +27,12 @@ public interface AccountService {
      *
      * @param username get user accountName
      * @param password get user password
-     * @return null
+     * @return boolean
      */
     boolean passwordReset(String username, String password);
 
     /**
-     * is account accountName exist
+     * check accountName
      *
      * @param accountName get user account accountName
      * @return boolean
@@ -39,7 +40,7 @@ public interface AccountService {
     boolean isAccountNameExist(String accountName);
 
     /**
-     * is email exist
+     * check email
      *
      * @param email get user email
      * @return boolean
@@ -50,20 +51,21 @@ public interface AccountService {
      * get status by accountName
      *
      * @param accountName 用户名
-     * @return status and accountName
+     * @return  Map<String, Integer> status and accountName
      */
     Map<String, Integer> getStatusByName(List<String> accountName);
 
     /**
      * update status
      *
-     * @param statusInfo
+     * @param statusInfo account status info
      * @return null
      */
     void updateAccountStatus(List<Account> statusInfo);
 
     /**
      * 分页获取人员列表
+     *
      * @param accountStatus 用户在职状态
      * @param accountName 用户在职状态
      * @return List<Account> 人员列表
@@ -72,6 +74,7 @@ public interface AccountService {
 
     /**
      * 获取人员列表
+     *
      * @param accountStatus 用户在职状态
      * @param accountName 用户在职状态
      * @param page 分页的第几页
@@ -91,9 +94,10 @@ public interface AccountService {
     boolean authByToken(String userToken);
 
     /**
-     * get account by token
+     * get account by name
      *
      * @param accountName 用户名
+     * @param needAdmin is need admin
      * @return Account
      */
     Account getAccountByName(String accountName, Boolean needAdmin);
@@ -120,19 +124,41 @@ public interface AccountService {
      */
     List<String> getAllAccountId();
 
-    List<String> getGroupsByAccountName(String accountName);
-
+    /**
+     * update tools
+     *
+     * @param tools tool
+     * @return null
+     */
     void updateToolsEnable(List<Tool> tools);
 
+    /**
+     * get tools
+     *
+     * @return List<Tool>
+     */
     List<Tool> getTools();
 
+    /**
+     * get account name by uuid
+     *
+     * @param accountId account uuid
+     * @return String
+     */
     String getAccountNameById(String accountId);
 
+    /**
+     * get account right by token
+     *
+     * @param userToken account token
+     * @return Map<String,Object>
+     */
     Map<String,Object> getRightByToken(String userToken);
 
     /**
      * 查询 account_author表中的所有 gitname
-     * @param gitname  新增用户的git 名字
+     *
+     * @param gitname  git name
      */
     Boolean addNewAccounts(List<String> gitname);
 
