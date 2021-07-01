@@ -64,26 +64,26 @@ public interface AccountService {
     void updateAccountStatus(List<Account> statusInfo);
 
     /**
-     * 分页获取人员列表
-     *
-     * @param accountStatus 用户在职状态
-     * @param accountName 用户在职状态
-     * @return List<Account> 人员列表
-     */
-    List<Account> getAccountList(String accountStatus, String accountName);
-
-    /**
      * 获取人员列表
      *
      * @param accountStatus 用户在职状态
-     * @param accountName 用户在职状态
+     * @param accountNames 用户在职状态
+     * @return List<Account> 人员列表
+     */
+    List<Account> getAccountList(String accountStatus, String accountNames);
+
+    /**
+     * 分页获取人员列表
+     *
+     * @param accountStatus 用户在职状态
+     * @param accountNames 用户在职状态
      * @param page 分页的第几页
      * @param pageSize 每页的大小
      * @param order 排序的字段
      * @param isAsc 是否升序
      * @return PagedGridResult 获取分页后的人员列表
      */
-    PagedGridResult getAccountList(String accountStatus, String accountName, Integer page, Integer pageSize, String order, Boolean isAsc);
+    PagedGridResult getAccountList(String accountStatus, String accountNames, Integer page, Integer pageSize, String order, Boolean isAsc);
 
     /**
      * auth by token

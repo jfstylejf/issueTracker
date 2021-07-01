@@ -69,8 +69,8 @@
             account
         <where>
             account_status = #{accountStatus}
-            <if test="accountName != null" >
-                AND account_name = #{accountName}
+            <if test="accountNames != null" >
+                AND account_name = LIKE CONCAT('%',#{accountNames},'%')
             </if>
         </where>
     </select>

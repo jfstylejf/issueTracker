@@ -109,7 +109,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public PagedGridResult getAccountList(String accountStatus, String accountName, Integer page, Integer pageSize, String order, Boolean isAsc) {
+    public PagedGridResult getAccountList(String accountStatus, String accountNames, Integer page, Integer pageSize, String order, Boolean isAsc) {
         /**
          * page: 第几页
          * pageSize: 每页显示条数
@@ -129,7 +129,7 @@ public class AccountServiceImpl implements AccountService {
             PageHelper.startPage(page, pageSize, orderBy);
         }
 
-        List<Account> result = accountDao.getAccountList(accountStatus, accountName);
+        List<Account> result = accountDao.getAccountList(accountStatus, accountNames);
         return setterPagedGrid(result, page);
     }
 
