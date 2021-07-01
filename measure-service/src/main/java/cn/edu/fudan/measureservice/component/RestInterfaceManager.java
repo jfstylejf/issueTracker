@@ -5,6 +5,7 @@ import cn.edu.fudan.measureservice.domain.ResponseBean;
 import cn.edu.fudan.measureservice.domain.dto.UserInfoDTO;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,10 +18,12 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Component
@@ -40,14 +43,17 @@ public class RestInterfaceManager {
     private String issueServicePath;
     @Value("${uniform.service.path}")
     private String uniformServicePath;
-
-
+    @Value("${binHome}")
+    private String binHome;
 
     private RestTemplate restTemplate;
 
     public RestInterfaceManager(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
+
+    private static String STATUS_SUCCESSFUL = "Successful";
+    private static String DELETE_LOCK_FILE = "deleteLockFile.sh";
 
     private Logger logger = LoggerFactory.getLogger(RestInterfaceManager.class);
 
@@ -138,24 +144,52 @@ public class RestInterfaceManager {
             url.append("&commit_id=").append(commit_id);
         }
         try{
-            JSONObject response=restTemplate.getForObject(url.toString(), JSONObject.class).getJSONObject("data");
-            if (response != null ){
-                if(response.getString("status").equals("Successful")) {
-                    repoPath = response.getString("content");
-                logger.info("repoHome -> {} , repoUuid -->{} , commit_id -->{}" ,repoPath,repoUuid,commit_id);
-                }else{
-                    logger.error("get repoHome fail -> {}",response.getString("content"));
-                    logger.error("repoUuid -> {} commitId -> {}",repoUuid,commit_id);
-                }
-            } else {
-                logger.error("code service response null!");
-            }
+            repoPath = recurRepoPath(url.toString());
+            log.info("repoHome -> {} , repoUuid -->{} , commit_id -->{}" ,repoPath,repoUuid,commit_id);
         } catch (RestClientException e) {
-            logger.error("Get exception when getting repoPath");
-            e.printStackTrace();
+            log.error("Get exception when getting repoPath");
         }
         return repoPath;
     }
+
+    @SneakyThrows
+    private String recurRepoPath(String url) {
+        String repoPath;
+        JSONObject response= Objects.requireNonNull(restTemplate.getForObject(url, JSONObject.class)).getJSONObject("data");
+        String status = response.getString("status");
+        String content = response.getString("content");
+        if (STATUS_SUCCESSFUL.equals(status)) {
+            repoPath = content;
+        }else {
+            // 匹配出路径
+            // content 形式为 ： Cannot get the repository  because:git reset --hard失败！path为：#{repoPath}
+            String[] s = content.split("path为：");
+            repoPath = s[1];
+            // 删除 index.lock 数据
+            deleteLockFile(repoPath);
+            repoPath = recurRepoPath(url);
+        }
+        return repoPath;
+    }
+
+
+    private void deleteLockFile(String repoPath) throws IOException {
+        Runtime rt = Runtime.getRuntime();
+        String command =  binHome + DELETE_LOCK_FILE + " " + repoPath;
+        log.info("command -> {}", command);
+        Process process = rt.exec(command);
+        try {
+            boolean timeout = process.waitFor(200L, TimeUnit.SECONDS);
+            if (!timeout) {
+                process.destroy();
+                log.error("run script timeout ! (200s),delete repoPath: {}", repoPath);
+            }
+        }catch (Exception e) {
+            log.error(e.getMessage());
+            process.destroy();
+        }
+    }
+
 
     public JSONObject freeRepoPath(String repoUuid,String repoPath){
         JSONObject response=restTemplate.getForObject(codeServicePath + "/free?repo_id=" + repoUuid+"&path="+repoPath, JSONObject.class);
@@ -399,6 +433,14 @@ public class RestInterfaceManager {
             log.error(e.getMessage());
         }
         return null;
+    }
+
+
+    public static void main(String[] args) {
+        String line = "\"Cannot get the repository  because:git reset --hard失败！path为：/home/fdse/codeWisdom/repository/repo/gitlab/platform/IssueTracker-Master-dev_duplicate_fdse-13\"";
+        String[] list = line.split("path为：");
+        System.out.println(list[1]);
+        Runtime rt = Runtime.getRuntime();
     }
 
 }

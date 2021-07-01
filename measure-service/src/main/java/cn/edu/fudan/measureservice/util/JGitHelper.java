@@ -79,7 +79,6 @@ public class JGitHelper {
             checkoutCommand.setName(commit).call();
         } catch (Exception e) {
             // todo org.eclipse.jgit.api.errors.JGitInternalException: Exception caught during execution of reset command. Cannot lock 删除git文件夹下面的lock文件
-            e.printStackTrace();
             log.error("JGitHelper checkout error:{} ", e.getMessage());
         }
     }

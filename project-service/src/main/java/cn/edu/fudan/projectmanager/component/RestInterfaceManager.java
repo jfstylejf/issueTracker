@@ -44,6 +44,8 @@ public class RestInterfaceManager {
     private String scanServicePath;
     @Value("${dependency.service.path}")
     private String dependencyServicePath;
+    @Value("${jira.service.path}")
+    private String jiraServicePath;
 
     private RestTemplate restTemplate;
 
@@ -58,6 +60,14 @@ public class RestInterfaceManager {
         assert body != null;
         return body.getIntValue("code") == 200;
     }
+
+    public boolean deleteJiraRepo(String repoUuid) {
+        ResponseEntity<JSONObject> exchange = restTemplate.exchange(jiraServicePath + "/jira/" + repoUuid, HttpMethod.DELETE, null, JSONObject.class);
+        JSONObject body = exchange.getBody();
+        assert body != null;
+        return body.getIntValue("code") == 200;
+    }
+
 
     public boolean deleteIssueRepo(String token, String repoUuid) {
         HttpHeaders httpHeaders = new HttpHeaders();

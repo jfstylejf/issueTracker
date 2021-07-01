@@ -104,8 +104,7 @@ public class GroupServiceImpl implements GroupService {
                     return o1.getRepoUuid().compareTo(o2.getRepoUuid());
                 }
             } else {
-
-                return o1.getRepoName().compareTo(o2.getRepoName());
+                return o1.getProjectName().compareTo(o2.getProjectName());
             }
         });
         AtomicInteger id = new AtomicInteger(1);
@@ -165,9 +164,9 @@ public class GroupServiceImpl implements GroupService {
             }
 
             JSONObject edgeJson = new JSONObject();
-            edgeJson.put("id", i);
-            edgeJson.put("source", source.getId());
-            edgeJson.put("target", target.getId());
+            edgeJson.put("id", String.valueOf(i+1+1000));
+            edgeJson.put("source", String.valueOf(source.getId()));
+            edgeJson.put("target", String.valueOf(target.getId()));
             edgeJson.put("source_name", source.getFileName());
             edgeJson.put("target_name", target.getFileName());
             edgeJson.put("source_label", source.getId());
@@ -178,7 +177,7 @@ public class GroupServiceImpl implements GroupService {
         }
         for (FileNode fileNode : fileNodes) {
             JSONObject nodeJson = new JSONObject();
-            nodeJson.put("id", fileNode.getId());
+            nodeJson.put("id", String.valueOf(fileNode.getId()));
             nodeJson.put("name", fileNode.getFileName());
             nodeJson.put("path", fileNode.getFilePath());
             nodeJson.put("label", fileNode.getId());
@@ -195,8 +194,9 @@ public class GroupServiceImpl implements GroupService {
             smellFilesJson.add(smellFileJson);
         }
         smellJson.put("nodes", smellFilesJson);
+        smellJson.put("name", groupView.getGroupId());
         smellsJson.add(smellJson);
-        result.put("smellType", "CYCLIC_DEPENDENCY");
+        result.put("smellType", "CyclicDependency");
         result.put("coreNode", "0");
         result.put("nodes", nodesJson);
         result.put("edges", edgesJson);
