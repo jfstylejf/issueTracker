@@ -234,7 +234,7 @@ public class RestInterfaceManager extends BaseRepoRestManager {
     }
 
     public void sendDeleteSuccessMessage(String repoUuid) {
-        restTemplate.put(projectServicePath + "service_name=ISSUE&repo_uuid=" + repoUuid, null);
+        restTemplate.put(projectServicePath + "/repo?service_name=ISSUE&repo_uuid=" + repoUuid, null);
     }
 
     //---------------------------------------------commit service------------------------------------------------------
