@@ -232,10 +232,11 @@ public class AccountController {
             @ApiImplicitParam(name = "userToken", value = "用户token", dataType = "String", required = true,defaultValue = "378f71b14cc4a0f1e6ce18bfe3a4028e"),
     })
     @GetMapping(value = "/auth/{userToken}")
-    public ResponseEntity<Boolean> auth(@PathVariable("userToken") String userToken) {
+    public ResponseEntity<Map<String, Object>> auth(@PathVariable("userToken") String userToken) {
         try {
-            if (accountService.authByToken(userToken)) {
-                return new ResponseEntity<>(200, "auth pass success", null);
+            Map<String, Object> result = accountService.authByToken(userToken);
+            if (result != null) {
+                return new ResponseEntity<>(200, "auth pass success", result);
             } else {
                 return new ResponseEntity<>(401, "token time out,please login", null);
             }
@@ -250,10 +251,10 @@ public class AccountController {
     })
     @GetMapping(value = "/right/{userToken}")
     @CrossOrigin
-    public ResponseEntity<Boolean> right(@PathVariable("userToken") String userToken) {
+    public ResponseEntity<Object> right(@PathVariable("userToken") String userToken) {
         try {
-            boolean result = accountService.authByToken(userToken);
-            if (result) {
+            Object result = accountService.authByToken(userToken);
+            if (result != null) {
                 return new ResponseEntity<>(200, "success", true);
             } else {
                 return new ResponseEntity<>(401, "token time out,please login", null);
