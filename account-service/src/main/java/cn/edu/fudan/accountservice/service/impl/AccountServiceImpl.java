@@ -134,12 +134,8 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public Map<String, Object> authByToken(String userToken) {
-        String username = stringRedisTemplate.opsForValue().get("login:" + userToken);
-        Account account = accountDao.getAccountByAccountName(username);
-        Map<String, Object> accountInfo = new HashMap<>();
-        accountInfo.put(username, account.getUuid());
-        return accountInfo;
+    public Boolean authByToken(String userToken) {
+        return stringRedisTemplate.opsForValue().get("login:" + userToken) != null;
     }
 
     @Override

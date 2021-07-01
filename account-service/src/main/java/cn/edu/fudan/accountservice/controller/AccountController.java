@@ -224,17 +224,14 @@ public class AccountController {
         }
     }
 
-    /**
-    *待测
-     */
     @ApiOperation(value="获取当前登录用户登录状态",httpMethod = "GET")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "userToken", value = "用户token", dataType = "String", required = true,defaultValue = "378f71b14cc4a0f1e6ce18bfe3a4028e"),
     })
     @GetMapping(value = "/auth/{userToken}")
-    public ResponseEntity<Map<String, Object>> auth(@PathVariable("userToken") String userToken) {
+    public ResponseEntity<Boolean> auth(@PathVariable("userToken") String userToken) {
         try {
-            Map<String, Object> result = accountService.authByToken(userToken);
+            Boolean result = accountService.authByToken(userToken);
             if (result != null) {
                 return new ResponseEntity<>(200, "auth pass success", result);
             } else {
@@ -251,11 +248,11 @@ public class AccountController {
     })
     @GetMapping(value = "/right/{userToken}")
     @CrossOrigin
-    public ResponseEntity<Object> right(@PathVariable("userToken") String userToken) {
+    public ResponseEntity<Map<String, Object>> right(@PathVariable("userToken") String userToken) {
         try {
-            Object result = accountService.authByToken(userToken);
+            Map<String, Object> result = accountService.getRightByToken(userToken);
             if (result != null) {
-                return new ResponseEntity<>(200, "success", true);
+                return new ResponseEntity<>(200, "success", result);
             } else {
                 return new ResponseEntity<>(401, "token time out,please login", null);
             }

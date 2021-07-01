@@ -91,7 +91,7 @@ public interface AccountService {
      * @param userToken get user token
      * @return boolean
      */
-    Map<String, Object> authByToken(String userToken);
+    Boolean authByToken(String userToken);
 
     /**
      * get account by name
