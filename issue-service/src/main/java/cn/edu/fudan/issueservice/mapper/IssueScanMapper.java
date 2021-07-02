@@ -73,6 +73,15 @@ public interface IssueScanMapper {
     List<String> getScannedCommitList(String repoUuid, String tool);
 
     /**
+     * 获取扫描失败的commit list
+     *
+     * @param repoUuid
+     * @return
+     */
+    @MapF2F
+    Map<String, String> getScanFailedCommitList(String repoUuid);
+
+    /**
      * 获取扫描状态
      *
      * @param repoUuid repoUuid
@@ -80,5 +89,4 @@ public interface IssueScanMapper {
      */
     @MapF2F
     Map<String, String> getScanStatusInRepo(String repoUuid);
-
 }

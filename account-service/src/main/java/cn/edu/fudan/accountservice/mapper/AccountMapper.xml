@@ -56,22 +56,24 @@
               email = #{email}
     </select>
 
-    <select id="getStatusByName" parameterType="String" resultType="Map">
+    <select id="getStatusByName" parameterType="String" resultType="String">
         select account_status from account
         <where>
-            <if test="name_list != null">
-                name in
-                <foreach collection="name_list" separator="," open="(" close=")" item="item">
-                    #{item}
-                </foreach>
-            </if>
+          account_name = #{accountName}
         </where>
     </select>
 
     <select id="getAllAccount" parameterType="String" resultMap="account">
-        SELECT uuid, account_name, password, email, account_right, account_dep, account_status, account_role
+        SELECT uuid, account_name, email, account_right, account_dep, account_status, account_role
         FROM
-            account;
+            account
+        <where>
+            account_status = #{accountStatus}
+            <if test="accountNames != null" >
+                AND account_name = LIKE CONCAT('%',#{accountNames},'%')
+            </if>
+                AND account_name IS NOT null
+        </where>
     </select>
 
     <update id="updateStatusInfo" parameterType="java.util.List">

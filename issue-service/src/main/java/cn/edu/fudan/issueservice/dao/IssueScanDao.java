@@ -43,4 +43,8 @@ public class IssueScanDao {
     public Map<String, String> getScanStatusInRepo(String repoUuid) {
         return issueScanMapper.getScanStatusInRepo(repoUuid);
     }
+
+    public Map<String, String> getScanFailedCommitList(String repoUuid) {
+        return issueScanMapper.getScanFailedCommitList(repoUuid);
+    }
 }

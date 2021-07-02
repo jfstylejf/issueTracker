@@ -133,12 +133,11 @@ public interface ProjectControlService {
     /**
      * 更新库删除状态
      *
-     * @param token     用户token
      * @param repoUuid  库的UUID
      * @param serviceName 服务名称
      * @throws Exception e
      */
-    Integer updateRecycled(String token, String repoUuid, String serviceName)throws Exception ;
+    Integer updateRecycled(String repoUuid, String serviceName)throws Exception ;
 
     /**
      * 完全删除project服务中的库

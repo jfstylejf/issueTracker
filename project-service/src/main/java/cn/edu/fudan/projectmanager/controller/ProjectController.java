@@ -301,18 +301,17 @@ public class ProjectController {
             @ApiImplicitParam(name = "repo_uuid", value = "库的uuid", dataType = "String", required = true)
     })
     @PutMapping(value = {"/repo"})
-    public ResponseBean<Integer> updateRecycled(HttpServletRequest request,
-                                            @RequestParam("repo_uuid") String repoUuid,
-                                            @RequestParam("service_name") String serviceName) throws Exception {
+    public ResponseBean<Integer> updateRecycled(@RequestParam("repo_uuid") String repoUuid,
+                                                @RequestParam("service_name") String serviceName) throws Exception {
         try {
             SubRepository repository = accountRepository.getRepoInfoByRepoId(repoUuid);
             if (repository == null) {
                 return new ResponseBean<>(412, "repo not exist", null);
             }
-            if(serviceName == null){
+            if (serviceName == null){
                 return new ResponseBean<>(412, "please input service name!", null);
             }
-            Integer recycledStatus = projectControl.updateRecycled(request.getHeader(TOKEN), repoUuid, serviceName);
+            Integer recycledStatus = projectControl.updateRecycled(repoUuid, serviceName);
             return new ResponseBean<>(200, "update success", recycledStatus);
         } catch (Exception e) {
             return new ResponseBean<>(401, "update failed :" + e.getMessage(), null);

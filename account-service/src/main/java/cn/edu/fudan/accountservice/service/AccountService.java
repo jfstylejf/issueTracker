@@ -17,7 +17,8 @@ public interface AccountService {
      *
      * @param username get user accountName
      * @param password get user password
-     * @return ResponseEntity
+     * @param email get user email
+     * @return AccountVO
      */
     AccountVO login(String username, String password, String email);
 
@@ -26,12 +27,12 @@ public interface AccountService {
      *
      * @param username get user accountName
      * @param password get user password
-     * @return null
+     * @return boolean
      */
     boolean passwordReset(String username, String password);
 
     /**
-     * is account accountName exist
+     * check accountName
      *
      * @param accountName get user account accountName
      * @return boolean
@@ -39,7 +40,7 @@ public interface AccountService {
     boolean isAccountNameExist(String accountName);
 
     /**
-     * is email exist
+     * check email
      *
      * @param email get user email
      * @return boolean
@@ -49,20 +50,40 @@ public interface AccountService {
     /**
      * get status by accountName
      *
-     * @param name get user status
-     * @return status and accountName
+     * @param accountName 用户名
+     * @return  Map<String, Integer> status and accountName
      */
-    Object getStatusByName(List name);
+    Map<String, Integer> getStatusByName(List<String> accountName);
 
     /**
      * update status
      *
-     * @param statusInfo
+     * @param statusInfo account status info
      * @return null
      */
     void updateAccountStatus(List<Account> statusInfo);
 
-    List<Account> getAccountStatus();
+    /**
+     * 获取人员列表
+     *
+     * @param accountStatus 用户在职状态
+     * @param accountNames 用户在职状态
+     * @return List<Account> 人员列表
+     */
+    List<Account> getAccountList(String accountStatus, String accountNames);
+
+    /**
+     * 分页获取人员列表
+     *
+     * @param accountStatus 用户在职状态
+     * @param accountNames 用户在职状态
+     * @param page 分页的第几页
+     * @param pageSize 每页的大小
+     * @param order 排序的字段
+     * @param isAsc 是否升序
+     * @return PagedGridResult 获取分页后的人员列表
+     */
+    PagedGridResult getAccountList(String accountStatus, String accountNames, Integer page, Integer pageSize, String order, Boolean isAsc);
 
     /**
      * auth by token
@@ -70,12 +91,13 @@ public interface AccountService {
      * @param userToken get user token
      * @return boolean
      */
-    boolean authByToken(String userToken);
+    Boolean authByToken(String userToken);
 
     /**
-     * get account by token
+     * get account by name
      *
      * @param accountName 用户名
+     * @param needAdmin is need admin
      * @return Account
      */
     Account getAccountByName(String accountName, Boolean needAdmin);
@@ -102,19 +124,41 @@ public interface AccountService {
      */
     List<String> getAllAccountId();
 
-    List<String> getGroupsByAccountName(String accountName);
-
+    /**
+     * update tools
+     *
+     * @param tools tool
+     * @return null
+     */
     void updateToolsEnable(List<Tool> tools);
 
+    /**
+     * get tools
+     *
+     * @return List<Tool>
+     */
     List<Tool> getTools();
 
+    /**
+     * get account name by uuid
+     *
+     * @param accountId account uuid
+     * @return String
+     */
     String getAccountNameById(String accountId);
 
+    /**
+     * get account right by token
+     *
+     * @param userToken account token
+     * @return Map<String,Object>
+     */
     Map<String,Object> getRightByToken(String userToken);
 
     /**
      * 查询 account_author表中的所有 gitname
-     * @param gitname  新增用户的git 名字
+     *
+     * @param gitname  git name
      */
     Boolean addNewAccounts(List<String> gitname);
 

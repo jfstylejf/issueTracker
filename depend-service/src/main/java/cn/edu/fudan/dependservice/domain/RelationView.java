@@ -24,7 +24,6 @@ public class RelationView {
         this.dependsOnTypes=new HashMap<>();
 
         for(String s:relationType.split(";")){
-            System.out.println("s: "+s);
             String key =s.substring(0,s.indexOf('('));
             Integer value =Integer.parseInt(s.substring(s.indexOf('(')+1,s.indexOf(')')));
             dependsOnTypes.put(key,value);
