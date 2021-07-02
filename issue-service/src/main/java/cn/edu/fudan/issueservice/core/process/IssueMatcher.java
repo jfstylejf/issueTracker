@@ -8,7 +8,7 @@ import cn.edu.fudan.issueservice.dao.*;
 import cn.edu.fudan.issueservice.domain.dbo.*;
 import cn.edu.fudan.issueservice.domain.dto.MatcherCommitInfo;
 import cn.edu.fudan.issueservice.domain.enums.IssueStatusEnum;
-import cn.edu.fudan.issueservice.domain.enums.JavaScriptIssuePriorityEnum;
+import cn.edu.fudan.issueservice.domain.enums.IssuePriorityEnums.JavaScriptIssuePriorityEnum;
 import cn.edu.fudan.issueservice.domain.enums.RawIssueStatus;
 import cn.edu.fudan.issueservice.domain.enums.ScanStatusEnum;
 import cn.edu.fudan.issueservice.util.*;

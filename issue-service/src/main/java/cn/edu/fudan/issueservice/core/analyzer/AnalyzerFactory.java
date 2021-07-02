@@ -22,6 +22,8 @@ public class AnalyzerFactory {
             return createSonarQubeBaseAnalyzer();
         } else if (ToolEnum.ESLINT.getType().equals(tool)) {
             return createEsLintBaseAnalyzer();
+        } else if (ToolEnum.TSCANCODE.getType().equals(tool)) {
+            return createTscanCodeAnalyzer();
         }
 
         log.error("tool name error,input tool name is {} !", tool);
@@ -34,6 +36,10 @@ public class AnalyzerFactory {
 
     private BaseAnalyzer createEsLintBaseAnalyzer() {
         return applicationContext.getBean(EsLintBaseAnalyzer.class);
+    }
+
+    private BaseAnalyzer createTscanCodeAnalyzer() {
+        return applicationContext.getBean(TscanCodeAnalyzer.class);
     }
 
     @Autowired

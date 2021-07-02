@@ -2,7 +2,7 @@ package cn.edu.fudan.issueservice.service.impl;
 
 import cn.edu.fudan.issueservice.component.RestInterfaceManager;
 import cn.edu.fudan.issueservice.dao.*;
-import cn.edu.fudan.issueservice.domain.enums.JavaIssuePriorityEnum;
+import cn.edu.fudan.issueservice.domain.enums.IssuePriorityEnums.*;
 import cn.edu.fudan.issueservice.domain.enums.IssueStatusEnum;
 import cn.edu.fudan.issueservice.domain.vo.IssueFilterInfoVO;
 import cn.edu.fudan.issueservice.domain.vo.IssueFilterSidebarVO;

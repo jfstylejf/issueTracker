@@ -9,12 +9,10 @@ import cn.edu.fudan.codetracker.scan.domain.projectinfo.StatementNode;
 import cn.edu.fudan.issueservice.dao.CommitDao;
 import cn.edu.fudan.issueservice.domain.dbo.Location;
 import cn.edu.fudan.issueservice.domain.dbo.RawIssue;
-import cn.edu.fudan.issueservice.domain.enums.JavaScriptIssuePriorityEnum;
+import cn.edu.fudan.issueservice.domain.enums.IssuePriorityEnums.*;
 import cn.edu.fudan.issueservice.domain.enums.ToolEnum;
+import cn.edu.fudan.issueservice.util.*;
 import cn.edu.fudan.issueservice.util.FileFilter;
-import cn.edu.fudan.issueservice.util.FileUtil;
-import cn.edu.fudan.issueservice.util.JGitHelper;
-import cn.edu.fudan.issueservice.util.StringsUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import lombok.Setter;
@@ -40,8 +38,8 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
     @Value("${babelEsLint}")
     private String babelEsLintPath;
 
-    @Value("${ESLintResultFileHome}")
-    private String resultFileHome;
+    @Value("${ESLintLogHome}")
+    private String logHome;
 
     @Value("${binHome}")
     private String binHome;
@@ -63,27 +61,18 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
                 }
             }
             //find src dir
-            Runtime rt = Runtime.getRuntime();
             String srcDir = FileUtil.findSrcDir(repoPath);
             if (srcDir == null) {
                 log.error("can't find this repo src path");
                 checkNeedDeleteIgnoreFile(newFile, repoPath);
                 return true;
             }
+
             addIgnoreFile(repoPath + ESLINT_IGNORE);
-            //ESLint exe command
-            String command = binHome + "executeESLint.sh " + repoPath + " " + repoUuid + "_" + commit + " " + srcDir;
-            log.info("command -> {}", command);
-            Process process = rt.exec(command);
-            //wait command 200s,if time > 200,invoke tool failed
-            boolean timeout = process.waitFor(200L, TimeUnit.SECONDS);
-            if (!timeout) {
-                process.destroy();
-                log.error("invoke tool timeout ! (200s)");
-                return false;
-            }
+            boolean executeSuccess = ShUtil.executeCommand(binHome + "executeESLint.sh " + repoPath + " " + repoUuid + "_" + commit + " " + srcDir, 200);
             checkNeedDeleteIgnoreFile(newFile, repoPath);
-            return process.exitValue() == 0;
+
+            return executeSuccess;
         } catch (Exception e) {
             log.error("ESLint can not parse this repo,repoUuid: {},commit: {}", repoUuid, commit);
         }
@@ -108,8 +97,8 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
     @Override
     public boolean analyze(String repoPath, String repoUuid, String commit) {
         //get esLint report file path
-        String esLintReportFile = FileUtil.getEsLintReportAbsolutePath(resultFileHome, repoUuid, commit);
-        String reportPath = FileUtil.getEsLintRunningLogAbsolutePath(resultFileHome, repoUuid, commit);
+        String esLintReportFile = FileUtil.getEsLintReportAbsolutePath(logHome, repoUuid, commit);
+        String reportPath = FileUtil.getEsLintRunningLogAbsolutePath(logHome, repoUuid, commit);
         //read result from json file
         try (BufferedReader reader = new BufferedReader(new FileReader(esLintReportFile))) {
             int ch;
@@ -132,7 +121,7 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
     private void deleteEsLintReportFile(String esLintReportFile, String reportPath) {
         try {
             Runtime rt = Runtime.getRuntime();
-            String command = binHome + "deleteESLintReport.sh " + esLintReportFile + " " + reportPath;
+            String command = binHome + "deleteScanResult.sh " + esLintReportFile + " " + reportPath;
             log.info("command -> {}", command);
             Process process = rt.exec(command);
             boolean timeout = process.waitFor(20L, TimeUnit.SECONDS);
@@ -370,7 +359,7 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
     public static void main(String[] args) {
         EsLintBaseAnalyzer esLintBaseAnalyzer = new EsLintBaseAnalyzer();
         esLintBaseAnalyzer.setBabelEsLintPath("/Users/beethoven/Desktop/saic/IssueTracker-Master/issue-service/src/main/resources/node/babelEsLint.js");
-        esLintBaseAnalyzer.setResultFileHome("/Users/beethoven/Desktop/saic/issue-tracker-web");
+        esLintBaseAnalyzer.setLogHome("/Users/beethoven/Desktop/saic/issue-tracker-web");
         esLintBaseAnalyzer.analyze("/Users/beethoven/Desktop/saic/issue-tracker-web", "test", "4f42e73bda0a80d044a013ef73da4d8af0f4c981");
         JsFileParser.setBabelPath("/Users/beethoven/Desktop/saic/IssueTracker-Master/issue-service/src/main/resources/node/babelEsLint.js");
         JsTree jsTree = new JsTree(Collections.singletonList("/Users/beethoven/Desktop/saic/issue-tracker-web/src/issue.js"), "", "");
