@@ -4,7 +4,7 @@
 <mapper namespace="cn.edu.fudan.taskmanagement.mapper.JiraCurrentMapper">
 
     <delete id="deleteJiraCurrentByRepoId" parameterType="String">
-        delete from jira_current where repo_id=#{repo_id}
+        delete from jira_current where jira_id in (select jira_id from jira_history where repo_id = #{repo_id})
     </delete>
 
 </mapper>
