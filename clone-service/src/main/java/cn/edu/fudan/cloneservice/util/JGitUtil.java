@@ -172,15 +172,18 @@ public class JGitUtil {
         int sameDeveloperCloneLines = 0;
         try {
             Repository repository = builder.build();
+            //本次提交的commit
             RevCommit revCommit = getCurrentRevCommit(repoPath,commitId);
             String developerName = revCommit.getAuthorIdent().getName();
             ObjectId curCommitId = repository.resolve(commitId);
+
             BlameCommand blamer = new BlameCommand(repository);
             blamer.setStartCommit(curCommitId);
             blamer.setFilePath(filePath);
             try {
                 BlameResult blame = blamer.call();
                 for(int i = start; i <= end; i++){
+                    //这个克隆行的原作者
                     PersonIdent personIdent =  blame.getSourceAuthor(i);
                     if(personIdent.getName().equals(developerName)){
                         sameDeveloperCloneLines++;

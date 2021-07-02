@@ -282,7 +282,8 @@ public class CloneMeasureServiceImpl implements CloneMeasureService {
         //key记录repoPath, value记录新增且是self clone的行号
         Map<String, String> selfCloneLocationMap;
 
-        //todo
+
+        //cloneLocations:all clone locations by commit; map:add lines map; cloneLocationMap:divided by category
         CloneMeasure cloneMeasure = forkJoinRecursiveTask.extract(repoId, commitId, repoPath, cloneLocations, cloneLocationMap, map);
         if (cloneMeasure == null) {
             return;
