@@ -49,13 +49,16 @@ public class TscanCodeAnalyzer extends BaseAnalyzer {
 
     @Override
     public boolean analyze(String repoPath, String repoUuid, String commit) {
-        //read log  -> return String
-        String fileName = logHome + repoUuid + "_" + commit;
+
+        String errFile = logHome + "err-" + repoUuid + "_" + commit + ".xml";
+        String infoFile = logHome + "info-" + repoUuid + "_" + commit + ".txt";
+
         try {
-            List<XmlError> errors = XmlUtil.getError(fileName);
+            List<XmlError> errors = XmlUtil.getError(errFile);
+            ShUtil.executeCommand(binHome + "deleteScanResult.sh " + errFile + " " + infoFile, 10);
             return xmlErrors2RawIssues(errors, commit, repoUuid, repoPath);
         } catch (IOException | SAXException | JDOMException e) {
-            log.error("parse xml file failed, fileName is: {}", fileName);
+            log.error("parse xml file failed, fileName is: {}", errFile);
             log.error("exception msg is: {}", e.getMessage());
             return false;
         }
@@ -77,23 +80,26 @@ public class TscanCodeAnalyzer extends BaseAnalyzer {
 
             for (XmlError error : errors) {
                 String uuid = UUID.randomUUID().toString();
-                RawIssue rawIssue = RawIssue.builder()
-                        .uuid(uuid)
-                        .type(error.getId() + "-" + error.getSubId())
-                        .tool(getToolName())
-                        .detail(error.getMsg())
-                        .fileName(error.getFile())
-                        .scanId(getToolName())
-                        .commitId(commit)
-                        .repoId(repoUuid)
-                        .codeLines(error.getLine())
-                        .locations(parseLocations(error.getFile(), error.getFuncInfo(), error.getLine(), uuid))
-                        .developerName(developerUniqueName)
-                        .priority(CppIssuePriorityEnum.getRankByPriority(error.getSeverity()))
-                        .build();
+                String file = FileUtil.handleFileNameToRelativePath(error.getFile());
+
+                RawIssue rawIssue = new RawIssue();
+                rawIssue.setUuid(uuid);
+                rawIssue.setType(error.getId() + "-" + error.getSubId());
+                rawIssue.setTool(getToolName());
+                rawIssue.setDetail(error.getMsg());
+                rawIssue.setFileName(file);
+                rawIssue.setScanId(getToolName());
+                rawIssue.setCommitId(commit);
+                rawIssue.setRepoId(repoUuid);
+                rawIssue.setCodeLines(error.getLine());
+                rawIssue.setLocations(parseLocations(error.getFile(), error.getFuncInfo(), error.getLine(), uuid));
+                rawIssue.setDeveloperName(developerUniqueName);
+                rawIssue.setPriority(CppIssuePriorityEnum.getRankByPriority(error.getSeverity()));
+
                 rawIssues.add(rawIssue);
             }
             resultRawIssues.addAll(rawIssues);
+
             return true;
         } catch (Exception e) {
             log.error("raw issue parse from xml error failed, msg: {}", e.getMessage());

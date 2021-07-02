@@ -259,6 +259,8 @@
         <dependency>
             <groupId>cn.edu.fudan</groupId>
             <artifactId>common</artifactId>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/../common/target/common-1.0.1.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>org.jdom</groupId>

@@ -106,5 +106,24 @@ public class IssuePriorityEnums {
 
             return 0;
         }
+
+        public static String getPriorityByRank(int rank) {
+            for (CppIssuePriorityEnum priority : CppIssuePriorityEnum.values()) {
+                if (priority.getRank() == rank) {
+                    return priority.name;
+                }
+            }
+            return null;
+        }
     }
+
+    public static String getIssueCategory(String tool, int priority) {
+        if (ToolEnum.TSCANCODE.getType().equals(tool)) {
+            return CppIssuePriorityEnum.getPriorityByRank(priority);
+        } else if (ToolEnum.ESLINT.getType().equals(tool)) {
+            return JavaScriptIssuePriorityEnum.getPriorityByRank(priority);
+        }
+        return null;
+    }
+
 }

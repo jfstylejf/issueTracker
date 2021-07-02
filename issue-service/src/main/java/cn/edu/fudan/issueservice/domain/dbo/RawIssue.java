@@ -4,7 +4,6 @@ import cn.edu.fudan.issueservice.domain.dto.RawIssueMatchResult;
 import cn.edu.fudan.issueservice.domain.enums.RawIssueStatus;
 import com.alibaba.fastjson.JSONObject;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -20,7 +19,6 @@ import java.util.UUID;
  * @author fancying
  */
 @Data
-@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class RawIssue {
