@@ -6,6 +6,7 @@ import cn.edu.fudan.issueservice.domain.enums.IssuePriorityEnums.*;
 import cn.edu.fudan.issueservice.domain.enums.IssueStatusEnum;
 import cn.edu.fudan.issueservice.domain.vo.IssueFilterInfoVO;
 import cn.edu.fudan.issueservice.domain.vo.IssueFilterSidebarVO;
+import cn.edu.fudan.issueservice.domain.vo.IssueFilterSidebarVO.*;
 import cn.edu.fudan.issueservice.service.IssueService;
 import cn.edu.fudan.issueservice.util.DateTimeUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -282,77 +283,135 @@ public class IssueServiceImpl implements IssueService {
 
     @Override
     public List<IssueFilterSidebarVO> getIssuesFilterSidebar(Map<String, Object> query) {
-        List<IssueFilterSidebarVO> result = new ArrayList<>();
         //get issue count info list
         List<Map<String, Object>> issueCountInfoList = issueDao.getIssueCountByCategoryAndType(query);
-        //build issue filter side bar
-        long codeSmellTotal = 0, bugTotal = 0, warnTotal = 0, errorTotal = 0;
-        //new categories
-        List<IssueFilterSidebarVO.IssueSideBarInfo> codeSmellCategories = new ArrayList<>();
-        List<IssueFilterSidebarVO.IssueSideBarInfo> bugCategories = new ArrayList<>();
-        List<IssueFilterSidebarVO.IssueSideBarInfo> warnCategories = new ArrayList<>();
-        List<IssueFilterSidebarVO.IssueSideBarInfo> errorCategories = new ArrayList<>();
+
+        List<List<IssueSideBarInfo>> sideBarInfos = new ArrayList<>();
+        long codeSmellTotal = 0, bugTotal = 0, warnTotal = 0, errorTotal = 0,
+                informationTotal = 0, warningTotal = 0, seriousTotal = 0, criticalTotal = 0;
+
+        for (int i = 0; i < 8; i++) {
+            sideBarInfos.add(new ArrayList<>());
+        }
+
         for (Map<String, Object> issueCountInfo : issueCountInfoList) {
             long count = (long) issueCountInfo.get("count");
             String type = (String) issueCountInfo.get("type");
             String category = (String) issueCountInfo.get("category");
-            // 这是属于java的issue
+            //java
             if ("Code smell".equals(category)) {
                 codeSmellTotal += count;
-                codeSmellCategories.add(IssueFilterSidebarVO.IssueSideBarInfo.getSidebarInfo(count, type));
+                sideBarInfos.get(0).add(IssueSideBarInfo.getSidebarInfo(count, type));
             }
             if ("Bug".equals(category)) {
                 bugTotal += count;
-                bugCategories.add(IssueFilterSidebarVO.IssueSideBarInfo.getSidebarInfo(count, type));
+                sideBarInfos.get(1).add(IssueSideBarInfo.getSidebarInfo(count, type));
             }
-            // 这是属于js的issue
+            //js
             if ("Warn".equals(category)) {
                 warnTotal += count;
-                warnCategories.add(IssueFilterSidebarVO.IssueSideBarInfo.getSidebarInfo(count, type));
+                sideBarInfos.get(2).add(IssueSideBarInfo.getSidebarInfo(count, type));
             }
             if ("Error".equals(category)) {
                 errorTotal += count;
-                errorCategories.add(IssueFilterSidebarVO.IssueSideBarInfo.getSidebarInfo(count, type));
+                sideBarInfos.get(3).add(IssueSideBarInfo.getSidebarInfo(count, type));
+            }
+            //c++
+            if (CppIssuePriorityEnum.INFORMATION.getName().equals(category)) {
+                informationTotal += count;
+                sideBarInfos.get(4).add(IssueSideBarInfo.getSidebarInfo(count, type));
+            }
+            if (CppIssuePriorityEnum.WARNING.getName().equals(category)) {
+                warningTotal += count;
+                sideBarInfos.get(5).add(IssueSideBarInfo.getSidebarInfo(count, type));
+            }
+            if (CppIssuePriorityEnum.SERIOUS.getName().equals(category)) {
+                seriousTotal += count;
+                sideBarInfos.get(6).add(IssueSideBarInfo.getSidebarInfo(count, type));
+            }
+            if (CppIssuePriorityEnum.CRITICAL.getName().equals(category)) {
+                criticalTotal += count;
+                sideBarInfos.get(7).add(IssueSideBarInfo.getSidebarInfo(count, type));
             }
         }
-        IssueFilterSidebarVO.IssueFilterSidebar codeSmellSidebar = IssueFilterSidebarVO.IssueFilterSidebar.builder()
-                .total(codeSmellTotal)
+
+        long[] nums = {codeSmellTotal, bugTotal, warnTotal, errorTotal, informationTotal, warningTotal, seriousTotal, criticalTotal};
+        return buildIssueSideBar(nums, sideBarInfos);
+    }
+
+    private List<IssueFilterSidebarVO> buildIssueSideBar(long[] nums, List<List<IssueSideBarInfo>> sideBarInfos) {
+        List<IssueFilterSidebarVO> result = new ArrayList<>();
+        IssueFilterSidebar codeSmellSidebar = IssueFilterSidebar.builder()
+                .total(nums[0])
                 .name("Code smell")
-                .types(codeSmellCategories)
+                .types(sideBarInfos.get(0))
                 .build();
-        IssueFilterSidebarVO.IssueFilterSidebar bugSidebar = IssueFilterSidebarVO.IssueFilterSidebar.builder()
-                .total(bugTotal)
+        IssueFilterSidebar bugSidebar = IssueFilterSidebar.builder()
+                .total(nums[1])
                 .name("Bug")
-                .types(bugCategories)
+                .types(sideBarInfos.get(1))
                 .build();
-        IssueFilterSidebarVO.IssueFilterSidebar warnSidebar = IssueFilterSidebarVO.IssueFilterSidebar.builder()
-                .total(warnTotal)
+
+        IssueFilterSidebar warnSidebar = IssueFilterSidebar.builder()
+                .total(nums[2])
                 .name("Warn")
-                .types(warnCategories)
+                .types(sideBarInfos.get(2))
                 .build();
-        IssueFilterSidebarVO.IssueFilterSidebar errorSidebar = IssueFilterSidebarVO.IssueFilterSidebar.builder()
-                .total(errorTotal)
+        IssueFilterSidebar errorSidebar = IssueFilterSidebar.builder()
+                .total(nums[3])
                 .name("Error")
-                .types(errorCategories)
+                .types(sideBarInfos.get(3))
                 .build();
+
+        IssueFilterSidebar informationSidebar = IssueFilterSidebar.builder()
+                .total(nums[4])
+                .name("Information")
+                .types(sideBarInfos.get(4))
+                .build();
+        IssueFilterSidebar warningSidebar = IssueFilterSidebar.builder()
+                .total(nums[5])
+                .name("Warning")
+                .types(sideBarInfos.get(5))
+                .build();
+        IssueFilterSidebar seriousSidebar = IssueFilterSidebar.builder()
+                .total(nums[6])
+                .name("Serious")
+                .types(sideBarInfos.get(6))
+                .build();
+        IssueFilterSidebar criticalSidebar = IssueFilterSidebar.builder()
+                .total(nums[7])
+                .name("Critical")
+                .types(sideBarInfos.get(7))
+                .build();
+
 
         IssueFilterSidebarVO javaSideBarVO = IssueFilterSidebarVO.builder()
                 .language("java")
-                .categories(new ArrayList<IssueFilterSidebarVO.IssueFilterSidebar>() {{
+                .categories(new ArrayList<>() {{
                     add(codeSmellSidebar);
                     add(bugSidebar);
                 }})
                 .build();
         IssueFilterSidebarVO jsSideBarVO = IssueFilterSidebarVO.builder()
                 .language("js")
-                .categories(new ArrayList<IssueFilterSidebarVO.IssueFilterSidebar>() {{
+                .categories(new ArrayList<>() {{
                     add(warnSidebar);
                     add(errorSidebar);
+                }})
+                .build();
+        IssueFilterSidebarVO cppSideBarVO = IssueFilterSidebarVO.builder()
+                .language("c++")
+                .categories(new ArrayList<>() {{
+                    add(informationSidebar);
+                    add(warningSidebar);
+                    add(seriousSidebar);
+                    add(criticalSidebar);
                 }})
                 .build();
 
         result.add(javaSideBarVO);
         result.add(jsSideBarVO);
+        result.add(cppSideBarVO);
 
         return result;
     }
