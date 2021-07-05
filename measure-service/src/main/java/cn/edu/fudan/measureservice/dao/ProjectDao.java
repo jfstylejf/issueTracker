@@ -497,7 +497,8 @@ public class ProjectDao {
         List<String> visibleRepoList;
         // Case 1 : 若给定了查询库列表， 则根据查询库列表对 visibleProjectInvolvedRepoList 进行过滤，只取交集
         if (repoUuidList!=null && !"".equals(repoUuidList)) {
-            List<String> queryRepoList = Arrays.asList(repoUuidList.split(split));
+            List<String> queryRepoList = new ArrayList<>(Arrays.asList(repoUuidList.split(split)));
+            queryRepoList.removeIf(o -> o == null || "".equals(o));
             visibleRepoList = mergeBetweenRepo(queryRepoList,visibleProjectInvolvedRepoList);
         }else {  // Case 2 : 若没有给定查询库列表， 则可查询库列表就为 visibleProjectInvolvedRepoList
             visibleRepoList = visibleProjectInvolvedRepoList;
