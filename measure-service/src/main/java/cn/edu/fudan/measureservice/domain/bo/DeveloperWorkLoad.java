@@ -27,3 +27,4 @@ public class DeveloperWorkLoad implements Serializable {
      */
     private LevelEnum level;
 }
+

@@ -153,9 +153,10 @@ public interface ProjectMapper {
      * @param repoUuid 查询库
      * @param since 查询起始时间
      * @param until 截止时间
+     * @param isCompliance 是否是规范提交
      * @return 查询条件下，单个库的提交次数
      */
-    int getSingleProjectMsgNum(String repoUuid, String since ,String until);
+    int getSingleProjectMsgNum(String repoUuid, String since ,String until,Boolean isCompliance);
 
     /**
      * 查询项目下包含的库列表

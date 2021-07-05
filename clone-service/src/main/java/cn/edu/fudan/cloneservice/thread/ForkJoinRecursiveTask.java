@@ -95,10 +95,11 @@ public class ForkJoinRecursiveTask {
                 int endLine = Integer.parseInt(cloneLines.split(",")[1]);
                 for(String filePath: map.keySet()){
                     if(filePath.equals(cloneLocation.getFilePath())){
-
+                        //这个版本改变的行数
                         String[] lines = map.get(filePath).split(",");
                         for(int i = 0; i < lines.length; i++){
                             if(Integer.parseInt(lines[i]) >= startLine && Integer.parseInt(lines[i]) <= endLine){
+                                //这个cloneLocation对应的category和cloneLocation
                                 List<CloneLocation> list = cloneLocationMap.get(cloneLocation.getCategory());
                                 String category = cloneLocation.getCategory();
                                 for(CloneLocation cloneLocation1 : list){
@@ -107,6 +108,7 @@ public class ForkJoinRecursiveTask {
                                     }
                                     String filePath1 = cloneLocation1.getFilePath();
                                     String cloneLines1 = cloneLocation1.getCloneLines();
+                                    //todo：可以优化，把结果计入缓存
                                     if(JGitUtil.isSameDeveloperClone(repoPath, commitId, filePath1, cloneLines1)){
                                         selfMap = ComputeUtil.putNewNum(selfMap, lines[i], filePath);
                                         selfCloneLocationMap.merge(category + ":" +filePath, lines[i], (v1, v2) -> v1 + "," + v2);

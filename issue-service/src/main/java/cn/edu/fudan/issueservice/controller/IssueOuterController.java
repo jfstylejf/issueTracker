@@ -2,7 +2,7 @@ package cn.edu.fudan.issueservice.controller;
 
 import cn.edu.fudan.issueservice.component.RestInterfaceManager;
 import cn.edu.fudan.issueservice.domain.ResponseBean;
-import cn.edu.fudan.issueservice.domain.enums.JavaIssuePriorityEnum;
+import cn.edu.fudan.issueservice.domain.enums.IssuePriorityEnums.*;
 import cn.edu.fudan.issueservice.domain.enums.ToolEnum;
 import cn.edu.fudan.issueservice.domain.vo.IssueFilterInfoVO;
 import cn.edu.fudan.issueservice.domain.vo.IssueFilterSidebarVO;
@@ -136,26 +136,16 @@ public class IssueOuterController {
             @ApiImplicitParam(name = "manual_status", value = "缺陷是否被忽略", defaultValue = "Default", allowableValues = "Ignore , Misinformation , To_Review , Default")
     })
     @GetMapping(value = {"/issue/filter"})
-    public ResponseBean<Map<String, Object>> filterIssues(HttpServletRequest request, @RequestParam(value = "project_names", required = false) String projectNames,
-                                                          @RequestParam(value = "repo_uuids", required = false) String repoUuids,
-                                                          @RequestParam(value = "since", required = false) String since,
-                                                          @RequestParam(value = "until", required = false) String until,
-                                                          @RequestParam(value = "tool", required = false) String toolName,
-                                                          @RequestParam(value = "types", required = false) String type,
-                                                          @RequestParam(value = "page", required = false, defaultValue = "1") int page,
-                                                          @RequestParam(value = "ps", required = false, defaultValue = "10") int ps,
-                                                          @RequestParam(value = "status", required = false) String status,
-                                                          @RequestParam(value = "introducer", required = false) String introducers,
-                                                          @RequestParam(value = "solver", required = false) String solver,
-                                                          @RequestParam(value = "category", required = false) String category,
-                                                          @RequestParam(value = "priority", required = false) String priority,
-                                                          @RequestParam(value = "file_paths", required = false) String filesPath,
-                                                          @RequestParam(value = "url", required = false) String url,
-                                                          @RequestParam(value = "commit", required = false) String commit,
-                                                          @RequestParam(value = "detail", required = false, defaultValue = "false") Boolean detail,
-                                                          @RequestParam(value = "asc", required = false, defaultValue = "false") Boolean asc,
-                                                          @RequestParam(value = "order", required = false, defaultValue = "no") String order,
-                                                          @RequestParam(value = "issue_uuids", required = false) String issueUuids,
+    public ResponseBean<Map<String, Object>> filterIssues(HttpServletRequest request, @RequestParam(value = "project_names", required = false) String projectNames, @RequestParam(value = "repo_uuids", required = false) String repoUuids,
+                                                          @RequestParam(value = "since", required = false) String since, @RequestParam(value = "until", required = false) String until,
+                                                          @RequestParam(value = "tool", required = false) String toolName, @RequestParam(value = "types", required = false) String type,
+                                                          @RequestParam(value = "page", required = false, defaultValue = "1") int page, @RequestParam(value = "ps", required = false, defaultValue = "10") int ps,
+                                                          @RequestParam(value = "status", required = false) String status, @RequestParam(value = "introducer", required = false) String introducers,
+                                                          @RequestParam(value = "solver", required = false) String solver, @RequestParam(value = "category", required = false) String category,
+                                                          @RequestParam(value = "priority", required = false) String priority, @RequestParam(value = "file_paths", required = false) String filesPath,
+                                                          @RequestParam(value = "url", required = false) String url, @RequestParam(value = "commit", required = false) String commit,
+                                                          @RequestParam(value = "detail", required = false, defaultValue = "false") Boolean detail, @RequestParam(value = "asc", required = false, defaultValue = "false") Boolean asc,
+                                                          @RequestParam(value = "order", required = false, defaultValue = "no") String order, @RequestParam(value = "issue_uuids", required = false) String issueUuids,
                                                           @RequestParam(value = "manual_status", required = false, defaultValue = "Default") String manualStatus) {
         String userToken = request.getHeader(TOKEN);
 
@@ -232,7 +222,7 @@ public class IssueOuterController {
     @GetMapping(value = "issue/filter/sidebar")
     public ResponseBean<List<IssueFilterSidebarVO>> getIssueFilterSidebar(@RequestParam(value = "project_names", required = false) String projectNames,
                                                                           @RequestParam(value = "repo_uuids", required = false) String repoUuids,
-                                                                          @RequestParam(value = "tools", required = false, defaultValue = "sonarqube,ESLint") String tools,
+                                                                          @RequestParam(value = "tools", required = false, defaultValue = "sonarqube,ESLint,TscanCode") String tools,
                                                                           @RequestParam(value = "since", required = false) String since,
                                                                           @RequestParam(value = "until", required = false) String until,
                                                                           @RequestParam(value = "status", required = false) String status,

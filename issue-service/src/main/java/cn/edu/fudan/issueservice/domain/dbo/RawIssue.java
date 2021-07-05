@@ -3,7 +3,9 @@ package cn.edu.fudan.issueservice.domain.dbo;
 import cn.edu.fudan.issueservice.domain.dto.RawIssueMatchResult;
 import cn.edu.fudan.issueservice.domain.enums.RawIssueStatus;
 import com.alibaba.fastjson.JSONObject;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -17,6 +19,8 @@ import java.util.UUID;
  * @author fancying
  */
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class RawIssue {
 
     private String uuid;
@@ -31,7 +35,6 @@ public class RawIssue {
     private Date commitTime;
     private List<Location> locations;
     private int version = 1;
-    private String developerEmail;
     private int priority;
     /**
      * 开发者聚合后的唯一姓名

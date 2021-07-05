@@ -1120,8 +1120,7 @@ public class MeasureDeveloperService {
         // 获取查询条件下可见的库列表
         List<String> visibleRepoList = projectDao.getVisibleRepoListByProjectNameAndRepo(projectNameList,repoUuidList,token);
         // 获取查询条件下的提交规范性明细 （分页查询）
-        // fixme 总页数要根据筛选条件来定
-        int totalMsgSize = projectDao.getRepoListMsgNum(visibleRepoList);
+        int totalMsgSize = projectDao.getRepoListMsgNum(visibleRepoList,isValid);
         int totalPage = totalMsgSize % ps == 0 ? totalMsgSize / ps : totalMsgSize / ps + 1;
         // 起始查询位置
         int initialBeginIndex = (page-1) * ps;

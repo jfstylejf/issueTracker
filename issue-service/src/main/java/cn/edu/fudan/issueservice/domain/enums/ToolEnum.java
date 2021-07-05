@@ -10,10 +10,13 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum ToolEnum {
-    //sonar qube 工具
+    /**
+     * 工具枚举
+     */
     SONAR("sonarqube"),
-    //ESLint 工具
-    ESLINT("ESLint");
+    ESLINT("ESLint"),
+    TSCANCODE("TscanCode");
+
     private final String type;
 
     public static String getToolByLanguage(String language) {
@@ -21,6 +24,8 @@ public enum ToolEnum {
             return SONAR.getType();
         } else if (LanguageEnum.JAVA_SCRIPT.getName().equals(language)) {
             return ESLINT.getType();
+        } else if (LanguageEnum.CPP.getName().equals(language)) {
+            return TSCANCODE.getType();
         }
         return null;
     }
