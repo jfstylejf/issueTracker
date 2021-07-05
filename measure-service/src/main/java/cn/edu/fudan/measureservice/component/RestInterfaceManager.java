@@ -149,6 +149,7 @@ public class RestInterfaceManager {
             log.info("repoHome -> {} , repoUuid -->{} , commit_id -->{}" ,repoPath,repoUuid,commit_id);
         } catch (RestClientException e) {
             log.error("Get exception when getting repoPath");
+            log.error(e.getMessage());
         }
         return repoPath;
     }
