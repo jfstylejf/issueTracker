@@ -620,10 +620,10 @@ public class ProjectDao {
      * @param repoUuidList 查询库列表
      * @return
      */
-    public int getRepoListMsgNum(List<String> repoUuidList) {
+    public int getRepoListMsgNum(List<String> repoUuidList,Boolean isValid) {
         int count = 0;
         for (String repoUuid : repoUuidList) {
-            count += ((ProjectDao) AopContext.currentProxy()).getSingleRepoMsgNum(repoUuid);
+            count += ((ProjectDao) AopContext.currentProxy()).getSingleRepoMsgNum(repoUuid,isValid);
         }
         return count;
     }
@@ -633,9 +633,8 @@ public class ProjectDao {
      * @param repoUuid 查询库 id
      * @return
      */
-    @Cacheable(value = "repoMsgNum",key = "#repoUuid")
-    public int getSingleRepoMsgNum(String repoUuid) {
-        return projectMapper.getSingleProjectMsgNum(repoUuid,null,null);
+    public int getSingleRepoMsgNum(String repoUuid,Boolean isValid) {
+        return projectMapper.getSingleProjectMsgNum(repoUuid,null,null,isValid);
     }
 
 
