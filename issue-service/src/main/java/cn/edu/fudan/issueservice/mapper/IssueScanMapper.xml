@@ -118,7 +118,7 @@
     </select>
 
     <select id="getScanFailedCommitList">
-        SELECT commit_id, DATE_FORMAT(commit_time,'%Y-%m-%d %H:%i:%s')
+        SELECT commit_id, DATE_FORMAT(commit_time, '%Y-%m-%d %H:%i:%s')
         FROM issue_scan
         WHERE repo_uuid = #{repoUuid}
           AND status &lt;&gt; 'done'

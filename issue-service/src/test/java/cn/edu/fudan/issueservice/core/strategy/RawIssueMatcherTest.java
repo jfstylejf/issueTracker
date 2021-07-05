@@ -20,7 +20,7 @@ public class RawIssueMatcherTest {
      * 测试单行issue增加行号匹配
      */
     @Test
-    public void singleLocationAddLineMatchTest(){
+    public void singleLocationAddLineMatchTest() {
 
         String pre = "[{\"file_name\":\"AddLine.java\",\"realEliminate\":false,\"type\":\"Empty arrays and collections should be returned instead of null\",\"uuid\":\"a80475fd-c62b-461b-8e96-768c978002e5\",\"code_lines\":0,\"matchResultDTOIndex\":-1,\"mapped\":false,\"locations\":[{\"start_token\":0,\"code\":\"        return null;\",\"offset\":1,\"bug_lines\":\"12\",\"locationMatchResults\":[],\"start_line\":12,\"end_line\":12,\"method_name\":\"addLineTest()\",\"end_token\":0,\"matched\":false,\"tokens\":[-49,-55],\"matchedIndex\":-1}],\"detail\":\"Return an empty collection instead of null.\",\"rawIssueMatchResults\":[],\"scan_id\":\"tempScan_id\",\"commit_id\":\"tempCommit_id\"}]";
         String cur = "[{\"file_name\":\"AddLine.java\",\"realEliminate\":false,\"type\":\"Empty arrays and collections should be returned instead of null\",\"uuid\":\"9185bd48-52d8-4340-b9d1-eed7fba887c0\",\"code_lines\":0,\"matchResultDTOIndex\":-1,\"mapped\":false,\"locations\":[{\"start_token\":0,\"code\":\"        return null;\",\"offset\":1,\"bug_lines\":\"14\",\"locationMatchResults\":[],\"start_line\":14,\"end_line\":14,\"method_name\":\"addLineTest()\",\"end_token\":0,\"matched\":false,\"tokens\":[-49,-55],\"matchedIndex\":-1}],\"detail\":\"Return an empty collection instead of null.\",\"rawIssueMatchResults\":[],\"scan_id\":\"tempScan_id\",\"commit_id\":\"tempCommit_id\"}]";

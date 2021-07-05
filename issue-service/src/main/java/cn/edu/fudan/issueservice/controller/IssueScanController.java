@@ -142,7 +142,7 @@ public class IssueScanController {
     @GetMapping(value = "/issue/scan/failed")
     public ResponseBean<Map<String, String>> getScanFailedCommitList(@RequestParam(name = "repo_uuid") String repoUuid) {
         try {
-            return new ResponseBean<>(200,SUCCESS, issueScanService.getScanFailedCommitList(repoUuid));
+            return new ResponseBean<>(200, SUCCESS, issueScanService.getScanFailedCommitList(repoUuid));
         } catch (Exception e) {
             e.printStackTrace();
             return new ResponseBean<>(500, FAILED + e.getMessage(), null);

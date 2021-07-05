@@ -6,10 +6,7 @@ import cn.edu.fudan.issueservice.domain.dbo.Location;
 import cn.edu.fudan.issueservice.domain.dbo.RawIssue;
 import cn.edu.fudan.issueservice.domain.enums.RawIssueStatus;
 import cn.edu.fudan.issueservice.domain.enums.ToolEnum;
-import cn.edu.fudan.issueservice.util.AstUtil;
-import cn.edu.fudan.issueservice.util.AstParserUtil;
-import cn.edu.fudan.issueservice.util.FileFilter;
-import cn.edu.fudan.issueservice.util.JGitHelper;
+import cn.edu.fudan.issueservice.util.*;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
@@ -46,25 +43,7 @@ public class SonarQubeBaseAnalyzer extends BaseAnalyzer {
 
     @Override
     public boolean invoke(String repoUuid, String repoPath, String commit) {
-
-        try {
-            Runtime rt = Runtime.getRuntime();
-            //执行sonar命令,一个commit对应一个sonarqube project(repoUuid_commit)
-            String command = binHome + "executeSonar.sh " + repoPath + " " + repoUuid + "_" + commit + " " + commit;
-            log.info("command -> {}", command);
-            Process process = rt.exec(command);
-            //最多等待sonar脚本执行200秒,超时则认为该commit解析失败
-            boolean timeout = process.waitFor(300L, TimeUnit.SECONDS);
-            if (!timeout) {
-                process.destroy();
-                log.error("invoke tool timeout ! (300s)");
-                return false;
-            }
-            return process.exitValue() == 0;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return false;
+        return ShUtil.executeCommand(binHome + "executeSonar.sh " + repoPath + " " + repoUuid + "_" + commit + " " + commit, 300);
     }
 
     @Override
