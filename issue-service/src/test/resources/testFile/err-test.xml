@@ -1,0 +1,931 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<results>
+    <error file="/home/fdse/user/codeWisdom/repository/repo/github/bitcoin/bitcoin-master_duplicate_fdse-0/bitcoin-master/src/chain.cpp"
+           line="163" id="nullpointer" subid="dereferenceBeforeCheck" severity="Serious"
+           msg="Null - checking [pa] suggests that it may be null, but it has already been dereferenced at line 157."
+           web_identify="{&quot;identify&quot;:&quot;pa&quot;}"
+           func_info="const CBlockIndex * LastCommonAncestor ( const CBlockIndex * pa , const CBlockIndex * pb )"
+           content="153:
+154: /** Find the last common ancestor two blocks have.
+155:  *  Both pa and pb must be non-nullptr. */
+156: const CBlockIndex* LastCommonAncestor(const CBlockIndex* pa, const CBlockIndex* pb) {
+157:     if (pa-&gt;nHeight &gt; pb-&gt;nHeight) {
+158:         pa = pa-&gt;GetAncestor(pb-&gt;nHeight);
+159:     } else if (pb-&gt;nHeight &gt; pa-&gt;nHeight) {
+160:         pb = pb-&gt;GetAncestor(pa-&gt;nHeight);
+161:     }
+162:
+163:     while (pa != pb &amp;&amp; pa &amp;&amp; pb) {
+164:         pa = pa-&gt;pprev;
+165:         pb = pb-&gt;pprev;
+166:     }
+167:
+168:     // Eventually all chain branches meet at the genesis block.
+169:     assert(pa == pb);
+170:     return pa;
+171: }
+"/>
+    <error file="/home/fdse/user/codeWisdom/repository/repo/github/bitcoin/bitcoin-master_duplicate_fdse-0/bitcoin-master/src/chain.cpp"
+           line="163" id="nullpointer" subid="dereferenceBeforeCheck" severity="Serious"
+           msg="Null - checking [pb] suggests that it may be null, but it has already been dereferenced at line 157."
+           web_identify="{&quot;identify&quot;:&quot;pb&quot;}"
+           func_info="const CBlockIndex * LastCommonAncestor ( const CBlockIndex * pa , const CBlockIndex * pb )"
+           content="153:
+154: /** Find the last common ancestor two blocks have.
+155:  *  Both pa and pb must be non-nullptr. */
+156: const CBlockIndex* LastCommonAncestor(const CBlockIndex* pa, const CBlockIndex* pb) {
+157:     if (pa-&gt;nHeight &gt; pb-&gt;nHeight) {
+158:         pa = pa-&gt;GetAncestor(pb-&gt;nHeight);
+159:     } else if (pb-&gt;nHeight &gt; pa-&gt;nHeight) {
+160:         pb = pb-&gt;GetAncestor(pa-&gt;nHeight);
+161:     }
+162:
+163:     while (pa != pb &amp;&amp; pa &amp;&amp; pb) {
+164:         pa = pa-&gt;pprev;
+165:         pb = pb-&gt;pprev;
+166:     }
+167:
+168:     // Eventually all chain branches meet at the genesis block.
+169:     assert(pa == pb);
+170:     return pa;
+171: }
+"/>
+    <error file="/home/fdse/user/codeWisdom/repository/repo/github/bitcoin/bitcoin-master_duplicate_fdse-0/bitcoin-master/src/flatfile.cpp"
+           line="63" id="logic" subid="UnintentionalOverflow" severity="Warning"
+           msg="Potentially overflowing expression around operator [ * ], which is evaluated using 4 byte arithmetic, and then used in a context that expects an expression of 8 bytes type."
+           web_identify="{&quot;identify&quot;:&quot;n_new_chunksm_chunk_size*&quot;}"
+           func_info="long FlatFileSeq::Allocate ( const FlatFilePos &amp; pos , long add_size , bool &amp; out_of_space )"
+           content="53: }
+54:
+55: size_t FlatFileSeq::Allocate(const FlatFilePos&amp; pos, size_t add_size, bool&amp; out_of_space)
+56: {
+57:     out_of_space = false;
+58:
+59:     unsigned int n_old_chunks = (pos.nPos + m_chunk_size - 1) / m_chunk_size;
+60:     unsigned int n_new_chunks = (pos.nPos + add_size + m_chunk_size - 1) / m_chunk_size;
+61:     if (n_new_chunks &gt; n_old_chunks) {
+62:         size_t old_size = pos.nPos;
+63:         size_t new_size = n_new_chunks * m_chunk_size;
+64:         size_t inc_size = new_size - old_size;
+65:
+66:         if (CheckDiskSpace(m_dir, inc_size)) {
+67:             FILE *file = Open(pos);
+68:             if (file) {
+69:                 LogPrint(BCLog::VALIDATION, &quot;Pre-allocating up to position 0x%x in %s%05u.dat\n&quot;, new_size, m_prefix, pos.nFile);
+70:                 AllocateFileRange(file, pos.nPos, inc_size);
+71:                 fclose(file);
+72:                 return inc_size;
+73:             }
+"/>
+    <error file="/home/fdse/user/codeWisdom/repository/repo/github/bitcoin/bitcoin-master_duplicate_fdse-0/bitcoin-master/src/index/base.cpp"
+           line="93" id="nullpointer" subid="dereferenceBeforeCheck" severity="Serious"
+           msg="Null - checking [block_to_test] suggests that it may be null, but it has already been dereferenced at line 85."
+           web_identify="{&quot;identify&quot;:&quot;block_to_test&quot;}" func_info="bool BaseIndex::Init ( )"
+           content="83:         else {
+84:             const CBlockIndex* block_to_test = m_best_block_index.load();
+85:             if (!active_chain.Contains(block_to_test)) {
+86:                 // if the bestblock is not part of the mainchain, find the fork
+87:                 // and make sure we have all data down to the fork
+88:                 block_to_test = active_chain.FindFork(block_to_test);
+89:             }
+90:             const CBlockIndex* block = active_chain.Tip();
+91:             prune_violation = true;
+92:             // check backwards from the tip if we have all block data until we reach the indexes bestblock
+93:             while (block_to_test &amp;&amp; block-&gt;pprev &amp;&amp; (block-&gt;pprev-&gt;nStatus &amp; BLOCK_HAVE_DATA)) {
+94:                 if (block_to_test == block) {
+95:                     prune_violation = false;
+96:                     break;
+97:                 }
+98:                 block = block-&gt;pprev;
+99:             }
+100:         }
+101:         if (prune_violation) {
+102:             return InitError(strprintf(Untranslated(&quot;%s best block of the index goes beyond pruned data. Please disable the index or reindex (which will download the whole blockchain again)&quot;), GetName()));
+103:         }
+"/>
+    <error file="/home/fdse/user/codeWisdom/repository/repo/github/bitcoin/bitcoin-master_duplicate_fdse-0/bitcoin-master/src/ipc/capnp/protocol.cpp"
+           line="74" id="nullpointer" subid="dereferenceAfterCheck" severity="Serious"
+           msg="Comparing [m_loop] to null at line 68 implies that [m_loop ] might be null.Dereferencing null pointer [m_loop]."
+           web_identify="{&quot;identify&quot;:&quot;m_loop&quot;}"
+           func_info="void CapnpProtocol::startLoop ( const char * exe_name )" content="64:         mp::ProxyTypeRegister::types().at(type)(iface).cleanup.emplace_back(std::move(cleanup));
+65:     }
+66:     void startLoop(const char* exe_name)
+67:     {
+68:         if (m_loop) return;
+69:         std::promise&lt;void&gt; promise;
+70:         m_loop_thread = std::thread([&amp;] {
+71:             util::ThreadRename(&quot;capnp-loop&quot;);
+72:             m_loop.emplace(exe_name, &amp;IpcLogFn, nullptr);
+73:             {
+74:                 std::unique_lock&lt;std::mutex&gt; lock(m_loop-&gt;m_mutex);
+75:                 m_loop-&gt;addClient(lock);
+76:             }
+77:             promise.set_value();
+78:             m_loop-&gt;loop();
+79:             m_loop.reset();
+80:         });
+81:         promise.get_future().wait();
+82:     }
+83:     std::thread m_loop_thread;
+84:     std::optional&lt;mp::EventLoop&gt; m_loop;
+"/>
+    <error file="/home/fdse/user/codeWisdom/repository/repo/github/bitcoin/bitcoin-master_duplicate_fdse-0/bitcoin-master/src/leveldb/benchmarks/db_bench_sqlite3.cc"
+           line="311" id="uninit" subid="uninitMemberVar" severity="Warning"
+           msg="Member variable &apos;Benchmark::start_,last_op_finish_,done_,next_report_,&apos; is not initialized in the constructor."
+           web_identify="{&quot;identify&quot;:&quot;Benchmark::start_,last_op_finish_,done_,next_report_,&quot;}"
+           func_info="leveldb::Benchmark" content="301:     if (FLAGS_histogram) {
+302:       fprintf(stdout, &quot;Microseconds per op:\n%s\n&quot;, hist_.ToString().c_str());
+303:     }
+304:     fflush(stdout);
+305:   }
+306:
+307:  public:
+308:   enum Order { SEQUENTIAL, RANDOM };
+309:   enum DBState { FRESH, EXISTING };
+310:
+311:   Benchmark()
+312:       : db_(nullptr),
+313:         db_num_(0),
+314:         num_(FLAGS_num),
+315:         reads_(FLAGS_reads &lt; 0 ? FLAGS_num : FLAGS_reads),
+316:         bytes_(0),
+317:         rand_(301) {
+318:     std::vector&lt;std::string&gt; files;
+319:     std::string test_dir;
+320:     Env::Default()-&gt;GetTestDirectory(&amp;test_dir);
+321:     Env::Default()-&gt;GetChildren(test_dir, &amp;files);
+"/>
+    <error file="/home/fdse/user/codeWisdom/repository/repo/github/bitcoin/bitcoin-master_duplicate_fdse-0/bitcoin-master/src/leveldb/benchmarks/db_bench_tree_db.cc"
+           line="288" id="uninit" subid="uninitMemberVar" severity="Warning"
+           msg="Member variable &apos;Benchmark::db_num_,start_,last_op_finish_,done_,next_report_,&apos; is not initialized in the constructor."
+           web_identify="{&quot;identify&quot;:&quot;Benchmark::db_num_,start_,last_op_finish_,done_,next_report_,&quot;}"
+           func_info="leveldb::Benchmark" content="278:     if (FLAGS_histogram) {
+279:       fprintf(stdout, &quot;Microseconds per op:\n%s\n&quot;, hist_.ToString().c_str());
+280:     }
+281:     fflush(stdout);
+282:   }
+283:
+284:  public:
+285:   enum Order { SEQUENTIAL, RANDOM };
+286:   enum DBState { FRESH, EXISTING };
+287:
+288:   Benchmark()
+289:       : db_(nullptr),
+290:         num_(FLAGS_num),
+291:         reads_(FLAGS_reads &lt; 0 ? FLAGS_num : FLAGS_reads),
+292:         bytes_(0),
+293:         rand_(301) {
+294:     std::vector&lt;std::string&gt; files;
+295:     std::string test_dir;
+296:     Env::Default()-&gt;GetTestDirectory(&amp;test_dir);
+297:     Env::Default()-&gt;GetChildren(test_dir.c_str(), &amp;files);
+298:     if (!FLAGS_use_existing_db) {
+"/>
+    <error file="/home/fdse/user/codeWisdom/repository/repo/github/bitcoin/bitcoin-master_duplicate_fdse-0/bitcoin-master/src/leveldb/db/snapshot.h"
+           line="19" id="uninit" subid="uninitMemberVar" severity="Warning"
+           msg="Member variable &apos;SnapshotImpl::prev_,next_,&apos; is not initialized in the constructor."
+           web_identify="{&quot;identify&quot;:&quot;SnapshotImpl::prev_,next_,&quot;}"
+           func_info="leveldb::SnapshotImpl" content="9: #include &quot;leveldb/db.h&quot;
+10:
+11: namespace leveldb {
+12:
+13: class SnapshotList;
+14:
+15: // Snapshots are kept in a doubly-linked list in the DB.
+16: // Each SnapshotImpl corresponds to a particular sequence number.
+17: class SnapshotImpl : public Snapshot {
+18:  public:
+19:   SnapshotImpl(SequenceNumber sequence_number)
+20:       : sequence_number_(sequence_number) {}
+21:
+22:   SequenceNumber sequence_number() const { return sequence_number_; }
+23:
+24:  private:
+25:   friend class SnapshotList;
+26:
+27:   // SnapshotImpl is kept in a doubly-linked circular list. The SnapshotList
+28:   // implementation operates on the next/previous fields direcly.
+29:   SnapshotImpl* prev_;
+"/>
+    <error file="/home/fdse/user/codeWisdom/repository/repo/github/bitcoin/bitcoin-master_duplicate_fdse-0/bitcoin-master/src/leveldb/db/version_edit.h"
+           line="19" id="uninit" subid="uninitMemberVar" severity="Warning"
+           msg="Member variable &apos;FileMetaData::number,&apos; is not initialized in the constructor."
+           web_identify="{&quot;identify&quot;:&quot;FileMetaData::number,&quot;}" func_info="leveldb::FileMetaData"
+           content="9: #include &lt;utility&gt;
+10: #include &lt;vector&gt;
+11:
+12: #include &quot;db/dbformat.h&quot;
+13:
+14: namespace leveldb {
+15:
+16: class VersionSet;
+17:
+18: struct FileMetaData {
+19:   FileMetaData() : refs(0), allowed_seeks(1 &lt;&lt; 30), file_size(0) {}
+20:
+21:   int refs;
+22:   int allowed_seeks;  // Seeks allowed until compaction
+23:   uint64_t number;
+24:   uint64_t file_size;    // File size in bytes
+25:   InternalKey smallest;  // Smallest internal key served by table
+26:   InternalKey largest;   // Largest internal key served by table
+27: };
+28:
+29: class VersionEdit {
+"/>
+    <error file="/home/fdse/user/codeWisdom/repository/repo/github/bitcoin/bitcoin-master_duplicate_fdse-0/bitcoin-master/src/leveldb/issues/issue320_test.cc"
+           line="79" id="nullpointer" subid="arrayDereferenceIfNull" severity="Critical"
+           msg="[test_map[index]] is null dereferenced here, as codes at line 75 make it a null pointer."
+           web_identify="{&quot;identify&quot;:&quot;test_map[index]&quot;}" func_info="void _Test_Test::_Run ( )"
+           content="69:       std::cout &lt;&lt; &quot;count: &quot; &lt;&lt; count &lt;&lt; std::endl;
+70:     }
+71:
+72:     int index = GenerateRandomNumber(test_map.size());
+73:     WriteBatch batch;
+74:
+75:     if (test_map[index] == nullptr) {
+76:       num_items++;
+77:       test_map[index].reset(new std::pair&lt;std::string, std::string&gt;(
+78:           CreateRandomString(index), CreateRandomString(index)));
+79:       batch.Put(test_map[index]-&gt;first, test_map[index]-&gt;second);
+80:     } else {
+81:       ASSERT_OK(db-&gt;Get(readOptions, test_map[index]-&gt;first, &amp;old_value));
+82:       if (old_value != test_map[index]-&gt;second) {
+83:         std::cout &lt;&lt; &quot;ERROR incorrect value returned by Get&quot; &lt;&lt; std::endl;
+84:         std::cout &lt;&lt; &quot;  count=&quot; &lt;&lt; count &lt;&lt; std::endl;
+85:         std::cout &lt;&lt; &quot;  old value=&quot; &lt;&lt; old_value &lt;&lt; std::endl;
+86:         std::cout &lt;&lt; &quot;  test_map[index]-&gt;second=&quot; &lt;&lt; test_map[index]-&gt;second
+87:                   &lt;&lt; std::endl;
+88:         std::cout &lt;&lt; &quot;  test_map[index]-&gt;first=&quot; &lt;&lt; test_map[index]-&gt;first
+89:                   &lt;&lt; std::endl;
+"/>
+    <error file="/home/fdse/user/codeWisdom/repository/repo/github/bitcoin/bitcoin-master_duplicate_fdse-0/bitcoin-master/src/leveldb/util/env_posix.cc"
+           line="257" id="uninit" subid="uninitMemberVar" severity="Warning"
+           msg="Member variable &apos;PosixWritableFile::buf_,&apos; is not initialized in the constructor."
+           web_identify="{&quot;identify&quot;:&quot;PosixWritableFile::buf_,&quot;}" func_info="PosixWritableFile"
+           content="247:
+248:  private:
+249:   char* const mmap_base_;
+250:   const size_t length_;
+251:   Limiter* const mmap_limiter_;
+252:   const std::string filename_;
+253: };
+254:
+255: class PosixWritableFile final : public WritableFile {
+256:  public:
+257:   PosixWritableFile(std::string filename, int fd)
+258:       : pos_(0),
+259:         fd_(fd),
+260:         is_manifest_(IsManifest(filename)),
+261:         filename_(std::move(filename)),
+262:         dirname_(Dirname(filename_)) {}
+263:
+264:   ~PosixWritableFile() override {
+265:     if (fd_ &gt;= 0) {
+266:       // Ignoring any potential errors
+267:       Close();
+"/>
+    <error file="/home/fdse/user/codeWisdom/repository/repo/github/bitcoin/bitcoin-master_duplicate_fdse-0/bitcoin-master/src/leveldb/util/env_windows.cc"
+           line="258" id="uninit" subid="uninitMemberVar" severity="Warning"
+           msg="Member variable &apos;WindowsWritableFile::buf_,&apos; is not initialized in the constructor."
+           web_identify="{&quot;identify&quot;:&quot;WindowsWritableFile::buf_,&quot;}" func_info="WindowsWritableFile"
+           content="248:
+249:  private:
+250:   char* const mmap_base_;
+251:   const size_t length_;
+252:   Limiter* const mmap_limiter_;
+253:   const std::string filename_;
+254: };
+255:
+256: class WindowsWritableFile : public WritableFile {
+257:  public:
+258:   WindowsWritableFile(std::string filename, ScopedHandle handle)
+259:       : pos_(0), handle_(std::move(handle)), filename_(std::move(filename)) {}
+260:
+261:   ~WindowsWritableFile() override = default;
+262:
+263:   Status Append(const Slice&amp; data) override {
+264:     size_t write_size = data.size();
+265:     const char* write_data = data.data();
+266:
+267:     // Fit as much as possible into buffer.
+268:     size_t copy_size = std::min(write_size, kWritableFileBufferSize - pos_);
+"/>
+    <error file="/home/fdse/user/codeWisdom/repository/repo/github/bitcoin/bitcoin-master_duplicate_fdse-0/bitcoin-master/src/net_processing.cpp"
+           line="1888" id="suspicious" subid="unConditionalBreakinLoop" severity="Warning"
+           msg="An unconditional &apos;break/return/goto&apos; within a loop.It may be a mistake."
+           web_identify="{&quot;identify&quot;:&quot;!&quot;}"
+           func_info="void PeerManagerImpl::ProcessGetData ( CNode &amp; pfrom , Peer &amp; peer , const std::atomic &lt; bool &gt; &amp; interruptMsgProc )"
+           content="1878:                     parent_ids_to_add.reserve(parents.size());
+1879:                     for (const CTxMemPoolEntry&amp; parent : parents) {
+1880:                         if (parent.GetTime() &gt; now - UNCONDITIONAL_RELAY_DELAY) {
+1881:                             parent_ids_to_add.push_back(parent.GetTx().GetHash());
+1882:                         }
+1883:                     }
+1884:                 }
+1885:             }
+1886:             for (const uint256&amp; parent_txid : parent_ids_to_add) {
+1887:                 // Relaying a transaction with a recent but unconfirmed parent.
+1888:                 if (WITH_LOCK(pfrom.m_tx_relay-&gt;cs_tx_inventory, return !pfrom.m_tx_relay-&gt;filterInventoryKnown.contains(parent_txid))) {
+1889:                     LOCK(cs_main);
+1890:                     State(pfrom.GetId())-&gt;m_recently_announced_invs.insert(parent_txid);
+1891:                 }
+1892:             }
+1893:         } else {
+1894:             vNotFound.push_back(inv);
+1895:         }
+1896:     }
+1897:
+1898:     // Only process one BLOCK item per call, since they&apos;re uncommon and can be
+"/>
+    <error file="/home/fdse/user/codeWisdom/repository/repo/github/bitcoin/bitcoin-master_duplicate_fdse-0/bitcoin-master/src/policy/fees.cpp"
+           line="1009" id="nullpointer" subid="invalidDereferenceIterator" severity="Serious"
+           msg="Iterator [it] may be invalid here." web_identify="{&quot;identify&quot;:&quot;it&quot;}"
+           func_info="CAmount FeeFilterRounder::round ( CAmount currentMinFee )" content="999:         feeset.insert(bucketBoundary);
+1000:     }
+1001: }
+1002:
+1003: CAmount FeeFilterRounder::round(CAmount currentMinFee)
+1004: {
+1005:     std::set&lt;double&gt;::iterator it = feeset.lower_bound(currentMinFee);
+1006:     if ((it != feeset.begin() &amp;&amp; insecure_rand.rand32() % 3 != 0) || it == feeset.end()) {
+1007:         it--;
+1008:     }
+1009:     return static_cast&lt;CAmount&gt;(*it);
+1010: }
+"/>
+    <error file="/home/fdse/user/codeWisdom/repository/repo/github/bitcoin/bitcoin-master_duplicate_fdse-0/bitcoin-master/src/psbt.h"
+           line="518" id="nullpointer" subid="dereferenceBeforeCheck" severity="Serious"
+           msg="Null - checking [tx] suggests that it may be null, but it has already been dereferenced at line 493."
+           web_identify="{&quot;identify&quot;:&quot;tx&quot;}"
+           func_info="&gt; void PartiallySignedTransaction::Unserialize ( Stream &amp; s )" content="508:                     unknown.emplace(std::move(key), std::move(val_bytes));
+509:                 }
+510:             }
+511:         }
+512:
+513:         if (!found_sep) {
+514:             throw std::ios_base::failure(&quot;Separator is missing at the end of the global map&quot;);
+515:         }
+516:
+517:         // Make sure that we got an unsigned tx
+518:         if (!tx) {
+519:             throw std::ios_base::failure(&quot;No unsigned transcation was provided&quot;);
+520:         }
+521:
+522:         // Read input data
+523:         unsigned int i = 0;
+524:         while (!s.empty() &amp;&amp; i &lt; tx-&gt;vin.size()) {
+525:             PSBTInput input;
+526:             s &gt;&gt; input;
+527:             inputs.push_back(input);
+528:
+"/>
+    <error file="/home/fdse/user/codeWisdom/repository/repo/github/bitcoin/bitcoin-master_duplicate_fdse-0/bitcoin-master/src/qt/askpassphrasedialog.cpp"
+           line="158" id="nullpointer" subid="dereferenceAfterCheck" severity="Serious"
+           msg="Comparing [model] to null at line 89 implies that [model ] might be null.Dereferencing null pointer [model]."
+           web_identify="{&quot;identify&quot;:&quot;model&quot;}" func_info="void AskPassphraseDialog::accept ( )"
+           content="148:                                      tr(&quot;The supplied passphrases do not match.&quot;));
+149:             }
+150:         }
+151:         else
+152:         {
+153:             QDialog::reject(); // Cancelled
+154:         }
+155:         } break;
+156:     case Unlock:
+157:         try {
+158:             if (!model-&gt;setWalletLocked(false, oldpass)) {
+159:                 QMessageBox::critical(this, tr(&quot;Wallet unlock failed&quot;),
+160:                                       tr(&quot;The passphrase entered for the wallet decryption was incorrect.&quot;));
+161:             } else {
+162:                 QDialog::accept(); // Success
+163:             }
+164:         } catch (const std::runtime_error&amp; e) {
+165:             QMessageBox::critical(this, tr(&quot;Wallet unlock failed&quot;), e.what());
+166:         }
+167:         break;
+168:     case ChangePass:
+"/>
+    <error file="/home/fdse/user/codeWisdom/repository/repo/github/bitcoin/bitcoin-master_duplicate_fdse-0/bitcoin-master/src/qt/bitcoingui.cpp"
+           line="1070" id="nullpointer" subid="dereferenceAfterCheck" severity="Serious"
+           msg="Comparing [modalOverlay] to null at line 1012 implies that [modalOverlay ] might be null.Dereferencing null pointer [modalOverlay]."
+           web_identify="{&quot;identify&quot;:&quot;modalOverlay&quot;}"
+           func_info="void BitcoinGUI::setNumBlocks ( int count , const QDateTime &amp; blockDate , double nVerificationProgress , bool header , SynchronizationState sync_state )"
+           content="1060:
+1061:     // Set icon state: spinning if catching up, tick otherwise
+1062:     if (secs &lt; MAX_BLOCK_TIME_GAP) {
+1063:         tooltip = tr(&quot;Up to date&quot;) + QString(&quot;.&lt;br&gt;&quot;) + tooltip;
+1064:         labelBlocksIcon-&gt;setThemedPixmap(QStringLiteral(&quot;:/icons/synced&quot;), STATUSBAR_ICONSIZE, STATUSBAR_ICONSIZE);
+1065:
+1066: #ifdef ENABLE_WALLET
+1067:         if(walletFrame)
+1068:         {
+1069:             walletFrame-&gt;showOutOfSyncWarning(false);
+1070:             modalOverlay-&gt;showHide(true, true);
+1071:         }
+1072: #endif // ENABLE_WALLET
+1073:
+1074:         progressBarLabel-&gt;setVisible(false);
+1075:         progressBar-&gt;setVisible(false);
+1076:     }
+1077:     else
+1078:     {
+1079:         QString timeBehindText = GUIUtil::formatNiceTimeOffset(secs);
+1080:
+"/>
+    <error file="/home/fdse/user/codeWisdom/repository/repo/github/bitcoin/bitcoin-master_duplicate_fdse-0/bitcoin-master/src/qt/optionsmodel.h"
+           line="31" id="logic" subid="UnintentionalOverflow" severity="Warning"
+           msg="Potentially overflowing expression around operator [ * ], which is evaluated using 4 byte arithmetic, and then used in a context that expects an expression of 8 bytes type."
+           web_identify="{&quot;identify&quot;:&quot;gbGB_BYTES*&quot;}" func_info="static long PruneGBtoMiB ( int gb )"
+           content="21: static constexpr uint16_t DEFAULT_GUI_PROXY_PORT = 9050;
+22:
+23: /**
+24:  * Convert configured prune target MiB to displayed GB. Round up to avoid underestimating max disk usage.
+25:  */
+26: static inline int PruneMiBtoGB(int64_t mib) { return (mib * 1024 * 1024 + GB_BYTES - 1) / GB_BYTES; }
+27:
+28: /**
+29:  * Convert displayed prune target GB to configured MiB. Round down so roundtrip GB -&gt; MiB -&gt; GB conversion is stable.
+30:  */
+31: static inline int64_t PruneGBtoMiB(int gb) { return gb * GB_BYTES / 1024 / 1024; }
+32:
+33: /** Interface from Qt to configuration data structure for Bitcoin client.
+34:    To Qt, the options are presented as a list with the different options
+35:    laid out vertically.
+36:    This can be changed to a tree once the settings become sufficiently
+37:    complex.
+38:  */
+39: class OptionsModel : public QAbstractListModel
+40: {
+41:     Q_OBJECT
+"/>
+    <error file="/home/fdse/user/codeWisdom/repository/repo/github/bitcoin/bitcoin-master_duplicate_fdse-0/bitcoin-master/src/qt/transactionrecord.h"
+           line="100" id="uninit" subid="uninitMemberVar" severity="Warning"
+           msg="Member variable &apos;TransactionRecord::involvesWatchAddress,&apos; is not initialized in the constructor."
+           web_identify="{&quot;identify&quot;:&quot;TransactionRecord::involvesWatchAddress,&quot;}"
+           func_info="TransactionRecord" content="90:             hash(), time(0), type(Other), address(&quot;&quot;), debit(0), credit(0), idx(0)
+91:     {
+92:     }
+93:
+94:     TransactionRecord(uint256 _hash, qint64 _time):
+95:             hash(_hash), time(_time), type(Other), address(&quot;&quot;), debit(0),
+96:             credit(0), idx(0)
+97:     {
+98:     }
+99:
+100:     TransactionRecord(uint256 _hash, qint64 _time,
+101:                 Type _type, const std::string &amp;_address,
+102:                 const CAmount&amp; _debit, const CAmount&amp; _credit):
+103:             hash(_hash), time(_time), type(_type), address(_address), debit(_debit), credit(_credit),
+104:             idx(0)
+105:     {
+106:     }
+107:
+108:     /** Decompose CWallet transaction to model transaction records.
+109:      */
+110:     static bool showTransaction();
+"/>
+    <error file="/home/fdse/user/codeWisdom/repository/repo/github/bitcoin/bitcoin-master_duplicate_fdse-0/bitcoin-master/src/qt/transactionrecord.h"
+           line="26" id="uninit" subid="uninitMemberVar" severity="Warning"
+           msg="Member variable &apos;TransactionStatus::needsUpdate,&apos; is not initialized in the constructor."
+           web_identify="{&quot;identify&quot;:&quot;TransactionStatus::needsUpdate,&quot;}"
+           func_info="TransactionStatus" content="16: class Wallet;
+17: struct WalletTx;
+18: struct WalletTxStatus;
+19: }
+20:
+21: /** UI model for transaction status. The transaction status is the part of a transaction that will change over time.
+22:  */
+23: class TransactionStatus
+24: {
+25: public:
+26:     TransactionStatus() : countsForBalance(false), sortKey(&quot;&quot;),
+27:                           matures_in(0), status(Unconfirmed), depth(0), open_for(0)
+28:     { }
+29:
+30:     enum Status {
+31:         Confirmed,          /**&lt; Have 6 or more confirmations (normal tx) or fully mature (mined tx) **/
+32:         /// Normal (sent/received) transactions
+33:         OpenUntilDate,      /**&lt; Transaction not yet final, waiting for date */
+34:         OpenUntilBlock,     /**&lt; Transaction not yet final, waiting for block */
+35:         Unconfirmed,        /**&lt; Not yet mined into a block **/
+36:         Confirming,         /**&lt; Confirmed, but waiting for the recommended number of confirmations **/
+"/>
+    <error file="/home/fdse/user/codeWisdom/repository/repo/github/bitcoin/bitcoin-master_duplicate_fdse-0/bitcoin-master/src/qt/transactionrecord.h"
+           line="89" id="uninit" subid="uninitMemberVar" severity="Warning"
+           msg="Member variable &apos;TransactionRecord::involvesWatchAddress,&apos; is not initialized in the constructor."
+           web_identify="{&quot;identify&quot;:&quot;TransactionRecord::involvesWatchAddress,&quot;}"
+           func_info="TransactionRecord" content="79:         SendToAddress,
+80:         SendToOther,
+81:         RecvWithAddress,
+82:         RecvFromOther,
+83:         SendToSelf
+84:     };
+85:
+86:     /** Number of confirmation recommended for accepting a transaction */
+87:     static const int RecommendedNumConfirmations = 6;
+88:
+89:     TransactionRecord():
+90:             hash(), time(0), type(Other), address(&quot;&quot;), debit(0), credit(0), idx(0)
+91:     {
+92:     }
+93:
+94:     TransactionRecord(uint256 _hash, qint64 _time):
+95:             hash(_hash), time(_time), type(Other), address(&quot;&quot;), debit(0),
+96:             credit(0), idx(0)
+97:     {
+98:     }
+99:
+"/>
+    <error file="/home/fdse/user/codeWisdom/repository/repo/github/bitcoin/bitcoin-master_duplicate_fdse-0/bitcoin-master/src/qt/transactionrecord.h"
+           line="94" id="uninit" subid="uninitMemberVar" severity="Warning"
+           msg="Member variable &apos;TransactionRecord::involvesWatchAddress,&apos; is not initialized in the constructor."
+           web_identify="{&quot;identify&quot;:&quot;TransactionRecord::involvesWatchAddress,&quot;}"
+           func_info="TransactionRecord" content="84:     };
+85:
+86:     /** Number of confirmation recommended for accepting a transaction */
+87:     static const int RecommendedNumConfirmations = 6;
+88:
+89:     TransactionRecord():
+90:             hash(), time(0), type(Other), address(&quot;&quot;), debit(0), credit(0), idx(0)
+91:     {
+92:     }
+93:
+94:     TransactionRecord(uint256 _hash, qint64 _time):
+95:             hash(_hash), time(_time), type(Other), address(&quot;&quot;), debit(0),
+96:             credit(0), idx(0)
+97:     {
+98:     }
+99:
+100:     TransactionRecord(uint256 _hash, qint64 _time,
+101:                 Type _type, const std::string &amp;_address,
+102:                 const CAmount&amp; _debit, const CAmount&amp; _credit):
+103:             hash(_hash), time(_time), type(_type), address(_address), debit(_debit), credit(_credit),
+104:             idx(0)
+"/>
+    <error file="/home/fdse/user/codeWisdom/repository/repo/github/bitcoin/bitcoin-master_duplicate_fdse-0/bitcoin-master/src/rpc/rawtransaction.cpp"
+           line="1422" id="logic" subid="redundantCondition" severity="Information"
+           msg="Redundant condition: !request.params[1].isNull(). &apos;A || (!A &amp;&amp; B)&apos; is equivalent to &apos;A || B&apos;"
+           web_identify="{&quot;identify&quot;:&quot;!request.params[1].isNull(). &apos;A || (!A &amp;&amp; B)&apos; is equivalent to &apos;A || B&apos;&quot;}"
+           func_info="static RPCHelpMan finalizepsbt ( )" content="1412: {
+1413:     RPCTypeCheck(request.params, {UniValue::VSTR, UniValue::VBOOL}, true);
+1414:
+1415:     // Unserialize the transactions
+1416:     PartiallySignedTransaction psbtx;
+1417:     std::string error;
+1418:     if (!DecodeBase64PSBT(psbtx, request.params[0].get_str(), error)) {
+1419:         throw JSONRPCError(RPC_DESERIALIZATION_ERROR, strprintf(&quot;TX decode failed %s&quot;, error));
+1420:     }
+1421:
+1422:     bool extract = request.params[1].isNull() || (!request.params[1].isNull() &amp;&amp; request.params[1].get_bool());
+1423:
+1424:     CMutableTransaction mtx;
+1425:     bool complete = FinalizeAndExtractPSBT(psbtx, mtx);
+1426:
+1427:     UniValue result(UniValue::VOBJ);
+1428:     CDataStream ssTx(SER_NETWORK, PROTOCOL_VERSION);
+1429:     std::string result_str;
+1430:
+1431:     if (complete &amp;&amp; extract) {
+1432:         ssTx &lt;&lt; mtx;
+"/>
+    <error file="/home/fdse/user/codeWisdom/repository/repo/github/bitcoin/bitcoin-master_duplicate_fdse-0/bitcoin-master/src/secp256k1/src/secp256k1.c"
+           line="190" id="nullpointer" subid="dereferenceBeforeCheck" severity="Serious"
+           msg="Null - checking [ctx] suggests that it may be null, but it has already been dereferenced at line 189."
+           web_identify="{&quot;identify&quot;:&quot;ctx&quot;}"
+           func_info="void secp256k1_context_preallocated_destroy ( struct secp256k1_context_struct * ctx )" content="180:
+181:     VERIFY_CHECK(ctx != NULL);
+182:     prealloc_size = secp256k1_context_preallocated_clone_size(ctx);
+183:     ret = (secp256k1_context*)checked_malloc(&amp;ctx-&gt;error_callback, prealloc_size);
+184:     ret = secp256k1_context_preallocated_clone(ctx, ret);
+185:     return ret;
+186: }
+187:
+188: void secp256k1_context_preallocated_destroy(secp256k1_context* ctx) {
+189:     ARG_CHECK_NO_RETURN(ctx != secp256k1_context_no_precomp);
+190:     if (ctx != NULL) {
+191:         secp256k1_ecmult_context_clear(&amp;ctx-&gt;ecmult_ctx);
+192:         secp256k1_ecmult_gen_context_clear(&amp;ctx-&gt;ecmult_gen_ctx);
+193:     }
+194: }
+195:
+196: void secp256k1_context_destroy(secp256k1_context* ctx) {
+197:     if (ctx != NULL) {
+198:         secp256k1_context_preallocated_destroy(ctx);
+199:         free(ctx);
+200:     }
+"/>
+    <error file="/home/fdse/user/codeWisdom/repository/repo/github/bitcoin/bitcoin-master_duplicate_fdse-0/bitcoin-master/src/test/arith_uint256_tests.cpp"
+           line="274" id="logic" subid="redundantCondition" severity="Information"
+           msg="Redundant condition: If &apos;TmpL &gt; 0&apos;, the comparison &apos;TmpL &gt;= 0&apos; is always true."
+           web_identify="{&quot;identify&quot;:&quot;If &apos;TmpL &gt; 0&apos;, the comparison &apos;TmpL &gt;= 0&apos; is always true.&quot;}"
+           func_info="BOOST_AUTO_TEST_CASE ( comparison )" content="264:     TmpL ^= 0; BOOST_CHECK(TmpL == R1L);
+265:     TmpL ^= Tmp64;  BOOST_CHECK(TmpL == (R1L ^ arith_uint256(Tmp64)));
+266: }
+267:
+268: BOOST_AUTO_TEST_CASE( comparison ) // &lt;= &gt;= &lt; &gt;
+269: {
+270:     arith_uint256 TmpL;
+271:     for (unsigned int i = 0; i &lt; 256; ++i) {
+272:         TmpL= OneL&lt;&lt; i;
+273:         BOOST_CHECK( TmpL &gt;= ZeroL &amp;&amp; TmpL &gt; ZeroL &amp;&amp; ZeroL &lt; TmpL &amp;&amp; ZeroL &lt;= TmpL);
+274:         BOOST_CHECK( TmpL &gt;= 0 &amp;&amp; TmpL &gt; 0 &amp;&amp; 0 &lt; TmpL &amp;&amp; 0 &lt;= TmpL);
+275:         TmpL |= R1L;
+276:         BOOST_CHECK( TmpL &gt;= R1L ); BOOST_CHECK( (TmpL == R1L) != (TmpL &gt; R1L)); BOOST_CHECK( (TmpL == R1L) || !( TmpL &lt;= R1L));
+277:         BOOST_CHECK( R1L &lt;= TmpL ); BOOST_CHECK( (R1L == TmpL) != (R1L &lt; TmpL)); BOOST_CHECK( (TmpL == R1L) || !( R1L &gt;= TmpL));
+278:         BOOST_CHECK(! (TmpL &lt; R1L)); BOOST_CHECK(! (R1L &gt; TmpL));
+279:     }
+280: }
+281:
+282: BOOST_AUTO_TEST_CASE( plusMinus )
+283: {
+284:     arith_uint256 TmpL = 0;
+"/>
+    <error file="/home/fdse/user/codeWisdom/repository/repo/github/bitcoin/bitcoin-master_duplicate_fdse-0/bitcoin-master/src/test/fuzz/txrequest.cpp"
+           line="144" id="uninit" subid="uninitMemberVar" severity="Warning"
+           msg="Member variable &apos;Tester::m_announcements,&apos; is not initialized in the constructor."
+           web_identify="{&quot;identify&quot;:&quot;Tester::m_announcements,&quot;}" func_info="Tester"
+           content="134:             if (ann.m_state == State::CANDIDATE &amp;&amp; ann.m_time &lt;= m_now) {
+135:                 if (ret == -1 || ann.m_priority &gt; ret_priority) {
+136:                     std::tie(ret, ret_priority) = std::tie(peer, ann.m_priority);
+137:                 }
+138:             }
+139:         }
+140:         return ret;
+141:     }
+142:
+143: public:
+144:     Tester() : m_tracker(true) {}
+145:
+146:     std::chrono::microseconds Now() const { return m_now; }
+147:
+148:     void AdvanceTime(std::chrono::microseconds offset)
+149:     {
+150:         m_now += offset;
+151:         while (!m_events.empty() &amp;&amp; m_events.top() &lt;= m_now) m_events.pop();
+152:     }
+153:
+154:     void AdvanceToEvent()
+"/>
+    <error file="/home/fdse/user/codeWisdom/repository/repo/github/bitcoin/bitcoin-master_duplicate_fdse-0/bitcoin-master/src/test/validation_block_tests.cpp"
+           line="297" id="suspicious" subid="unConditionalBreakinLoop" severity="Warning"
+           msg="An unconditional &apos;break/return/goto&apos; within a loop.It may be a mistake."
+           web_identify="{&quot;identify&quot;:&quot;;&quot;}" func_info="BOOST_AUTO_TEST_CASE ( mempool_locks_reorg )"
+           content="287:         // Run a thread that simulates an RPC caller that is polling while
+288:         // validation is doing a reorg
+289:         std::thread rpc_thread{[&amp;]() {
+290:             // This thread is checking that the mempool either contains all of
+291:             // the transactions invalidated by the reorg, or none of them, and
+292:             // not some intermediate amount.
+293:             while (true) {
+294:                 LOCK(m_node.mempool-&gt;cs);
+295:                 if (m_node.mempool-&gt;mapTx.size() == 0) {
+296:                     // We are done with the reorg
+297:                     break;
+298:                 }
+299:                 // Internally, we might be in the middle of the reorg, but
+300:                 // externally the reorg to the most-proof-of-work chain should
+301:                 // be atomic. So the caller assumes that the returned mempool
+302:                 // is consistent. That is, it has all txs that were there
+303:                 // before the reorg.
+304:                 assert(m_node.mempool-&gt;mapTx.size() == txs.size());
+305:                 continue;
+306:             }
+307:             LOCK(cs_main);
+"/>
+    <error file="/home/fdse/user/codeWisdom/repository/repo/github/bitcoin/bitcoin-master_duplicate_fdse-0/bitcoin-master/src/tinyformat.h"
+           line="752" id="suspicious" subid="unConditionalBreakinLoop" severity="Warning"
+           msg="An unconditional &apos;break/return/goto&apos; within a loop.It may be a mistake."
+           web_identify="{&quot;identify&quot;:&quot;;&quot;}"
+           func_info="const char * detail::streamStateFromFormat ( std :: ostream &amp; out , bool &amp; positionalMode , bool &amp; spacePadPositive , int &amp; ntrunc , const char * fmtStart , const detail :: FormatArg * args , int &amp; argIndex , int numArgs )"
+           content="742:                         spacePadPositive = true;
+743:                     continue;
+744:                 case &apos;+&apos;:
+745:                     out.setf(std::ios::showpos);
+746:                     spacePadPositive = false;
+747:                     widthExtra = 1;
+748:                     continue;
+749:                 default:
+750:                     break;
+751:             }
+752:             break;
+753:         }
+754:         // Parse width
+755:         int width = 0;
+756:         widthSet = parseWidthOrPrecision(width, c, positionalMode,
+757:                                          args, argIndex, numArgs);
+758:         if (widthSet) {
+759:             if (width &lt; 0) {
+760:                 // negative widths correspond to &apos;-&apos; flag set
+761:                 out.fill(&apos; &apos;);
+762:                 out.setf(std::ios::left, std::ios::adjustfield);
+"/>
+    <error file="/home/fdse/user/codeWisdom/repository/repo/github/bitcoin/bitcoin-master_duplicate_fdse-0/bitcoin-master/src/torcontrol.h"
+           line="116" id="uninit" subid="uninitMemberVar" severity="Warning"
+           msg="Member variable &apos;TorController::base,reconnect,reconnect_timeout,&apos; is not initialized in the constructor."
+           web_identify="{&quot;identify&quot;:&quot;TorController::base,reconnect,reconnect_timeout,&quot;}"
+           func_info="TorController" content="106:
+107: /****** Bitcoin specific TorController implementation ********/
+108:
+109: /** Controller that connects to Tor control socket, authenticate, then create
+110:  * and maintain an ephemeral onion service.
+111:  */
+112: class TorController
+113: {
+114: public:
+115:     TorController(struct event_base* base, const std::string&amp; tor_control_center, const CService&amp; target);
+116:     TorController() : conn{nullptr} {
+117:         // Used for testing only.
+118:     }
+119:     ~TorController();
+120:
+121:     /** Get name of file to store private key in */
+122:     fs::path GetPrivateKeyFile();
+123:
+124:     /** Reconnect, after getting disconnected */
+125:     void Reconnect();
+126: private:
+"/>
+    <error file="/home/fdse/user/codeWisdom/repository/repo/github/bitcoin/bitcoin-master_duplicate_fdse-0/bitcoin-master/src/torcontrol.h"
+           line="127" id="uninit" subid="uninitMemberInCtor" severity="Serious" msg="Uninitialized variable: base"
+           web_identify="{&quot;identify&quot;:&quot;base&quot;}" func_info="TorController" content="117:         // Used for testing only.
+118:     }
+119:     ~TorController();
+120:
+121:     /** Get name of file to store private key in */
+122:     fs::path GetPrivateKeyFile();
+123:
+124:     /** Reconnect, after getting disconnected */
+125:     void Reconnect();
+126: private:
+127:     struct event_base* base;
+128:     const std::string m_tor_control_center;
+129:     TorControlConnection conn;
+130:     std::string private_key;
+131:     std::string service_id;
+132:     bool reconnect;
+133:     struct event *reconnect_ev = nullptr;
+134:     float reconnect_timeout;
+135:     CService service;
+136:     const CService m_target;
+137:     /** Cookie for SAFECOOKIE auth */
+"/>
+    <error file="/home/fdse/user/codeWisdom/repository/repo/github/bitcoin/bitcoin-master_duplicate_fdse-0/bitcoin-master/src/util/system.h"
+           line="51" id="logic" subid="InvalidVarArgs" severity="Critical"
+           msg="The count of parameters mismatches the format string in LogPrintf"
+           web_identify="{&quot;identify&quot;:&quot;LogPrintf&quot;}"
+           func_info="&gt; bool error ( const char * fmt , const Args &amp; . . . args )" content="41:
+42: extern const char * const BITCOIN_CONF_FILENAME;
+43: extern const char * const BITCOIN_SETTINGS_FILENAME;
+44:
+45: void SetupEnvironment();
+46: bool SetupNetworking();
+47:
+48: template&lt;typename... Args&gt;
+49: bool error(const char* fmt, const Args&amp;... args)
+50: {
+51:     LogPrintf(&quot;ERROR: %s\n&quot;, tfm::format(fmt, args...));
+52:     return false;
+53: }
+54:
+55: void PrintExceptionContinue(const std::exception *pex, const char* pszThread);
+56:
+57: /**
+58:  * Ensure file contents are fully committed to disk, using a platform-specific
+59:  * feature analogous to fsync().
+60:  */
+61: bool FileCommit(FILE *file);
+"/>
+    <error file="/home/fdse/user/codeWisdom/repository/repo/github/bitcoin/bitcoin-master_duplicate_fdse-0/bitcoin-master/src/validation.cpp"
+           line="3018" id="nullpointer" subid="dereferenceBeforeCheck" severity="Serious"
+           msg="Null - checking [pindex] suggests that it may be null, but it has already been dereferenced at line 2997."
+           web_identify="{&quot;identify&quot;:&quot;pindex&quot;}"
+           func_info="void CChainState::ResetBlockFailureFlags ( CBlockIndex * pindex )"
+           content="3008:             if (it-&gt;second == pindexBestInvalid) {
+3009:                 // Reset invalid block marker if it was pointing to one of those.
+3010:                 pindexBestInvalid = nullptr;
+3011:             }
+3012:             m_blockman.m_failed_blocks.erase(it-&gt;second);
+3013:         }
+3014:         it++;
+3015:     }
+3016:
+3017:     // Remove the invalidity flag from all ancestors too.
+3018:     while (pindex != nullptr) {
+3019:         if (pindex-&gt;nStatus &amp; BLOCK_FAILED_MASK) {
+3020:             pindex-&gt;nStatus &amp;= ~BLOCK_FAILED_MASK;
+3021:             setDirtyBlockIndex.insert(pindex);
+3022:             m_blockman.m_failed_blocks.erase(pindex);
+3023:         }
+3024:         pindex = pindex-&gt;pprev;
+3025:     }
+3026: }
+3027:
+3028: CBlockIndex* BlockManager::AddToBlockIndex(const CBlockHeader&amp; block)
+"/>
+    <error file="/home/fdse/user/codeWisdom/repository/repo/github/bitcoin/bitcoin-master_duplicate_fdse-0/bitcoin-master/src/validation.cpp"
+           line="4836" id="logic" subid="redundantCondition" severity="Information"
+           msg="Redundant condition: !is_snapshot. &apos;is_snapshot || (!is_snapshot &amp;&amp; !m_active_chainstate)&apos; is equivalent to &apos;is_snapshot || !m_active_chainstate&apos;"
+           web_identify="{&quot;identify&quot;:&quot;!is_snapshot. &apos;is_snapshot || (!is_snapshot &amp;&amp; !m_active_chainstate)&apos; is equivalent to &apos;is_snapshot || !m_active_chainstate&apos;&quot;}"
+           func_info="CChainState &amp; ChainstateManager::InitializeChainstate ( CTxMemPool &amp; mempool , const std::optional &lt; uint256 &gt; &amp; snapshot_blockhash )"
+           content="4826:     bool is_snapshot = snapshot_blockhash.has_value();
+4827:     std::unique_ptr&lt;CChainState&gt;&amp; to_modify =
+4828:         is_snapshot ? m_snapshot_chainstate : m_ibd_chainstate;
+4829:
+4830:     if (to_modify) {
+4831:         throw std::logic_error(&quot;should not be overwriting a chainstate&quot;);
+4832:     }
+4833:     to_modify.reset(new CChainState(mempool, m_blockman, snapshot_blockhash));
+4834:
+4835:     // Snapshot chainstates and initial IBD chaintates always become active.
+4836:     if (is_snapshot || (!is_snapshot &amp;&amp; !m_active_chainstate)) {
+4837:         LogPrintf(&quot;Switching active chainstate to %s\n&quot;, to_modify-&gt;ToString());
+4838:         m_active_chainstate = to_modify.get();
+4839:     } else {
+4840:         throw std::logic_error(&quot;unexpected chainstate activation&quot;);
+4841:     }
+4842:
+4843:     return *to_modify;
+4844: }
+4845:
+4846: const AssumeutxoData* ExpectedAssumeutxo(
+"/>
+    <error file="/home/fdse/user/codeWisdom/repository/repo/github/bitcoin/bitcoin-master_duplicate_fdse-0/bitcoin-master/src/validation.cpp"
+           line="493" id="uninit" subid="uninitMemberVar" severity="Warning"
+           msg="Member variable &apos;Workspace::m_replacement_transaction,m_conflicting_size,&apos; is not initialized in the constructor."
+           web_identify="{&quot;identify&quot;:&quot;Workspace::m_replacement_transaction,m_conflicting_size,&quot;}"
+           func_info="MemPoolAccept::Workspace" content="483:     * Multiple transaction acceptance. Transactions may or may not be interdependent,
+484:     * but must not conflict with each other. Parents must come before children if any
+485:     * dependencies exist, otherwise a TX_MISSING_INPUTS error will be returned.
+486:     */
+487:     PackageMempoolAcceptResult AcceptMultipleTransactions(const std::vector&lt;CTransactionRef&gt;&amp; txns, ATMPArgs&amp; args) EXCLUSIVE_LOCKS_REQUIRED(cs_main);
+488:
+489: private:
+490:     // All the intermediate state that gets passed between the various levels
+491:     // of checking a given transaction.
+492:     struct Workspace {
+493:         explicit Workspace(const CTransactionRef&amp; ptx) : m_ptx(ptx), m_hash(ptx-&gt;GetHash()) {}
+494:         std::set&lt;uint256&gt; m_conflicts;
+495:         CTxMemPool::setEntries m_all_conflicting;
+496:         CTxMemPool::setEntries m_ancestors;
+497:         std::unique_ptr&lt;CTxMemPoolEntry&gt; m_entry;
+498:         std::list&lt;CTransactionRef&gt; m_replaced_transactions;
+499:
+500:         bool m_replacement_transaction;
+501:         CAmount m_base_fees;
+502:         CAmount m_modified_fees;
+503:         CAmount m_conflicting_fees;
+"/>
+    <error file="/home/fdse/user/codeWisdom/repository/repo/github/bitcoin/bitcoin-master_duplicate_fdse-0/bitcoin-master/src/validation.h"
+           line="306" id="uninit" subid="uninitMemberVar" severity="Warning"
+           msg="Member variable &apos;CScriptCheck::txdata,&apos; is not initialized in the constructor."
+           web_identify="{&quot;identify&quot;:&quot;CScriptCheck::txdata,&quot;}" func_info="CScriptCheck" content="296: private:
+297:     CTxOut m_tx_out;
+298:     const CTransaction *ptxTo;
+299:     unsigned int nIn;
+300:     unsigned int nFlags;
+301:     bool cacheStore;
+302:     ScriptError error;
+303:     PrecomputedTransactionData *txdata;
+304:
+305: public:
+306:     CScriptCheck(): ptxTo(nullptr), nIn(0), nFlags(0), cacheStore(false), error(SCRIPT_ERR_UNKNOWN_ERROR) {}
+307:     CScriptCheck(const CTxOut&amp; outIn, const CTransaction&amp; txToIn, unsigned int nInIn, unsigned int nFlagsIn, bool cacheIn, PrecomputedTransactionData* txdataIn) :
+308:         m_tx_out(outIn), ptxTo(&amp;txToIn), nIn(nInIn), nFlags(nFlagsIn), cacheStore(cacheIn), error(SCRIPT_ERR_UNKNOWN_ERROR), txdata(txdataIn) { }
+309:
+310:     bool operator()();
+311:
+312:     void swap(CScriptCheck &amp;check) {
+313:         std::swap(ptxTo, check.ptxTo);
+314:         std::swap(m_tx_out, check.m_tx_out);
+315:         std::swap(nIn, check.nIn);
+316:         std::swap(nFlags, check.nFlags);
+"/>
+    <error file="/home/fdse/user/codeWisdom/repository/repo/github/bitcoin/bitcoin-master_duplicate_fdse-0/bitcoin-master/src/wallet/rpcwallet.cpp"
+           line="1612" id="nullpointer" subid="dereferenceBeforeCheck" severity="Serious"
+           msg="Null - checking [altheight] suggests that it may be null, but it has already been dereferenced at line 1578."
+           web_identify="{&quot;identify&quot;:&quot;altheight&quot;}" func_info="static RPCHelpMan listsinceblock ( )"
+           content="1602:         const CWalletTx&amp; tx = pairWtx.second;
+1603:
+1604:         if (depth == -1 || abs(tx.GetDepthInMainChain()) &lt; depth) {
+1605:             ListTransactions(wallet, tx, 0, true, transactions, filter, nullptr /* filter_label */);
+1606:         }
+1607:     }
+1608:
+1609:     // when a reorg&apos;d block is requested, we also list any relevant transactions
+1610:     // in the blocks of the chain that was detached
+1611:     UniValue removed(UniValue::VARR);
+1612:     while (include_removed &amp;&amp; altheight &amp;&amp; *altheight &gt; *height) {
+1613:         CBlock block;
+1614:         if (!wallet.chain().findBlock(blockId, FoundBlock().data(block)) || block.IsNull()) {
+1615:             throw JSONRPCError(RPC_INTERNAL_ERROR, &quot;Can&apos;t read block from disk&quot;);
+1616:         }
+1617:         for (const CTransactionRef&amp; tx : block.vtx) {
+1618:             auto it = wallet.mapWallet.find(tx-&gt;GetHash());
+1619:             if (it != wallet.mapWallet.end()) {
+1620:                 // We want all transactions regardless of confirmation count to appear here,
+1621:                 // even negative confirmation ones, hence the big negative.
+1622:                 ListTransactions(wallet, it-&gt;second, -100000000, true, removed, filter, nullptr /* filter_label */);
+"/>
+
+</results>

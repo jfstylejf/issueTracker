@@ -6,7 +6,7 @@ import cn.edu.fudan.issueservice.dao.ProjectDao;
 import cn.edu.fudan.issueservice.dao.RepoMetricDao;
 import cn.edu.fudan.issueservice.domain.dbo.Issue;
 import cn.edu.fudan.issueservice.domain.enums.IgnoreTypeEnum;
-import cn.edu.fudan.issueservice.domain.enums.JavaIssuePriorityEnum;
+import cn.edu.fudan.issueservice.domain.enums.IssuePriorityEnums.*;
 import cn.edu.fudan.issueservice.domain.enums.*;
 import cn.edu.fudan.issueservice.domain.vo.DeveloperLivingIssueVO;
 import cn.edu.fudan.issueservice.domain.vo.IssueTopVO;

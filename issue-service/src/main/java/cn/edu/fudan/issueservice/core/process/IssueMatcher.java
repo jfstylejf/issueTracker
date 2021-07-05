@@ -7,8 +7,9 @@ import cn.edu.fudan.issueservice.core.analyzer.SonarQubeBaseAnalyzer;
 import cn.edu.fudan.issueservice.dao.*;
 import cn.edu.fudan.issueservice.domain.dbo.*;
 import cn.edu.fudan.issueservice.domain.dto.MatcherCommitInfo;
+import cn.edu.fudan.issueservice.domain.enums.IssuePriorityEnums;
 import cn.edu.fudan.issueservice.domain.enums.IssueStatusEnum;
-import cn.edu.fudan.issueservice.domain.enums.JavaScriptIssuePriorityEnum;
+import cn.edu.fudan.issueservice.domain.enums.IssuePriorityEnums.JavaScriptIssuePriorityEnum;
 import cn.edu.fudan.issueservice.domain.enums.RawIssueStatus;
 import cn.edu.fudan.issueservice.domain.enums.ScanStatusEnum;
 import cn.edu.fudan.issueservice.util.*;
@@ -135,8 +136,7 @@ public class IssueMatcher {
     private Issue generateOneIssue(RawIssue rawIssue) {
         Issue issue = Issue.valueOf(rawIssue);
         IssueType issueType = issueTypeDao.getIssueTypeByTypeName(rawIssue.getType());
-        //fixme js and java category should in issue_type table
-        issue.setIssueCategory(issueType == null ? JavaScriptIssuePriorityEnum.getPriorityByRank(rawIssue.getPriority()) : issueType.getCategory());
+        issue.setIssueCategory(issueType == null ? IssuePriorityEnums.getIssueCategory(rawIssue.getTool(), rawIssue.getPriority()) :  issueType.getCategory());
         // TODO: 2021/1/7 产生一些issue之后再次设置状态 @何越
 
         rawIssue.setIssue(issue);
