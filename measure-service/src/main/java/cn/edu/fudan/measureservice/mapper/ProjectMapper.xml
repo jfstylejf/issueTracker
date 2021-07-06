@@ -247,7 +247,7 @@
     </select>
 
     <select id="getSingleProjectMsgNum" resultType="Integer" >
-        SELECT COUNT(uuid) AS commitNum FROM issueTracker.commit
+        SELECT COUNT(uuid) AS commitNum FROM issueTracker.repo_measure
         <where>
             <trim prefixOverrides="and">
                 and repo_id = #{repoUuid}
@@ -259,6 +259,16 @@
                 <if test="until != null and until != '' ">
                     and <![CDATA[ commit_time <= #{until} ]]>
                 </if>
+
+                <if test="isCompliance != null">
+                    <if test="isCompliance == true">
+                        and is_compliance = 1
+                    </if>
+                    <if test="isCompliance == false">
+                        and is_compliance = 0
+                    </if>
+                </if>
+                and is_merge = 0
             </trim>
         </where>
     </select>
