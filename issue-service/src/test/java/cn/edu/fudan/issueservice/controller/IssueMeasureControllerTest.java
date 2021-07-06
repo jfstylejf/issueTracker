@@ -1,6 +1,5 @@
 package cn.edu.fudan.issueservice.controller;
 
-import cn.edu.fudan.issueservice.IssueServiceApplicationTest;
 import cn.edu.fudan.issueservice.domain.ResponseBean;
 import org.junit.Assert;
 import org.junit.Before;
