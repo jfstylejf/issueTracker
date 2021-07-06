@@ -72,4 +72,29 @@
         WHERE commit_id = #{commitId}
         LIMIT 1
     </select>
+
+    <select id="getRepoCountByDeveloper" resultType="java.util.Map">
+        SELECT developer_unique_name, group_concat(DISTINCT repo_uuid) FROM commit_view
+        <trim prefix="where" prefixOverrides="and">
+            <if test="repoUuids != null and repoUuids.size > 0">
+                AND repo_uuid IN
+                <foreach collection="repoUuids" separator="," open="(" close=")" item="repoUuid">
+                    #{repoUuid}
+                </foreach>
+            </if>
+            <if test="since != null and since != '' ">
+                AND <![CDATA[ commit_time >= #{since} ]]>
+            </if>
+            <if test="until != null and until != '' ">
+                AND <![CDATA[ commit_time <= #{until} ]]>
+            </if>
+            <if test="developers != null and developers.size > 0">
+                AND developer_unique_name IN
+                <foreach collection="developers" separator="," open="(" close=")" item="developer">
+                    #{developer}
+                </foreach>
+            </if>
+        </trim>
+        GROUP BY developer_unique_name
+    </select>
 </mapper>
