@@ -395,6 +395,11 @@ public class RestInterfaceManager extends BaseRepoRestManager {
     }
 
     public JSONObject getRuleInfo(String ruleKey, String actives, String organizationKey) {
+
+        if (!initSonarAuth) {
+            initSonarAuthorization();
+        }
+
         Map<String, String> map = new HashMap<>(64);
 
         String baseRequestUrl = sonarServicePath + "/api/rules/show";
@@ -412,22 +417,29 @@ public class RestInterfaceManager extends BaseRepoRestManager {
         }
 
         try {
-            return restTemplate.getForObject(baseRequestUrl + "?key=" + ruleKey, JSONObject.class);
+            log.info("url: {}", baseRequestUrl + "?key=" + ruleKey);
+            log.info("header: {}", sonarAuthHeader);
+            return restTemplate.exchange(baseRequestUrl + "?key=" + ruleKey, HttpMethod.GET, sonarAuthHeader, JSONObject.class).getBody();
         } catch (RuntimeException e) {
-            log.error("ruleKey : {}  ----> request sonar  rule infomation api failed", ruleKey);
+            log.error("ruleKey : {}  ----> request sonar  rule information api failed", ruleKey);
             throw e;
         }
 
     }
 
     public JSONObject getSonarAnalysisTime(String projectName) {
+
+        if (!initSonarAuth) {
+            initSonarAuthorization();
+        }
+
         JSONObject error = new JSONObject();
         error.put("errors", "Component key " + projectName + " not found");
 
         try {
             String urlPath = sonarServicePath + "/api/components/show?component=" + projectName;
             log.debug(urlPath);
-            return restTemplate.getForObject(urlPath, JSONObject.class);
+            return restTemplate.exchange(urlPath, HttpMethod.GET, sonarAuthHeader, JSONObject.class).getBody();
         } catch (Exception e) {
             log.error(e.getMessage());
             log.error("projectName: {} ---> request sonar api failed 获取最新版本时间API 失败", projectName);
