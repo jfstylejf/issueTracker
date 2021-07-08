@@ -1,6 +1,7 @@
 package cn.edu.fudan.issueservice.service.impl;
 
 import cn.edu.fudan.issueservice.component.RestInterfaceManager;
+import cn.edu.fudan.issueservice.dao.CommitDao;
 import cn.edu.fudan.issueservice.dao.IssueDao;
 import cn.edu.fudan.issueservice.dao.ProjectDao;
 import cn.edu.fudan.issueservice.dao.RepoMetricDao;
@@ -41,12 +42,10 @@ import java.util.stream.Collectors;
 @SuppressWarnings("unchecked")
 public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
 
+    private CommitDao commitDao;
     private IssueDao issueDao;
-
     private RepoMetricDao repoMetricDao;
-
     private ProjectDao projectDao;
-
     private RestInterfaceManager restInterfaceManager;
 
     private static final String REPO_LIST = "repoList";
@@ -481,11 +480,14 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
     }
 
     @Override
-    public PagedGridResult<DeveloperLivingIssueVO> getDeveloperListLivingIssue(String since, String until, List<String> repoUuids, List<String> developers, int page, int ps, Boolean asc) throws MeasureServiceException {
+    public PagedGridResult<DeveloperLivingIssueVO> getDeveloperListLivingIssue(String since, String until, List<String> repoUuids, List<String> developers, int page, int ps, Boolean asc) {
 
         Map<String, List<int[]>> developerLivingIssueLevel = repoMetricDao.getDeveloperLivingIssueLevel(repoUuids);
         Map<String, Integer> developersScore = new HashMap<>(16);
         Map<String, Long> developerIssueCount = new HashMap<>(16);
+        Map<String, String> map = commitDao.getRepoCountByDeveloper(developers, since, until, repoUuids);
+        Map<String, Set<String>> developerRepo = new HashMap<>(16);
+        map.forEach((key, value) -> developerRepo.put(key, StringsUtil.splitString2Set(value)));
 
         for (Map.Entry<String, List<int[]>> entry : developerLivingIssueLevel.entrySet()) {
             List<Map<String, Object>> developersDetail = issueDao.getDeveloperListLivingIssue(since, until, entry.getKey(), developers);
@@ -501,7 +503,7 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
 
                 int value = 0;
                 for (int[] ints : entry.getValue()) {
-                    if (issueCount <= ints[1] && issueCount >= ints[0]) {
+                    if (developerRepo.get(developer).contains(entry.getKey()) && issueCount <= ints[1] && issueCount >= ints[0]) {
                         value = ints[2];
                         break;
                     }
@@ -510,7 +512,7 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
             }
         }
 
-        developersScore.keySet().forEach(key -> developersScore.put(key, (int) Math.round(developersScore.get(key) * 1.0 / repoUuids.size())));
+        developersScore.keySet().forEach(key -> developersScore.put(key, (int) Math.round(developersScore.get(key) * 1.0 / developerRepo.get(key).size())));
 
         return handleSortDeveloperLivingIssues(developersScore, developerIssueCount, developers, page, ps, asc);
     }
@@ -559,5 +561,10 @@ public class IssueMeasureInfoServiceImpl implements IssueMeasureInfoService {
     @Autowired
     public void setRepoMetricDao(RepoMetricDao repoMetricDao) {
         this.repoMetricDao = repoMetricDao;
+    }
+
+    @Autowired
+    public void setCommitDao(CommitDao commitDao) {
+        this.commitDao = commitDao;
     }
 }
