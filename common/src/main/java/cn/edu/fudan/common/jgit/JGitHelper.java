@@ -763,12 +763,4 @@ public class JGitHelper {
         return rd.compute();
     }
 
-    public static void main(String[] args) {
-        String repoPath = "D:\\issue\\platform_frameworks_base";
-        JGitHelper jGitHelper = new JGitHelper(repoPath);
-        long time1 = System.currentTimeMillis();
-        jGitHelper.getScanCommitListByBranchAndBeginCommit("master", "57bb140be9e48cf08acba131f7463e461777bb8e", new ArrayList<>());
-        long time2 = System.currentTimeMillis();
-        long runTime = time2 - time1;
-    }
 }
