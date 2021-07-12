@@ -48,7 +48,7 @@ VALUES
     'LivingStaticIssue',
     null,
     CURDATE(),
-    'ec15d79e36e14dd258cfff3d48b73d35',
+    'b26b002b33170f3b6511f2a5314e2d31',
     0,
     0,
     1,
@@ -83,7 +83,7 @@ VALUES
     'CodeStability',
     null,
     CURDATE(),
-    'ec15d79e36e14dd258cfff3d48b73d35',
+    'b26b002b33170f3b6511f2a5314e2d31',
     1.00,
     0.80,
     0.79,
@@ -118,7 +118,7 @@ VALUES
     'CommitStandard',
     null,
     CURDATE(),
-    'ec15d79e36e14dd258cfff3d48b73d35',
+    'b26b002b33170f3b6511f2a5314e2d31',
     1.00,
     0.80,
     0.79,
@@ -153,7 +153,7 @@ VALUES
     'CyclomaticComplexity',
     null,
     CURDATE(),
-    'ec15d79e36e14dd258cfff3d48b73d35',
+    'b26b002b33170f3b6511f2a5314e2d31',
     -2147483648,
     0,
     1,
@@ -188,17 +188,17 @@ VALUES
     'CloneLine',
     null,
     CURDATE(),
-    'ec15d79e36e14dd258cfff3d48b73d35',
+    'b26b002b33170f3b6511f2a5314e2d31',
     0,
-    40,
-    41,
-    100,
-    101,
-    150,
-    151,
-    300,
-    301,
-    2147483647
+    0.05,
+    0.06,
+    0.10,
+    0.11,
+    0.15,
+    0.16,
+    0.20,
+    0.21,
+    1
 );
 
 INSERT INTO issueTracker.repo_metric
@@ -223,7 +223,7 @@ VALUES
     'BigMethodNum',
     null,
     CURDATE(),
-    'ec15d79e36e14dd258cfff3d48b73d35',
+    'b26b002b33170f3b6511f2a5314e2d31',
     0,
     0,
     1,
@@ -257,7 +257,7 @@ VALUES
     'WorkLoad',
     null,
     CURDATE(),
-    'ec15d79e36e14dd258cfff3d48b73d35',
+    'b26b002b33170f3b6511f2a5314e2d31',
     2147483647,
     15000,
     14999,
@@ -269,7 +269,40 @@ VALUES
     4999,
     1000
 );
-
+INSERT INTO issueTracker.repo_metric
+(
+    tag,
+    repo_uuid,
+    update_time,
+    updater,
+    best_max,
+    best_min,
+    better_max,
+    better_min,
+    normal_max,
+    normal_min,
+    worse_max,
+    worse_min,
+    worst_max,
+    worst_min
+)
+VALUES
+(
+    'DesignContribution',
+    null,
+    CURDATE(),
+    'b26b002b33170f3b6511f2a5314e2d31',
+    2147483647,
+    200,
+    199.99,
+    150,
+    149.99,
+    100,
+    99.99,
+    50,
+    49.99,
+    0
+);
 
 
 COMMIT;

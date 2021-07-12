@@ -185,6 +185,7 @@ public class CPUCloneScanOperation extends ScanOperationAdapter {
 
                     String[] methodLoc = result.getMethodLoc().split(",");
                     String[] snippetLoc = result.getSnippetLoc().split(",");
+                    //去除空行和注释行
                     ASTUtil.CodeLocation codeLocation = new ASTUtil().getCode(Integer.parseInt(methodLoc[0]),
                             Integer.parseInt(methodLoc[1]),
                             Integer.parseInt(snippetLoc[0]),

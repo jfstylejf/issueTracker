@@ -4,6 +4,8 @@ import cn.edu.fudan.issueservice.domain.dto.LocationMatchResult;
 import cn.edu.fudan.issueservice.util.CosineUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.util.StringUtils;
@@ -19,6 +21,8 @@ import java.util.UUID;
  */
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Location {
 
     private String uuid;

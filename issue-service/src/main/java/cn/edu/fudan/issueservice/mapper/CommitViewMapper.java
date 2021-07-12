@@ -1,5 +1,6 @@
 package cn.edu.fudan.issueservice.mapper;
 
+import cn.edu.fudan.issueservice.annotation.MapF2F;
 import cn.edu.fudan.issueservice.domain.dbo.Commit;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -77,4 +78,16 @@ public interface CommitViewMapper {
      */
     @Select("SELECT message FROM commit_view WHERE commit_id = #{commitId} AND repo_uuid = #{repoUuid}")
     String getCommitMessageByCommitIdAndRepoUuid(String commitId, String repoUuid);
+
+    /**
+     * get repo count
+     *
+     * @param developers developers
+     * @param since since
+     * @param until until
+     * @param repoUuids repoUuids
+     * @return
+     */
+    @MapF2F
+    Map<String, String> getRepoCountByDeveloper(List<String> developers, String since, String until, List<String> repoUuids);
 }
