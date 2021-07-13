@@ -17,6 +17,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -31,6 +32,7 @@ import java.util.*;
  * create: 4/20/2021
  **/
 @PrepareForTest({AstParserUtil.class})
+@PowerMockIgnore("javax.management.*")
 public class IssueMatcherNormalMatchTest extends IssueServiceApplicationTest {
 
     @Autowired
