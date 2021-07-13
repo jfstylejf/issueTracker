@@ -302,6 +302,7 @@ public class RepoDeleteTest1 extends ProjectServiceApplicationTest {
         char[] deleteStatus7 = String.valueOf(recycledStatus7).toCharArray();
         Assert.assertEquals('1', deleteStatus7[6]);
 
+
         //回调接口 mock REPOSITORY服务回调  8
         MvcResult recallResult8 = mockMvc.perform(MockMvcRequestBuilders
                 .put("/repo")
@@ -325,7 +326,6 @@ public class RepoDeleteTest1 extends ProjectServiceApplicationTest {
     }
 
     @Test
-    @Rollback(value = false)
     public void test_04_deleteProjectRepo() throws Exception {
 
         //如果不在回收站中则failure
