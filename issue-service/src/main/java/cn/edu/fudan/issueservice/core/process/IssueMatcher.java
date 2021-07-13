@@ -134,7 +134,7 @@ public class IssueMatcher {
     private Issue generateOneIssue(RawIssue rawIssue) {
         Issue issue = Issue.valueOf(rawIssue);
         IssueType issueType = issueTypeDao.getIssueTypeByTypeName(rawIssue.getType());
-        issue.setIssueCategory(issueType == null ? IssuePriorityEnums.getIssueCategory(rawIssue.getTool(), rawIssue.getPriority()) :  issueType.getCategory());
+        issue.setIssueCategory(issueType == null ? IssuePriorityEnums.getIssueCategory(rawIssue.getTool(), rawIssue.getPriority()) : issueType.getCategory());
         // TODO: 2021/1/7 产生一些issue之后再次设置状态 @何越
 
         rawIssue.setIssue(issue);

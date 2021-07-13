@@ -262,6 +262,7 @@ public class IssueServiceImpl implements IssueService {
             String repoUuid = (String) issueOverview.get("repoUuid");
             IssueFilterInfoVO issueFilterInfo = IssueFilterInfoVO.builder()
                     .uuid((String) issueOverview.get("uuid"))
+                    .tool((String) issueOverview.get("tool"))
                     .displayId((int) issueOverview.get("displayId"))
                     .type((String) issueOverview.get("type"))
                     .issueCategory((String) issueOverview.get("issueCategory"))
