@@ -44,7 +44,7 @@ public class ProjectController {
         String token = request.getHeader(TOKEN);
         try {
             boolean result = projectControl.addOneRepo(token, repositoryDTO);
-            if(!result){
+            if (!result) {
                 return new ResponseBean<>(406, "add failed,repo duplicated!", null);
             }
             return new ResponseBean<>(200, "add success", null);
@@ -144,7 +144,7 @@ public class ProjectController {
             @RequestParam("project_name") String projectName) {
         try {
             boolean result = projectControl.deleteProject(request.getHeader(TOKEN), projectName);
-            if(!result){
+            if (!result) {
                 return new ResponseBean(412, "failed:this project contains repo!", null);
             }
             return new ResponseBean(200, "projectName delete success!", null);
@@ -220,12 +220,12 @@ public class ProjectController {
     public ResponseBean<Object> deleteRepo(@RequestParam(value = "repo_uuid", required = false) String repoUuid,
                                            @RequestParam(value = "uuid", required = false) String uuid,
                                            HttpServletRequest request) {
-        if(repoUuid == null & uuid == null){
+        if (repoUuid == null & uuid == null) {
             return new ResponseBean<>(412, "repo uuid can not be null!", null);
         }
         try {
             boolean result = projectControl.deleteRepo(request.getHeader(TOKEN), repoUuid, uuid);
-            if (!result){
+            if (!result) {
                 return new ResponseBean<>(412, "repo is not exist!", null);
             }
             return new ResponseBean<>(200, "repo delete success!", null);
@@ -281,14 +281,14 @@ public class ProjectController {
     })
     @PutMapping(value = {"/repository/recycle"})
     public ResponseBean<Integer> updateRecycleStatus(HttpServletRequest request,
-                                            @RequestParam("repo_uuid") String repoUuid,
-                                            @RequestParam("recycled") int recycled) {
+                                                     @RequestParam("repo_uuid") String repoUuid,
+                                                     @RequestParam("recycled") int recycled) {
         try {
             SubRepository repository = accountRepository.getRepoInfoByRepoId(repoUuid);
             if (repository == null) {
                 return new ResponseBean<>(412, "repo not exist", null);
             }
-            Integer recycledStatus  = projectControl.updateRecycleStatus(request.getHeader(TOKEN), repoUuid, recycled);
+            Integer recycledStatus = projectControl.updateRecycleStatus(request.getHeader(TOKEN), repoUuid, recycled);
             return new ResponseBean<>(200, "update success", recycledStatus);
         } catch (Exception e) {
             return new ResponseBean<>(401, "update failed :" + e.getMessage(), null);
@@ -308,7 +308,7 @@ public class ProjectController {
             if (repository == null) {
                 return new ResponseBean<>(412, "repo not exist", null);
             }
-            if (serviceName == null){
+            if (serviceName == null) {
                 return new ResponseBean<>(412, "please input service name!", null);
             }
             Integer recycledStatus = projectControl.updateRecycled(repoUuid, serviceName);
@@ -327,7 +327,7 @@ public class ProjectController {
                                                 @RequestParam("repo_uuid") String repoUuid) {
         try {
             Boolean result = projectControl.deleteRepoInfo(request.getHeader(TOKEN), repoUuid);
-            if(!result){
+            if (!result) {
                 return new ResponseBean<>(412, "repo can not be delete!", null);
             }
             return new ResponseBean<>(200, "delete success", null);
@@ -343,11 +343,11 @@ public class ProjectController {
     })
     @PutMapping(value = {"/project/life-status"})
     public ResponseBean<Integer> updateProjectLifeStatus(HttpServletRequest request,
-                                                     @RequestParam("project_name") String projectName,
-                                                     @RequestParam("life_status") Integer lifeStatus) {
+                                                         @RequestParam("project_name") String projectName,
+                                                         @RequestParam("life_status") Integer lifeStatus) {
         try {
-            Integer projectLifeStatus  = projectControl.updateProjectLifeStatus(request.getHeader(TOKEN), projectName, lifeStatus);
-            if(projectLifeStatus == 0){
+            Integer projectLifeStatus = projectControl.updateProjectLifeStatus(request.getHeader(TOKEN), projectName, lifeStatus);
+            if (projectLifeStatus == 0) {
                 return new ResponseBean<>(412, "life status is wrong!", null);
             }
             return new ResponseBean<>(200, "update success", projectLifeStatus);

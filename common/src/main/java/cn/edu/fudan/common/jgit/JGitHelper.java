@@ -395,7 +395,7 @@ public class JGitHelper {
 
     protected static final long TO_MILLISECOND = 1000L;
 
-    protected static final int COMMIT_SIZE = 10000;
+    protected static final int COMMIT_SIZE = 1000;
 
     public JGitHelper(String repoPath) {
         REPO_PATH = repoPath;
@@ -557,8 +557,6 @@ public class JGitHelper {
         //checkout to the branch
         checkout(branch);
         //new result set
-        Map<String, Set<String>> commitMap = new HashMap<>(512);
-        Map<String, Boolean> commitCheckMap = new HashMap<>(512);
         List<String> scanCommitQueue = new LinkedList<>();
         //get the start commit time
         Long start = getLongCommitTime(beginCommit);
@@ -571,10 +569,13 @@ public class JGitHelper {
                     commitsList.add(commit);
                 }
             }
-            for (int i = (commitsList.size() - 1) / COMMIT_SIZE; i >=0 ; i--) {
-                int beginIndex = Math.min(commitsList.size() - 1, (i + 1) * COMMIT_SIZE);
-                beginCommit = commitsList.get(beginIndex).getName();
-                List<RevCommit> partOfCommits = commitsList.subList(i * COMMIT_SIZE, beginIndex + 1);
+            for (int i = (commitsList.size() - 1) / COMMIT_SIZE; i >= 0; i--) {
+                Map<String, Set<String>> commitMap = new HashMap<>(512);
+                Map<String, Boolean> commitCheckMap = new HashMap<>(512);
+                List<String> partOfScanCommitQueue = new LinkedList<>();
+                int beginIndex = Math.min(commitsList.size(), (i + 1) * COMMIT_SIZE);
+                beginCommit = commitsList.get(beginIndex - 1).getName();
+                List<RevCommit> partOfCommits = commitsList.subList(i * COMMIT_SIZE, beginIndex);
                 partOfCommits.forEach(commit -> {
                     Set<String> parents = new HashSet<>();
                     List<RevCommit> parentsCommit = Arrays.asList(commit.getParents());
@@ -582,22 +583,23 @@ public class JGitHelper {
                     commitMap.put(commit.getName(), parents);
                     commitCheckMap.put(commit.getName(), false);
                 });
-                //init scanCommitQueue
-                scanCommitQueue.add(beginCommit);
+                //init partOfScanCommitQueue
+                partOfScanCommitQueue.add(beginCommit);
                 commitCheckMap.put(beginCommit, true);
                 //get the commitList
-                while (scanCommitQueue.size() != commitMap.size()) {
+                while (partOfScanCommitQueue.size() != commitMap.size()) {
                     for (Map.Entry<String, Set<String>> entry : commitMap.entrySet()) {
-                        //if parent in commitMap but not in scanCommitQueue, should not add to queue.
-                        boolean shouldAddToQueue = shouldAddToQueue(entry.getValue(), scanCommitQueue, commitMap);
+                        //if parent in commitMap but not in partOfScanCommitQueue, should not add to queue.
+                        boolean shouldAddToQueue = shouldAddToQueue(entry.getValue(), partOfScanCommitQueue, commitMap);
                         boolean isInScanCommitQueue = commitCheckMap.get(entry.getKey());
                         if (shouldAddToQueue && !isInScanCommitQueue) {
-                            scanCommitQueue.add(entry.getKey());
+                            partOfScanCommitQueue.add(entry.getKey());
                             commitCheckMap.put(entry.getKey(), true);
                             break;
                         }
                     }
                 }
+                scanCommitQueue.addAll(partOfScanCommitQueue);
             }
         } catch (GitAPIException e) {
             log.error(e.getMessage());
