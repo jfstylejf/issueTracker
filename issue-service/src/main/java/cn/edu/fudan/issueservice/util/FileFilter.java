@@ -1,5 +1,7 @@
 package cn.edu.fudan.issueservice.util;
 
+import cn.edu.fudan.issueservice.domain.enums.ToolEnum;
+
 /**
  * description:
  *
@@ -12,6 +14,29 @@ public final class FileFilter {
      */
     private static final String JPMS = "module-info.java";
 
+    public static boolean fileFilter(String tool, String path) {
+        if (ToolEnum.SONAR.getType().endsWith(tool)) {
+            return javaFilenameFilter(path);
+        } else if (ToolEnum.ESLINT.getType().equals(tool)) {
+            return jsFilenameFilter(path);
+        } else {
+            return cppFilenameFilter(path);
+        }
+    }
+
+
+    private static boolean baseFilenameFilter(String path, String str) {
+        return path.toLowerCase().contains("/test/") ||
+                path.toLowerCase().contains("/.mvn/") ||
+                path.toLowerCase().contains("lib/") ||
+                str.toLowerCase().startsWith("test");
+    }
+
+    private static String getFilename(String path) {
+        String[] strs = path.split("/");
+        return strs[strs.length - 1].toLowerCase();
+    }
+
     /**
      * true: 过滤
      * false： 不过滤
@@ -20,37 +45,35 @@ public final class FileFilter {
         if (path == null || path.isEmpty()) {
             return true;
         }
-        String[] strs = path.split("/");
-        String str = strs[strs.length - 1];
-        return !str.toLowerCase().endsWith(".java") ||
-                path.toLowerCase().contains("/test/") ||
-                path.toLowerCase().contains("/.mvn/") ||
+        String str = getFilename(path);
+        return baseFilenameFilter(path, str) ||
+                !str.toLowerCase().endsWith(".java") ||
                 str.toLowerCase().endsWith("test.java") ||
                 str.toLowerCase().endsWith("tests.java") ||
-                str.toLowerCase().startsWith("test") ||
                 str.toLowerCase().endsWith("enum.java") ||
                 path.contains(JPMS);
     }
 
-    public static boolean jsFileFilter(String path) {
-        String[] strs = path.split("/");
-        String str = strs[strs.length - 1].toLowerCase();
-        return !str.endsWith(".js") ||
-                path.toLowerCase().contains("/test/") ||
-                path.toLowerCase().contains("/.mvn/") ||
-                path.toLowerCase().contains("lib/") ||
+    public static boolean jsFilenameFilter(String path) {
+        String str = getFilename(path);
+        return baseFilenameFilter(path, str) ||
+                !str.endsWith(".js") ||
                 path.toLowerCase().contains("node_modules/") ||
                 path.toLowerCase().contains("target/") ||
                 path.toLowerCase().contains("build/") ||
                 path.toLowerCase().contains("dist/") ||
                 path.toLowerCase().contains("src/assets/") ||
-                str.endsWith("test.java") ||
-                str.endsWith("tests.java") ||
-                str.startsWith("test") ||
-                str.endsWith("enum.java") ||
                 str.endsWith("test.js") ||
                 str.endsWith("tests.js") ||
                 str.startsWith(".");
 
+    }
+
+    public static boolean cppFilenameFilter(String path) {
+        String str = getFilename(path);
+        return baseFilenameFilter(path, str) ||
+                str.endsWith("test.cc") ||
+                str.endsWith("test.cpp") ||
+                str.endsWith("test.h");
     }
 }

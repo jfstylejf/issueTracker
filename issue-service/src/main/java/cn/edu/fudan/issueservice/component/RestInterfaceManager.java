@@ -386,6 +386,9 @@ public class RestInterfaceManager extends BaseRepoRestManager {
         String url = urlBuilder.toString();
 
         try {
+            log.info("url:{}", url);
+            log.info("map:{}", map);
+            log.info("sonar header:{}", sonarAuthHeader);
             ResponseEntity<JSONObject> entity = restTemplate.exchange(url, HttpMethod.POST, sonarAuthHeader, JSONObject.class, map);
             return JSONObject.parseObject(Objects.requireNonNull(entity.getBody()).toString());
         } catch (RuntimeException e) {
@@ -417,8 +420,6 @@ public class RestInterfaceManager extends BaseRepoRestManager {
         }
 
         try {
-            log.info("url: {}", baseRequestUrl + "?key=" + ruleKey);
-            log.info("header: {}", sonarAuthHeader);
             return restTemplate.exchange(baseRequestUrl + "?key=" + ruleKey, HttpMethod.GET, sonarAuthHeader, JSONObject.class).getBody();
         } catch (RuntimeException e) {
             log.error("ruleKey : {}  ----> request sonar  rule information api failed", ruleKey);

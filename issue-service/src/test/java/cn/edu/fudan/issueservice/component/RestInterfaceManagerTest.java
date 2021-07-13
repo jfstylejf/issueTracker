@@ -21,7 +21,7 @@ public class RestInterfaceManagerTest extends IssueServiceApplicationTest {
 
     @Test
     public void getSonarIssueResultTest() {
-        JSONObject sonarIssueResults = restInterfaceManager.getSonarIssueResults("18a2aeb0-db40-11eb-9db6-0242c0a83002_0375eb649670a27738c5551f8506777d16a56617", null, 100, false, 0);
+        JSONObject sonarIssueResults = restInterfaceManager.getSonarIssueResults("18a2aeb0-db40-11eb-9db6-0242c0a83002_77315628fbe635ec417bc45c237527577092e742", null, 100, false, 1);
         Assert.assertNotNull(sonarIssueResults);
     }
 

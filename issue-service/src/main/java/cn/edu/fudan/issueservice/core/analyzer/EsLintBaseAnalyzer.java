@@ -145,7 +145,7 @@ public class EsLintBaseAnalyzer extends BaseAnalyzer {
                 JSONObject esLintResult = (JSONObject) esLintTempResult;
                 String filePath = esLintResult.getString("filePath");
                 //file ---> esLintResult
-                if (!FileFilter.jsFileFilter(filePath)) {
+                if (!FileFilter.jsFilenameFilter(filePath)) {
                     List<String> fileNames = new ArrayList<>();
                     fileNames.add(filePath);
                     //get jsTree

@@ -55,7 +55,7 @@ public class TscanCodeAnalyzer extends BaseAnalyzer {
 
         try {
             List<XmlError> errors = XmlUtil.getError(errFile);
-            ShUtil.executeCommand(binHome + "deleteScanResult.sh " + errFile + " " + infoFile, 10);
+            ShUtil.executeCommand(binHome + "deleteScanResult.sh " + errFile + " " + infoFile, 20);
             return xmlErrors2RawIssues(errors, commit, repoUuid, repoPath);
         } catch (IOException | SAXException | JDOMException e) {
             log.error("parse xml file failed, fileName is: {}", errFile);
