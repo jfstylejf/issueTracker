@@ -71,7 +71,7 @@ public class RepoDeleteTest1 extends ProjectServiceApplicationTest {
 
     final String token = "ec15d79e36e14dd258cfff3d48b73d35";
     //测试库
-    final String repoUuid = "fb74406a-346e-11eb-8dca-4dbb5f7a5f33";
+    final String repoUuid = "042164ec-4534-11eb-b6ff-f9c372bb0fcb";
 
     @Autowired
     ProjectControlServiceImpl projectControlService;
@@ -129,6 +129,7 @@ public class RepoDeleteTest1 extends ProjectServiceApplicationTest {
     删除库测试:case 1:正常删除接口并回调
      */
     @Test
+    @Rollback(value = false)
     public void test_02_DeleteRepo() throws Exception {
 
         //如果不在回收站中则failure
@@ -324,7 +325,13 @@ public class RepoDeleteTest1 extends ProjectServiceApplicationTest {
     }
 
     @Test
+    @Rollback(value = false)
     public void test_04_deleteProjectRepo() throws Exception {
+
+        //如果不在回收站中则failure
+        if (subRepositoryDao.getRecycledStatus(repoUuid) != 111111111) {
+            Assert.fail("recycled status is wrong!");
+        }
 
         MvcResult deleteProjectRepo = mockMvc.perform(MockMvcRequestBuilders
                 .delete("/repo/project")

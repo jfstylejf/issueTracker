@@ -538,7 +538,7 @@ public class ProjectControlServiceImpl implements ProjectControlService {
         UserInfoDTO userInfoDTO = getUserInfoByToken(token);
         String accountUuid = userInfoDTO.getUuid();
 
-        if (subRepositoryDao.getRecycledStatus(repoUuid) == 11111111) {
+        if (subRepositoryDao.getRecycledStatus(repoUuid) == 111111111) {
             accountRepositoryDao.deleteRepoAR(accountUuid, repoUuid);
             subRepositoryDao.deleteRepoSR(accountUuid, repoUuid);
             return true;
