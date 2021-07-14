@@ -5,14 +5,13 @@ import cn.edu.fudan.measureservice.domain.Objects;
 import cn.edu.fudan.measureservice.domain.dto.FileInfo;
 import cn.edu.fudan.measureservice.domain.dto.MethodInfo;
 import cn.edu.fudan.measureservice.domain.dto.TextInfo;
-import cn.edu.fudan.measureservice.util.FileFilter;
+import cn.edu.fudan.measureservice.filter.FileFilter;
 import cn.edu.fudan.measureservice.util.FileUtil;
 import cn.edu.fudan.measureservice.util.GETPropertiesUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 
@@ -227,7 +226,6 @@ public class JsCodeAnalyzer extends BaseAnalyzer{
                     .methodName(method.getString("funcName"))
                     .absoluteFilePath(fileName)
                     .methodCcn(method.getIntValue("complexity"))
-                    .position(method.getString("position"))
                     .build()
             );
         }
@@ -315,7 +313,6 @@ public class JsCodeAnalyzer extends BaseAnalyzer{
                         .methodName(method.getString("funcName"))
                         .absoluteFilePath(fileName)
                         .methodCcn(method.getIntValue("complexity"))
-                        .position(method.getString("position"))
                         .build()
                 );
             }

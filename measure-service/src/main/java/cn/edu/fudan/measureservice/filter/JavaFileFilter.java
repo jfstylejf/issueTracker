@@ -1,7 +1,7 @@
-package cn.edu.fudan.measureservice.util;
+package cn.edu.fudan.measureservice.filter;
 
 
-import java.io.File;
+import cn.edu.fudan.measureservice.filter.FileFilter;
 
 /**
  * @ClassName: JavaFileFilter
@@ -10,7 +10,7 @@ import java.io.File;
  * @Date 2021/3/11
  */
 
-public class JavaFileFilter extends FileFilter{
+public class JavaFileFilter extends FileFilter {
     /**
      * JPMS 模块
      */

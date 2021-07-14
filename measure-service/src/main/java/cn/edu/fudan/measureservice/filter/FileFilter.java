@@ -1,4 +1,4 @@
-package cn.edu.fudan.measureservice.util;
+package cn.edu.fudan.measureservice.filter;
 
 import cn.edu.fudan.measureservice.domain.dto.DiffInfo;
 import cn.edu.fudan.measureservice.domain.dto.TextInfo;

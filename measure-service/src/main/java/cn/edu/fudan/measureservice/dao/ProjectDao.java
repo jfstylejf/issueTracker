@@ -5,6 +5,7 @@ import cn.edu.fudan.measureservice.domain.bo.DeveloperLevel;
 import cn.edu.fudan.measureservice.domain.bo.DeveloperRecentNews;
 import cn.edu.fudan.measureservice.domain.dto.*;
 import cn.edu.fudan.measureservice.domain.enums.DutyStatusEnum;
+import cn.edu.fudan.measureservice.domain.enums.LanguageEnum;
 import cn.edu.fudan.measureservice.domain.enums.ToolEnum;
 import cn.edu.fudan.measureservice.mapper.AccountMapper;
 import cn.edu.fudan.measureservice.mapper.MeasureMapper;
@@ -38,8 +39,6 @@ public class ProjectDao {
     private AccountMapper accountMapper;
 
     private static final String split = ",";
-    private static final String JAVA = "Java";
-    private static final String JAVASCRIPT = "JavaScript";
 
     private static Map<String,RepoInfo> repoInfoMap = new HashMap<>(50);
 
@@ -444,11 +443,14 @@ public class ProjectDao {
     public String getToolName(String repoUuid) {
         try {
             String language = projectMapper.getRepoLanguage(repoUuid);
-            if (language.equals(JAVA)) {
+            if (language.equals(LanguageEnum.Java.getType())) {
                 return ToolEnum.JavaCodeAnalyzer.getType();
-            }else if(language.equals(JAVASCRIPT)) {
+            }else if(language.equals(LanguageEnum.JAVASCRIPT.getType())) {
                 return ToolEnum.JSCodeAnalyzer.getType();
-            }else {
+            }else if (language.equals(LanguageEnum.CPP.getType())) {
+                return ToolEnum.CppCodeAnalyzer.getType();
+            }
+            else {
                 return null;
             }
         }catch (Exception e) {

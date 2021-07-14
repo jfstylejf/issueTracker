@@ -1,8 +1,11 @@
 package cn.edu.fudan.measureservice.core.process;
 
 import cn.edu.fudan.measureservice.domain.Measure;
+import cn.edu.fudan.measureservice.domain.dto.FileInfo;
 import cn.edu.fudan.measureservice.domain.dto.ScanCommitInfoDto;
 import lombok.Data;
+import org.antlr.v4.runtime.Lexer;
+import org.antlr.v4.runtime.Parser;
 
 /**
  * @author wjzho
@@ -31,6 +34,8 @@ public abstract class BaseAnalyzer {
      * @return boolean 返回解析是否成功
      */
     public abstract boolean analyze();
+
+
 
 
     public Measure getAnalyzedResult() {
