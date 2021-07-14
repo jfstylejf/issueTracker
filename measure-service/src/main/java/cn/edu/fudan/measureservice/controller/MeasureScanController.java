@@ -2,6 +2,7 @@ package cn.edu.fudan.measureservice.controller;
 
 import cn.edu.fudan.measureservice.core.process.JsCodeAnalyzer;
 import cn.edu.fudan.measureservice.domain.ResponseBean;
+import cn.edu.fudan.measureservice.domain.dto.FileInfo;
 import cn.edu.fudan.measureservice.domain.dto.RepoResourceDTO;
 import cn.edu.fudan.measureservice.domain.dto.ScanDTO;
 import cn.edu.fudan.measureservice.service.MeasureScanService;
@@ -89,6 +90,18 @@ public class MeasureScanController {
             return new ResponseBean(HttpStatus.BAD_REQUEST.value(),"failed",null);
         }
     }
+
+
+    @RequestMapping("/measure/parse-file")
+    public ResponseBean<FileInfo> getFileParseInfo(@RequestParam("path") String filePath) {
+        try {
+            FileInfo fileInfo = measureScanService.parseFileInfo(filePath);
+            return new ResponseBean<>(HttpStatus.OK.value(),"success",fileInfo);
+        }catch (Exception e) {
+            return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(),"failed",null);
+        }
+    }
+
 
 
     @Autowired

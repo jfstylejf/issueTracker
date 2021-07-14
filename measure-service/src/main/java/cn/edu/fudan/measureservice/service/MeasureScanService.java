@@ -1,6 +1,9 @@
 package cn.edu.fudan.measureservice.service;
 
+import cn.edu.fudan.measureservice.domain.dto.FileInfo;
 import cn.edu.fudan.measureservice.domain.dto.RepoResourceDTO;
+
+import java.io.IOException;
 
 public interface MeasureScanService {
 
@@ -32,5 +35,12 @@ public interface MeasureScanService {
      */
     void delete(String repoUuid);
 
+    /**
+     * 解析文件信息
+     * @param filePath 文件路径
+     * @throws IOException
+     * @return
+     */
+    FileInfo parseFileInfo(String filePath) throws IOException;
 
 }

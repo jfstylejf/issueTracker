@@ -1,6 +1,12 @@
 package cn.edu.fudan.measureservice.util;
 
 
+import cn.edu.fudan.measureservice.filter.FileFilter;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @author wjzho
  */
@@ -48,6 +54,23 @@ public class FileUtil {
         return source;
     }
 
+    public static List<String> getFilenames(File file, FileFilter filter) {
+        List<String> files = new ArrayList<String>();
+        getFilenames_(file, files);
+        // 根据语言筛选文件
+        files.removeIf(filter::fileFilter);
+        return files;
+    }
 
+    public static void getFilenames_(File f, List<String> files){
+        // 若是目录，则遍历其下所有文件
+        if (f.isDirectory()) {
+            String[] fList = f.list();
+            for(int i=0; i < fList.length; i++) {
+                getFilenames_(new File(f, fList[i]), files);
+            }
+        }
+        files.add(f.getAbsolutePath());
+    }
 
 }

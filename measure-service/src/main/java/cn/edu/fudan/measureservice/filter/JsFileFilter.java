@@ -1,5 +1,8 @@
-package cn.edu.fudan.measureservice.util;
+package cn.edu.fudan.measureservice.filter;
 
+
+import cn.edu.fudan.measureservice.filter.FileFilter;
+import cn.edu.fudan.measureservice.util.FileUtil;
 
 import java.io.File;
 
@@ -10,7 +13,7 @@ import java.io.File;
  * @Date 2021/3/11
  */
 
-public class JsFileFilter extends FileFilter{
+public class JsFileFilter extends FileFilter {
 
 
     @Override

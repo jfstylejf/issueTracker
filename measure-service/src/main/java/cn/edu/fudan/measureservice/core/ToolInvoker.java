@@ -3,6 +3,7 @@ package cn.edu.fudan.measureservice.core;
 
 import cn.edu.fudan.measureservice.analyzer.JavaNcss;
 import cn.edu.fudan.measureservice.core.process.BaseAnalyzer;
+import cn.edu.fudan.measureservice.core.process.CppCodeAnalyzer;
 import cn.edu.fudan.measureservice.core.process.JavaCodeAnalyzer;
 import cn.edu.fudan.measureservice.core.process.JsCodeAnalyzer;
 import cn.edu.fudan.measureservice.domain.Measure;
@@ -16,6 +17,9 @@ import cn.edu.fudan.measureservice.domain.dto.ScanCommitInfoDto;
 import cn.edu.fudan.measureservice.domain.dto.DiffInfo;
 import cn.edu.fudan.measureservice.domain.enums.ScanStatusEnum;
 import cn.edu.fudan.measureservice.domain.enums.ToolEnum;
+import cn.edu.fudan.measureservice.filter.FileFilter;
+import cn.edu.fudan.measureservice.filter.JavaFileFilter;
+import cn.edu.fudan.measureservice.filter.JsFileFilter;
 import cn.edu.fudan.measureservice.mapper.FileMeasureMapper;
 import cn.edu.fudan.measureservice.mapper.RepoMeasureMapper;
 import cn.edu.fudan.measureservice.util.*;
@@ -27,7 +31,6 @@ import org.eclipse.jgit.patch.HunkHeader;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
@@ -60,6 +63,8 @@ public class ToolInvoker {
             baseAnalyzer = new JavaCodeAnalyzer();
         }else if (ToolEnum.JSCodeAnalyzer.getType().equals(scanCommitInfoDto.getToolName())) {
             baseAnalyzer = new JsCodeAnalyzer();
+        }else if (ToolEnum.CppCodeAnalyzer.getType().equals(scanCommitInfoDto.getToolName())) {
+            baseAnalyzer = new CppCodeAnalyzer();
         }else {
             log.error ("toolName is error , do not have {}-->", scanCommitInfoDto.getToolName());
             return ;

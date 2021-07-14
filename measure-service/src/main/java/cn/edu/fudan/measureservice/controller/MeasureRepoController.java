@@ -247,6 +247,7 @@ public class MeasureRepoController {
     {
         try {
             String token = request.getHeader("token");
+            // todo 对于更新默认值判断
             RepoTagMetric repoTagMetric = RepoTagMetric.builder()
                     .repoUuid(repoUuid).tag(tag).updater(token).updateTime(LocalDate.now())
                     .bestMin(bestMin)
