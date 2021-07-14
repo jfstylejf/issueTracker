@@ -73,4 +73,8 @@ public class CommitDao {
     public String getCommitMessageByCommitIdAndRepoUuid(String commitId, String repoUuid) {
         return commitViewMapper.getCommitMessageByCommitIdAndRepoUuid(commitId, repoUuid);
     }
+
+    public Map<String, String> getRepoCountByDeveloper(List<String> developers, String since, String until, List<String> repoUuids) {
+        return commitViewMapper.getRepoCountByDeveloper(developers, since, until, repoUuids);
+    }
 }

@@ -152,5 +152,5 @@ public interface IssueMeasureInfoService {
      * @return living issue count
      * @throws MeasureServiceException MeasureServiceException
      */
-    PagedGridResult<DeveloperLivingIssueVO> getDeveloperListLivingIssue(String since, String until, List<String> repoUuids, List<String> developers, int page, int ps, Boolean asc) throws MeasureServiceException;
+    PagedGridResult<DeveloperLivingIssueVO> getDeveloperListLivingIssue(String since, String until, List<String> repoUuids, List<String> developers, int page, int ps, Boolean asc);
 }

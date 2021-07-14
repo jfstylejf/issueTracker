@@ -15,6 +15,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import javax.xml.bind.DatatypeConverter;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -96,6 +98,21 @@ public class SonarQubeBaseAnalyzer extends BaseAnalyzer {
         return getRawIssueSuccess;
     }
 
+    private void deleteSonarProject(String projectName) {
+        try {
+
+            Runtime rt = Runtime.getRuntime();
+            String command = binHome + "deleteSonarProject.sh " + projectName + " " + DatatypeConverter.printBase64Binary((restInterfaceManager.sonarLogin + ":" + restInterfaceManager.sonarPassword).getBytes(StandardCharsets.UTF_8));
+            log.info("command -> {}", command);
+            if (rt.exec(command).waitFor() == 0) {
+                log.info("delete sonar project:{} success! ", projectName);
+            }
+        } catch (Exception e) {
+            log.error("delete sonar project:{},cause:{}", projectName, e.getMessage());
+        }
+    }
+
+
     private boolean getSonarResult(String repoUuid, String commit, String repoPath) {
         //获取issue数量
         JSONObject sonarIssueResult = restInterfaceManager.getSonarIssueResults(repoUuid + "_" + commit, null, 1, false, 0);
@@ -132,19 +149,6 @@ public class SonarQubeBaseAnalyzer extends BaseAnalyzer {
         } catch (Exception e) {
             e.printStackTrace();
             return false;
-        }
-    }
-
-    private void deleteSonarProject(String projectName) {
-        try {
-            Runtime rt = Runtime.getRuntime();
-            String command = binHome + "deleteSonarProject.sh " + projectName;
-            log.info("command -> {}", command);
-            if (rt.exec(command).waitFor() == 0) {
-                log.info("delete sonar project:{} success! ", projectName);
-            }
-        } catch (Exception e) {
-            log.error("delete sonar project:{},cause:{}", projectName, e.getMessage());
         }
     }
 

@@ -3,13 +3,11 @@ package cn.edu.fudan.issueservice.core.process;
 import cn.edu.fudan.common.jgit.JGitHelper;
 import cn.edu.fudan.issueservice.core.analyzer.BaseAnalyzer;
 import cn.edu.fudan.issueservice.core.analyzer.EsLintBaseAnalyzer;
-import cn.edu.fudan.issueservice.core.analyzer.SonarQubeBaseAnalyzer;
 import cn.edu.fudan.issueservice.dao.*;
 import cn.edu.fudan.issueservice.domain.dbo.*;
 import cn.edu.fudan.issueservice.domain.dto.MatcherCommitInfo;
 import cn.edu.fudan.issueservice.domain.enums.IssuePriorityEnums;
 import cn.edu.fudan.issueservice.domain.enums.IssueStatusEnum;
-import cn.edu.fudan.issueservice.domain.enums.IssuePriorityEnums.JavaScriptIssuePriorityEnum;
 import cn.edu.fudan.issueservice.domain.enums.RawIssueStatus;
 import cn.edu.fudan.issueservice.domain.enums.ScanStatusEnum;
 import cn.edu.fudan.issueservice.util.*;
@@ -136,7 +134,7 @@ public class IssueMatcher {
     private Issue generateOneIssue(RawIssue rawIssue) {
         Issue issue = Issue.valueOf(rawIssue);
         IssueType issueType = issueTypeDao.getIssueTypeByTypeName(rawIssue.getType());
-        issue.setIssueCategory(issueType == null ? IssuePriorityEnums.getIssueCategory(rawIssue.getTool(), rawIssue.getPriority()) :  issueType.getCategory());
+        issue.setIssueCategory(issueType == null ? IssuePriorityEnums.getIssueCategory(rawIssue.getTool(), rawIssue.getPriority()) : issueType.getCategory());
         // TODO: 2021/1/7 产生一些issue之后再次设置状态 @何越
 
         rawIssue.setIssue(issue);
@@ -191,8 +189,9 @@ public class IssueMatcher {
         String delimiter = ",";
         List<String> preFiles = diffFiles.stream().filter(d -> !d.startsWith(delimiter)).map(f -> Arrays.asList(f.split(delimiter)).get(0)).collect(Collectors.toList());
         List<String> curFiles = diffFiles.stream().filter(d -> !d.endsWith(delimiter)).map(f -> Arrays.asList(f.split(delimiter)).get(1)).collect(Collectors.toList());
-        curFiles = curFiles.stream().filter(file -> analyzer instanceof SonarQubeBaseAnalyzer ? !FileFilter.javaFilenameFilter(file) : !FileFilter.jsFileFilter(file)).collect(Collectors.toList());
-        preFiles = preFiles.stream().filter(file -> analyzer instanceof SonarQubeBaseAnalyzer ? !FileFilter.javaFilenameFilter(file) : !FileFilter.jsFileFilter(file)).collect(Collectors.toList());
+
+        curFiles = curFiles.stream().filter(file -> FileFilter.fileFilter(toolName, file)).collect(Collectors.toList());
+        preFiles = preFiles.stream().filter(file -> FileFilter.fileFilter(toolName, file)).collect(Collectors.toList());
 
         // pre commit中变化部分存在的所有rawIssues
         List<String> issueUuids = issueDao.getIssuesByFilesToolAndRepo(Stream.concat(preFiles.stream(), curFiles.stream()).collect(Collectors.toList()), repoId, toolName);
@@ -208,9 +207,6 @@ public class IssueMatcher {
         curAllRawIssues.stream().filter(r -> !curRawIssues.contains(r)).forEach(rawIssue -> rawIssue.setNotChange(true));
 
         // 匹配两个rawIssue集合（parent的rawIssue集合，当前的rawIssue集合）
-//        log.info("cur all rawIssues:" + JSON.toJSONString(curAllRawIssues));
-//        log.info("pre rawIssues:" + JSON.toJSONString(preRawIssues));
-//        log.info("cur rawIssues:" + JSON.toJSONString(curRawIssues));
         mapRawIssues(preRawIssues, curRawIssues, jGitHelper.getRepoPath(), preFileToCurFile, curFileToPreFile);
 
         // 归总结果集 更新issue 的 end_commit 以及 status
@@ -245,8 +241,8 @@ public class IssueMatcher {
         curRawIssuesMatchResult.put(preCommit, curRawIssues);
     }
 
-    // solved rawIssue 存储一下matchInfo
     private void unifyOldIssueStatus(List<RawIssue> preRawIssues, String preCommit, Map<String, Issue> oldIssuesMap) {
+        // solved rawIssue 存储一下matchInfo
         Date curCommitDate = DateTimeUtil.localToUtc(jGitHelper.getCommitTime(curCommit));
         Date preCommitDate = DateTimeUtil.localToUtc(jGitHelper.getCommitTime(preCommit));
 
@@ -315,14 +311,13 @@ public class IssueMatcher {
         return true;
     }
 
-    // @review 存在 多分支的情况下匹配到不同的issueId  设置一个为merger solve
     private void mergeMatch(String repoUuid, String toolName, List<String> parentCommits, Map<String, List<RawIssue>> curRawIssuesMatchResult) {
+        // @review 存在 多分支的情况下匹配到不同的issueId  设置一个为merger solve
         log.info("start merge matching commit id --> {} ...", curCommit);
         // key parentCommitId value parentRawIssues
         Map<String, List<RawIssue>> preRawIssuesMap = new LinkedHashMap<>(parentCommits.size() << 1);
         // 得到所有待匹配的组合 两两按照normalMatch匹配
         for (String parentCommit : parentCommits) {
-//            log.info("curRawIssuesMatchResult:" + JSON.toJSONString(curRawIssuesMatchResult));
             normalMatch(repoUuid, toolName, parentCommit, curRawIssuesMatchResult);
             preRawIssuesMap.put(parentCommit, parentRawIssuesResult.get(parentCommit));
         }

@@ -17,6 +17,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
+import javax.xml.bind.DatatypeConverter;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -38,12 +40,17 @@ public class RestInterfaceManager extends BaseRepoRestManager {
     private String codeServicePath;
     @Value("${commit.service.path}")
     private String commitServicePath;
-    @Value("${sonar.service.path}")
-    private String sonarServicePath;
     @Value("${measure.service.path}")
     private String measureServicePath;
     @Value("${code.tracker.path}")
     private String codeTrackerServicePath;
+
+    @Value("${sonar.service.path}")
+    private String sonarServicePath;
+    @Value("${sonar.login}")
+    public String sonarLogin;
+    @Value("${sonar.password}")
+    public String sonarPassword;
     @Value("${test.repo.path}")
     private String testProjectPath;
 
@@ -55,6 +62,9 @@ public class RestInterfaceManager extends BaseRepoRestManager {
     private static final String DATA = "data";
     private static final String REPO_ID = "repo_id";
     private static final String PROJECT_URL = "/inner/project?repo_uuid=";
+
+    private boolean initSonarAuth = false;
+    private HttpEntity<HttpHeaders> sonarAuthHeader;
 
     public RestInterfaceManager(RestTemplate restTemplate, @Value("${code.service.path}") String codeServiceRepoPath) {
         super(restTemplate, codeServiceRepoPath);
@@ -325,7 +335,20 @@ public class RestInterfaceManager extends BaseRepoRestManager {
 
     //--------------------------------------------------------sonar api -----------------------------------------------------
 
+    private void initSonarAuthorization() {
+        HttpHeaders headers = new HttpHeaders();
+        String encoding = DatatypeConverter.printBase64Binary((sonarLogin + ":" + sonarPassword).getBytes(StandardCharsets.UTF_8));
+        headers.add("Authorization", "Basic " + encoding);
+        this.sonarAuthHeader = new HttpEntity<>(headers);
+        initSonarAuth = true;
+    }
+
     public JSONObject getSonarIssueResults(String repoName, String type, int pageSize, boolean resolved, int page) {
+
+        if (!initSonarAuth) {
+            initSonarAuthorization();
+        }
+
         Map<String, String> map = new HashMap<>(16);
         StringBuilder urlBuilder = new StringBuilder();
         urlBuilder.append(sonarServicePath).append("/api/issues/search?componentKeys={componentKeys}&additionalFields={additionalFields}&s={s}&resolved={resolved}");
@@ -363,17 +386,23 @@ public class RestInterfaceManager extends BaseRepoRestManager {
         String url = urlBuilder.toString();
 
         try {
-            ResponseEntity<JSONObject> entity = restTemplate.getForEntity(url, JSONObject.class, map);
+            log.info("url:{}", url);
+            log.info("map:{}", map);
+            log.info("sonar header:{}", sonarAuthHeader);
+            ResponseEntity<JSONObject> entity = restTemplate.exchange(url, HttpMethod.POST, sonarAuthHeader, JSONObject.class, map);
             return JSONObject.parseObject(Objects.requireNonNull(entity.getBody()).toString());
         } catch (RuntimeException e) {
             log.error("repo name : {}  ----> request sonar api failed", repoName);
             throw e;
         }
-
-
     }
 
     public JSONObject getRuleInfo(String ruleKey, String actives, String organizationKey) {
+
+        if (!initSonarAuth) {
+            initSonarAuthorization();
+        }
+
         Map<String, String> map = new HashMap<>(64);
 
         String baseRequestUrl = sonarServicePath + "/api/rules/show";
@@ -391,22 +420,27 @@ public class RestInterfaceManager extends BaseRepoRestManager {
         }
 
         try {
-            return restTemplate.getForObject(baseRequestUrl + "?key=" + ruleKey, JSONObject.class);
+            return restTemplate.exchange(baseRequestUrl + "?key=" + ruleKey, HttpMethod.GET, sonarAuthHeader, JSONObject.class).getBody();
         } catch (RuntimeException e) {
-            log.error("ruleKey : {}  ----> request sonar  rule infomation api failed", ruleKey);
+            log.error("ruleKey : {}  ----> request sonar  rule information api failed", ruleKey);
             throw e;
         }
 
     }
 
     public JSONObject getSonarAnalysisTime(String projectName) {
+
+        if (!initSonarAuth) {
+            initSonarAuthorization();
+        }
+
         JSONObject error = new JSONObject();
         error.put("errors", "Component key " + projectName + " not found");
 
         try {
             String urlPath = sonarServicePath + "/api/components/show?component=" + projectName;
             log.debug(urlPath);
-            return restTemplate.getForObject(urlPath, JSONObject.class);
+            return restTemplate.exchange(urlPath, HttpMethod.GET, sonarAuthHeader, JSONObject.class).getBody();
         } catch (Exception e) {
             log.error(e.getMessage());
             log.error("projectName: {} ---> request sonar api failed 获取最新版本时间API 失败", projectName);
@@ -416,32 +450,6 @@ public class RestInterfaceManager extends BaseRepoRestManager {
     }
 
     // --------------------------------------------------------measure api ---------------------------------------------------------
-
-    public Map<String, List<int[]>> getDeveloperLivingIssueLevel(List<String> repoUuids) throws MeasureServiceException {
-        Map<String, List<int[]>> result = new HashMap<>(16);
-        for (String repoUuid : repoUuids) {
-            JSONObject response = restTemplate.getForObject(measureServicePath + "/measure/repo-metric?repo_uuid=" + repoUuid, JSONObject.class);
-            assert response != null;
-            JSONArray data = response.getJSONArray(DATA);
-            if (data == null) {
-                throw new MeasureServiceException("get repo metric failed!");
-            }
-            for (Object tempData : data) {
-                JSONObject temp = (JSONObject) tempData;
-                if ("LivingStaticIssue".equals(temp.getString("tag"))) {
-                    List<int[]> ints = new ArrayList<>();
-                    ints.add(new int[]{temp.getIntValue("worstMax"), temp.getIntValue("worstMin"), 1});
-                    ints.add(new int[]{temp.getIntValue("worseMax"), temp.getIntValue("worseMin"), 2});
-                    ints.add(new int[]{temp.getIntValue("normalMax"), temp.getIntValue("normalMin"), 3});
-                    ints.add(new int[]{temp.getIntValue("betterMax"), temp.getIntValue("betterMin"), 4});
-                    ints.add(new int[]{temp.getIntValue("bestMax"), temp.getIntValue("bestMin"), 5});
-                    result.put(repoUuid, ints);
-                }
-            }
-        }
-
-        return result;
-    }
 
     @SuppressWarnings("unchecked")
     public Map<String, Integer> getDeveloperWorkload(Map<String, Object> query, String token) throws MeasureServiceException {

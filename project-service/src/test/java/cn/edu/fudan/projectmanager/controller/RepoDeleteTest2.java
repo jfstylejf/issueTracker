@@ -63,7 +63,7 @@ public class RepoDeleteTest2 extends ProjectServiceApplicationTest {
 
     final String token = "ec15d79e36e14dd258cfff3d48b73d35";
     //测试库
-    final String repoUuid = "fb74406a-346e-11eb-8dca-4dbb5f7a5f33";
+    final String repoUuid = "042164ec-4534-11eb-b6ff-f9c372bb0fcb";
 
     @Autowired
     ProjectControlServiceImpl projectControlService;
@@ -112,7 +112,7 @@ public class RepoDeleteTest2 extends ProjectServiceApplicationTest {
 
         //将返回值转换成json，拿到recycled的值，并判断是否在回收站中
         JSONObject jsonObject = JSONObject.parseObject(setRecycled.getResponse().getContentAsString());
-        Assert.assertEquals(10000000,jsonObject.getIntValue("data"));
+        Assert.assertEquals(100000000,jsonObject.getIntValue("data"));
 
     }
 
@@ -124,7 +124,7 @@ public class RepoDeleteTest2 extends ProjectServiceApplicationTest {
     public void test_02_DeleteRepo() throws Exception{
 
         //如果不在回收站中则failure
-        if(subRepositoryDao.getRecycledStatus(repoUuid) != 10000000) {
+        if(subRepositoryDao.getRecycledStatus(repoUuid) != 100000000) {
            Assert.fail("recycled status is wrong!");
         }
 
@@ -146,7 +146,7 @@ public class RepoDeleteTest2 extends ProjectServiceApplicationTest {
     public void test_03_DeleteCallBack() throws Exception {
 
         //回调接口 mock JIRA服务回调  1
-        String[] serviceName = { "JIRA", "DEPENDENCY", "CLONE", "MEASURE", "CODETRACKER", "ISSUE", "SCAN"};
+        String[] serviceName = { "JIRA", "DEPENDENCY", "CLONE", "MEASURE", "CODETRACKER", "ISSUE", "SCAN", "REPOSITORY"};
         MvcResult recallResult1 = mockMvc.perform(MockMvcRequestBuilders
                 .put("/repo")
                 .accept(MediaType.APPLICATION_JSON_UTF8)
@@ -185,7 +185,7 @@ public class RepoDeleteTest2 extends ProjectServiceApplicationTest {
 
         Integer recycledStatus4 = jsonObject4.getIntValue("data");
         char[] deleteStatus4 = String.valueOf(recycledStatus4).toCharArray();
-        //Assert.assertEquals('1',deleteStatus4[3]);
+        //Assert.assertEquals('1', deleteStatus4[3]);
 
 
         //回调接口 mock CODETRACKER服务回调  5
@@ -206,7 +206,7 @@ public class RepoDeleteTest2 extends ProjectServiceApplicationTest {
 
         Integer recycledStatus5 = jsonObject5.getIntValue("data");
         char[] deleteStatus5 = String.valueOf(recycledStatus5).toCharArray();
-        Assert.assertEquals('1',deleteStatus5[4]);
+        Assert.assertEquals('1', deleteStatus5[4]);
 
 
         //回调接口 mock ISSUE服务回调  6
@@ -227,7 +227,7 @@ public class RepoDeleteTest2 extends ProjectServiceApplicationTest {
 
         Integer recycledStatus6 = jsonObject6.getIntValue("data");
         char[] deleteStatus6 = String.valueOf(recycledStatus6).toCharArray();
-        Assert.assertEquals('1',deleteStatus6[5]);
+        Assert.assertEquals('1', deleteStatus6[5]);
 
 
         //回调接口 mock SCAN服务回调  7
@@ -248,8 +248,7 @@ public class RepoDeleteTest2 extends ProjectServiceApplicationTest {
 
         Integer recycledStatus7 = jsonObject7.getIntValue("data");
         char[] deleteStatus7 = String.valueOf(recycledStatus7).toCharArray();
-        Assert.assertEquals('1',deleteStatus7[6]);
-
+        Assert.assertEquals('1', deleteStatus7[6]);
 
     }
 
@@ -281,7 +280,7 @@ public class RepoDeleteTest2 extends ProjectServiceApplicationTest {
     @Rollback(value = false)
     public void test_05_DataRecover() throws Exception {
 
-        Integer recycled = 10000000;
+        Integer recycled = 100000000;
 
         //修改回收站状态接口
         MvcResult setRecycled = mockMvc.perform(MockMvcRequestBuilders

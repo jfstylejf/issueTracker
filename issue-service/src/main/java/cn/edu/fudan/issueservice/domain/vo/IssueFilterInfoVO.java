@@ -18,6 +18,7 @@ import java.util.Date;
 public class IssueFilterInfoVO {
 
     private final String uuid;
+    private final String tool;
     private final Integer displayId;
     private final String type;
     private final String issueCategory;

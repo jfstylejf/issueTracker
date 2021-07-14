@@ -1,6 +1,6 @@
 package cn.edu.fudan.issueservice.util;
 
-import cn.edu.fudan.issueservice.domain.enums.IssueTypeInChineseEnum;
+import cn.edu.fudan.issueservice.domain.enums.IssueTypeInChineseEnums;
 import cn.edu.fudan.issueservice.domain.vo.IssueFilterInfoVO;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
@@ -84,7 +84,6 @@ public class ExcelUtil {
     }
 
     private static void handleExcelData(HSSFWorkbook workbook, HSSFSheet sheet, List<IssueFilterInfoVO> issuesOverview) {
-        Map<String, String> mapToChinese = IssueTypeInChineseEnum.getMapToChinese();
         //获取数据
         issuesOverview.sort(Comparator.comparingInt(IssueFilterInfoVO::getDisplayId));
         //单元格样式
@@ -99,7 +98,7 @@ public class ExcelUtil {
             cell0.setCellValue(i);
             cell0.setCellStyle(style);
             HSSFCell cell1 = row.createCell(1);
-            cell1.setCellValue(mapToChinese.get(issueOverview.getType()));
+            cell1.setCellValue(IssueTypeInChineseEnums.getRuleChineseName(issueOverview.getTool(), issueOverview.getType()));
             cell1.setCellStyle(style);
             HSSFCell cell2 = row.createCell(2);
             cell2.setCellValue(issueOverview.getIssueCategory());

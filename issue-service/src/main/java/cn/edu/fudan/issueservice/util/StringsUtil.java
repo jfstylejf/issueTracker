@@ -3,10 +3,7 @@ package cn.edu.fudan.issueservice.util;
 import org.springframework.util.StringUtils;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -37,6 +34,13 @@ public class StringsUtil {
             return new ArrayList<>();
         }
         return Arrays.asList(splitString.split(","));
+    }
+
+    public static Set<String> splitString2Set(String splitString) {
+        if (StringUtils.isEmpty(splitString)) {
+            return new HashSet<>();
+        }
+        return new HashSet<>(Arrays.asList(splitString.split(",")));
     }
 
     public static String unionStringList(List<String> list) {

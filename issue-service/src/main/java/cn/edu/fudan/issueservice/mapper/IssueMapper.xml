@@ -617,7 +617,7 @@
     <select id="getIssuesOverview" resultType="java.util.Map">
         SELECT uuid, id AS displayId, type, repo_uuid AS repoUuid, file_name AS fileName, producer,
         start_commit_date AS startCommitDate, status, priority, issue_category AS issueCategory,
-        solver, solve_commit_date AS solveTime, solve_commit AS solveCommit
+        solver, solve_commit_date AS solveTime, solve_commit AS solveCommit, tool
         FROM issue
         <trim prefix="where" prefixOverrides="and">
             <if test="repoList != null and repoList.size > 0">
