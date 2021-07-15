@@ -31,6 +31,7 @@ public class CppCodeAnalyzer extends BaseAnalyzer{
 
     private List<String> cppFiles;
 
+
     @Override
     public boolean invoke() {
         cppFiles = new ArrayList<>();
@@ -57,7 +58,7 @@ public class CppCodeAnalyzer extends BaseAnalyzer{
         return false;
     }
 
-    public FileInfo parseFile(String file) throws IOException {
+    public static FileInfo parseFile(String file) throws IOException {
 
         CPP14Lexer lexer = new CPP14Lexer(CharStreams.fromFileName(file));
 
