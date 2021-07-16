@@ -89,4 +89,10 @@ public class CppCodeAnalyzer extends BaseAnalyzer{
     }
 
 
+
+
+    public static void main(String[] args) {
+
+    }
+
 }
