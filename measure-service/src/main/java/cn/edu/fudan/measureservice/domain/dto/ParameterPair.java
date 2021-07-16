@@ -22,5 +22,14 @@ public class ParameterPair {
      * 参数名
      */
     private String parameterName;
+    /**
+     * 起始行号
+     */
+    private int startPosition;
+
+    /**
+     * 结束行号
+     */
+    private int endPosition;
 
 }

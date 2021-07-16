@@ -41,4 +41,16 @@ public class MethodInfo {
         methodParameter = new ArrayList<>();
     }
 
+    public String getMethodSignature() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(this.specifier).append(" ").append(this.methodName).append("(");
+        for (int i = 0; i < methodParameter.size(); i++) {
+            if (i != 0) {
+                sb.append(", ");
+            }
+            sb.append(methodParameter.get(i).getSpecifier());
+        }
+        return sb.append(")").toString();
+    }
+
 }
