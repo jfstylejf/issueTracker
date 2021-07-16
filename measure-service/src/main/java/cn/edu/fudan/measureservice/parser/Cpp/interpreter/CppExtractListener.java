@@ -120,10 +120,13 @@ public class CppExtractListener extends CPP14ParserBaseListener{
         if (memberDeclaratorListContext != null) {
             List<CPP14Parser.MemberDeclaratorContext> memberDeclaratorContexts = memberDeclaratorListContext.memberDeclarator();
             for (CPP14Parser.MemberDeclaratorContext memberDeclaratorContext : memberDeclaratorContexts) {
+                // 获取加成员变量相关信息
                 ParameterPair parameterPair = new ParameterPair();
                 String memberDeclarator = tokenStream.getText(memberDeclaratorContext);
                 parameterPair.setSpecifier(specifier);
                 parameterPair.setParameterName(memberDeclarator);
+                parameterPair.setStartPosition(ctx.start.getLine());
+                parameterPair.setEndPosition(ctx.stop.getLine());
                 memberList.add(parameterPair);
             }
         }

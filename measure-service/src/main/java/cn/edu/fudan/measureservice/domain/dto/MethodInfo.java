@@ -25,7 +25,7 @@ public class MethodInfo {
      */
     private String specifier;
     /**
-     *
+     * 方法参数信息
      */
     private List<ParameterPair> methodParameter;
     /**
