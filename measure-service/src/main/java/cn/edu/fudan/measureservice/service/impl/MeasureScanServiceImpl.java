@@ -184,7 +184,7 @@ public class MeasureScanServiceImpl implements MeasureScanService {
         log.info("measurement delete completed");
     }
 
-    @Override
+
     public FileInfo parseFileInfo(String filePath) throws IOException {
         CPP14Lexer lexer = new CPP14Lexer(CharStreams.fromFileName(filePath));
 
