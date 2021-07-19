@@ -12,6 +12,8 @@ import cn.edu.fudan.measureservice.util.FileUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.Lexer;
+import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
@@ -28,6 +30,7 @@ import java.util.List;
  */
 @Slf4j
 public class CppCodeAnalyzer extends BaseAnalyzer{
+
 
     private List<String> cppFiles;
 
@@ -59,25 +62,15 @@ public class CppCodeAnalyzer extends BaseAnalyzer{
     }
 
     public static FileInfo parseFile(String file) throws IOException {
-
-        CPP14Lexer lexer = new CPP14Lexer(CharStreams.fromFileName(file));
-
-        CommonTokenStream tokens = new CommonTokenStream(lexer);
-
-        CPP14Parser parser = new CPP14Parser(tokens);
-
+        CPP14Parser parser = initFileParser(file);
         ParseTree tree = parser.translationUnit();
-
         ParseTreeWalker walker = new ParseTreeWalker();
-
         CppExtractListener listener = new CppExtractListener(parser);
-
+        // 通过监听器遍历解析路径
         walker.walk(listener,tree);
-
+        // 封装 c++ 文件解析内容
         List<ParameterPair> memberList = listener.getMemberList();
-
         List<MethodInfo> methodInfos = listener.getMethodInfoList();
-
         FileInfo fileInfo = FileInfo.builder()
                 .methodInfoList(methodInfos)
                 .memberList(memberList)
@@ -88,12 +81,22 @@ public class CppCodeAnalyzer extends BaseAnalyzer{
 
     }
 
+    private static String parseFileTree(String file) throws IOException {
+        CPP14Parser parser = initFileParser(file);
+        CPP14Parser.TranslationUnitContext tree = parser.translationUnit();
+        return tree.toStringTree(parser);
+    }
+
+    private static CPP14Parser initFileParser(String file) throws IOException {
+        CPP14Lexer lexer = new CPP14Lexer(CharStreams.fromFileName(file));
+        CommonTokenStream tokens = new CommonTokenStream(lexer);
+        return new CPP14Parser(tokens);
+    }
 
 
-
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         String fileName = "C:\\Users\\wjzho\\Desktop\\test3.cpp";
-
+        System.out.println(CppCodeAnalyzer.parseFileTree(fileName));
     }
 
 }
