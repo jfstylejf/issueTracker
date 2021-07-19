@@ -92,17 +92,6 @@ public class MeasureScanController {
     }
 
 
-    @RequestMapping("/measure/parse-file")
-    public ResponseBean<FileInfo> getFileParseInfo(@RequestParam("path") String filePath) {
-        try {
-            FileInfo fileInfo = measureScanService.parseFileInfo(filePath);
-            return new ResponseBean<>(HttpStatus.OK.value(),"success",fileInfo);
-        }catch (Exception e) {
-            return new ResponseBean<>(HttpStatus.BAD_REQUEST.value(),"failed",null);
-        }
-    }
-
-
 
     @Autowired
     public void setMeasureScanService(MeasureScanService measureScanService) {
