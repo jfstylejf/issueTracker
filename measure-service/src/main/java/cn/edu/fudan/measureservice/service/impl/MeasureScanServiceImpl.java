@@ -8,19 +8,27 @@ import cn.edu.fudan.measureservice.dao.JiraDao;
 import cn.edu.fudan.measureservice.dao.MeasureScanDao;
 import cn.edu.fudan.measureservice.dao.ProjectDao;
 import cn.edu.fudan.measureservice.domain.core.MeasureScan;
-import cn.edu.fudan.measureservice.domain.dto.RepoResourceDTO;
-import cn.edu.fudan.measureservice.domain.dto.ScanCommitInfoDto;
+import cn.edu.fudan.measureservice.domain.dto.*;
 import cn.edu.fudan.measureservice.domain.enums.ScanStatusEnum;
 import cn.edu.fudan.measureservice.mapper.*;
+import cn.edu.fudan.measureservice.parser.Cpp.interpreter.CPP14Lexer;
+import cn.edu.fudan.measureservice.parser.Cpp.interpreter.CPP14Parser;
+import cn.edu.fudan.measureservice.parser.Cpp.interpreter.CppExtractListener;
 import cn.edu.fudan.measureservice.service.MeasureScanService;
 import cn.edu.fudan.measureservice.util.JGitHelper;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -174,6 +182,35 @@ public class MeasureScanServiceImpl implements MeasureScanService {
         repoMeasureMapper.delRepoMeasureByrepoUuid(repoUuid);
         repoMeasureMapper.delFileMeasureByrepoUuid(repoUuid);
         log.info("measurement delete completed");
+    }
+
+
+    public FileInfo parseFileInfo(String filePath) throws IOException {
+        CPP14Lexer lexer = new CPP14Lexer(CharStreams.fromFileName(filePath));
+
+        CommonTokenStream tokens = new CommonTokenStream(lexer);
+
+        CPP14Parser parser = new CPP14Parser(tokens);
+
+        ParseTree tree = parser.translationUnit();
+
+        ParseTreeWalker walker = new ParseTreeWalker();
+
+        CppExtractListener listener = new CppExtractListener(parser);
+
+        walker.walk(listener,tree);
+
+        List<ParameterPair> memberList = listener.getMemberList();
+
+        List<MethodInfo> methodInfos = listener.getMethodInfoList();
+
+        FileInfo fileInfo = FileInfo.builder()
+                .methodInfoList(methodInfos)
+                .memberList(memberList)
+                .absolutePath(filePath)
+                .build();
+
+        return fileInfo;
     }
 
 

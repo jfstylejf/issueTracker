@@ -5,7 +5,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author wjzho
@@ -14,11 +16,19 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class FileInfo {
+public class FileInfo implements Serializable {
 
     private String absolutePath;
     private String relativePath;
+    /**
+     * 文件方法列表
+     */
     private List<MethodInfo> methodInfoList;
+    /**
+     * 文件的成员列表
+     */
+    private List<ParameterPair> memberList;
+
     private int fileCcn;
     private int codeLines;
     private int blankLines;

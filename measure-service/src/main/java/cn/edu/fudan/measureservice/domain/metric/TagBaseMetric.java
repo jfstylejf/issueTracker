@@ -47,28 +47,28 @@ public class TagBaseMetric {
         Map<String,TagBaseMetric> tagBaseMetricMap = new HashMap<>();
         // 获取 工作量初始基线数据
         WorkLoadBaseMetric workLoadBaseMetric = new WorkLoadBaseMetric();
-        tagBaseMetricMap.put(TagMetricEnum.WorkLoad.getTag(),workLoadBaseMetric);
+        tagBaseMetricMap.put(TagMetricEnum.WorkLoad.name(),workLoadBaseMetric);
         //获取 静态缺陷初始基础数据
         LivingStaticIssueBaseMetric livingStaticIssueBaseMetric = new LivingStaticIssueBaseMetric();
-        tagBaseMetricMap.put(TagMetricEnum.LivingStaticIssue.getTag(),livingStaticIssueBaseMetric);
+        tagBaseMetricMap.put(TagMetricEnum.LivingStaticIssue.name(),livingStaticIssueBaseMetric);
         // 获取 代码稳定性初始基础数据
         CodeStabilityBaseMetric codeStabilityBaseMetric = new CodeStabilityBaseMetric();
-        tagBaseMetricMap.put(TagMetricEnum.CodeStability.getTag(),codeStabilityBaseMetric);
+        tagBaseMetricMap.put(TagMetricEnum.CodeStability.name(),codeStabilityBaseMetric);
         // 获取 提交规范性初始基础数据
         CommitStandardBaseMetric commitStandardBaseMetric = new CommitStandardBaseMetric();
-        tagBaseMetricMap.put(TagMetricEnum.CommitStandard.getTag(),commitStandardBaseMetric);
+        tagBaseMetricMap.put(TagMetricEnum.CommitStandard.name(),commitStandardBaseMetric);
         // 获取 圈复杂度初始基础数据
         CyclomaticComplexityBaseMetric cyclomaticComplexityBaseMetric = new CyclomaticComplexityBaseMetric();
-        tagBaseMetricMap.put(TagMetricEnum.CyclomaticComplexity.getTag(),cyclomaticComplexityBaseMetric);
+        tagBaseMetricMap.put(TagMetricEnum.CyclomaticComplexity.name(),cyclomaticComplexityBaseMetric);
         // 获取 克隆行数初始基础数据
         CloneLineBaseMetric cloneLineBaseMetric = new CloneLineBaseMetric();
-        tagBaseMetricMap.put(TagMetricEnum.CloneLine.getTag(),cloneLineBaseMetric);
+        tagBaseMetricMap.put(TagMetricEnum.CloneLine.name(),cloneLineBaseMetric);
         // 获取 超大方法数初始基础数据
         BigMethodNumBaseMetric bigMethodNumBaseMetric = new BigMethodNumBaseMetric();
-        tagBaseMetricMap.put(TagMetricEnum.BigMethodNum.getTag(),bigMethodNumBaseMetric);
+        tagBaseMetricMap.put(TagMetricEnum.BigMethodNum.name(),bigMethodNumBaseMetric);
         // 获取 设计贡献初始基础数据
         DesignContributionBaseMetric designContributionBaseMetric = new DesignContributionBaseMetric();
-        tagBaseMetricMap.put(TagMetricEnum.DesignContribution.getTag(),designContributionBaseMetric);
+        tagBaseMetricMap.put(TagMetricEnum.DesignContribution.name(),designContributionBaseMetric);
 
         return tagBaseMetricMap;
     }

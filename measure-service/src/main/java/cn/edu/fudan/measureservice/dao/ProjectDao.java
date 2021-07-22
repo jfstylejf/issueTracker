@@ -5,6 +5,7 @@ import cn.edu.fudan.measureservice.domain.bo.DeveloperLevel;
 import cn.edu.fudan.measureservice.domain.bo.DeveloperRecentNews;
 import cn.edu.fudan.measureservice.domain.dto.*;
 import cn.edu.fudan.measureservice.domain.enums.DutyStatusEnum;
+import cn.edu.fudan.measureservice.domain.enums.LanguageEnum;
 import cn.edu.fudan.measureservice.domain.enums.ToolEnum;
 import cn.edu.fudan.measureservice.mapper.AccountMapper;
 import cn.edu.fudan.measureservice.mapper.MeasureMapper;
@@ -38,8 +39,6 @@ public class ProjectDao {
     private AccountMapper accountMapper;
 
     private static final String split = ",";
-    private static final String JAVA = "Java";
-    private static final String JAVASCRIPT = "JavaScript";
 
     private static Map<String,RepoInfo> repoInfoMap = new HashMap<>(50);
 
@@ -444,11 +443,14 @@ public class ProjectDao {
     public String getToolName(String repoUuid) {
         try {
             String language = projectMapper.getRepoLanguage(repoUuid);
-            if (language.equals(JAVA)) {
+            if (language.equals(LanguageEnum.Java.getType())) {
                 return ToolEnum.JavaCodeAnalyzer.getType();
-            }else if(language.equals(JAVASCRIPT)) {
+            }else if(language.equals(LanguageEnum.JAVASCRIPT.getType())) {
                 return ToolEnum.JSCodeAnalyzer.getType();
-            }else {
+            }else if (language.equals(LanguageEnum.CPP.getType())) {
+                return ToolEnum.CppCodeAnalyzer.getType();
+            }
+            else {
                 return null;
             }
         }catch (Exception e) {
@@ -497,7 +499,8 @@ public class ProjectDao {
         List<String> visibleRepoList;
         // Case 1 : 若给定了查询库列表， 则根据查询库列表对 visibleProjectInvolvedRepoList 进行过滤，只取交集
         if (repoUuidList!=null && !"".equals(repoUuidList)) {
-            List<String> queryRepoList = Arrays.asList(repoUuidList.split(split));
+            List<String> queryRepoList = new ArrayList<>(Arrays.asList(repoUuidList.split(split)));
+            queryRepoList.removeIf(o -> o == null || "".equals(o));
             visibleRepoList = mergeBetweenRepo(queryRepoList,visibleProjectInvolvedRepoList);
         }else {  // Case 2 : 若没有给定查询库列表， 则可查询库列表就为 visibleProjectInvolvedRepoList
             visibleRepoList = visibleProjectInvolvedRepoList;

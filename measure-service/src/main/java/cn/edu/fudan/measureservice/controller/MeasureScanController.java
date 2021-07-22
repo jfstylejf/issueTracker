@@ -2,6 +2,7 @@ package cn.edu.fudan.measureservice.controller;
 
 import cn.edu.fudan.measureservice.core.process.JsCodeAnalyzer;
 import cn.edu.fudan.measureservice.domain.ResponseBean;
+import cn.edu.fudan.measureservice.domain.dto.FileInfo;
 import cn.edu.fudan.measureservice.domain.dto.RepoResourceDTO;
 import cn.edu.fudan.measureservice.domain.dto.ScanDTO;
 import cn.edu.fudan.measureservice.service.MeasureScanService;
@@ -89,6 +90,7 @@ public class MeasureScanController {
             return new ResponseBean(HttpStatus.BAD_REQUEST.value(),"failed",null);
         }
     }
+
 
 
     @Autowired

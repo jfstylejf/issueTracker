@@ -1,6 +1,9 @@
 package cn.edu.fudan.measureservice.service;
 
+import cn.edu.fudan.measureservice.domain.dto.FileInfo;
 import cn.edu.fudan.measureservice.domain.dto.RepoResourceDTO;
+
+import java.io.IOException;
 
 public interface MeasureScanService {
 
@@ -31,6 +34,7 @@ public interface MeasureScanService {
      * @param repoUuid repo的唯一标识
      */
     void delete(String repoUuid);
+
 
 
 }
