@@ -1,9 +1,13 @@
 package cn.edu.fudan.issueservice.core.analyzer;
 
 import cn.edu.fudan.common.jgit.JGitHelper;
+import cn.edu.fudan.issueservice.core.parser.cpp.CppCodeAnalyzer;
 import cn.edu.fudan.issueservice.dao.CommitDao;
 import cn.edu.fudan.issueservice.domain.dbo.Location;
 import cn.edu.fudan.issueservice.domain.dbo.RawIssue;
+import cn.edu.fudan.issueservice.domain.dto.FileInfo;
+import cn.edu.fudan.issueservice.domain.dto.MethodInfo;
+import cn.edu.fudan.issueservice.domain.dto.ParameterPair;
 import cn.edu.fudan.issueservice.domain.dto.XmlError;
 import cn.edu.fudan.issueservice.domain.enums.ToolEnum;
 import cn.edu.fudan.issueservice.util.AstUtil;
@@ -20,10 +24,7 @@ import org.springframework.stereotype.Component;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * @author beethoven
@@ -41,6 +42,8 @@ public class TscanCodeAnalyzer extends BaseAnalyzer {
 
     @Value("${TscanCodeLogHome}")
     private String logHome;
+
+    private Map<String, Map<String, int[]>> method2Line = new HashMap<>();
 
     @Override
     public boolean invoke(String repoUuid, String repoPath, String commit) {
@@ -78,9 +81,11 @@ public class TscanCodeAnalyzer extends BaseAnalyzer {
             }
             jGitInvoker.close();
 
+            Set<String> files = new HashSet<>();
             for (XmlError error : errors) {
                 String uuid = UUID.randomUUID().toString();
                 String file = FileUtil.handleFileNameToRelativePath(error.getFile());
+                files.add(error.getFile());
 
                 RawIssue rawIssue = new RawIssue();
                 rawIssue.setUuid(uuid);
@@ -92,13 +97,15 @@ public class TscanCodeAnalyzer extends BaseAnalyzer {
                 rawIssue.setCommitId(commit);
                 rawIssue.setRepoId(repoUuid);
                 rawIssue.setCodeLines(error.getLine());
-                rawIssue.setLocations(parseLocations(error.getFile(), error.getFuncInfo(), error.getLine(), uuid));
+                rawIssue.setLocations(parseLocations(error.getFile(), error.getLine(), uuid));
                 rawIssue.setDeveloperName(developerUniqueName);
                 rawIssue.setPriority(CppIssuePriorityEnum.getRankByPriority(error.getSeverity()));
 
                 rawIssues.add(rawIssue);
             }
+
             resultRawIssues.addAll(rawIssues);
+            parseMethodAndField(files);
 
             return true;
         } catch (Exception e) {
@@ -108,15 +115,51 @@ public class TscanCodeAnalyzer extends BaseAnalyzer {
         return false;
     }
 
-    private List<Location> parseLocations(String file, String funcInfo, int line, String uuid) {
+    private void parseMethodAndField(Set<String> files) throws IOException {
+        for (String file : files) {
+            Set<String> methodAndField = new HashSet<>();
+            FileInfo fileInfo = CppCodeAnalyzer.parseFile(file);
+
+            for (MethodInfo methodInfo : fileInfo.getMethodInfoList()) {
+                String methodSignature = methodInfo.getMethodSignature();
+                methodAndField.add(methodSignature);
+                Map<String, int[]> map = method2Line.getOrDefault(file, new HashMap<>(16));
+                map.put(methodSignature, new int[]{methodInfo.getStartPosition(), methodInfo.getEndPosition()});
+                method2Line.put(file, map);
+            }
+
+            for (ParameterPair parameterPair : fileInfo.getMemberList()) {
+                String fieldSignature = parameterPair.getSpecifier() + " " + parameterPair.getParameterName();
+                methodAndField.add(fieldSignature);
+                Map<String, int[]> map = method2Line.getOrDefault(file, new HashMap<>(16));
+                map.put(fieldSignature, new int[]{parameterPair.getStartPosition(), parameterPair.getEndPosition()});
+                method2Line.put(file, map);
+            }
+
+            methodsAndFieldsInFile.put(file, methodAndField);
+        }
+    }
+
+    private List<Location> parseLocations(String file, int line, String uuid) {
+
         String code = AstUtil.getCode(line, line, file);
+        Map<String, int[]> methodInfoMap = method2Line.get(file);
+        String methodName = null;
+
+        for (Map.Entry<String, int[]> entry : methodInfoMap.entrySet()) {
+            if (entry.getValue()[0] <= line && entry.getValue()[1] >= line) {
+                methodName = entry.getKey();
+                break;
+            }
+        }
+
         Location location = Location.builder()
                 .uuid(UUID.randomUUID().toString())
                 .startLine(line)
                 .endLine(line)
                 .bugLines(line + "-" + line)
                 .filePath(FileUtil.handleFileNameToRelativePath(file))
-                .methodName(funcInfo)
+                .methodName(methodName)
                 .rawIssueId(uuid)
                 .code(code)
                 .build();
@@ -139,5 +182,10 @@ public class TscanCodeAnalyzer extends BaseAnalyzer {
     @Autowired
     public void setCommitDao(CommitDao commitDao) {
         this.commitDao = commitDao;
+    }
+
+    public static void main(String[] args) throws IOException {
+        FileInfo fileInfo = CppCodeAnalyzer.parseFile("/Users/beethoven/CLionProjects/untitled2/main.cpp");
+        List<MethodInfo> methodInfoList = fileInfo.getMethodInfoList();
     }
 }

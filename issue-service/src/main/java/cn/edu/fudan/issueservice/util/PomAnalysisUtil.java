@@ -43,7 +43,7 @@ public class PomAnalysisUtil {
                 MavenXpp3Reader reader = new MavenXpp3Reader();
                 Model model = reader.read(fis);
                 modules.addAll(model.getModules());
-                names.put(model.getName(), pomPath);
+                names.put(model.getArtifactId(), pomPath);
             } catch (Exception e) {
                 log.error("analyzed pom failed！");
                 log.error(e.getMessage());

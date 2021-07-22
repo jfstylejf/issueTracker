@@ -334,9 +334,7 @@ public class IssueMatcher {
 
         preRawIssueMap.entrySet().stream()
                 .filter(e -> curRawIssueMap.containsKey(e.getKey()))
-                .forEach(pre -> RawIssueMatcher.match(pre.getValue(), curRawIssueMap.get(pre.getKey()),
-                        analyzer instanceof EsLintBaseAnalyzer ? analyzer.getMethodsAndFieldsInFile().getOrDefault(repoPath + "/" + pre.getKey(), new HashSet<>()) :
-                                AstParserUtil.getAllMethodAndFieldName(repoPath + "/" + pre.getKey())));
+                .forEach(pre -> RawIssueMatcher.match(pre.getValue(), curRawIssueMap.get(pre.getKey()), analyzer.getMethodsAndFieldsInFile(repoPath + "/" + pre.getKey())));
 
         cleanUpRenameHandle(preRawIssues, curFileToPreFile);
     }
