@@ -74,6 +74,7 @@ public class CppCodeAnalyzer extends BaseAnalyzer{
         FileInfo fileInfo = FileInfo.builder()
                 .methodInfoList(methodInfos)
                 .memberList(memberList)
+                .globalParameterList(listener.getGlobalParameterList())
                 .absolutePath(file)
                 .build();
 
@@ -96,6 +97,7 @@ public class CppCodeAnalyzer extends BaseAnalyzer{
 
     public static void main(String[] args) throws IOException {
         String fileName = "C:\\Users\\wjzho\\Desktop\\test3.cpp";
+        FileInfo fileInfo = CppCodeAnalyzer.parseFile(fileName);
         System.out.println(CppCodeAnalyzer.parseFileTree(fileName));
     }
 

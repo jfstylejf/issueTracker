@@ -25,15 +25,52 @@ public class CppExtractListener extends CPP14ParserBaseListener{
 
     List<ParameterPair> memberList = new ArrayList<>();
 
+    private boolean enterClassOrNot = false;
+
+    private boolean enterFunctionOrNot = false;
+
+    List<ParameterPair> globalParameterList = new ArrayList<>();
+
     public CppExtractListener(CPP14Parser parser) {
         this.parser = parser;
         tokenStream = parser.getTokenStream();
         methodInfoList = new ArrayList<>();
     }
 
+
+    @Override
+    public void enterSimpleDeclaration(CPP14Parser.SimpleDeclarationContext ctx) {
+        // 判断简单表达式是否在方法或类声明中
+        if (enterFunctionOrNot || enterClassOrNot) {
+            return;
+        }
+        CPP14Parser.DeclSpecifierSeqContext declSpecifierSeqContext = ctx.declSpecifierSeq();
+        if (declSpecifierSeqContext != null) {
+            Boolean flag = isGlobalDefinitionOrNot(declSpecifierSeqContext);
+            if (!flag) {
+                // 若非全局变量则直接退出
+                return;
+            }
+            // 此时确定为全局变量，获取全局变量信息
+            String specifier = getSpecifier(declSpecifierSeqContext);
+            CPP14Parser.InitDeclaratorListContext initDeclaratorListContext = ctx.initDeclaratorList();
+            for (CPP14Parser.InitDeclaratorContext initDeclaratorContext : initDeclaratorListContext.initDeclarator()) {
+                ParameterPair parameterPair = new ParameterPair();
+                String declarator = tokenStream.getText(initDeclaratorContext.declarator());
+                parameterPair.setSpecifier(specifier);
+                parameterPair.setParameterName(declarator);
+                parameterPair.setStartPosition(ctx.start.getLine());
+                parameterPair.setEndPosition(ctx.stop.getLine());
+                globalParameterList.add(parameterPair);
+            }
+        }
+
+    }
+
     @Override
     public void enterFunctionDefinition(CPP14Parser.FunctionDefinitionContext ctx) {
 
+        enterFunctionOrNot = true;
         MethodInfo methodInfo = new MethodInfo();
 
         // 获取方法修饰符
@@ -73,6 +110,8 @@ public class CppExtractListener extends CPP14ParserBaseListener{
                         if (parameterDeclarationContext.declarator() != null) {
                             String parameterName = tokenStream.getText(parameterDeclarationContext.declarator());
                             parameterPair.setParameterName(parameterName);
+                            parameterPair.setStartPosition(parameterDeclarationContext.start.getLine());
+                            parameterPair.setEndPosition(parameterDeclarationContext.stop.getLine());
                         }
                         methodInfo.getMethodParameter().add(parameterPair);
                     }
@@ -93,14 +132,22 @@ public class CppExtractListener extends CPP14ParserBaseListener{
     }
 
     @Override
-    public void enterFunctionBody(CPP14Parser.FunctionBodyContext ctx) {
+    public void exitFunctionDefinition(CPP14Parser.FunctionDefinitionContext ctx) {
+        enterFunctionOrNot = false;
+    }
 
+
+    @Override
+    public void enterClassSpecifier(CPP14Parser.ClassSpecifierContext ctx) {
+        // 标识进入类标志
+        enterClassOrNot = true;
     }
 
     @Override
-    public void enterClassName(CPP14Parser.ClassNameContext ctx) {
-
+    public void exitClassSpecifier(CPP14Parser.ClassSpecifierContext ctx) {
+        enterClassOrNot = false;
     }
+
 
     /**
      * 获取成员变量
@@ -108,7 +155,6 @@ public class CppExtractListener extends CPP14ParserBaseListener{
      */
     @Override
     public void enterMemberdeclaration(CPP14Parser.MemberdeclarationContext ctx) {
-
 
         CPP14Parser.DeclSpecifierSeqContext declSpecifierSeqContext = ctx.declSpecifierSeq();
         // todo attributeSpecifierSeq 情况未考虑
@@ -132,6 +178,22 @@ public class CppExtractListener extends CPP14ParserBaseListener{
         }
 
 
+    }
+
+    /**
+     * 判段是否是全局变量，若为类声明则有 classSpecifier 的形式
+     * @param declSpecifierSeqContext
+     * @return
+     */
+    private Boolean isGlobalDefinitionOrNot(CPP14Parser.DeclSpecifierSeqContext declSpecifierSeqContext) {
+        Objects.requireNonNull(declSpecifierSeqContext);
+        CPP14Parser.DeclSpecifierContext declSpecifierContext = declSpecifierSeqContext.declSpecifier(0);
+        // 目前简单表达式修饰符类型只考虑了 typeSpecifier
+        CPP14Parser.TypeSpecifierContext typeSpecifierContext = declSpecifierContext.typeSpecifier();
+        if (typeSpecifierContext != null) {
+            return typeSpecifierContext.classSpecifier() == null;
+        }
+        return false;
     }
 
     private String getSpecifier(CPP14Parser.DeclSpecifierSeqContext declSpecifierSeqContext) {

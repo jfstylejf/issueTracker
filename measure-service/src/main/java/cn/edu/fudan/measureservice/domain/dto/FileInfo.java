@@ -25,9 +25,13 @@ public class FileInfo implements Serializable {
      */
     private List<MethodInfo> methodInfoList;
     /**
-     * 文件的成员列表
+     * 文件声明类的成员列表
      */
     private List<ParameterPair> memberList;
+    /**
+     * 文件全局变量列表
+     */
+    private List<ParameterPair> globalParameterList;
 
     private int fileCcn;
     private int codeLines;
