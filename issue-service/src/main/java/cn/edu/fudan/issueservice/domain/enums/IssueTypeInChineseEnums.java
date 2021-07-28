@@ -244,7 +244,7 @@ public class IssueTypeInChineseEnums {
         RULE_42("logic-stlSortCheck", "自定义比较函数缺陷"),
         RULE_43("nullpointer-arrayDereferenceAfterCheck", "数组取值先判空再解引用"),
         RULE_44("uninit-uninitMemberVar", "构造函数中成员变量未初始化"),
-        RULE_45("nullpointer-dereferenceIfNull", "指针为空解应用"),
+        RULE_45("nullpointer-dereferenceIfNull", "指针为空解引用"),
         RULE_46("bufoverrun-stlOutOfBounds", "stl库函数越界"),
         RULE_47("uninit-uninitstring", "字符串初始化错误"),
         RULE_48("bufoverrun-negativeIndex", "负数下标"),

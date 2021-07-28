@@ -1,6 +1,7 @@
 package cn.edu.fudan.issueservice.core.analyzer;
 
 import cn.edu.fudan.issueservice.domain.dbo.RawIssue;
+import cn.edu.fudan.issueservice.util.AstParserUtil;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -55,6 +56,20 @@ public abstract class BaseAnalyzer {
      * @return 缺陷优先级
      */
     public abstract Integer getPriorityByRawIssue(RawIssue rawIssue);
+
+    /**
+     * 根据文件名获取文件中的方法和变量
+     *
+     * @param fileName fileName
+     * @return methods and fields
+     */
+    public Set<String> getMethodsAndFieldsInFile(String fileName) {
+        if (this instanceof SonarQubeBaseAnalyzer) {
+            return AstParserUtil.getAllMethodAndFieldName(fileName);
+        } else {
+            return methodsAndFieldsInFile.getOrDefault(fileName, new HashSet<>());
+        }
+    }
 
     public void emptyAnalyzeRawIssues() {
         resultRawIssues.clear();
