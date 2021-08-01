@@ -190,8 +190,8 @@ public class IssueMatcher {
         List<String> preFiles = diffFiles.stream().filter(d -> !d.startsWith(delimiter)).map(f -> Arrays.asList(f.split(delimiter)).get(0)).collect(Collectors.toList());
         List<String> curFiles = diffFiles.stream().filter(d -> !d.endsWith(delimiter)).map(f -> Arrays.asList(f.split(delimiter)).get(1)).collect(Collectors.toList());
 
-        curFiles = curFiles.stream().filter(file -> FileFilter.fileFilter(toolName, file)).collect(Collectors.toList());
-        preFiles = preFiles.stream().filter(file -> FileFilter.fileFilter(toolName, file)).collect(Collectors.toList());
+        curFiles = curFiles.stream().filter(file -> !FileFilter.fileFilter(toolName, file)).collect(Collectors.toList());
+        preFiles = preFiles.stream().filter(file -> !FileFilter.fileFilter(toolName, file)).collect(Collectors.toList());
 
         // pre commit中变化部分存在的所有rawIssues
         List<String> issueUuids = issueDao.getIssuesByFilesToolAndRepo(Stream.concat(preFiles.stream(), curFiles.stream()).collect(Collectors.toList()), repoId, toolName);
@@ -211,8 +211,11 @@ public class IssueMatcher {
 
         // 归总结果集 更新issue 的 end_commit 以及 status
         List<String> oldIssuesUuid = preRawIssues.stream().map(RawIssue::getIssueId).collect(Collectors.toList());
-        Map<String, Issue> oldIssuesMap = issueDao.getIssuesByUuid(oldIssuesUuid).stream()
-                .collect(Collectors.toMap(Issue::getUuid, Function.identity()));
+        Map<String, Issue> oldIssuesMap = new HashMap<>();
+        if (!oldIssuesUuid.isEmpty()) {
+            oldIssuesMap = issueDao.getIssuesByUuid(oldIssuesUuid).stream()
+                    .collect(Collectors.toMap(Issue::getUuid, Function.identity()));
+        }
 
         // 记录curRawIssues的匹配状态
         curRawIssues.stream()

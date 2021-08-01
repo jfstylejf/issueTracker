@@ -74,6 +74,7 @@ public final class FileFilter {
         return baseFilenameFilter(path, str) ||
                 str.endsWith("test.cc") ||
                 str.endsWith("test.cpp") ||
-                str.endsWith("test.h");
+                str.endsWith("test.h") ||
+                (!str.endsWith(".cpp") && !str.endsWith(".cc") && !str.endsWith(".h"));
     }
 }
