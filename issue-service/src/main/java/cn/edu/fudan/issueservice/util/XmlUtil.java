@@ -2,15 +2,14 @@ package cn.edu.fudan.issueservice.util;
 
 import cn.edu.fudan.issueservice.domain.dto.XmlError;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
 import org.jdom2.Attribute;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
 import org.xml.sax.SAXException;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +23,16 @@ public class XmlUtil {
 
     public static List<XmlError> getError(String fileName) throws IOException, SAXException, JDOMException {
 
-        Element element = new SAXBuilder().build(new InputStreamReader(new FileInputStream(fileName), StandardCharsets.UTF_8)).getRootElement();
+        StringBuilder buffer = new StringBuilder();
+        try (BufferedReader bf= new BufferedReader(new FileReader(fileName))){
+            String s;
+            while((s = bf.readLine())!=null){
+                buffer.append(s.trim());
+            }
+        }
+        String xmlContent = buffer.toString().replaceAll("[\\x00-\\x08\\x0b-\\x0c\\x0e-\\x1f]", "");
+
+        Element element = new SAXBuilder().build(new InputStreamReader(IOUtils.toInputStream(xmlContent, StandardCharsets.UTF_8))).getRootElement();
         List<Element> elements = element.getChildren();
         List<XmlError> xmlErrors = new ArrayList<>();
 
