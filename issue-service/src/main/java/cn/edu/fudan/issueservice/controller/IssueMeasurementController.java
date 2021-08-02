@@ -335,16 +335,16 @@ public class IssueMeasurementController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "since", value = "起始时间(yyyy-MM-dd)", required = true, dataType = "String", defaultValue = "1990-01-01"),
             @ApiImplicitParam(name = "until", value = "截止时间(yyyy-MM-dd)", required = true, dataType = "String", defaultValue = "1990-01-01"),
-            @ApiImplicitParam(name = "projectIds", value = "项目id", dataType = "String"),
+            @ApiImplicitParam(name = "project_ids", value = "项目id", dataType = "String"),
             @ApiImplicitParam(name = "interval", value = "间隔类型", dataType = "String", defaultValue = "week"),
-            @ApiImplicitParam(name = "showDetail", value = "是否展示detail", dataType = "String", defaultValue = "false")
+            @ApiImplicitParam(name = "detail", value = "是否展示detail", dataType = "String", defaultValue = "false")
     })
     @GetMapping(value = {"/codewisdom/issue/living-issue-tendency"})
     public ResponseBean<Object> getCcnMethodNum(@RequestParam(value = "since", required = false) String since,
                                                 @RequestParam(value = "until") String until,
                                                 @RequestParam(value = "project_ids", required = false) String projectIds,
                                                 @RequestParam(value = "interval", required = false, defaultValue = "week") String interval,
-                                                @RequestParam(value = "showDetail", required = false, defaultValue = "false") String showDetail) {
+                                                @RequestParam(value = "detail", required = false, defaultValue = "false") String showDetail) {
         try {
             if (until.isEmpty()) {
                 return new ResponseBean<>(412, PARAMETER_IS_EMPTY, null);
