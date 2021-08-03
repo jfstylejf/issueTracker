@@ -1,0 +1,2380 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<results>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/aiot-nebula_dms-framework_1.0.0/3rd/WorkFlowManage/src/WorkFlowManage.cc" line="379" id="nullpointer" subid="dereferenceBeforeCheck" severity="Serious" msg="Null - checking [destModule] suggests that it may be null, but it has already been dereferenced at line 378." web_identify="{&quot;identify&quot;:&quot;destModule&quot;}" func_info="hobot::Module * WorkFlowManage::CreateOneWorkflow ( WorkFlowLink &amp; link )" content="369: hobot::Module *WorkFlowManage::CreateOneWorkflow(WorkFlowLink &amp;link) {
+370:   DMSModule *srcModule = dynamic_cast&lt;DMSModule *&gt;(
+371:       GetModule(link.SourceModuleObjectName, link.SourceModuleType));
+372:   int srcOutSlotindex =
+373:       srcModule-&gt;CreateOutputSlotIndex(link.SrcForward, link.SourceOutSlot);
+374:   DMSModule *destModule = dynamic_cast&lt;DMSModule *&gt;(
+375:       GetModule(link.DestModuleObjectName, link.DestModuleType));
+376:   int destForward = link.DestForward;
+377:   int destInSlotindex =
+378:       destModule-&gt;CreateInputSlotIndex(destForward, link.DestInputSlot);
+379:   if (!srcModule || !destModule) {
+380:     LOGE_T(MODULE_TAG) &lt;&lt; &quot;CreateOneWorkflows error ,moudle is null! &quot;;
+381:   }
+382:   LOGV_T(MODULE_TAG) &lt;&lt; &quot;CreateOneWorkflows:&quot;
+383:                      &lt;&lt; &quot;SourceModuleObjectName:&quot; &lt;&lt; link.SourceModuleObjectName
+384:                      &lt;&lt; &quot;,SourceOutSlot:&quot; &lt;&lt; link.SourceOutSlot
+385:                      &lt;&lt; &quot;,srcOutSlotindex:&quot; &lt;&lt; srcOutSlotindex
+386:                      &lt;&lt; &quot;,DestModuleObjectName:&quot; &lt;&lt; link.DestModuleObjectName
+387:                      &lt;&lt; &quot;,DestForward:&quot; &lt;&lt; destForward
+388:                      &lt;&lt; &quot;,DestInputSlot:&quot; &lt;&lt; link.DestInputSlot
+389:                      &lt;&lt; &quot;,destInSlotindex:&quot; &lt;&lt; destInSlotindex;
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/aiot-nebula_dms-framework_1.0.0/3rd/WorkFlowManage/src/WorkFlowManage.cc" line="379" id="nullpointer" subid="dereferenceBeforeCheck" severity="Serious" msg="Null - checking [srcModule] suggests that it may be null, but it has already been dereferenced at line 373." web_identify="{&quot;identify&quot;:&quot;srcModule&quot;}" func_info="hobot::Module * WorkFlowManage::CreateOneWorkflow ( WorkFlowLink &amp; link )" content="369: hobot::Module *WorkFlowManage::CreateOneWorkflow(WorkFlowLink &amp;link) {
+370:   DMSModule *srcModule = dynamic_cast&lt;DMSModule *&gt;(
+371:       GetModule(link.SourceModuleObjectName, link.SourceModuleType));
+372:   int srcOutSlotindex =
+373:       srcModule-&gt;CreateOutputSlotIndex(link.SrcForward, link.SourceOutSlot);
+374:   DMSModule *destModule = dynamic_cast&lt;DMSModule *&gt;(
+375:       GetModule(link.DestModuleObjectName, link.DestModuleType));
+376:   int destForward = link.DestForward;
+377:   int destInSlotindex =
+378:       destModule-&gt;CreateInputSlotIndex(destForward, link.DestInputSlot);
+379:   if (!srcModule || !destModule) {
+380:     LOGE_T(MODULE_TAG) &lt;&lt; &quot;CreateOneWorkflows error ,moudle is null! &quot;;
+381:   }
+382:   LOGV_T(MODULE_TAG) &lt;&lt; &quot;CreateOneWorkflows:&quot;
+383:                      &lt;&lt; &quot;SourceModuleObjectName:&quot; &lt;&lt; link.SourceModuleObjectName
+384:                      &lt;&lt; &quot;,SourceOutSlot:&quot; &lt;&lt; link.SourceOutSlot
+385:                      &lt;&lt; &quot;,srcOutSlotindex:&quot; &lt;&lt; srcOutSlotindex
+386:                      &lt;&lt; &quot;,DestModuleObjectName:&quot; &lt;&lt; link.DestModuleObjectName
+387:                      &lt;&lt; &quot;,DestForward:&quot; &lt;&lt; destForward
+388:                      &lt;&lt; &quot;,DestInputSlot:&quot; &lt;&lt; link.DestInputSlot
+389:                      &lt;&lt; &quot;,destInSlotindex:&quot; &lt;&lt; destInSlotindex;
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/aiot-nebula_dms-framework_1.0.0/example_hobot_sshd/hobot_sshd.cc" line="189" id="logic" subid="selfAssignment" severity="Warning" msg="Redundant assignment of &apos;ret&apos; to itself." web_identify="{&quot;identify&quot;:&quot;ret&quot;}" func_info="static void * hbipc_utils_worker ( void * p )" content="179:     else if (cmd_flag == CMD_RUN)
+180:       if (pp) pclose(pp);
+181:     goto error;
+182:   }
+183: 
+184:   // file transfer
+185:   if (cmd_flag == CMD_PUT) {
+186:     // ap put &amp; cp get
+187:     while (1) {
+188:       // read one block
+189:       ret = ret = recvframe(transfer, recv_buf);
+190:       ;
+191:       if (ret &lt; 0) {
+192:         printf(&quot;2: hbipc_cp_recvframe error: %d\n&quot;, ret);
+193:         unlink(temp_buf);
+194:         goto error;
+195:       }
+196: 
+197:       cmd_header_p = (struct CMD_header *)recv_buf;
+198:       if (cmd_header_p-&gt;type == CMD_SEND_BLOCK_REQ) {
+199:         cmd_header.type = CMD_SEND_BLOCK_RSP;
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/aiot-nebula_dms-framework_1.0.0/example_hobot_sshd/hobot_sshd.cc" line="48" id="logic" subid="InvalidVarArgs" severity="Critical" msg="The count of parameters mismatches the format string in printf" web_identify="{&quot;identify&quot;:&quot;printf&quot;}" func_info="static int recvframe ( Modo::HobotDataTransfer * transfer , char * recv_buf )" content="38:     return -1;
+39:   }
+40:   memset(recv_buf, 0, RECV_BUF_LEN);
+41:   Modo::TransferVector tran_vector;
+42:   int ret = transfer-&gt;Receive(tran_vector, 1000);
+43:   if (ret) {
+44:     // printf(&quot;1: transfer-&gt;Receive error: %d\n&quot;, ret);
+45:     return ret;
+46:   }
+47:   if (tran_vector.size() == 0) {
+48:     printf(&quot;1: transfer-&gt;Receive tran_vector size is 0: %d\n&quot;);
+49:     return -1;
+50:   }
+51:   memcpy(recv_buf, tran_vector[0].data, tran_vector[0].datalen);
+52:   return 0;
+53: }
+54: 
+55: static int sendframe(Modo::HobotDataTransfer *transfer, char *send_buff,
+56:                      int len) {
+57:   if (!transfer) {
+58:     printf(&quot; transfer is null error \n&quot;);
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/aiot-nebula_dms-framework_1.0.0/example_jni/hobot_dms_sdk.cc" line="122" id="nullpointer" subid="dereferenceBeforeCheck" severity="Serious" msg="Null - checking [usbfs] suggests that it may be null, but it has already been dereferenced at line 121 in function[strcpy]." web_identify="{&quot;identify&quot;:&quot;usbfs&quot;}" func_info="int hobot_dms_ctx::Init ( JavaVM * jvm , JNIEnv * env , const std::string &amp; fname , jobject juvc_params )" content="112:         env-&gt;GetFieldID(cls, &quot;uvcUsbfs&quot;, &quot;Ljava/lang/String;&quot;);
+113: 
+114:     uvc_params.fd = env-&gt;GetIntField(juvc_params, uvc_fd_fid);
+115:     uvc_params.vid = env-&gt;GetIntField(juvc_params, uvc_vid_fid);
+116:     uvc_params.pid = env-&gt;GetIntField(juvc_params, uvc_pid_fid);
+117:     uvc_params.busnum = env-&gt;GetIntField(juvc_params, uvc_busnum_fid);
+118:     uvc_params.devaddr = env-&gt;GetIntField(juvc_params, uvc_devnum_fid);
+119:     jstring j_usbfs = (jstring)env-&gt;GetObjectField(juvc_params, uvc_usbfs_fid);
+120:     const char *usbfs = env-&gt;GetStringUTFChars(j_usbfs, JNI_FALSE);
+121:     strcpy(uvc_params.usbfs, usbfs);
+122:     if (usbfs)
+123:       env-&gt;ReleaseStringUTFChars(j_usbfs, usbfs);
+124: 
+125:     return mp_hobot_dms_-&gt;Init(fname.c_str(), &amp;uvc_params);
+126:   } else {
+127:     return mp_hobot_dms_-&gt;Init(fname.c_str(), NULL);
+128:   }
+129: }
+130: 
+131: void hobot_dms_ctx::Fini() {
+132:   LOGD(&quot;before fini&quot;);
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/aiot-nebula_dms-framework_1.0.0/src/base/include/hobot-dms/base/message/age_gender_frame.h" line="55" id="uninit" subid="uninitMemberVar" severity="Warning" msg="Member variable &apos;MultiPost::last_age_,last_gender_,&apos; is not initialized in the constructor." web_identify="{&quot;identify&quot;:&quot;MultiPost::last_age_,last_gender_,&quot;}" func_info="HobotDMS::MultiPost" content="45:   }
+46:   AgeSegm age_segm;
+47:   Gender gender;
+48: };
+49: 
+50: /**
+51:  * @brief: MultiPost
+52:  */
+53: class MultiPost {
+54:  public:
+55:   MultiPost()
+56:       : age_(AgeSegm::AGESEGM_UNKNOW),
+57:         gender_(Gender::GENDER_UNKNOW),
+58:         count_(0),
+59:         first_(true),
+60:         age_gender_count_(60) {}
+61:   ~MultiPost() { ClearData(); }
+62:   void ClearData() {
+63:     age_multi_count_.clear();
+64:     gender_multi_count_.clear();
+65:     age_ = AgeSegm::AGESEGM_UNKNOW;
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/aiot-nebula_dms-framework_1.0.0/src/base/include/hobot-dms/base/message/error_collector_msg.h" line="26" id="uninit" subid="uninitMemberVar" severity="Warning" msg="Member variable &apos;ErrorCodeInfo::recover_ready,have_already_recover,&apos; is not initialized in the constructor." web_identify="{&quot;identify&quot;:&quot;ErrorCodeInfo::recover_ready,have_already_recover,&quot;}" func_info="HobotDMS::ErrorCodeInfo" content="16: /**
+17:  * @brief: CellPhoneMsg
+18:  */
+19: struct ErrorCodeInfo {
+20:   int errorcode;
+21:   int64_t stamp;
+22:   std::string stack;
+23:   bool error_flag;
+24:   bool recover_ready;
+25:   bool have_already_recover;
+26:   ErrorCodeInfo(int _errorcode, int64_t _stamp, std::string _stack,
+27:                 bool _error_flag)
+28:       : errorcode(_errorcode),
+29:         stamp(_stamp),
+30:         stack(_stack),
+31:         error_flag(_error_flag) {}
+32:   ErrorCodeInfo() {}
+33:   ~ErrorCodeInfo() {}
+34: };
+35: struct ErrorModuleInfo {
+36:   std::map&lt;int, ErrorCodeInfo&gt; err_info;
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/aiot-nebula_dms-framework_1.0.0/src/base/include/hobot-dms/base/message/event_frame.h" line="101" id="uninit" subid="uninitMemberVar" severity="Warning" msg="Member variable &apos;EventFrame::daa_trigger_,&apos; is not initialized in the constructor." web_identify="{&quot;identify&quot;:&quot;EventFrame::daa_trigger_,&quot;}" func_info="HobotDMS::EventFrame" content="91:               std::string attach_img_path_ = &quot;&quot;)
+92:       : state(state_), duration(time_) {}
+93:   ~EventResult() = default;
+94:   event_state state;
+95:   TimeStamp duration;
+96:   std::string attach_img_path;
+97: };
+98: 
+99: class EventFrame {
+100:  public:
+101:   EventFrame() : daa_state_(EVENT_ST_NONE) {}
+102:   ~EventFrame() { ClearData(); }
+103:   std::map&lt;int, std::vector&lt;EventResult&gt;&gt; &amp;events() { return events_; }
+104:   std::map&lt;int, EventTrigger&gt; &amp;trigger() { return trigger_; }
+105:   event_state &amp;daa_state() { return daa_state_; }
+106:   event_trigger &amp;daa_trigger() { return daa_trigger_; }
+107:   void ClearData() {
+108:     events_.clear();
+109:     trigger_.clear();
+110:   }
+111: 
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/aiot-nebula_dms-framework_1.0.0/src/base/include/hobot-dms/base/message/faceid_frame.h" line="14" id="uninit" subid="uninitMemberVar" severity="Warning" msg="Member variable &apos;FaceIdData::frame_id,&apos; is not initialized in the constructor." web_identify="{&quot;identify&quot;:&quot;FaceIdData::frame_id,&quot;}" func_info="HobotDMS::FaceIdData" content="4: 
+5: #include &lt;hobot-dms/base/utils/mempool/mempool.h&gt;
+6: #include &lt;memory&gt;
+7: #include &quot;hobot-dms/base/dms_defines.h&quot;
+8: #include &quot;hobot-dms/base/dms_typedef.h&quot;
+9: #include &quot;hobot-dms/base/face/facequality_filter.h&quot;
+10: 
+11: namespace HobotDMS {
+12: 
+13: struct FaceIdData {
+14:   FaceIdData() : R(0.0f), P(0.0f), Y(0.0f), fail_reasons(0) {}
+15:   ~FaceIdData() { clear(); }
+16:   void clear() {
+17:     R = 0.0f;
+18:     P = 0.0f;
+19:     Y = 0.0f;
+20:     feature.clear();
+21:     roi_image.clear();
+22:     trans_roi_image.clear();
+23:     fail_reasons = 0;
+24:   }
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/aiot-nebula_dms-framework_1.0.0/src/base/include/hobot-dms/base/message/image_frame.h" line="29" id="uninit" subid="uninitMemberVar" severity="Warning" msg="Member variable &apos;JpegFrame::mode_,&apos; is not initialized in the constructor." web_identify="{&quot;identify&quot;:&quot;JpegFrame::mode_,&quot;}" func_info="HobotDMS::JpegFrame" content="19: };
+20: enum JpegInjectFlag {
+21:   JPEG_START = 0,
+22:   JPEG_OTHER = 1,
+23:   JPEG_ONLY_ONE = 2,
+24:   JPEG_END = 3
+25: };
+26: class JpegFrame {
+27:  public:
+28:   enum { HARD_ENCODE = 0, SOFT_ENCODE = 1, INJECT_COPY = 2 };
+29:   JpegFrame() : jpg_size_(0) {}
+30:   ~JpegFrame() {}
+31:   std::vector&lt;unsigned char&gt; buffer_;
+32:   int jpg_size_;
+33:   struct inject_info inject_jpeg_;
+34:   int mode_;
+35: };
+36: class ImageFrame {
+37:  public:
+38:   ImageFrame();
+39:   ImageFrame(int img_width, int img_height, int img_color_mode);
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/aiot-nebula_dms-framework_1.0.0/src/base/include/hobot-dms/base/message/perception.h" line="209" id="uninit" subid="uninitMemberVar" severity="Warning" msg="Member variable &apos;PerceptionExt::face_quality,&apos; is not initialized in the constructor." web_identify="{&quot;identify&quot;:&quot;PerceptionExt::face_quality,&quot;}" func_info="HobotDMS::PerceptionExt" content="199:   bool DeepCopy(const PerceptionExt *src) {
+200:     if (src) {
+201:       tracking_id = src-&gt;tracking_id;
+202:       face_type = src-&gt;face_type;
+203:       good_face = src-&gt;good_face;
+204:     }
+205:     return true;
+206:   }
+207: 
+208:  protected:
+209:   PerceptionExt()
+210:       : tracking_id(-1), face_type(FACE_TYPE_UNKNOW), good_face(false) {}
+211: 
+212:   void Reset() {
+213:     tracking_id = -1;
+214:     face_type = FACE_TYPE_UNKNOW;
+215:     good_face = false;
+216:   }
+217: };
+218: 
+219: typedef MemPool&lt;PerceptionExt&gt; PerceptionExtPool;
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/aiot-nebula_dms-framework_1.0.0/src/base/include/hobot-dms/base/message/perception.h" line="56" id="uninit" subid="uninitMemberVar" severity="Warning" msg="Member variable &apos;PerceptionRect::ref_idx,&apos; is not initialized in the constructor." web_identify="{&quot;identify&quot;:&quot;PerceptionRect::ref_idx,&quot;}" func_info="HobotDMS::PerceptionRect" content="46: class PerceptionRect : public PerceptionBase {
+47:  public:
+48:   float left;
+49:   float top;
+50:   float right;
+51:   float bottom;
+52:   float conf;
+53:   int type;
+54:   int perception_type;
+55:   int ref_idx;  // reference to face roi array index
+56:   PerceptionRect() {
+57:     left = 0;
+58:     top = 0;
+59:     right = 0;
+60:     bottom = 0;
+61:     conf = 0;
+62:     type = 0;
+63:     perception_type = PerceptionBase::PerceptionType_Invalid;
+64:   }
+65:   ~PerceptionRect() {}
+66:   void Reset() {
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/aiot-nebula_dms-framework_1.0.0/src/base/include/hobot-dms/base/message/sight_dir_frame.h" line="47" id="uninit" subid="uninitMemberVar" severity="Warning" msg="Member variable &apos;SightDirInfo::m_Gaze_Region_Idx,&apos; is not initialized in the constructor." web_identify="{&quot;identify&quot;:&quot;SightDirInfo::m_Gaze_Region_Idx,&quot;}" func_info="HobotDMS::SightDirInfo" content="37:   Vector_3f m_CameraRvec;
+38:   Vector_3f m_CameraRPY;
+39: 
+40:   // normalized coordinate (based on face center)
+41:   Vector_3f m_NormalizedRvec;
+42:   Vector_3f m_NormalizedRPY;
+43: };
+44: 
+45: class SightDirInfo {
+46:  public:
+47:   SightDirInfo() { Clear(); }
+48:   ~SightDirInfo() = default;
+49: 
+50:   void Clear() {
+51:     left_eye_.Clear();
+52:     right_eye_.Clear();
+53:     attention_distract_signal_ = 0x2;  // Unknown
+54:     attention_region_ = 0;             // None
+55:   }
+56: 
+57:   int SetSightDir(float pitch, float yaw, EyeTypeEnum eye_type) {
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/aiot-nebula_dms-framework_1.0.0/src/base/include/hobot-dms/base/message/video_position.h" line="16" id="uninit" subid="uninitMemberVar" severity="Warning" msg="Member variable &apos;VideoPosition::m_is_save,&apos; is not initialized in the constructor." web_identify="{&quot;identify&quot;:&quot;VideoPosition::m_is_save,&quot;}" func_info="HobotDMS::VideoPosition" content="6: #define HOBOT_DMS_DATA_STRUCTURE_VIDEOPOSITION_H_
+7: 
+8: #include &lt;hobot/hobot.h&gt;
+9: #include &lt;stdint.h&gt;
+10: #include &quot;hobot-dms/base/permission.h&quot;
+11: 
+12: namespace HobotDMS {
+13: 
+14: class VideoPosition {
+15:  public:
+16:   VideoPosition(int64_t flushed = 0, int64_t next = 0)
+17:       : m_flushed_pos(flushed),
+18:         m_next_pos(next),
+19:         m_is_eof(false),
+20:         m_is_userseek(false) {}
+21:   int64_t m_flushed_pos;
+22:   int64_t m_next_pos;
+23:   bool m_is_eof;
+24:   bool m_is_userseek;
+25:   bool m_is_save;
+26: };
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/aiot-nebula_dms-framework_1.0.0/src/base/include/hobot-dms/base/utils/expiry_map/expiry_map.h" line="243" id="nullpointer" subid="dereferenceAfterCheck" severity="Serious" msg="Comparing [head_] to null at line 237 implies that [head_ ] might be null.Dereferencing null pointer [head_]." web_identify="{&quot;identify&quot;:&quot;head_&quot;}" func_info="std::shared_ptr &lt; Node &gt; ExpiryMap::push_head ( const key &amp; _key , const value &amp; _value )" content="233:   // double link list
+234:   bool empty() { return tail_ == nullptr; }
+235:   spNode push_head(const key &amp;_key, const value &amp;_value) {
+236:     spNode new_node = std::make_shared&lt;Node&gt;(_key, _value);
+237:     if (!head_ &amp;&amp; !tail_) {
+238:       head_ = new_node;
+239:       tail_ = new_node;
+240:     } else {
+241:       new_node-&gt;prev_ = nullptr;
+242:       new_node-&gt;next_ = head_;
+243:       head_-&gt;prev_ = new_node;
+244:       head_ = new_node;
+245:     }
+246:     return head_;
+247:   }
+248: 
+249:   spNode push_tail(const key &amp;_key, const value &amp;_value) {
+250:     spNode new_node = std::make_shared&lt;Node&gt;(_key, _value);
+251:     if (!head_ &amp;&amp; !tail_) {
+252:       head_ = new_node;
+253:       tail_ = new_node;
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/aiot-nebula_dms-framework_1.0.0/src/base/include/hobot-dms/base/utils/expiry_map/expiry_map.h" line="257" id="nullpointer" subid="dereferenceAfterCheck" severity="Serious" msg="Comparing [tail_] to null at line 251 implies that [tail_ ] might be null.Dereferencing null pointer [tail_]." web_identify="{&quot;identify&quot;:&quot;tail_&quot;}" func_info="std::shared_ptr &lt; Node &gt; ExpiryMap::push_tail ( const key &amp; _key , const value &amp; _value )" content="247:   }
+248: 
+249:   spNode push_tail(const key &amp;_key, const value &amp;_value) {
+250:     spNode new_node = std::make_shared&lt;Node&gt;(_key, _value);
+251:     if (!head_ &amp;&amp; !tail_) {
+252:       head_ = new_node;
+253:       tail_ = new_node;
+254:     } else {
+255:       new_node-&gt;prev_ = tail_;
+256:       new_node-&gt;next_ = nullptr;
+257:       tail_-&gt;next = new_node;
+258:       tail_ = new_node;
+259:     }
+260:     return tail_;
+261:   }
+262: 
+263:   void move_node_to_head(spNode &amp;node) {
+264:     if (node == head_) {
+265:       return;
+266:     }
+267:     if (node == tail_) {
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/aiot-nebula_dms-framework_1.0.0/src/base/include/hobot-dms/base/utils/post_process/smoothing.h" line="406" id="uninit" subid="uninitMemberVar" severity="Warning" msg="Member variable &apos;MoveVoteVec::re_value_,run_time_,&apos; is not initialized in the constructor." web_identify="{&quot;identify&quot;:&quot;MoveVoteVec::re_value_,run_time_,&quot;}" func_info="HobotDMS::MoveVoteVec" content="396:   int frame_time_diff_thld_;
+397: };
+398: typedef MoveEyeStateVec&lt;int&gt; MoveEyeStateVecInt;
+399: 
+400: /**
+401:  * @brief: MoveVoteVec
+402:  */
+403: class MoveVoteVec : public PostKernel {
+404:  public:
+405:   MoveVoteVec() : PostKernel() {}
+406:   MoveVoteVec(TimeStamp time_window, float vote_thld)
+407:       : PostKernel(time_window), vote_thld_(vote_thld) {}
+408:   virtual ~MoveVoteVec() {}
+409:   float &amp;ReValue() { return re_value_; }
+410:   void SetThld(float vote_thld) { vote_thld_ = vote_thld; }
+411:   void SetRunTime(TimeStamp time_stamp) { run_time_ = time_stamp; }
+412:   bool CheckLifeCycle() {
+413:     if (GetTimeStamp() - run_time_ &gt; 3000) {
+414:       return false;
+415:     } else {
+416:       return true;
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/aiot-nebula_dms-framework_1.0.0/src/base/include/hobot-dms/base/utils/post_process/smoothing.h" line="441" id="uninit" subid="uninitMemberVar" severity="Warning" msg="Member variable &apos;MultiVoteVec::vote_size_,run_time_,&apos; is not initialized in the constructor." web_identify="{&quot;identify&quot;:&quot;MultiVoteVec::vote_size_,run_time_,&quot;}" func_info="HobotDMS::MultiVoteVec" content="431:   }
+432: 
+433:  private:
+434:   float re_value_;
+435:   float vote_thld_;
+436:   TimeStamp run_time_;
+437: };
+438: 
+439: class MultiVoteVec : public PostKernel {
+440:  public:
+441:   MultiVoteVec() : PostKernel() {}
+442:   MultiVoteVec(TimeStamp time_window, size_t vote_size)
+443:       : PostKernel(time_window), vote_size_(vote_size) {
+444:     stat_.resize(vote_size_, 0);
+445:   }
+446:   virtual ~MultiVoteVec() {}
+447:   int &amp;ReValue() { return last_vote_result_; }
+448:   void SetVoteSize(size_t vote_size) {
+449:     vote_size_ = vote_size;
+450:     stat_.resize(vote_size_, 0);
+451:   }
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/aiot-nebula_dms-framework_1.0.0/src/base/include/hobot-dms/base/utils/post_process/smoothing.h" line="442" id="uninit" subid="uninitMemberVar" severity="Warning" msg="Member variable &apos;MultiVoteVec::run_time_,&apos; is not initialized in the constructor." web_identify="{&quot;identify&quot;:&quot;MultiVoteVec::run_time_,&quot;}" func_info="HobotDMS::MultiVoteVec" content="432: 
+433:  private:
+434:   float re_value_;
+435:   float vote_thld_;
+436:   TimeStamp run_time_;
+437: };
+438: 
+439: class MultiVoteVec : public PostKernel {
+440:  public:
+441:   MultiVoteVec() : PostKernel() {}
+442:   MultiVoteVec(TimeStamp time_window, size_t vote_size)
+443:       : PostKernel(time_window), vote_size_(vote_size) {
+444:     stat_.resize(vote_size_, 0);
+445:   }
+446:   virtual ~MultiVoteVec() {}
+447:   int &amp;ReValue() { return last_vote_result_; }
+448:   void SetVoteSize(size_t vote_size) {
+449:     vote_size_ = vote_size;
+450:     stat_.resize(vote_size_, 0);
+451:   }
+452: 
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/aiot-nebula_dms-framework_1.0.0/src/base/include/hobot-dms/base/utils/post_process/smoothing.h" line="517" id="uninit" subid="uninitMemberVar" severity="Warning" msg="Member variable &apos;GenderStrategy::track_id_,&apos; is not initialized in the constructor." web_identify="{&quot;identify&quot;:&quot;GenderStrategy::track_id_,&quot;}" func_info="HobotDMS::GenderStrategy" content="507:   TimeStamp run_time_;
+508: };
+509: 
+510: template &lt;typename T&gt;
+511: static T DHFileter(const T &amp;last, const T &amp;current, const T &amp;alpha) {
+512:   return current * alpha + (1 - alpha) * last;
+513: }
+514: 
+515: class GenderStrategy : public MultiVoteVec {
+516:  public:
+517:   GenderStrategy() : MultiVoteVec() {}
+518:   GenderStrategy(TimeStamp time_window, int gender_maxwin_size,
+519:                  size_t vote_size, int track_id)
+520:       : MultiVoteVec(time_window, vote_size) {
+521:     time_win_tmp = time_window;
+522:     gender_maxwin_size_ = gender_maxwin_size;
+523:     track_id_ = track_id;
+524:   }
+525:   void Push(const spSample &amp;smp, float score) {
+526:     PushScore(score);
+527:     PushSample(smp);
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/aiot-nebula_dms-framework_1.0.0/src/base/include/hobot-dms/base/utils/post_process/smoothing.h" line="638" id="uninit" subid="uninitMemberVar" severity="Warning" msg="Member variable &apos;AgeStrategy::track_id_,&apos; is not initialized in the constructor." web_identify="{&quot;identify&quot;:&quot;AgeStrategy::track_id_,&quot;}" func_info="HobotDMS::AgeStrategy" content="628:   }
+629: 
+630:  private:
+631:   int time_win_tmp = 0;
+632:   int min_validnum_{0};
+633:   int gender_maxwin_size_{1024};
+634: };
+635: 
+636: class AgeStrategy : public MultiVoteVec {
+637:  public:
+638:   AgeStrategy() : MultiVoteVec() {}
+639:   AgeStrategy(TimeStamp time_window, size_t vote_size, int track_id)
+640:       : MultiVoteVec(time_window, vote_size) {
+641:     track_id_ = track_id;
+642:   }
+643: 
+644:   void Push(const spSample &amp;smp, float score) {
+645:     PushScore(score);
+646:     PushSample(smp);
+647:     Process();
+648:   }
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/aiot-nebula_dms-framework_1.0.0/src/base/include/hobot-dms/base/utils/ring_buff/ring_buff.h" line="164" id="nullpointer" subid="explicitNullDereference" severity="Critical" msg="Dereferencing null pointer [item], [item] is assigned with null at line 112." web_identify="{&quot;identify&quot;:&quot;item&quot;}" func_info="int RingBuff::GetItemsForward ( long start_stamp , long end_stamp , int item_cout , std :: vector &lt; T &gt; &amp; item_vector , int expiry_times = 0 )" content="154:             1000000 * (ts_3.tv_sec - ts_2.tv_sec) + ts_3.tv_usec - ts_2.tv_usec;
+155:         LOGE_T(RINGBUFF_TAG)
+156:             &lt;&lt; &quot;[LIPS][SPEECHHHH]---&gt;warning!!! seekbytime comsume &quot;
+157:             &lt;&lt; diff / 1000 &lt;&lt; &quot; last ts &quot; &lt;&lt; getLastTime()
+158:             &lt;&lt; &quot; oldest ts = &quot; &lt;&lt; getOldestTime()
+159:             &lt;&lt; &quot; seek ts = &quot; &lt;&lt; start_stamp;
+160:       }
+161: #endif
+162:     }
+163: 
+164:     item_vector.push_back(*item);
+165:     T *pre_item = nullptr;
+166: #if ENABLE_MAX_LOG
+167:     gettimeofday(&amp;ts_2, NULL);
+168: #endif
+169:     time_count = 0;
+170:     while (true) {
+171:       pre_item = item;
+172:       item = buff_.next(item);
+173:       if (!item &amp;&amp; item_vector.size() &lt; (size_t)item_cout) {
+174:         lck.unlock();
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/aiot-nebula_dms-framework_1.0.0/src/base/include/hobot-dms/base/utils/ring_buff/ring_buff.h" line="234" id="nullpointer" subid="explicitNullDereference" severity="Critical" msg="Dereferencing null pointer [item], [item] is assigned with null at line 210." web_identify="{&quot;identify&quot;:&quot;item&quot;}" func_info="int RingBuff::GetItemsBackward ( long start_stamp , long end_stamp , int item_cout , std :: vector &lt; T &gt; &amp; item_vector , int expiry_times = 0 )" content="224:       usleep(10000);
+225:       if (check_expiry(time_count, expiry_times)) {
+226:         LOGE_T(RINGBUFF_TAG)
+227:             &lt;&lt; &quot;backward seek loop expity, start=&quot; &lt;&lt; start_stamp
+228:             &lt;&lt; &quot; end=&quot; &lt;&lt; end_stamp;
+229:         return 1;
+230:       }
+231:       lck.lock();
+232:     }
+233: 
+234:     if (item-&gt;stamp &lt;= end_stamp) {
+235:       cache_buff.push_back(item);
+236:     }
+237:     T *pre_item = nullptr;
+238:     time_count = 0;
+239:     while (true) {
+240:       pre_item = item;
+241:       item = buff_.prev(item);
+242:       if (!item &amp;&amp; cache_buff.size() &lt; (size_t)item_cout) {
+243:         lck.unlock();
+244:         usleep(10000);
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/aiot-nebula_dms-framework_1.0.0/src/base/src/face/face_preference.cpp" line="26" id="nullpointer" subid="dereferenceAfterCheck" severity="Serious" msg="Comparing [data] to null at line 25 implies that [data ] might be null.Dereferencing null pointer [data]." web_identify="{&quot;identify&quot;:&quot;data&quot;}" func_info="void FacePreferenceManager::CheckExpired ( TimeStamp cur_ts )" content="16: }
+17: 
+18: void FacePreferenceManager::CheckExpired(TimeStamp cur_ts) {
+19:     FacePreferences::iterator map_iter = face_preferences_.begin();
+20:     for(; map_iter != face_preferences_.end();) {
+21:         FaceRegDataDeque &amp;que = map_iter-&gt;second;
+22:         FaceRegDataDeque::iterator d_iter = que.begin();
+23:         for(; d_iter != que.end();)  {
+24:             std::shared_ptr&lt;FaceRegisterData&gt; &amp;data = *d_iter++; 
+25:             if(data == nullptr || data-&gt;ts + max_cache_ms_ &lt; cur_ts) {
+26:                 printf(&quot;pop id %d time %ld\n&quot;, map_iter-&gt;first, data-&gt;ts);
+27:                 que.pop_front();
+28:             } else {
+29:                 break;
+30:             }
+31:         }   
+32:         FacePreferences::iterator cur_map_iter = map_iter++;
+33:         if(que.size() == 0) {
+34:             face_preferences_.erase(cur_map_iter);
+35:         }
+36:     }
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/aiot-nebula_dms-framework_1.0.0/src/base/src/face/xsnap_adapter.cpp" line="158" id="nullpointer" subid="dereferenceAfterCheck" severity="Serious" msg="Comparing [snaplist] to null at line 134 implies that [snaplist ] might be null.Dereferencing null pointer [snaplist]." web_identify="{&quot;identify&quot;:&quot;snaplist&quot;}" func_info="int DMSXSnapAdapter::Process ( spFaceFilterMsg &amp; facefilter_msg , spImageMsg &amp; img_msg , spFaceMsg &amp; face_msg , spLDMKMsg &amp; ldmk_msg , spLDMK5Msg &amp; ldmk5_msg , spFaceQuaMsg &amp; facequa_msg , spSpoofDetectMsg &amp; spoof_detect_msg , spEyeMsg &amp; eye_msg , const std::map &lt; track_id_t , int &gt; &amp; requests )" content="148:             // mark face to good_face if it pass the filter
+149:             int track_id = snap.track_id_;
+150:             if (face_rois_map.find(track_id) != face_rois_map.end()) {
+151:               face_rois_map[track_id].mutable_good_face() = true;
+152:             }
+153:             AlignFace(snap, facefilter_msg);
+154:           }
+155:         }
+156:       }
+157:       HobotXSnapshotFrameFree(
+158:           const_cast&lt;HobotXSnapshotFrame *&gt;(snaplist-&gt;smart_frame_-&gt;frame_));
+159:       HobotXFaceSmartListFree(
+160:           const_cast&lt;HobotXFaceSmartList *&gt;(snaplist-&gt;smart_frame_));
+161:       HobotXFaceTrackSnapListFree(snaplist);
+162:     } else {
+163:       LOGD_T(MODULE_TAG) &lt;&lt; &quot;[TEST XSNAPSHOT]ConstructSmartList failed&quot;;
+164:       HobotXFaceSmartListFree(smart_list);
+165:       return -1;
+166:     }
+167:   }
+168:   return 0;
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/aiot-nebula_dms-framework_1.0.0/src/base/src/utils/img_check_utils/img_check_utils.cc" line="347" id="logic" subid="selfAssignment" severity="Warning" msg="Redundant assignment of &apos;k&apos; to itself." web_identify="{&quot;identify&quot;:&quot;k&quot;}" func_info="int ImageCheck::CountGrayWidth ( const cv::Mat &amp; img )" content="337:         continue;
+338:       }
+339:       // value increase
+340:       dist_last = ImSmooth.at&lt;uchar&gt;(y, x) - ImSmooth.at&lt;uchar&gt;(y, x - 1);
+341:       if (dist_last &gt; 0) {
+342:         int min_value = ImSmooth.at&lt;uchar&gt;(y, x);
+343:         int max_value = min_value;
+344:         for (k = x + 1; k &lt; img.cols; k++) {
+345:           int dist = ImSmooth.at&lt;uchar&gt;(y, k) - ImSmooth.at&lt;uchar&gt;(y, k - 1);
+346:           if (dist &lt; 0 || abs(dist - dist_last) &gt; 5 * abs(dist_last)) {
+347:             k = k;
+348:             break;
+349:           }
+350:           max_value = ImSmooth.at&lt;uchar&gt;(y, k - 1);
+351:           dist_last = dist;
+352:         }
+353:         if (max_value &gt; min_value) {
+354:           int nGraySpan = (max_value - min_value) / 10;
+355:           if (max_value &lt; nGrayTh) {
+356:             pHist_blur_[nGraySpan].fAveLength += (k - x);
+357:             pHist_blur_[nGraySpan].vote++;
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/aiot-nebula_dms-framework_1.0.0/src/base/src/utils/img_check_utils/img_check_utils.cc" line="367" id="logic" subid="selfAssignment" severity="Warning" msg="Redundant assignment of &apos;k&apos; to itself." web_identify="{&quot;identify&quot;:&quot;k&quot;}" func_info="int ImageCheck::CountGrayWidth ( const cv::Mat &amp; img )" content="357:             pHist_blur_[nGraySpan].vote++;
+358:           }
+359:         }
+360:         x = k;
+361:       } else {  // value decrease
+362:         int min_value = ImSmooth.at&lt;uchar&gt;(y, x);
+363:         int max_value = min_value;
+364:         for (k = x + 1; k &lt; img.cols; k++) {
+365:           int dist = ImSmooth.at&lt;uchar&gt;(y, k) - ImSmooth.at&lt;uchar&gt;(y, k - 1);
+366:           if (dist &gt; 0 || abs(dist - dist_last) &gt; 5 * abs(dist_last)) {
+367:             k = k;
+368:             break;
+369:           }
+370:           min_value = ImSmooth.at&lt;uchar&gt;(y, k - 1);
+371:           dist_last = dist;
+372:         }
+373:         if (max_value &gt; min_value) {
+374:           int nGraySpan = (max_value - min_value) / 10;
+375: 
+376:           if (max_value &lt; nGrayTh) {
+377:             pHist_blur_[nGraySpan].fAveLength += (k - x);
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/aiot-nebula_dms-framework_1.0.0/src/base/src/utils/img_check_utils/img_check_utils.cc" line="399" id="logic" subid="selfAssignment" severity="Warning" msg="Redundant assignment of &apos;k&apos; to itself." web_identify="{&quot;identify&quot;:&quot;k&quot;}" func_info="int ImageCheck::CountGrayWidth ( const cv::Mat &amp; img )" content="389:         continue;
+390:       }
+391:       // value increase
+392:       dist_last = ImSmooth.at&lt;uchar&gt;(y, x) - ImSmooth.at&lt;uchar&gt;(y - 1, x);
+393:       if (dist_last &gt; 0) {
+394:         int min_value = ImSmooth.at&lt;uchar&gt;(y, x);
+395:         int max_value = min_value;
+396:         for (k = y + 1; k &lt; img.rows; k++) {
+397:           int dist = ImSmooth.at&lt;uchar&gt;(k, x) - ImSmooth.at&lt;uchar&gt;(k - 1, x);
+398:           if (dist &lt; 0 || abs(dist - dist_last) &gt; 5 * abs(dist_last)) {
+399:             k = k;
+400:             break;
+401:           }
+402:           max_value = ImSmooth.at&lt;uchar&gt;(k - 1, x);
+403:           dist_last = dist;
+404:         }
+405:         if (max_value &gt; min_value) {
+406:           int nGraySpan = (max_value - min_value) / 10;
+407:           if (max_value &lt; nGrayTh) {
+408:             pHist_blur_[nGraySpan].fAveLength += (k - y);
+409:             pHist_blur_[nGraySpan].vote++;
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/aiot-nebula_dms-framework_1.0.0/src/base/src/utils/img_check_utils/img_check_utils.cc" line="419" id="logic" subid="selfAssignment" severity="Warning" msg="Redundant assignment of &apos;k&apos; to itself." web_identify="{&quot;identify&quot;:&quot;k&quot;}" func_info="int ImageCheck::CountGrayWidth ( const cv::Mat &amp; img )" content="409:             pHist_blur_[nGraySpan].vote++;
+410:           }
+411:         }
+412:         y = k;
+413:       } else {  // value decrease
+414:         int min_value = ImSmooth.at&lt;uchar&gt;(y, x);
+415:         int max_value = min_value;
+416:         for (k = y + 1; k &lt; img.rows; k++) {
+417:           int dist = ImSmooth.at&lt;uchar&gt;(k, x) - ImSmooth.at&lt;uchar&gt;(k - 1, x);
+418:           if (dist &gt; 0 || abs(dist - dist_last) &gt; 5 * abs(dist_last)) {
+419:             k = k;
+420:             break;
+421:           }
+422:           min_value = ImSmooth.at&lt;uchar&gt;(k - 1, x);
+423:           dist_last = dist;
+424:         }
+425:         if (max_value &gt; min_value) {
+426:           int nGraySpan = (max_value - min_value) / 10;
+427:           if (max_value &lt; nGrayTh) {
+428:             pHist_blur_[nGraySpan].fAveLength += (k - y);
+429:             pHist_blur_[nGraySpan].vote++;
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/aiot-nebula_dms-framework_1.0.0/src/legacy/example_reschedule.cpp" line="15" id="uninit" subid="uninitMemberVar" severity="Warning" msg="Member variable &apos;Tick::n,&apos; is not initialized in the constructor." web_identify="{&quot;identify&quot;:&quot;Tick::n,&quot;}" func_info="Tick" content="5: 
+6: #include &lt;thread&gt;
+7: #include &lt;iostream&gt;
+8: #include &lt;string&gt;
+9: #include &lt;utility&gt;
+10: #include &quot;hobot/hobot.h&quot;
+11: #include &quot;./common.h&quot;
+12: 
+13: class Tick: public hobot::Module {
+14:  public:
+15:   explicit Tick(std::string instance_name) : Module(
+16:       instance_name,
+17:       &quot;Tick&quot;) {
+18:   }
+19: 
+20:   virtual int Init(hobot::RunContext *context) {
+21:     n = 0;
+22:     return 0;
+23:   }
+24: 
+25:   virtual void Reset() {
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/aiot-nebula_dms-framework_1.0.0/src/matrix/src/cJSON.c" line="270" id="nullpointer" subid="dereferenceBeforeCheck" severity="Serious" msg="Null - checking [str] suggests that it may be null, but it has already been dereferenced at line 264 in function[strcpy]." web_identify="{&quot;identify&quot;:&quot;str&quot;}" func_info="static char * print_string_ptr ( const char * str , struct printbuffer * p )" content="260: 		if (p) out=ensure(p,len+3);
+261: 		else		out=(char*)cJSON_malloc(len+3);
+262: 		if (!out) return 0;
+263: 		ptr2=out;*ptr2++=&apos;\&quot;&apos;;
+264: 		strcpy(ptr2,str);
+265: 		ptr2[len]=&apos;\&quot;&apos;;
+266: 		ptr2[len+1]=0;
+267: 		return out;
+268: 	}
+269: 
+270: 	if (!str)
+271: 	{
+272: 		if (p)	out=ensure(p,3);
+273: 		else	out=(char*)cJSON_malloc(3);
+274: 		if (!out) return 0;
+275: 		strcpy(out,&quot;\&quot;\&quot;&quot;);
+276: 		return out;
+277: 	}
+278: 	ptr=str;while ((token=*ptr) &amp;&amp; ++len) {if (strchr(&quot;\&quot;\\\b\f\n\r\t&quot;,token)) len++; else if (token&lt;32) len+=5;ptr++;}
+279: 
+280: 	if (p)	out=ensure(p,len+3);
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/aiot-nebula_dms-framework_1.0.0/src/matrix/src/face_preference.cpp" line="26" id="nullpointer" subid="dereferenceAfterCheck" severity="Serious" msg="Comparing [data] to null at line 25 implies that [data ] might be null.Dereferencing null pointer [data]." web_identify="{&quot;identify&quot;:&quot;data&quot;}" func_info="void FacePreferenceManager::CheckExpired ( TimeStamp cur_ts )" content="16: }
+17: 
+18: void FacePreferenceManager::CheckExpired(TimeStamp cur_ts) {
+19:     FacePreferences::iterator map_iter = face_preferences_.begin();
+20:     for(; map_iter != face_preferences_.end();) {
+21:         FaceRegDataDeque &amp;que = map_iter-&gt;second;
+22:         FaceRegDataDeque::iterator d_iter = que.begin();
+23:         for(; d_iter != que.end();)  {
+24:             std::shared_ptr&lt;FaceRegisterData&gt; &amp;data = *d_iter++; 
+25:             if(data == nullptr || data-&gt;ts + max_cache_ms_ &lt; cur_ts) {
+26:                 printf(&quot;pop id %d time %ld\n&quot;, map_iter-&gt;first, data-&gt;ts);
+27:                 que.pop_front();
+28:             } else {
+29:                 break;
+30:             }
+31:         }   
+32:         FacePreferences::iterator cur_map_iter = map_iter++;
+33:         if(que.size() == 0) {
+34:             face_preferences_.erase(cur_map_iter);
+35:         }
+36:     }
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/aiot-nebula_dms-framework_1.0.0/src/matrix/src/pre_process_module.cpp" line="1163" id="memleak" subid="resourceLeak" severity="Warning" msg="Resource leak: dp" web_identify="{&quot;identify&quot;:&quot;dp&quot;}" func_info="" content="1153:     }
+1154:     stat(file_path,&amp;s_buf);
+1155:     if(S_ISDIR(s_buf.st_mode)) {
+1156:       dir_oper(file_path, all_file);
+1157:     }
+1158:     if(S_ISREG(s_buf.st_mode)) {
+1159:       all_file.push_back(file_path);
+1160:       printf(&quot;file name is %s, vector sz = %d\n&quot;, file_path, all_file.size());
+1161:     }
+1162:   }
+1163: }
+1164: 
+1165: std::shared_ptr&lt;PerceptionMsg&gt; PreProcessModule::DoFaceIDs_OffLine(
+1166:     std::shared_ptr&lt;ImageMsg&gt; sp_image_msg, HobotADASContext *adas_context) {
+1167:   std::shared_ptr&lt;PerceptionMsg&gt; new_percept_msg =
+1168:   PerceptionMsgPool::GetSharedPtrEx(true);
+1169:   assert(new_percept_msg != nullptr);
+1170:   std::vector&lt;std::string&gt; file_lists;
+1171:   std::string input_path = &quot;/mnt/face_in&quot;;
+1172:   std::string otput_path = &quot;/mnt/faceid_feature.txt&quot;;
+1173:   FILE* fp_ot = fopen(otput_path.c_str(), &quot;wb&quot;);
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/aiot-nebula_dms-framework_1.0.0/src/matrix/src/pre_process_module.cpp" line="2858" id="memleak" subid="resourceLeak" severity="Warning" msg="Resource leak: fp_identify_avg" web_identify="{&quot;identify&quot;:&quot;fp_identify_avg&quot;}" func_info="" content="2848:     if(fp_identify_avg)
+2849:       fprintf(fp_identify_avg, &quot;%f &quot;, identify_avg[i]);
+2850:   }
+2851:   if(fp_identify_avg)
+2852:     fprintf(fp_identify_avg, &quot;\n&quot;);
+2853: 
+2854:   std::shared_ptr&lt;PerceptionRectRecogMsg&gt; speaker_identify_recog_msg;
+2855:   speaker_identify_recog_msg = PerceptionRectRecogMsgPool::GetSharedPtr(true);
+2856:   if(speaker_identify_recog_msg == nullptr) {
+2857:     LOG(ERROR) &lt;&lt; &quot;Speaker Identify GetSharedPtr failed&quot;;
+2858:     return -1;
+2859:   }
+2860:   std::shared_ptr&lt;PerceptionRectRecogMsg&gt; speaker_gender_recog_msg;
+2861:   speaker_gender_recog_msg = PerceptionRectRecogMsgPool::GetSharedPtr(true);
+2862:   if(speaker_gender_recog_msg == nullptr) {
+2863:     LOG(ERROR) &lt;&lt; &quot;Speaker gender GetSharedPtr failed&quot;;
+2864:     return -1;
+2865:   }
+2866:   speaker_identify_recog_msg-&gt;desc_.resize(1);
+2867:   speaker_identify_recog_msg-&gt;feature_.resize(1);
+2868:   if(identify_avg.size()) {
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/aiot-nebula_dms-framework_1.0.0/src/matrix/src/pre_process_module.cpp" line="3712" id="nullpointer" subid="dereferenceAfterCheck" severity="Serious" msg="Comparing [item] to null at line 3707 implies that [item ] might be null.Dereferencing null pointer [item]." web_identify="{&quot;identify&quot;:&quot;item&quot;}" func_info="int PreProcessModule::DoSingleModoProc ( long ts_st , long ts_end , long &amp; ts_end_real , int &amp; end_flag , HobotADASContext * adas_context , std::shared_ptr &lt; PerceptionMsg &gt; &amp; modo_percept_msg )" content="3702:         cJSON * root = NULL;
+3703:         cJSON * item = NULL;
+3704:         root = cJSON_Parse(result);
+3705:         if(NULL != root) {
+3706:           item = cJSON_GetObjectItem(root, &quot;result&quot;);
+3707:           if(NULL != item) {
+3708:             VLOG(0) &lt;&lt; &quot;[LIPS][Speech][SPEECHHHH][diff sys] = &quot; &lt;&lt; GetTimeStamp() - ts_end_real
+3709:               &lt;&lt; &quot;, hobot speech decode result is &quot;
+3710:               &lt;&lt; item-&gt;string &lt;&lt; &quot;,  &quot; &lt;&lt; item-&gt;valuestring;
+3711:           }
+3712:           if(strncmp(item-&gt;valuestring,&quot;reject&quot;, 6) == 0) {
+3713:             cJSON_Delete(root);
+3714:             continue;
+3715:           }
+3716: 
+3717:           bool do_spk_identify = false;
+3718:           if(strcmp(item-&gt;valuestring, gbk_cmder_.data()) == 0){
+3719:             do_spk_identify = true;
+3720:             have_speaker = true;
+3721:           }
+3722: 
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/aiot-nebula_dms-framework_1.0.0/src/modules/EventModule/src/EventModule.cc" line="134" id="nullpointer" subid="dereferenceAfterCheck" severity="Serious" msg="Comparing [sp_img_msg] to null at line 114 implies that [sp_img_msg ] might be null.Dereferencing null pointer [sp_img_msg]." web_identify="{&quot;identify&quot;:&quot;sp_img_msg&quot;}" func_info="void EventModule::Forward0 ( const hobot::MessageLists &amp; input , hobot::Workflow * workflow , hobot::spRunContext context )" content="124:     if (!sp_sight_dir_msg)
+125:       LOGD_T(MODULE_TAG) &lt;&lt; &quot;sp_sight_dir_msg is nullptr&quot;;
+126: 
+127:     spEventMsg sp_event_msg = EventMsgPool::GetSharedPtrEx(true);
+128:     if (!sp_event_msg) {
+129:       LOGW_T(MODULE_TAG) &lt;&lt; &quot;EventMsg new failed!&quot;;
+130:       ReturnMyMsg(sp_event_msg, SLOT_EVENT, workflow, context);
+131:       continue;
+132:     }
+133:     LOGI_T(MODULE_TAG) &lt;&lt; &quot;Process Event module, camera id = &quot;
+134:                        &lt;&lt; sp_img_msg-&gt;m_camera_id;
+135:     sp_event_msg-&gt;ClearData();
+136:     auto &amp;trigger = sp_event_msg-&gt;trigger();
+137: 
+138:     // if (sp_vehicle_msg &amp;&amp; sp_img_msg &amp;&amp; sp_face_msg &amp;&amp; sp_ldmk_msg) {
+139:     // auto &amp;ldmk_post = sp_ldmk_msg-&gt;post_data();
+140:     // auto &amp;face_info = sp_face_msg-&gt;origin_face_rois();
+141:     // for (auto iter = ldmk_post.begin(); iter != ldmk_post.end(); iter++) {
+142:     // LOGI_T(MODULE_TAG) &lt;&lt; &quot;ddw tracking id &quot; &lt;&lt; iter-&gt;first;
+143:     // if (face_info.at(iter-&gt;first).type() == FaceType::FACE_TYPE_DRIVER) {
+144:     // LOGD_T(MODULE_TAG) &lt;&lt; &quot;Run ddw FSM&quot;;
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/aiot-nebula_dms-framework_1.0.0/src/modules/FatigueRating/src/FatigueRatingModule.cc" line="921" id="nullpointer" subid="dereferenceBeforeCheck" severity="Serious" msg="Null - checking [sp_img_msg] suggests that it may be null, but it has already been dereferenced at line 903." web_identify="{&quot;identify&quot;:&quot;sp_img_msg&quot;}" func_info="void FatigueRatingModule::Forward0 ( const hobot::MessageLists &amp; input , hobot::Workflow * workflow , hobot::spRunContext context )" content="911:         LOGV_T(MODULE_TAG) &lt;&lt; &quot;engine is on and speed is enough&quot;;
+912:         sp_fatigue_msg-&gt;SetFatigueEnable(true);
+913:       } else {
+914:         sp_fatigue_msg-&gt;SetFatigueEnable(false);
+915:         LOGV_T(MODULE_TAG) &lt;&lt; &quot;engine is off or speed is low : &quot; &lt;&lt; can_info;
+916:         ReturnMyMsg(sp_fatigue_msg, SLOT_FATIGUE, workflow, context);
+917:         continue;
+918:       }
+919:     }
+920: 
+921:     if (!sp_img_msg || !sp_face_msg || !sp_ldmk_msg || !sp_eye_msg ||
+922:         !sp_facequa_msg || !sp_agegender_msg || !sp_fatiguedetect_msg ||
+923:         !sp_fatigue_msg) {
+924:       LOGW_T(MODULE_TAG) &lt;&lt; &quot;sp_Msg NULL!&quot;;
+925:       ReturnMyMsg(sp_fatigue_msg, SLOT_FATIGUE, workflow, context);
+926:       continue;
+927:     }
+928: 
+929: 
+930:     LOGV_T(MODULE_TAG) &lt;&lt; &quot;Process Fatigue Rating module, camera id = &quot;
+931:                        &lt;&lt; sp_img_msg-&gt;m_camera_id;
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/aiot-nebula_dms-framework_1.0.0/src/modules/Input/PackInputModule/src/PackInputFileType.cc" line="583" id="memleak" subid="resourceLeak" severity="Warning" msg="Resource leak: time_file" web_identify="{&quot;identify&quot;:&quot;time_file&quot;}" func_info="" content="573:       LOGI_T(MODULE_TAG) &lt;&lt; &quot;yuv path:&quot; &lt;&lt; yuv_file_lists_[i];
+574:     } else {
+575:       LOGE_T(MODULE_TAG) &lt;&lt; &quot;yuv i = &quot; &lt;&lt; i &lt;&lt; &quot;empty&quot;;
+576:     }
+577:   }
+578:   camera_cnt_ = 1;
+579:   frame_id_ = 0;
+580:   readbuff_.resize(camera_cnt_);
+581:   readbuff_.at(0).resize(1920 * 1080 * 3 / 2);
+582:   inited_ = true;
+583:   return 0;
+584: }
+585: 
+586: int FileAudioYuv::ListDir(const char *dir, std::vector&lt;std::string&gt; &amp;files) {
+587:   int num_ = 0;
+588:   FILE *fp;
+589:   DIR *pdir;
+590:   char cmd[256], buffer[128];
+591:   if (NULL == dir)
+592:     return -1;
+593:   // 判断dir是否存在
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/aiot-nebula_dms-framework_1.0.0/src/modules/Input/PackInputModule/src/PackInputFileType.cc" line="595" id="nullpointer" subid="dereferenceIfNull" severity="Critical" msg="[pdir] is null dereferenced  in function[closedir], as codes at line 594 make it a null pointer." web_identify="{&quot;identify&quot;:&quot;pdir&quot;}" func_info="int FileAudioYuv::ListDir ( const char * dir , std::vector &lt; std::string &gt; &amp; files )" content="585: 
+586: int FileAudioYuv::ListDir(const char *dir, std::vector&lt;std::string&gt; &amp;files) {
+587:   int num_ = 0;
+588:   FILE *fp;
+589:   DIR *pdir;
+590:   char cmd[256], buffer[128];
+591:   if (NULL == dir)
+592:     return -1;
+593:   // 判断dir是否存在
+594:   if (NULL == (pdir = opendir(dir))) {
+595:     closedir(pdir);
+596:     return -1;
+597:   }
+598:   std::string dir_temp = dir;
+599:   std::string shell_cmd =
+600:       &quot;ls &quot; + dir_temp +
+601:       &quot; | sed &apos;s/\\.yuv$//g&apos; | sort -n | awk &apos;{print $0\&quot;.yuv\&quot;}&apos;&quot;;
+602:   // 调用shell列出文件名并排序
+603:   snprintf(cmd, sizeof(cmd), &quot;%s&quot;, shell_cmd.c_str());
+604:   fp = popen(cmd, &quot;r&quot;);
+605:   // 读取结果,写如files
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/aiot-nebula_dms-framework_1.0.0/src/modules/Input/PackInputModule/src/PackInputFileType.cc" line="902" id="memleak" subid="resourceLeak" severity="Warning" msg="Resource leak: time_file" web_identify="{&quot;identify&quot;:&quot;time_file&quot;}" func_info="" content="892:       LOGI_T(MODULE_TAG) &lt;&lt; &quot;jpeg path:&quot; &lt;&lt; jpeg_file_lists_[i];
+893:     } else {
+894:       LOGE_T(MODULE_TAG) &lt;&lt; &quot;jpeg i = &quot; &lt;&lt; i &lt;&lt; &quot;empty&quot;;
+895:     }
+896:   }
+897:   camera_cnt_ = 1;
+898:   frame_id_ = 0;
+899:   readbuff_.resize(camera_cnt_);
+900:   readbuff_.at(0).resize(1920 * 1080 * 3 / 2);
+901:   inited_ = true;
+902:   return 0;
+903: }
+904: 
+905: int FileAudioJpeg::ListDir(const char *dir, std::vector&lt;std::string&gt; &amp;files) {
+906:   int num_ = 0;
+907:   FILE *fp;
+908:   DIR *pdir;
+909:   char cmd[256], buffer[128];
+910:   if (NULL == dir)
+911:     return -1;
+912:   // 判断dir是否存在
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/aiot-nebula_dms-framework_1.0.0/src/modules/Input/PackInputModule/src/PackInputFileType.cc" line="914" id="nullpointer" subid="dereferenceIfNull" severity="Critical" msg="[pdir] is null dereferenced  in function[closedir], as codes at line 913 make it a null pointer." web_identify="{&quot;identify&quot;:&quot;pdir&quot;}" func_info="int FileAudioJpeg::ListDir ( const char * dir , std::vector &lt; std::string &gt; &amp; files )" content="904: 
+905: int FileAudioJpeg::ListDir(const char *dir, std::vector&lt;std::string&gt; &amp;files) {
+906:   int num_ = 0;
+907:   FILE *fp;
+908:   DIR *pdir;
+909:   char cmd[256], buffer[128];
+910:   if (NULL == dir)
+911:     return -1;
+912:   // 判断dir是否存在
+913:   if (NULL == (pdir = opendir(dir))) {
+914:     closedir(pdir);
+915:     return -1;
+916:   }
+917:   std::string dir_temp = dir;
+918:   std::string shell_cmd =
+919:       &quot;ls &quot; + dir_temp +
+920:       &quot; | sed &apos;s/\\.jpg$//g&apos; | sort -n | awk &apos;{print $0\&quot;.jpg\&quot;}&apos;&quot;;
+921:   // 调用shell列出文件名并排序
+922:   snprintf(cmd, sizeof(cmd), &quot;%s&quot;, shell_cmd.c_str());
+923:   fp = popen(cmd, &quot;r&quot;);
+924:   // 读取结果,写如files
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/aiot-nebula_dms-framework_1.0.0/src/modules/Input/UNetInputCollectModule/src/UNetInputCollectModule.cc" line="55" id="nullpointer" subid="dereferenceBeforeCheck" severity="Serious" msg="Null - checking [sp_unet_fpga_msg.img_] suggests that it may be null, but it has already been dereferenced at line 50." web_identify="{&quot;identify&quot;:&quot;sp_unet_fpga_msg.img_&quot;}" func_info="void UNetInputCollectModule::Forward0 ( const hobot::MessageLists &amp; input , hobot::Workflow * workflow , hobot::spRunContext context )" content="45:     if (!sp_unet_fpga_msg) {
+46:       LOGE_T(MODULE_TAG) &lt;&lt; &quot;get unet fpga msg failed&quot;;
+47:       return;
+48:     }
+49:     spImageMsg sp_img_msg = ImageMsgPool::GetSharedPtrEx(
+50:         true, sp_unet_fpga_msg-&gt;img_-&gt;width, sp_unet_fpga_msg-&gt;img_-&gt;height,
+51:         DMS_IMAGE_COLOR_GRAYSCALE);
+52:     if (!sp_img_msg) {
+53:       LOGE_T(MODULE_TAG) &lt;&lt; &quot;image msg pool null&quot;;
+54:     }
+55:     if (sp_unet_fpga_msg-&gt;img_) {
+56:       sp_img_msg-&gt;m_timestamp = sp_unet_fpga_msg-&gt;img_-&gt;time_stamp;
+57:       sp_img_msg-&gt;m_width = sp_unet_fpga_msg-&gt;img_-&gt;width;
+58:       sp_img_msg-&gt;m_height = sp_unet_fpga_msg-&gt;img_-&gt;height;
+59:       sp_img_msg-&gt;m_img_id = sp_unet_fpga_msg-&gt;img_-&gt;frame_id_;
+60:       sp_img_msg-&gt;m_camera_id = sp_unet_fpga_msg-&gt;img_-&gt;camera_id_;
+61:       TIME_TAG(B, sp_img_msg-&gt;m_camera_id, sp_img_msg-&gt;m_img_id, MODULE_TAG);
+62:       /* TIME_CHECK_INIT(UNETINPUT) */
+63:       // memcpy(sp_img_msg-&gt;m_data, sp_unet_fpga_msg-&gt;img_-&gt;data,
+64:       // sp_unet_fpga_msg-&gt;img_-&gt;width * sp_unet_fpga_msg-&gt;img_-&gt;height);
+65:       /* TIME_CHECK_PRINT(UNETINPUT, &quot;[Speech][UNET] copy TimeCost&quot;); */
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/aiot-nebula_dms-framework_1.0.0/src/modules/Input/UNetInputCollectModule/src/UNetInputCollectModule.cc" line="56" id="nullpointer" subid="dereferenceAfterCheck" severity="Serious" msg="Comparing [sp_img_msg] to null at line 52 implies that [sp_img_msg ] might be null.Dereferencing null pointer [sp_img_msg]." web_identify="{&quot;identify&quot;:&quot;sp_img_msg&quot;}" func_info="void UNetInputCollectModule::Forward0 ( const hobot::MessageLists &amp; input , hobot::Workflow * workflow , hobot::spRunContext context )" content="46:       LOGE_T(MODULE_TAG) &lt;&lt; &quot;get unet fpga msg failed&quot;;
+47:       return;
+48:     }
+49:     spImageMsg sp_img_msg = ImageMsgPool::GetSharedPtrEx(
+50:         true, sp_unet_fpga_msg-&gt;img_-&gt;width, sp_unet_fpga_msg-&gt;img_-&gt;height,
+51:         DMS_IMAGE_COLOR_GRAYSCALE);
+52:     if (!sp_img_msg) {
+53:       LOGE_T(MODULE_TAG) &lt;&lt; &quot;image msg pool null&quot;;
+54:     }
+55:     if (sp_unet_fpga_msg-&gt;img_) {
+56:       sp_img_msg-&gt;m_timestamp = sp_unet_fpga_msg-&gt;img_-&gt;time_stamp;
+57:       sp_img_msg-&gt;m_width = sp_unet_fpga_msg-&gt;img_-&gt;width;
+58:       sp_img_msg-&gt;m_height = sp_unet_fpga_msg-&gt;img_-&gt;height;
+59:       sp_img_msg-&gt;m_img_id = sp_unet_fpga_msg-&gt;img_-&gt;frame_id_;
+60:       sp_img_msg-&gt;m_camera_id = sp_unet_fpga_msg-&gt;img_-&gt;camera_id_;
+61:       TIME_TAG(B, sp_img_msg-&gt;m_camera_id, sp_img_msg-&gt;m_img_id, MODULE_TAG);
+62:       /* TIME_CHECK_INIT(UNETINPUT) */
+63:       // memcpy(sp_img_msg-&gt;m_data, sp_unet_fpga_msg-&gt;img_-&gt;data,
+64:       // sp_unet_fpga_msg-&gt;img_-&gt;width * sp_unet_fpga_msg-&gt;img_-&gt;height);
+65:       /* TIME_CHECK_PRINT(UNETINPUT, &quot;[Speech][UNET] copy TimeCost&quot;); */
+66: 
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/aiot-nebula_dms-framework_1.0.0/src/modules/Input/VehicleModule/src/VehicleModule.cc" line="102" id="nullpointer" subid="dereferenceAfterCheck" severity="Serious" msg="Comparing [sp_vehicle_msg] to null at line 95 implies that [sp_vehicle_msg ] might be null.Dereferencing null pointer [sp_vehicle_msg]." web_identify="{&quot;identify&quot;:&quot;sp_vehicle_msg&quot;}" func_info="void VehicleModule::Forward0 ( const hobot::MessageLists &amp; input , hobot::Workflow * workflow , hobot::spRunContext context )" content="92:     }
+93:     // from can info to vehicle info
+94:     spVehicleInfoMsg sp_vehicle_msg = VehicleInfoMsgPool::GetSharedPtrEx(true);
+95:     if (!sp_vehicle_msg) {
+96:       LOGE_T(MODULE_TAG) &lt;&lt; &quot;pool get VehicleInfoMsg memory failed&quot;;
+97:     }
+98:     CANInfo can;
+99:     if (!sp_sensor_buffer.at(camera_id)-&gt;seek(img_msg-&gt;m_timestamp, can) ||
+100:         !sp_sensor_buffer.at(camera_id)-&gt;curr(can)) {
+101:       ParseCanInfo(can, sp_vehicle_msg);
+102:       LOGI_T(MODULE_TAG) &lt;&lt; &quot;wwtcan: &quot; &lt;&lt; sp_vehicle_msg-&gt;veh_speed_
+103:                          &lt;&lt; &quot; ts:&quot; &lt;&lt; sp_vehicle_msg-&gt;timestamp_;
+104:     }
+105:     ReturnMyMsg(sp_vehicle_msg, SLOT_VEHINFO, workflow, context);
+106:   }
+107:   BypassAllMsgs(input, 0, workflow, context, dms_context-&gt;camera_cnt_);
+108:   FUN_OUT(MODULE_TAG);
+109: }
+110: 
+111: FORWARD_DEFINE(VehicleModule, 1) {
+112:   FUN_IN(&quot;CAN_HAL&quot;);
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/aiot-nebula_dms-framework_1.0.0/src/modules/Ldmk/src/LdmkModule.cc" line="47" id="uninit" subid="uninitMemberVar" severity="Warning" msg="Member variable &apos;LDMKInfo_Local::SclMthH2FaceH,&apos; is not initialized in the constructor." web_identify="{&quot;identify&quot;:&quot;LDMKInfo_Local::SclMthH2FaceH,&quot;}" func_info="HobotDMS" content="37:   void clear();
+38: 
+39:  public:
+40:   TimeStamp mt;
+41:   float SclMthH2FaceH;  // Scale: (mouth hight / Face high)
+42:   Vector_3f m_Tvec;
+43:   Quaternion m_QuatDiff;
+44:   Landmarks_f m_landmark;
+45: };
+46: 
+47: LDMKInfo_Local::LDMKInfo_Local() : mt(0.0) {}
+48: 
+49: void LDMKInfo_Local::clear() {
+50:   mt = 0.0;
+51:   m_landmark.clear();
+52: }
+53: 
+54: LDMKModule::LDMKModule()
+55:     : DMSModule(&quot;LDMKModule&quot;),
+56:       face_parse_(PerceptionBase::PerceptionType_Face),
+57:       m_TimeLastFace(0L),
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/aiot-nebula_dms-framework_1.0.0/src/modules/LipsMoveVision/src/LipsMoveVisionModule.cc" line="453" id="nullpointer" subid="dereferenceAfterCheck" severity="Serious" msg="Comparing [lips_vision_ring_buff] to null at line 422 implies that [lips_vision_ring_buff ] might be null.Dereferencing null pointer [lips_vision_ring_buff]." web_identify="{&quot;identify&quot;:&quot;lips_vision_ring_buff&quot;}" func_info="void LipsMoveVisionModule::Forward0 ( const hobot::MessageLists &amp; input , hobot::Workflow * workflow , hobot::spRunContext context )" content="443:                                MERGE_ERROR_CODE(MODULE_LIPSVISION_ID, ret),
+444:                                &quot;null stack&quot;);
+445:   }
+446:   size_t k = 0;
+447:   if (!ret &amp;&amp; results.size() &gt; 0 &amp;&amp; results.at(k).features_.size() &gt; 0) {
+448:     LOGI_T(MODULE_TAG) &lt;&lt; &quot;push size = &quot; &lt;&lt; results[k].features_[0].size()
+449:                        &lt;&lt; &quot;, ts = &quot; &lt;&lt; ts &lt;&lt; &quot;, diff with sys cur time is = &quot;
+450:                        &lt;&lt; GetTimeStamp() - ts;
+451:     char *data = reinterpret_cast&lt;char *&gt;(
+452:         const_cast&lt;int8_t *&gt;(results[k].features_[0].data()));
+453:     lips_vision_ring_buff-&gt;PushItem(ts, data, results[k].features_[0].size(),
+454:                                     1);
+455:     if (dump_feat_data_ &amp;&amp; fp_lips_feat_data_) {
+456:       float *pdata = reinterpret_cast&lt;float *&gt;(results[0].features_[0].data());
+457:       fprintf(fp_lips_feat_data_, &quot;%lld %f %f\n&quot;, ts, *(pdata), *(pdata + 1));
+458:       fflush(fp_lips_feat_data_);
+459:     }
+460:   } else {
+461:     LOGI_T(MODULE_TAG) &lt;&lt; &quot;push size zero data !^^&quot;;
+462:     lips_move_invalid = false;
+463:     lips_vision_ring_buff-&gt;PushItem(ts, const_cast&lt;char *&gt;(zero_data_.data()),
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/aiot-nebula_dms-framework_1.0.0/src/modules/LipsMultiModel/src/LipsMultiModel.cc" line="1323" id="nullpointer" subid="dereferenceAfterCheck" severity="Serious" msg="Comparing [vad_info] to null at line 1297 implies that [vad_info ] might be null.Dereferencing null pointer [vad_info]." web_identify="{&quot;identify&quot;:&quot;vad_info&quot;}" func_info="void LipsMultiModel::Forward1 ( const hobot::MessageLists &amp; input , hobot::Workflow * workflow , hobot::spRunContext context )" content="1313:   multi.audio_type_ = RING_MEAN_AUDIO_C1;
+1314:   multi.index_ = 0;
+1315:   int64_t ts_start = 0;
+1316:   int64_t ts_end = 0;
+1317:   int ret = 0;
+1318:   TIME_TAG(B, 0, 0, &quot;LipsMultiModel_CMD&quot;);
+1319:   LOGD_T(MODULE_TAG) &lt;&lt; &quot;[LIPS]current vad_status_ = &quot; &lt;&lt; multi.vad_status_
+1320:                      &lt;&lt; &quot; channel = &quot; &lt;&lt; multi.index_;
+1321:   switch (multi.vad_status_) {
+1322:     case VAD_STA_START:
+1323:       ts_start = vad_info-&gt;Get().timestamp_ - VISION_ITEM_NUM * 33.3;
+1324:       ts_end = vad_info-&gt;Get().timestamp_;
+1325:       multi.ts_next_start = ts_end;
+1326:       multi.end_flag_ = 0;
+1327:       multi.feature_in_decode_count_ = 0;
+1328:       multi.get_vision_feat_times_ = 0;
+1329:       multi.get_vision_feat_counts_ = 0;
+1330:       multi.get_voice_feat_times_ = 0;
+1331:       multi.get_voice_feat_counts_ = 0;
+1332:       if (dump_lips_modo_ &amp;&amp; multi.fp_speech_feat_sum_ &amp;&amp;
+1333:           multi.fp_image_feat_sum_ &amp;&amp; multi.fp_speech_vct_ &amp;&amp;
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/aiot-nebula_dms-framework_1.0.0/src/modules/LipsMultiModel/src/LipsMultiModel.cc" line="1498" id="nullpointer" subid="dereferenceAfterCheck" severity="Serious" msg="Comparing [vad_info] to null at line 1472 implies that [vad_info ] might be null.Dereferencing null pointer [vad_info]." web_identify="{&quot;identify&quot;:&quot;vad_info&quot;}" func_info="void LipsMultiModel::Forward2 ( const hobot::MessageLists &amp; input , hobot::Workflow * workflow , hobot::spRunContext context )" content="1488:   multi.audio_type_ = RING_MEAN_AUDIO_C2;
+1489:   multi.index_ = 1;
+1490:   int64_t ts_start = 0;
+1491:   int64_t ts_end = 0;
+1492:   int ret = 0;
+1493:   TIME_TAG(B, 0, 0, &quot;LipsMultiModel_CMD&quot;);
+1494:   LOGD_T(MODULE_TAG) &lt;&lt; &quot;[LIPS]current vad_status_ = &quot; &lt;&lt; multi.vad_status_
+1495:                      &lt;&lt; &quot; channel = &quot; &lt;&lt; multi.index_;
+1496:   switch (multi.vad_status_) {
+1497:     case VAD_STA_START:
+1498:       ts_start = vad_info-&gt;Get().timestamp_ - VISION_ITEM_NUM * 33.3;
+1499:       ts_end = vad_info-&gt;Get().timestamp_;
+1500:       multi.ts_next_start = ts_end;
+1501:       multi.end_flag_ = 0;
+1502:       multi.feature_in_decode_count_ = 0;
+1503:       multi.get_vision_feat_times_ = 0;
+1504:       multi.get_vision_feat_counts_ = 0;
+1505:       multi.get_voice_feat_times_ = 0;
+1506:       multi.get_voice_feat_counts_ = 0;
+1507:       if (dump_lips_modo_ &amp;&amp; multi.fp_speech_feat_sum_ &amp;&amp;
+1508:           multi.fp_image_feat_sum_ &amp;&amp; multi.fp_speech_vct_ &amp;&amp;
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/aiot-nebula_dms-framework_1.0.0/src/modules/LipsMultiModel/src/cJSON.c" line="270" id="nullpointer" subid="dereferenceBeforeCheck" severity="Serious" msg="Null - checking [str] suggests that it may be null, but it has already been dereferenced at line 264 in function[strcpy]." web_identify="{&quot;identify&quot;:&quot;str&quot;}" func_info="static char * print_string_ptr ( const char * str , struct printbuffer * p )" content="260: 		if (p) out=ensure(p,len+3);
+261: 		else		out=(char*)cJSON_malloc(len+3);
+262: 		if (!out) return 0;
+263: 		ptr2=out;*ptr2++=&apos;\&quot;&apos;;
+264: 		strcpy(ptr2,str);
+265: 		ptr2[len]=&apos;\&quot;&apos;;
+266: 		ptr2[len+1]=0;
+267: 		return out;
+268: 	}
+269: 
+270: 	if (!str)
+271: 	{
+272: 		if (p)	out=ensure(p,3);
+273: 		else	out=(char*)cJSON_malloc(3);
+274: 		if (!out) return 0;
+275: 		strcpy(out,&quot;\&quot;\&quot;&quot;);
+276: 		return out;
+277: 	}
+278: 	ptr=str;while ((token=*ptr) &amp;&amp; ++len) {if (strchr(&quot;\&quot;\\\b\f\n\r\t&quot;,token)) len++; else if (token&lt;32) len+=5;ptr++;}
+279: 
+280: 	if (p)	out=ensure(p,len+3);
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/aiot-nebula_dms-framework_1.0.0/src/modules/Output/EventDispatchModule/src/EventDispatchModule.cc" line="578" id="nullpointer" subid="dereferenceAfterCheck" severity="Serious" msg="Comparing [sp_percept_msg.sp_img_msg] to null at line 571 implies that [sp_percept_msg.sp_img_msg ] might be null.Dereferencing null pointer [sp_percept_msg.sp_img_msg]." web_identify="{&quot;identify&quot;:&quot;sp_percept_msg.sp_img_msg&quot;}" func_info="void EventDispatchModule::Forward0 ( const hobot::MessageLists &amp; input , hobot::Workflow * workflow , hobot::spRunContext context )" content="568:     if (sp_percept_msg) {
+569:       sp_percept_msg-&gt;sp_speech_msg = std::dynamic_pointer_cast&lt;SpeechMsg&gt;(
+570:           GetMsgBySlotType(workflow, input, 0, SLOT_SPEECH, index));
+571:       if (sp_percept_msg-&gt;sp_speech_msg &amp;&amp; sp_percept_msg-&gt;sp_img_msg) {
+572:         TIME_TAG(B, sp_percept_msg-&gt;sp_img_msg-&gt;m_img_id,
+573:                  sp_percept_msg-&gt;sp_speech_msg-&gt;id_,
+574:                  &quot;LipsMultiModel_CMD_EventDispatchModule&quot;);
+575:       }
+576:       if (!sp_percept_msg-&gt;sp_face_msg)
+577:         LOGD_T(MODULE_TAG) &lt;&lt; &quot;sp_face_msg is nullptr, camera id = &quot;
+578:                            &lt;&lt; sp_percept_msg-&gt;sp_img_msg-&gt;m_camera_id;
+579:       if (!sp_percept_msg-&gt;sp_gesture_msg)
+580:         LOGD_T(MODULE_TAG) &lt;&lt; &quot;sp_gesture_msg is nullptr, camera id = &quot;
+581:                            &lt;&lt; sp_percept_msg-&gt;sp_img_msg-&gt;m_camera_id;
+582:       if (!sp_percept_msg-&gt;sp_ldmk_msg)
+583:         LOGD_T(MODULE_TAG) &lt;&lt; &quot;sp_ldmk_msg is nullptr, camera id = &quot;
+584:                            &lt;&lt; sp_percept_msg-&gt;sp_img_msg-&gt;m_camera_id;
+585:       if (!sp_percept_msg-&gt;sp_lips_move_msg)
+586:         LOGD_T(MODULE_TAG) &lt;&lt; &quot;sp_lips_move_msg is nullptr, camera id = &quot;
+587:                            &lt;&lt; sp_percept_msg-&gt;sp_img_msg-&gt;m_camera_id;
+588:       if (!sp_percept_msg-&gt;sp_eye_msg)
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/aiot-nebula_dms-framework_1.0.0/src/modules/SpeechModule/src/SpeechModule.cc" line="250" id="nullpointer" subid="dereferenceAfterCheck" severity="Serious" msg="Comparing [sp_audio_msg] to null at line 241 implies that [sp_audio_msg ] might be null.Dereferencing null pointer [sp_audio_msg]." web_identify="{&quot;identify&quot;:&quot;sp_audio_msg&quot;}" func_info="void SpeechModule::Forward0 ( const hobot::MessageLists &amp; input , hobot::Workflow * workflow , hobot::spRunContext context )" content="240:       GetMsgBySlotType(workflow, input, 0, SLOT_AUDIO, 0));
+241:   if (!sp_audio_msg) {
+242:     LOGW_T(MODULE_TAG) &lt;&lt; &quot;sp_audio_msg nullptr&quot;;
+243:   }
+244:   FilterParam filter_param(GetObjName(), 0, &amp;(dms_context-&gt;function_matrix_));
+245:   if (!filter_param.Filter(FACE_TYPE_DRIVER)) {
+246:     BypassAllMsgs(input, 0, workflow, context, dms_context-&gt;camera_cnt_);
+247:     return;
+248:   }
+249:   TIME_CHECK_INIT(SPEECH_TOTAL)
+250:   auto &amp;audio_data = sp_audio_msg-&gt;audio_data();
+251:   RingBuff&lt;LadBuffItem, LAD_INFO_NUM&gt; *lad_ring_buff =
+252:       dynamic_cast&lt;RingBuff&lt;LadBuffItem, LAD_INFO_NUM&gt; *&gt;(
+253:           RingBuffInstance::GetRingBuff(RING_LAD_INFO));
+254:   for (auto iter = audio_data.begin(); iter != audio_data.end(); iter++) {
+255:     AudioData &amp;audio = *iter;
+256:     TIME_TAG(B, 0, audio.GetID(), &quot;LipsMultiModel_Audio_DoSpeechProcess&quot;);
+257:     HISF_LIPS_ACTIVE_TYPE lad;
+258:     bool find_flag = false;
+259:     LadInfo lad_result;
+260:     std::vector&lt;LadBuffItem&gt; lad_info_vec;
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/aiot-nebula_dms-framework_1.0.0/src/modules/SpeechModule/src/SpeechModule.cc" line="261" id="nullpointer" subid="funcRetNullStatistic" severity="Serious" msg="return value of function [GetRingBuff] [lad_ring_buff] isn&apos;t checked-null, however [10] times checked-null elsewhere." web_identify="GetRingBuff|lad_ring_buff" func_info="RingBuffT* GetRingBuff(RING_TYPE)" content="251:   RingBuff&lt;LadBuffItem, LAD_INFO_NUM&gt; *lad_ring_buff =
+252:       dynamic_cast&lt;RingBuff&lt;LadBuffItem, LAD_INFO_NUM&gt; *&gt;(
+253:           RingBuffInstance::GetRingBuff(RING_LAD_INFO));
+254:   for (auto iter = audio_data.begin(); iter != audio_data.end(); iter++) {
+255:     AudioData &amp;audio = *iter;
+256:     TIME_TAG(B, 0, audio.GetID(), &quot;LipsMultiModel_Audio_DoSpeechProcess&quot;);
+257:     HISF_LIPS_ACTIVE_TYPE lad;
+258:     bool find_flag = false;
+259:     LadInfo lad_result;
+260:     std::vector&lt;LadBuffItem&gt; lad_info_vec;
+261:     int64_t latest_time = lad_ring_buff-&gt;getLastTime();
+262:     int64_t oldest_time = lad_ring_buff-&gt;getOldestTime();
+263:     if (audio.GetStamp() - 100 &gt; oldest_time &amp;&amp;
+264:         audio.GetStamp() - latest_time &lt; 200) {
+265:       lad_ring_buff-&gt;GetItemsForward(audio.GetStamp() - 200, oldest_time, 10,
+266:                                      lad_info_vec);
+267:       find_flag = true;
+268:       auto iter = lad_info_vec.begin();
+269:       lad_result.lad_info = *reinterpret_cast&lt;int *&gt;(iter-&gt;value);
+270:       lad_result.timestamp = iter-&gt;stamp;
+271:       int64_t abs_time = abs(iter-&gt;stamp - audio.GetStamp());
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/aiot-nebula_dms-framework_1.0.0/src/modules/SpeechPostModule/src/SpeechPostModule.cc" line="68" id="nullpointer" subid="dereferenceAfterCheck" severity="Serious" msg="Comparing [sp_speech_msg] to null at line 49 implies that [sp_speech_msg ] might be null.Dereferencing null pointer [sp_speech_msg]." web_identify="{&quot;identify&quot;:&quot;sp_speech_msg&quot;}" func_info="void SpeechPostModule::Forward0 ( const hobot::MessageLists &amp; input , hobot::Workflow * workflow , hobot::spRunContext context )" content="58:     LOGI_T(MODULE_TAG) &lt;&lt; &quot;modo command size : &quot; &lt;&lt; modo_command_size_;
+59:     if (modo_command_size_ != -1) {
+60:       for (int sz = 0; sz &lt; modo_command_size_; sz++) {
+61:         IdentyData modo_command_data;
+62:         std::vector&lt;std::string&gt; modo_string;
+63:         ModoCommand cmder_;
+64:         modo_command_parse_.ParseDesc(
+65:             sp_perception_msg, modo_string,
+66:             PerceptionBase::PerceptionType_LipsMultiMode, sz);
+67:         // int id = modo_command_parse_.GetTrackingID(sz);
+68:         sp_speech_msg-&gt;modo_command().insert(
+69:             std::make_pair(sz, cmder_));
+70:         LOGI_T(MODULE_TAG) &lt;&lt; &quot;Identy register size = &quot;
+71:                            &lt;&lt; modo_string.at(sz).size();
+72:       }
+73:     }
+74: 
+75:     int speech_gender_size = speech_gender_parse_.Parse(sp_perception_msg);
+76:     LOGI_T(MODULE_TAG) &lt;&lt; &quot;gender size : &quot; &lt;&lt; speech_gender_size;
+77:     if (speech_gender_size != -1) {
+78:       for (int sz = 0; sz &lt; speech_gender_size; sz++) {
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/aiot-nebula_dms-framework_1.0.0/src/modules/include/hobot-dms/modules/EventModule/DSWFSM.h" line="71" id="uninit" subid="uninitMemberVar" severity="Warning" msg="Member variable &apos;DSWTriggerThld::eye_close_time_thld_,pose_delta_angle_thld_,lip_height_delta_thld_,&apos; is not initialized in the constructor." web_identify="{&quot;identify&quot;:&quot;DSWTriggerThld::eye_close_time_thld_,pose_delta_angle_thld_,lip_height_delta_thld_,&quot;}" func_info="HobotDMS::DSWTriggerThld" content="61:  */
+62: class DSWConfigMsg : public HobotFSM::FSMMsg {
+63:  public:
+64:   explicit DSWConfigMsg(hobot::Config *config) : dsw_config_(config) {}
+65:   virtual ~DSWConfigMsg() {}
+66: 
+67:   hobot::Config *dsw_config_;
+68: };
+69: 
+70: struct DSWTriggerThld {
+71:   DSWTriggerThld()
+72:       : eye_close_score_thld_(0.0f),
+73:         eye_cover_score_thld_(0.0f),
+74:         eye_sub_score_thld_(0.0f),
+75:         upper_border_speed_(0.0f),
+76:         lower_border_speed_(0.0f),
+77:         turn_light_sensitive_(0),
+78:         steering_sensitive_(0),
+79:         steering_angle_thld_(0.0f),
+80:         max_yaw_(0.0f),
+81:         min_yaw_(0.0f),
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/aiot-nebula_dms-framework_1.0.0/src/modules/include/hobot-dms/modules/LipsMultiModel/LipsMultiModel.h" line="72" id="uninit" subid="uninitMemberVar" severity="Warning" msg="Member variable &apos;MultiStruct::skip_util_next_vadstart_,offset_flag_,feature_in_decode_count_,get_vision_feat_times_,get_voice_feat_times_,get_vision_feat_counts_,get_voice_feat_counts_,running_fps_,&apos; is not initialized in the constructor." web_identify="{&quot;identify&quot;:&quot;MultiStruct::skip_util_next_vadstart_,offset_flag_,feature_in_decode_count_,get_vision_feat_times_,get_voice_feat_times_,get_vision_feat_counts_,get_voice_feat_counts_,running_fps_,&quot;}" func_info="HobotDMS::MultiStruct" content="62: 
+63:   FILE *fp_image_ts_data_;
+64:   FILE *fp_speech_vct_;
+65:   FILE *fp_speech_feat_sum_;
+66:   FILE *fp_image_feat_sum_;
+67:   std::string dump_path_;
+68:   RING_TYPE vision_type_;
+69:   RING_TYPE audio_type_;
+70:   int index_;
+71: 
+72:   MultiStruct()
+73:       : vad_status_(VAD_STA_UNINIT),
+74:         index_(0),
+75:         ts_next_start(0),
+76:         ts_end_real(0),
+77:         vad_start_signal_(0),
+78:         vad_end_signal_(0),
+79:         decode_end_signal_(0),
+80:         end_flag_(0),
+81:         multimodel_cnn_(nullptr),
+82:         fp_image_ts_data_(nullptr),
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/aiot-nebula_dms-framework_1.0.0/src/modules/include/hobot-dms/modules/NetworkInputModule/NetworkRead.h" line="45" id="uninit" subid="uninitMemberVar" severity="Warning" msg="Member variable &apos;ReadData_::data,&apos; is not initialized in the constructor." web_identify="{&quot;identify&quot;:&quot;ReadData_::data,&quot;}" func_info="HobotDMS::ReadData_" content="35:   int frame_id;
+36:   int camera_id;
+37:   CameraType camera_type;
+38:   ProtoInfo_() : ts(0), flag(0), frame_id(0), camera_id(0) {}
+39: } ProtoInfo;
+40: 
+41: typedef struct ReadData_ {
+42:   char *data;
+43:   int data_len;
+44:   int64_t ts;
+45:   ReadData_() : data_len(0), ts(0) {}
+46: } ReadData;
+47: 
+48: /**
+49:  * @brief: NetWorkRead
+50:  */
+51: class NetWorkRead {
+52:  public:
+53:   static NetWorkRead &amp;GetInstance() {
+54:     static NetWorkRead network_read;
+55:     return network_read;
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/aiot-nebula_dms-framework_1.0.0/src/modules/include/hobot-dms/modules/PackInputModule/PackInputFileType.h" line="133" id="uninit" subid="uninitMemberVar" severity="Warning" msg="Member variable &apos;FileAudioYuv::frame_id_,total_num_,local_time_stamp_,&apos; is not initialized in the constructor." web_identify="{&quot;identify&quot;:&quot;FileAudioYuv::frame_id_,total_num_,local_time_stamp_,&quot;}" func_info="HobotDMS::FileAudioYuv" content="123:                    std::vector&lt;spImageMsg&gt; &amp;sp_imgs);
+124:  private:
+125:   void SetFlag(std::string folder, spImageMsg &amp;sp_img_msg);
+126:   void InitMsg(std::string abs_path, spImageMsg &amp;sp_img_msg);
+127:   int frame_id_;
+128:   std::map&lt;std::string, std::set&lt;std::string&gt;&gt; folder_filename_;
+129: };
+130: 
+131: class FileAudioYuv : public PackInputFile {
+132:  public:
+133:   explicit FileAudioYuv(FeedbackInfo *fb_info) : PackInputFile(fb_info),
+134:                                                  pcm_file_(nullptr) {}
+135:   ~FileAudioYuv() {}
+136:   int Start();
+137:   int ReadOneFrame(HobotDMSContext *dms_context,
+138:                    std::vector&lt;spImageMsg&gt; &amp;sp_imgs);
+139:   int ReadOneAudio(spAudioMsg sp_audio_msg, spImageMsg sp_img_msg);
+140:  private:
+141:   int frame_id_;
+142:   FILE *pcm_file_;
+143:   int total_num_;
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/aiot-nebula_dms-framework_1.0.0/src/modules/include/hobot-dms/modules/PackInputModule/PackInputFileType.h" line="166" id="uninit" subid="uninitMemberVar" severity="Warning" msg="Member variable &apos;FileAudioJpeg::frame_id_,total_num_,local_time_stamp_,&apos; is not initialized in the constructor." web_identify="{&quot;identify&quot;:&quot;FileAudioJpeg::frame_id_,total_num_,local_time_stamp_,&quot;}" func_info="HobotDMS::FileAudioJpeg" content="156:                    std::vector&lt;spImageMsg&gt; &amp;sp_imgs);
+157:  private:
+158:   void SetFlag(std::string txt_file, spImageMsg &amp;sp_img_msg);
+159:   void InitMsg(std::string abs_path, spImageMsg &amp;sp_img_msg);
+160:   int frame_id_;
+161:   std::map&lt;std::string, std::vector&lt;std::string&gt;&gt; txt_file_abs_path_;
+162: };
+163: 
+164: class FileAudioJpeg : public PackInputFile {
+165:  public:
+166:   explicit FileAudioJpeg(FeedbackInfo *fb_info) : PackInputFile(fb_info),
+167:                                                   pcm_file_(nullptr) {}
+168:   ~FileAudioJpeg() {}
+169:   int Start();
+170:   int ReadOneFrame(HobotDMSContext *dms_context,
+171:                    std::vector&lt;spImageMsg&gt; &amp;sp_imgs);
+172:   int ReadOneAudio(spAudioMsg sp_audio_msg, spImageMsg sp_img_msg);
+173:  private:
+174:   int frame_id_;
+175:   FILE *pcm_file_;
+176:   int total_num_;
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/aiot-nebula_dms-framework_1.0.0/test/feature_test/feat_test.cpp" line="159" id="memleak" subid="resourceLeak" severity="Warning" msg="Resource leak: file" web_identify="{&quot;identify&quot;:&quot;file&quot;}" func_info="" content="149:       list.clear();
+150:       one_feat.clear();
+151:       //break;
+152:     } else {
+153:       char count_str[8];
+154:       char *pos;
+155:       snprintf(count_str, sizeof(count_str), &quot;[%d]&quot;, count);
+156:       pos = strstr(buf, count_str);
+157:       if(NULL == pos){
+158:         std::cout &lt;&lt; &quot;can nont find &quot; &lt;&lt; count_str &lt;&lt; &quot; in &quot; &lt;&lt; buf &lt;&lt; std::endl;
+159:         return -1;
+160:       }
+161:       pos = pos + strlen(count_str) + strlen(&quot; &quot;);
+162:       char *tmp = strstr(pos, &quot; &quot;);
+163:       if(NULL != tmp){
+164:         *tmp = &apos;\0&apos;;
+165:       }
+166:       std::string data = pos;
+167:       one_feat.push_back(data);
+168:       //printf(&quot;[%d] %s\n&quot;, count, one_feat[count].c_str());
+169:       count++;
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/iMate/J2AILAB/device/horizon/journey2/toolchains/gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu/aarch64-linux-gnu/include/c++/6.5.0/bits/basic_ios.h" line="51" id="nullpointer" subid="dereferenceAfterCheck" severity="Serious" msg="Comparing [__f] to null at line 49 implies that [__f ] might be null.Dereferencing null pointer [__f]." web_identify="{&quot;identify&quot;:&quot;__f&quot;}" func_info="&amp; std::__check_facet ( const _Facet * __f )" content="41: namespace std _GLIBCXX_VISIBILITY(default)
+42: {
+43: _GLIBCXX_BEGIN_NAMESPACE_VERSION
+44: 
+45:   template&lt;typename _Facet&gt;
+46:     inline const _Facet&amp;
+47:     __check_facet(const _Facet* __f)
+48:     {
+49:       if (!__f)
+50: 	__throw_bad_cast();
+51:       return *__f;
+52:     }
+53: 
+54:   /**
+55:    *  @brief Template class basic_ios, virtual base class for all
+56:    *  stream classes. 
+57:    *  @ingroup io
+58:    *
+59:    *  @tparam _CharT  Type of character stream.
+60:    *  @tparam _Traits  Traits for character type, defaults to
+61:    *                   char_traits&lt;_CharT&gt;.
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/iMate/J2AILAB/device/horizon/journey2/toolchains/gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu/aarch64-linux-gnu/include/c++/6.5.0/bits/hashtable.h" line="2028" id="nullpointer" subid="dereferenceAfterCheck" severity="Serious" msg="Comparing [__prev_p] to null at line 2007 implies that [__prev_p ] might be null.Dereferencing null pointer [__prev_p]." web_identify="{&quot;identify&quot;:&quot;__prev_p&quot;}" func_info="::_M_rehash_aux ( size_type __n , std::false_type )" content="2018: 	      // schedule a check as soon as we move out of the sequence of
+2019: 	      // equivalent nodes to limit the number of checks.
+2020: 	      __check_bucket = true;
+2021: 	    }
+2022: 	  else
+2023: 	    {
+2024: 	      if (__check_bucket)
+2025: 		{
+2026: 		  // Check if we shall update the next bucket because of
+2027: 		  // insertions into __prev_bkt bucket.
+2028: 		  if (__prev_p-&gt;_M_nxt)
+2029: 		    {
+2030: 		      std::size_t __next_bkt
+2031: 			= __hash_code_base::_M_bucket_index(__prev_p-&gt;_M_next(),
+2032: 							    __n);
+2033: 		      if (__next_bkt != __prev_bkt)
+2034: 			__new_buckets[__next_bkt] = __prev_p;
+2035: 		    }
+2036: 		  __check_bucket = false;
+2037: 		}
+2038: 
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/iMate/J2AILAB/device/horizon/journey2/toolchains/gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu/aarch64-linux-gnu/include/c++/6.5.0/bits/regex_scanner.h" line="90" id="uninit" subid="uninitMemberVar" severity="Warning" msg="Member variable &apos;_ScannerBase::_M_token,&apos; is not initialized in the constructor." web_identify="{&quot;identify&quot;:&quot;_ScannerBase::_M_token,&quot;}" func_info="std::__detail::_ScannerBase" content="80:     typedef regex_constants::syntax_option_type _FlagT;
+81: 
+82:     enum _StateT
+83:     {
+84:       _S_state_normal,
+85:       _S_state_in_brace,
+86:       _S_state_in_bracket,
+87:     };
+88: 
+89:   protected:
+90:     _ScannerBase(_FlagT __flags)
+91:     : _M_state(_S_state_normal),
+92:     _M_flags(__flags),
+93:     _M_escape_tbl(_M_is_ecma()
+94: 		  ? _M_ecma_escape_tbl
+95: 		  : _M_awk_escape_tbl),
+96:     _M_spec_char(_M_is_ecma()
+97: 		 ? _M_ecma_spec_char
+98: 		 : _M_flags &amp; regex_constants::basic
+99: 		 ? _M_basic_spec_char
+100: 		 : _M_flags &amp; regex_constants::extended
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/iMate/J2AILAB/device/horizon/journey2/toolchains/gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu/aarch64-linux-gnu/include/c++/6.5.0/cxxabi.h" line="544" id="uninit" subid="uninitMemberVar" severity="Warning" msg="Member variable &apos;__vmi_class_type_info::__base_info,&apos; is not initialized in the constructor." web_identify="{&quot;identify&quot;:&quot;__vmi_class_type_info::__base_info,&quot;}" func_info="__cxxabiv1::__vmi_class_type_info" content="534:   public:
+535:     unsigned int 		__flags;  // Details about the class hierarchy.
+536:     unsigned int 		__base_count;  // Number of direct bases.
+537: 
+538:     // The array of bases uses the trailing array struct hack so this
+539:     // class is not constructable with a normal constructor. It is
+540:     // internally generated by the compiler.
+541:     __base_class_type_info 	__base_info[1];  // Array of bases.
+542: 
+543:     explicit
+544:     __vmi_class_type_info(const char* __n, int ___flags)
+545:     : __class_type_info(__n), __flags(___flags), __base_count(0) { }
+546: 
+547:     virtual
+548:     ~__vmi_class_type_info();
+549: 
+550:     // Implementation defined types.
+551:     enum __flags_masks
+552:       {
+553: 	__non_diamond_repeat_mask = 0x1, // Distinct instance of repeated base.
+554: 	__diamond_shaped_mask = 0x2, // Diamond shaped multiple inheritance.
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/iMate/J2AILAB/device/horizon/journey2/toolchains/gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu/aarch64-linux-gnu/include/c++/6.5.0/ext/bitmap_allocator.h" line="169" id="nullpointer" subid="invalidDereferenceIterator" severity="Serious" msg="Iterator [__dest] may be invalid here." web_identify="{&quot;identify&quot;:&quot;__dest&quot;}" func_info="::insert ( pointer __pos , const _Tp &amp; __x )" content="159:       {
+160: 	if (this-&gt;_M_space_left())
+161: 	  {
+162: 	    size_type __to_move = this-&gt;_M_finish - __pos;
+163: 	    iterator __dest = this-&gt;end();
+164: 	    iterator __src = this-&gt;end() - 1;
+165: 
+166: 	    ++this-&gt;_M_finish;
+167: 	    while (__to_move)
+168: 	      {
+169: 		*__dest = *__src;
+170: 		--__dest; --__src; --__to_move;
+171: 	      }
+172: 	    *__pos = __x;
+173: 	  }
+174: 	else
+175: 	  {
+176: 	    size_type __new_size = this-&gt;size() ? this-&gt;size() * 2 : 1;
+177: 	    iterator __new_start = this-&gt;allocate(__new_size);
+178: 	    iterator __first = this-&gt;begin();
+179: 	    iterator __start = __new_start;
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/iMate/J2AILAB/device/horizon/journey2/toolchains/gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu/aarch64-linux-gnu/include/c++/6.5.0/ext/pb_ds/detail/left_child_next_sibling_heap_/const_iterator.hpp" line="146" id="nullpointer" subid="dereferenceBeforeCheck" severity="Serious" msg="Null - checking [left_child_next_sibling_heap_node_point_const_iterator_&lt;Node,_Alloc&gt;::m_p_nd] suggests that it may be null, but it has already been dereferenced at line 134." web_identify="{&quot;identify&quot;:&quot;left_child_next_sibling_heap_node_point_const_iterator_&lt;Node,_Alloc&gt;::m_p_nd&quot;}" func_info="void left_child_next_sibling_heap_const_iterator_::inc ( )" content="136: 	    base_type::m_p_nd = base_type::m_p_nd-&gt;m_p_next_sibling;
+137: 	    while (base_type::m_p_nd-&gt;m_p_l_child != 0)
+138: 	      base_type::m_p_nd = base_type::m_p_nd-&gt;m_p_l_child;
+139: 	    return;
+140: 	  }
+141: 
+142: 	while (true)
+143: 	  {
+144: 	    node_pointer p_next = base_type::m_p_nd;
+145: 	    base_type::m_p_nd = base_type::m_p_nd-&gt;m_p_prev_or_parent;
+146: 	    if (base_type::m_p_nd == 0
+147: 		|| base_type::m_p_nd-&gt;m_p_l_child == p_next)
+148: 	      return;
+149: 	  }
+150:       }
+151:     };
+152: 
+153: #undef PB_DS_CLASS_C_DEC
+154: #undef PB_DS_BASIC_HEAP_CIT_BASE
+155: 
+156:   } // namespace detail
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/iMate/J2AILAB/device/horizon/journey2/toolchains/gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu/aarch64-linux-gnu/include/c++/6.5.0/ext/pb_ds/detail/splay_tree_/splay_fn_imps.hpp" line="253" id="logic" subid="selfAssignment" severity="Warning" msg="Redundant assignment of &apos;base_type::m_p_head.m_p_parent&apos; to itself." web_identify="{&quot;identify&quot;:&quot;base_type::m_p_head.m_p_parent&quot;}" func_info="global" content="243: 	       node_pointer p_grandparent)
+244: {
+245:   _GLIBCXX_DEBUG_ASSERT(p_nd != 0);
+246:   _GLIBCXX_DEBUG_ASSERT(p_parent != 0);
+247:   _GLIBCXX_DEBUG_ASSERT(p_grandparent != 0);
+248: 
+249:   const bool grandparent_head = p_grandparent-&gt;m_p_parent == base_type::m_p_head;
+250: 
+251:   if (grandparent_head)
+252:     {
+253:       base_type::m_p_head-&gt;m_p_parent = base_type::m_p_head-&gt;m_p_parent;
+254:       p_nd-&gt;m_p_parent = base_type::m_p_head;
+255:       return;
+256:     }
+257: 
+258:   node_pointer p_greatgrandparent = p_grandparent-&gt;m_p_parent;
+259: 
+260:   p_nd-&gt;m_p_parent = p_greatgrandparent;
+261: 
+262:   if (p_grandparent == p_greatgrandparent-&gt;m_p_left)
+263:     p_greatgrandparent-&gt;m_p_left = p_nd;
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/iMate/J2AILAB/device/horizon/journey2/toolchains/gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu/aarch64-linux-gnu/include/c++/6.5.0/ext/ropeimpl.h" line="539" id="nullpointer" subid="dereferenceIfNull" severity="Critical" msg="[__r] is null dereferenced here, as codes at line 537 make it a null pointer." web_identify="{&quot;identify&quot;:&quot;__r&quot;}" func_info="::_S_concat_char_iter ( _RopeRep * __r , const _CharT * __s , long __slen )" content="529:     _S_concat_char_iter(_RopeRep* __r, const _CharT*__s, size_t __slen)
+530:     {
+531:       _RopeRep* __result;
+532:       if (0 == __slen)
+533: 	{
+534: 	  _S_ref(__r);
+535: 	  return __r;
+536: 	}
+537:       if (0 == __r)
+538: 	return __STL_ROPE_FROM_UNOWNED_CHAR_PTR(__s, __slen,
+539: 						__r-&gt;_M_get_allocator());
+540:       if (__r-&gt;_M_tag == __detail::_S_leaf
+541: 	  &amp;&amp; __r-&gt;_M_size + __slen &lt;= size_t(_S_copy_max))
+542: 	{
+543: 	  __result = _S_leaf_concat_char_iter((_RopeLeaf*)__r, __s, __slen);
+544: 	  return __result;
+545: 	}
+546:       if (__detail::_S_concat == __r-&gt;_M_tag
+547: 	  &amp;&amp; __detail::_S_leaf == ((_RopeConcatenation*) __r)-&gt;_M_right-&gt;_M_tag)
+548: 	{
+549: 	  _RopeLeaf* __right =
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/iMate/J2AILAB/device/horizon/journey2/toolchains/gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu/aarch64-linux-gnu/include/c++/6.5.0/ext/ropeimpl.h" line="593" id="nullpointer" subid="dereferenceIfNull" severity="Critical" msg="[__r] is null dereferenced here, as codes at line 591 make it a null pointer." web_identify="{&quot;identify&quot;:&quot;__r&quot;}" func_info="::_S_destr_concat_char_iter ( _RopeRep * __r , const _CharT * __s , long __slen )" content="583: 
+584: #ifndef __GC
+585:   template &lt;class _CharT, class _Alloc&gt;
+586:     typename rope&lt;_CharT,_Alloc&gt;::_RopeRep*
+587:     rope&lt;_CharT,_Alloc&gt;::
+588:     _S_destr_concat_char_iter(_RopeRep* __r, const _CharT* __s, size_t __slen)
+589:     {
+590:       _RopeRep* __result;
+591:       if (0 == __r)
+592: 	return __STL_ROPE_FROM_UNOWNED_CHAR_PTR(__s, __slen,
+593: 						__r-&gt;_M_get_allocator());
+594:       size_t __count = __r-&gt;_M_ref_count;
+595:       size_t __orig_size = __r-&gt;_M_size;
+596:       if (__count &gt; 1)
+597: 	return _S_concat_char_iter(__r, __s, __slen);
+598:       if (0 == __slen)
+599: 	{
+600: 	  __r-&gt;_M_ref_count = 2;      // One more than before
+601: 	  return __r;
+602: 	}
+603:       if (__orig_size + __slen &lt;= size_t(_S_copy_max)
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/iMate/J2AILAB/device/horizon/journey2/toolchains/gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu/aarch64-linux-gnu/include/c++/6.5.0/parallel/partition.h" line="170" id="bufoverrun" subid="arrayIndexThenCheck" severity="Critical" msg="Array index &apos;__thread_left&apos; is used before limits check." web_identify="{&quot;identify&quot;:&quot;__thread_left&quot;}" func_info="difference_type __gnu_parallel::__parallel_partition ( _RAIter __begin , _RAIter __end , _Predicate __pred , _ThreadIndex __num_threads )" content="160:                                   __fetch_and_add(&amp;__right, -__chunk_size);
+161:                           __thread_right_border =
+162:                                   __thread_right - (__chunk_size - 1);
+163:                         }
+164: 		    }
+165: 
+166: 		  // Swap as usual.
+167: 		  while (__thread_left &lt; __thread_right)
+168: 		    {
+169: 		      while (__pred(__begin[__thread_left])
+170: 			     &amp;&amp; __thread_left &lt;= __thread_left_border)
+171: 			++__thread_left;
+172: 		      while (!__pred(__begin[__thread_right])
+173: 			     &amp;&amp; __thread_right &gt;= __thread_right_border)
+174: 			--__thread_right;
+175: 
+176: 		      if (__thread_left &gt; __thread_left_border
+177: 			  || __thread_right &lt; __thread_right_border)
+178: 			// Fetch new chunk(__s).
+179: 			break;
+180: 
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/iMate/J2AILAB/device/horizon/journey2/toolchains/gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu/aarch64-linux-gnu/include/c++/6.5.0/parallel/partition.h" line="293" id="bufoverrun" subid="arrayIndexThenCheck" severity="Critical" msg="Array index &apos;__final_left&apos; is used before limits check." web_identify="{&quot;identify&quot;:&quot;__final_left&quot;}" func_info="difference_type __gnu_parallel::__parallel_partition ( _RAIter __begin , _RAIter __end , _Predicate __pred , _ThreadIndex __num_threads )" content="283: 	    }
+284: 
+285: #           pragma omp flush(__left, __right)
+286: 	} // end &quot;recursion&quot; //parallel
+287: 
+288:         _DifferenceType __final_left = __left, __final_right = __right;
+289: 
+290: 	while (__final_left &lt; __final_right)
+291: 	  {
+292: 	    // Go right until key is geq than pivot.
+293: 	    while (__pred(__begin[__final_left])
+294: 		   &amp;&amp; __final_left &lt; __final_right)
+295: 	      ++__final_left;
+296: 
+297: 	    // Go left until key is less than pivot.
+298: 	    while (!__pred(__begin[__final_right])
+299: 		   &amp;&amp; __final_left &lt; __final_right)
+300: 	      --__final_right;
+301: 
+302: 	    if (__final_left == __final_right)
+303: 	      break;
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/iMate/J2AILAB/device/horizon/journey2/toolchains/gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu/aarch64-linux-gnu/include/c++/6.5.0/parallel/partition.h" line="294" id="bufoverrun" subid="arrayIndexThenCheck" severity="Critical" msg="Array index &apos;__final_left&apos; is used before limits check." web_identify="{&quot;identify&quot;:&quot;__final_left&quot;}" func_info="difference_type __gnu_parallel::__parallel_partition ( _RAIter __begin , _RAIter __end , _Predicate __pred , _ThreadIndex __num_threads )" content="284: 
+285: #           pragma omp flush(__left, __right)
+286: 	} // end &quot;recursion&quot; //parallel
+287: 
+288:         _DifferenceType __final_left = __left, __final_right = __right;
+289: 
+290: 	while (__final_left &lt; __final_right)
+291: 	  {
+292: 	    // Go right until key is geq than pivot.
+293: 	    while (__pred(__begin[__final_left])
+294: 		   &amp;&amp; __final_left &lt; __final_right)
+295: 	      ++__final_left;
+296: 
+297: 	    // Go left until key is less than pivot.
+298: 	    while (!__pred(__begin[__final_right])
+299: 		   &amp;&amp; __final_left &lt; __final_right)
+300: 	      --__final_right;
+301: 
+302: 	    if (__final_left == __final_right)
+303: 	      break;
+304: 	    std::iter_swap(__begin + __final_left, __begin + __final_right);
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/iMate/J2AILAB/device/horizon/journey2/toolchains/gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu/lib/gcc/aarch64-linux-gnu/6.5.0/plugin/include/alloc-pool.h" line="239" id="uninit" subid="uninitMemberVar" severity="Warning" msg="Member variable &apos;base_pool_allocator&lt;TBlockAllocator&gt;::m_elt_size,&apos; is not initialized in the constructor." web_identify="{&quot;identify&quot;:&quot;base_pool_allocator&lt;TBlockAllocator&gt;::m_elt_size,&quot;}" func_info="global" content="229:   /* Size in bytes that should be allocated for each element.  */
+230:   size_t m_size;
+231:   /* Flag if a pool allocator is initialized.  */
+232:   bool m_initialized;
+233:   /* Memory allocation location.  */
+234:   mem_location m_location;
+235: };
+236: 
+237: template &lt;typename TBlockAllocator&gt;
+238: inline
+239: base_pool_allocator &lt;TBlockAllocator&gt;::base_pool_allocator (
+240: 				const char *name, size_t size MEM_STAT_DECL):
+241:   m_name (name), m_id (0), m_elts_per_block (0), m_returned_free_list (NULL),
+242:   m_virgin_free_list (NULL), m_virgin_elts_remaining (0), m_elts_allocated (0),
+243:   m_elts_free (0), m_blocks_allocated (0), m_block_list (NULL), m_size (size),
+244:   m_initialized (false), m_location (ALLOC_POOL_ORIGIN, false PASS_MEM_STAT) {}
+245: 
+246: /* Initialize a pool allocator.  */
+247: 
+248: template &lt;typename TBlockAllocator&gt;
+249: inline void
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/iMate/J2AILAB/device/horizon/journey2/toolchains/gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu/lib/gcc/aarch64-linux-gnu/6.5.0/plugin/include/alloc-pool.h" line="239" id="uninit" subid="uninitMemberVar" severity="Warning" msg="Member variable &apos;base_pool_allocator&lt;memory_block_pool&gt;::m_elt_size,&apos; is not initialized in the constructor." web_identify="{&quot;identify&quot;:&quot;base_pool_allocator&lt;memory_block_pool&gt;::m_elt_size,&quot;}" func_info="global" content="229:   /* Size in bytes that should be allocated for each element.  */
+230:   size_t m_size;
+231:   /* Flag if a pool allocator is initialized.  */
+232:   bool m_initialized;
+233:   /* Memory allocation location.  */
+234:   mem_location m_location;
+235: };
+236: 
+237: template &lt;typename TBlockAllocator&gt;
+238: inline
+239: base_pool_allocator &lt;TBlockAllocator&gt;::base_pool_allocator (
+240: 				const char *name, size_t size MEM_STAT_DECL):
+241:   m_name (name), m_id (0), m_elts_per_block (0), m_returned_free_list (NULL),
+242:   m_virgin_free_list (NULL), m_virgin_elts_remaining (0), m_elts_allocated (0),
+243:   m_elts_free (0), m_blocks_allocated (0), m_block_list (NULL), m_size (size),
+244:   m_initialized (false), m_location (ALLOC_POOL_ORIGIN, false PASS_MEM_STAT) {}
+245: 
+246: /* Initialize a pool allocator.  */
+247: 
+248: template &lt;typename TBlockAllocator&gt;
+249: inline void
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/iMate/J2AILAB/device/horizon/journey2/toolchains/gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu/lib/gcc/aarch64-linux-gnu/6.5.0/plugin/include/cfgloop.h" line="674" id="nullpointer" subid="dereferenceBeforeCheck" severity="Serious" msg="Null - checking [aloop] suggests that it may be null, but it has already been dereferenced at line 670." web_identify="{&quot;identify&quot;:&quot;aloop&quot;}" func_info="loop_iterator::loop_iterator ( function * fn , struct loop * * loop , int flags )" content="664:       aloop = loops_for_fn (fn)-&gt;tree_root;
+665:       while (1)
+666: 	{
+667: 	  if (aloop-&gt;num &gt;= mn)
+668: 	    this-&gt;to_visit.quick_push (aloop-&gt;num);
+669: 
+670: 	  if (aloop-&gt;inner != NULL)
+671: 	    aloop = aloop-&gt;inner;
+672: 	  else
+673: 	    {
+674: 	      while (aloop != NULL &amp;&amp; aloop-&gt;next == NULL)
+675: 		aloop = loop_outer (aloop);
+676: 	      if (aloop == NULL)
+677: 		break;
+678: 	      aloop = aloop-&gt;next;
+679: 	    }
+680: 	}
+681:     }
+682: 
+683:   *loop = this-&gt;next ();
+684: }
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/iMate/J2AILAB/device/horizon/journey2/toolchains/gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu/lib/gcc/aarch64-linux-gnu/6.5.0/plugin/include/fibonacci_heap.h" line="182" id="nullpointer" subid="dereferenceAfterCheck" severity="Serious" msg="Comparing [m_min] to null at line 179 implies that [m_min ] might be null.Dereferencing null pointer [m_min]." web_identify="{&quot;identify&quot;:&quot;m_min&quot;}" func_info="K fibonacci_heap&lt;K,V&gt;::min_key ( )" content="172:   {
+173:     return m_nodes;
+174:   }
+175: 
+176:   /* Return minimal key presented in the heap.  */
+177:   K min_key ()
+178:   {
+179:     if (m_min == NULL)
+180:       gcc_unreachable ();
+181: 
+182:     return m_min-&gt;m_key;
+183:   }
+184: 
+185:   /* For given NODE, set new KEY value.  */
+186:   K replace_key (fibonacci_node_t *node, K key)
+187:   {
+188:     K okey = node-&gt;m_key;
+189: 
+190:     replace_key_data (node, key, node-&gt;m_data);
+191:     return okey;
+192:   }
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/iMate/J2AILAB/device/horizon/journey2/toolchains/gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu/lib/gcc/aarch64-linux-gnu/6.5.0/plugin/include/fibonacci_heap.h" line="58" id="uninit" subid="uninitMemberVar" severity="Warning" msg="Member variable &apos;fibonacci_node&lt;K,V&gt;::m_data,&apos; is not initialized in the constructor." web_identify="{&quot;identify&quot;:&quot;fibonacci_node&lt;K,V&gt;::m_data,&quot;}" func_info="fibonacci_node&lt;K,V&gt;" content="48: /* Fibonacci heap node class.  */
+49: 
+50: template&lt;class K, class V&gt;
+51: class fibonacci_node
+52: {
+53:   typedef fibonacci_node&lt;K,V&gt; fibonacci_node_t;
+54:   friend class fibonacci_heap&lt;K,V&gt;;
+55: 
+56: public:
+57:   /* Default constructor.  */
+58:   fibonacci_node (): m_parent (NULL), m_child (NULL), m_left (this),
+59:     m_right (this), m_degree (0), m_mark (0)
+60:   {
+61:   }
+62: 
+63:   /* Constructor for a node with given KEY.  */
+64:   fibonacci_node (K key): m_parent (NULL), m_child (NULL), m_left (this),
+65:     m_right (this), m_key (key),
+66:     m_degree (0), m_mark (0)
+67:   {
+68:   }
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/iMate/J2AILAB/device/horizon/journey2/toolchains/gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu/lib/gcc/aarch64-linux-gnu/6.5.0/plugin/include/fibonacci_heap.h" line="64" id="uninit" subid="uninitMemberVar" severity="Warning" msg="Member variable &apos;fibonacci_node&lt;K,V&gt;::m_data,&apos; is not initialized in the constructor." web_identify="{&quot;identify&quot;:&quot;fibonacci_node&lt;K,V&gt;::m_data,&quot;}" func_info="fibonacci_node&lt;K,V&gt;" content="54:   friend class fibonacci_heap&lt;K,V&gt;;
+55: 
+56: public:
+57:   /* Default constructor.  */
+58:   fibonacci_node (): m_parent (NULL), m_child (NULL), m_left (this),
+59:     m_right (this), m_degree (0), m_mark (0)
+60:   {
+61:   }
+62: 
+63:   /* Constructor for a node with given KEY.  */
+64:   fibonacci_node (K key): m_parent (NULL), m_child (NULL), m_left (this),
+65:     m_right (this), m_key (key),
+66:     m_degree (0), m_mark (0)
+67:   {
+68:   }
+69: 
+70:   /* Compare fibonacci node with OTHER node.  */
+71:   int compare (fibonacci_node_t *other)
+72:   {
+73:     if (m_key &lt; other-&gt;m_key)
+74:       return -1;
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/iMate/J2AILAB/device/horizon/journey2/toolchains/gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu/lib/gcc/aarch64-linux-gnu/6.5.0/plugin/include/rtl.h" line="1333" id="bufoverrun" subid="arrayIndexOutOfBounds" severity="Critical" msg="Array &apos;this.u.fld[1]&apos; accessed at index 1, which is out of bounds." web_identify="{&quot;identify&quot;:&quot;[&quot;}" func_info="rtx_expr_list * rtx_expr_list::next ( ) const" content="1323: #define XCVECEXP(RTX, N, M, C)	RTVEC_ELT (XCVEC (RTX, N, C), M)
+1324: #define XCVECLEN(RTX, N, C)	GET_NUM_ELEM (XCVEC (RTX, N, C))
+1325: 
+1326: #define XC2EXP(RTX, N, C1, C2)      (RTL_CHECKC2 (RTX, N, C1, C2).rt_rtx)
+1327: 
+1328: 
+1329: /* Methods of rtx_expr_list.  */
+1330: 
+1331: inline rtx_expr_list *rtx_expr_list::next () const
+1332: {
+1333:   rtx tmp = XEXP (this, 1);
+1334:   return safe_as_a &lt;rtx_expr_list *&gt; (tmp);
+1335: }
+1336: 
+1337: inline rtx rtx_expr_list::element () const
+1338: {
+1339:   return XEXP (this, 0);
+1340: }
+1341: 
+1342: /* Methods of rtx_insn_list.  */
+1343: 
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/iMate/J2AILAB/device/horizon/journey2/toolchains/gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu/lib/gcc/aarch64-linux-gnu/6.5.0/plugin/include/rtl.h" line="1346" id="bufoverrun" subid="arrayIndexOutOfBounds" severity="Critical" msg="Array &apos;this.u.fld[1]&apos; accessed at index 1, which is out of bounds." web_identify="{&quot;identify&quot;:&quot;[&quot;}" func_info="rtx_insn_list * rtx_insn_list::next ( ) const" content="1336: 
+1337: inline rtx rtx_expr_list::element () const
+1338: {
+1339:   return XEXP (this, 0);
+1340: }
+1341: 
+1342: /* Methods of rtx_insn_list.  */
+1343: 
+1344: inline rtx_insn_list *rtx_insn_list::next () const
+1345: {
+1346:   rtx tmp = XEXP (this, 1);
+1347:   return safe_as_a &lt;rtx_insn_list *&gt; (tmp);
+1348: }
+1349: 
+1350: inline rtx_insn *rtx_insn_list::insn () const
+1351: {
+1352:   rtx tmp = XEXP (this, 0);
+1353:   return safe_as_a &lt;rtx_insn *&gt; (tmp);
+1354: }
+1355: 
+1356: /* Methods of rtx_sequence.  */
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/iMate/J2AILAB/device/horizon/journey2/toolchains/gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu/lib/gcc/aarch64-linux-gnu/6.5.0/plugin/include/rtl.h" line="1743" id="bufoverrun" subid="arrayIndexOutOfBounds" severity="Critical" msg="Array &apos;this.u.fld[1]&apos; accessed at index 7, which is out of bounds." web_identify="{&quot;identify&quot;:&quot;[&quot;}" func_info="rtx rtx_jump_insn::jump_label ( ) const" content="1733: 
+1734: inline rtx_insn *JUMP_LABEL_AS_INSN (const rtx_insn *insn)
+1735: {
+1736:   return safe_as_a &lt;rtx_insn *&gt; (JUMP_LABEL (insn));
+1737: }
+1738: 
+1739: /* Methods of rtx_jump_insn.  */
+1740: 
+1741: inline rtx rtx_jump_insn::jump_label () const
+1742: {
+1743:   return JUMP_LABEL (this);
+1744: }
+1745: 
+1746: inline rtx_code_label *rtx_jump_insn::jump_target () const
+1747: {
+1748:   return safe_as_a &lt;rtx_code_label *&gt; (JUMP_LABEL (this));
+1749: }
+1750: 
+1751: inline void rtx_jump_insn::set_jump_target (rtx_code_label *target)
+1752: {
+1753:   JUMP_LABEL (this) = target;
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/iMate/J2AILAB/device/horizon/journey2/toolchains/gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu/lib/gcc/aarch64-linux-gnu/6.5.0/plugin/include/rtl.h" line="1748" id="bufoverrun" subid="arrayIndexOutOfBounds" severity="Critical" msg="Array &apos;this.u.fld[1]&apos; accessed at index 7, which is out of bounds." web_identify="{&quot;identify&quot;:&quot;[&quot;}" func_info="rtx_code_label * rtx_jump_insn::jump_target ( ) const" content="1738: 
+1739: /* Methods of rtx_jump_insn.  */
+1740: 
+1741: inline rtx rtx_jump_insn::jump_label () const
+1742: {
+1743:   return JUMP_LABEL (this);
+1744: }
+1745: 
+1746: inline rtx_code_label *rtx_jump_insn::jump_target () const
+1747: {
+1748:   return safe_as_a &lt;rtx_code_label *&gt; (JUMP_LABEL (this));
+1749: }
+1750: 
+1751: inline void rtx_jump_insn::set_jump_target (rtx_code_label *target)
+1752: {
+1753:   JUMP_LABEL (this) = target;
+1754: }
+1755: 
+1756: /* Once basic blocks are found, each CODE_LABEL starts a chain that
+1757:    goes through all the LABEL_REFs that jump to that label.  The chain
+1758:    eventually winds up at the CODE_LABEL: it is circular.  */
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/iMate/J2AILAB/device/horizon/journey2/toolchains/gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu/lib/gcc/aarch64-linux-gnu/6.5.0/plugin/include/rtl.h" line="1753" id="bufoverrun" subid="arrayIndexOutOfBounds" severity="Critical" msg="Array &apos;this.u.fld[1]&apos; accessed at index 7, which is out of bounds." web_identify="{&quot;identify&quot;:&quot;[&quot;}" func_info="void rtx_jump_insn::set_jump_target ( rtx_code_label * target )" content="1743:   return JUMP_LABEL (this);
+1744: }
+1745: 
+1746: inline rtx_code_label *rtx_jump_insn::jump_target () const
+1747: {
+1748:   return safe_as_a &lt;rtx_code_label *&gt; (JUMP_LABEL (this));
+1749: }
+1750: 
+1751: inline void rtx_jump_insn::set_jump_target (rtx_code_label *target)
+1752: {
+1753:   JUMP_LABEL (this) = target;
+1754: }
+1755: 
+1756: /* Once basic blocks are found, each CODE_LABEL starts a chain that
+1757:    goes through all the LABEL_REFs that jump to that label.  The chain
+1758:    eventually winds up at the CODE_LABEL: it is circular.  */
+1759: #define LABEL_REFS(LABEL) XCEXP (LABEL, 3, CODE_LABEL)
+1760: 
+1761: /* Get the label that a LABEL_REF references.  */
+1762: #define LABEL_REF_LABEL(LABREF) XCEXP (LABREF, 0, LABEL_REF)
+1763: 
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/iMate/J2AILAB/device/horizon/journey2/toolchains/gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu/lib/gcc/aarch64-linux-gnu/6.5.0/plugin/include/sched-int.h" line="1629" id="nullpointer" subid="dereferenceBeforeCheck" severity="Serious" msg="Null - checking [list] suggests that it may be null, but it has already been dereferenced at line 1627." web_identify="{&quot;identify&quot;:&quot;list&quot;}" func_info="bool sd_iterator_cond ( struct _sd_iterator * it_ptr , dep_def * * dep_ptr )" content="1619: 	  if (types != SD_LIST_NONE)
+1620: 	    /* Switch to next list.  */
+1621: 	    {
+1622: 	      deps_list_t list;
+1623: 
+1624: 	      sd_next_list (it_ptr-&gt;insn,
+1625: 			    &amp;it_ptr-&gt;types, &amp;list, &amp;it_ptr-&gt;resolved_p);
+1626: 
+1627: 	      it_ptr-&gt;linkp = &amp;DEPS_LIST_FIRST (list);
+1628: 
+1629: 	      if (list)
+1630: 		continue;
+1631: 	    }
+1632: 
+1633: 	  *dep_ptr = NULL;
+1634: 	  return false;
+1635: 	}
+1636:    }
+1637: }
+1638: 
+1639: /* Advance iterator.  */
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/iMate/J2AILAB/device/horizon/journey2/toolchains/gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu/lib/gcc/aarch64-linux-gnu/6.5.0/plugin/include/sel-sched-ir.h" line="1330" id="nullpointer" subid="dereferenceBeforeCheck" severity="Serious" msg="Null - checking [ip.e1] suggests that it may be null, but it has already been dereferenced at line 1292." web_identify="{&quot;identify&quot;:&quot;ip.e1&quot;}" func_info="bool _succ_iter_cond ( succ_iterator * ip , rtx_insn * * succp , rtx_insn * insn , bool check ( edge , succ_iterator * ) )" content="1320: 
+1321:           /* If loop_exits are non null, we have found an inner loop;
+1322: 	     do one more iteration to fetch an edge from these exits.  */
+1323:           if (ip-&gt;loop_exits.exists ())
+1324:             continue;
+1325: 
+1326:           /* Otherwise, we&apos;ve found an edge in a usual way.  Break now.  */
+1327:           break;
+1328:         }
+1329: 
+1330:       if (ip-&gt;e1)
+1331: 	{
+1332: 	  basic_block bb = ip-&gt;e2-&gt;dest;
+1333: 
+1334: 	  if (bb == EXIT_BLOCK_PTR_FOR_FN (cfun) || bb == after_recovery)
+1335: 	    *succp = exit_insn;
+1336: 	  else
+1337: 	    {
+1338:               *succp = sel_bb_head (bb);
+1339: 
+1340:               gcc_assert (ip-&gt;flags != SUCCS_NORMAL
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/iMate/J2AILAB/vendor/horizon/com.hobot.native.hobot-dms/opencv/3.2.0_linux_J2/files/opencv/include/opencv2/core/mat.inl.hpp" line="2387" id="nullpointer" subid="dereferenceAfterCheck" severity="Serious" msg="Comparing [m] to null at line 2386 implies that [m ] might be null.Dereferencing null pointer [m]." web_identify="{&quot;identify&quot;:&quot;m&quot;}" func_info="MatConstIterator::MatConstIterator ( const Mat * _m , int _row , int _col ) : m ( _m ) , elemSize ( _m . elemSize ( ) ) , ptr ( 0 ) , sliceStart ( 0 ) , sliceEnd ( 0 )" content="2377:         sliceEnd = sliceStart + m-&gt;total()*elemSize;
+2378:     }
+2379:     seek((const int*)0);
+2380: }
+2381: 
+2382: inline
+2383: MatConstIterator::MatConstIterator(const Mat* _m, int _row, int _col)
+2384:     : m(_m), elemSize(_m-&gt;elemSize()), ptr(0), sliceStart(0), sliceEnd(0)
+2385: {
+2386:     CV_Assert(m &amp;&amp; m-&gt;dims &lt;= 2);
+2387:     if( m-&gt;isContinuous() )
+2388:     {
+2389:         sliceStart = m-&gt;ptr();
+2390:         sliceEnd = sliceStart + m-&gt;total()*elemSize;
+2391:     }
+2392:     int idx[] = {_row, _col};
+2393:     seek(idx);
+2394: }
+2395: 
+2396: inline
+2397: MatConstIterator::MatConstIterator(const Mat* _m, Point _pt)
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/iMate/J2AILAB/vendor/horizon/com.hobot.native.hobot-dms/opencv/3.2.0_linux_J2/files/opencv/include/opencv2/core/mat.inl.hpp" line="2401" id="nullpointer" subid="dereferenceAfterCheck" severity="Serious" msg="Comparing [m] to null at line 2400 implies that [m ] might be null.Dereferencing null pointer [m]." web_identify="{&quot;identify&quot;:&quot;m&quot;}" func_info="MatConstIterator::MatConstIterator ( const Mat * _m , Point2i _pt ) : m ( _m ) , elemSize ( _m . elemSize ( ) ) , ptr ( 0 ) , sliceStart ( 0 ) , sliceEnd ( 0 )" content="2391:     }
+2392:     int idx[] = {_row, _col};
+2393:     seek(idx);
+2394: }
+2395: 
+2396: inline
+2397: MatConstIterator::MatConstIterator(const Mat* _m, Point _pt)
+2398:     : m(_m), elemSize(_m-&gt;elemSize()), ptr(0), sliceStart(0), sliceEnd(0)
+2399: {
+2400:     CV_Assert(m &amp;&amp; m-&gt;dims &lt;= 2);
+2401:     if( m-&gt;isContinuous() )
+2402:     {
+2403:         sliceStart = m-&gt;ptr();
+2404:         sliceEnd = sliceStart + m-&gt;total()*elemSize;
+2405:     }
+2406:     int idx[] = {_pt.y, _pt.x};
+2407:     seek(idx);
+2408: }
+2409: 
+2410: inline
+2411: MatConstIterator::MatConstIterator(const MatConstIterator&amp; it)
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/iMate/J2AILAB/vendor/horizon/com.hobot.native.hobot-dms/opencv/3.2.0_linux_J2/files/opencv/include/opencv2/core/mat.inl.hpp" line="2882" id="suspicious" subid="autovar" severity="Warning" msg="Reference to auto variable returned." web_identify="{&quot;identify&quot;:&quot;return&quot;}" func_info="SparseMatConstIterator SparseMatConstIterator::operator++ ( int )" content="2872: const SparseMat::Node* SparseMatConstIterator::node() const
+2873: {
+2874:     return (ptr &amp;&amp; m &amp;&amp; m-&gt;hdr) ? (const SparseMat::Node*)(const void*)(ptr - m-&gt;hdr-&gt;valueOffset) : 0;
+2875: }
+2876: 
+2877: inline
+2878: SparseMatConstIterator SparseMatConstIterator::operator ++(int)
+2879: {
+2880:     SparseMatConstIterator it = *this;
+2881:     ++*this;
+2882:     return it;
+2883: }
+2884: 
+2885: inline
+2886: void SparseMatConstIterator::seekEnd()
+2887: {
+2888:     if( m &amp;&amp; m-&gt;hdr )
+2889:     {
+2890:         hashidx = m-&gt;hdr-&gt;hashtab.size();
+2891:         ptr = 0;
+2892:     }
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/iMate/J2AILAB/vendor/horizon/com.hobot.native.hobot-dms/opencv/3.2.0_linux_J2/files/opencv/include/opencv2/flann/allocator.h" line="95" id="uninit" subid="uninitMemberVar" severity="Warning" msg="Member variable &apos;PooledAllocator::loc,&apos; is not initialized in the constructor." web_identify="{&quot;identify&quot;:&quot;PooledAllocator::loc,&quot;}" func_info="cvflann::PooledAllocator" content="85:     int     blocksize;
+86: 
+87: 
+88: public:
+89:     int     usedMemory;
+90:     int     wastedMemory;
+91: 
+92:     /**
+93:         Default constructor. Initializes a new pool.
+94:      */
+95:     PooledAllocator(int blockSize = BLOCKSIZE)
+96:     {
+97:         blocksize = blockSize;
+98:         remaining = 0;
+99:         base = NULL;
+100: 
+101:         usedMemory = 0;
+102:         wastedMemory = 0;
+103:     }
+104: 
+105:     /**
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/iMate/J2AILAB/vendor/horizon/com.hobot.native.hobot-dms/opencv/3.2.0_linux_J2/files/opencv/include/opencv2/flann/flann_base.hpp" line="83" id="memleak" subid="resourceLeak" severity="Warning" msg="Resource leak: fin" web_identify="{&quot;identify&quot;:&quot;fin&quot;}" func_info="" content="73: NNIndex&lt;Distance&gt;* load_saved_index(const Matrix&lt;typename Distance::ElementType&gt;&amp; dataset, const cv::String&amp; filename, Distance distance)
+74: {
+75:     typedef typename Distance::ElementType ElementType;
+76: 
+77:     FILE* fin = fopen(filename.c_str(), &quot;rb&quot;);
+78:     if (fin == NULL) {
+79:         return NULL;
+80:     }
+81:     IndexHeader header = load_header(fin);
+82:     if (header.data_type != Datatype&lt;ElementType&gt;::type()) {
+83:         throw FLANNException(&quot;Datatype of saved index is different than of the one to be created.&quot;);
+84:     }
+85:     if ((size_t(header.rows) != dataset.rows)||(size_t(header.cols) != dataset.cols)) {
+86:         throw FLANNException(&quot;The index saved belongs to a different dataset&quot;);
+87:     }
+88: 
+89:     IndexParams params;
+90:     params[&quot;algorithm&quot;] = header.index_type;
+91:     NNIndex&lt;Distance&gt;* nnIndex = create_index_by_type&lt;Distance&gt;(dataset, params, distance);
+92:     nnIndex-&gt;loadIndex(fin);
+93:     fclose(fin);
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/iMate/J2AILAB/vendor/horizon/com.hobot.native.hobot-dms/opencv/3.2.0_linux_J2/files/opencv/include/opencv2/flann/index_testing.h" line="258" id="bufoverrun" subid="arrayIndexThenCheck" severity="Critical" msg="Array index &apos;pindex&apos; is used before limits check." web_identify="{&quot;identify&quot;:&quot;pindex&quot;}" func_info="&gt; void cvflann::test_index_precisions ( NNIndex &lt; Distance &gt; &amp; index , const Matrix &lt; typename Distance :: ElementType &gt; &amp; inputData , const Matrix &lt; typename Distance :: ElementType &gt; &amp; testData , const Matrix &lt; int &gt; &amp; matches , float * precisions , int precisions_length , const Distance &amp; distance , int nn = 1 , int skipMatches = 0 , float maxTime = 0 )" content="248:     float p1;
+249: 
+250:     float time;
+251:     DistanceType dist;
+252: 
+253:     p2 = search_with_ground_truth(index, inputData, testData, matches, nn, c2, time, dist, distance, skipMatches);
+254: 
+255:     // if precision for 1 run down the tree is already
+256:     // better then some of the requested precisions, then
+257:     // skip those
+258:     while (precisions[pindex]&lt;p2 &amp;&amp; pindex&lt;precisions_length) {
+259:         pindex++;
+260:     }
+261: 
+262:     if (pindex==precisions_length) {
+263:         Logger::info(&quot;Got as close as I can\n&quot;);
+264:         return;
+265:     }
+266: 
+267:     for (int i=pindex; i&lt;precisions_length; ++i) {
+268: 
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/iMate/J2AILAB/vendor/horizon/com.hobot.native.hobot-dms/opencv/3.2.0_linux_J2/files/opencv/include/opencv2/flann/kmeans_index.h" line="1024" id="bufoverrun" subid="arrayIndexThenCheck" severity="Critical" msg="Array index &apos;j&apos; is used before limits check." web_identify="{&quot;identify&quot;:&quot;j&quot;}" func_info="void KMeansIndex::getCenterOrdering ( KMeansNode * node , const typename Distance :: ElementType * q , int * sort_indices )" content="1014:      *
+1015:      * I computes the order in which to traverse the child nodes of a particular node.
+1016:      */
+1017:     void getCenterOrdering(KMeansNodePtr node, const ElementType* q, int* sort_indices)
+1018:     {
+1019:         DistanceType* domain_distances = new DistanceType[branching_];
+1020:         for (int i=0; i&lt;branching_; ++i) {
+1021:             DistanceType dist = distance_(q, node-&gt;childs[i]-&gt;pivot, veclen_);
+1022: 
+1023:             int j=0;
+1024:             while (domain_distances[j]&lt;dist &amp;&amp; j&lt;i) j++;
+1025:             for (int k=i; k&gt;j; --k) {
+1026:                 domain_distances[k] = domain_distances[k-1];
+1027:                 sort_indices[k] = sort_indices[k-1];
+1028:             }
+1029:             domain_distances[j] = dist;
+1030:             sort_indices[j] = i;
+1031:         }
+1032:         delete[] domain_distances;
+1033:     }
+1034: 
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/iMate/J2AILAB/vendor/horizon/com.hobot.native.hobot-dms/opencv/3.2.0_linux_J2/files/opencv/include/opencv2/flann/timer.h" line="60" id="uninit" subid="uninitMemberVar" severity="Warning" msg="Member variable &apos;StartStopTimer::startTime,&apos; is not initialized in the constructor." web_identify="{&quot;identify&quot;:&quot;StartStopTimer::startTime,&quot;}" func_info="cvflann::StartStopTimer" content="50: public:
+51:     /**
+52:      * Value of the timer.
+53:      */
+54:     double value;
+55: 
+56: 
+57:     /**
+58:      * Constructor.
+59:      */
+60:     StartStopTimer()
+61:     {
+62:         reset();
+63:     }
+64: 
+65:     /**
+66:      * Starts the timer.
+67:      */
+68:     void start()
+69:     {
+70:         startTime = cv::getTickCount();
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/iMate/J2AILAB/vendor/horizon/com.hobot.native.hobot-dms/opencv/3.2.0_linux_J2/files/opencv/include/opencv2/stitching/detail/motion_estimators.hpp" line="151" id="uninit" subid="uninitMemberVar" severity="Warning" msg="Member variable &apos;BundleAdjusterBase::num_images_,total_num_matches_,features_,pairwise_matches_,&apos; is not initialized in the constructor." web_identify="{&quot;identify&quot;:&quot;BundleAdjusterBase::num_images_,total_num_matches_,features_,pairwise_matches_,&quot;}" func_info="cv::detail::BundleAdjusterBase" content="141: 
+142:     TermCriteria termCriteria() { return term_criteria_; }
+143:     void setTermCriteria(const TermCriteria&amp; term_criteria) { term_criteria_ = term_criteria; }
+144: 
+145: protected:
+146:     /** @brief Construct a bundle adjuster base instance.
+147: 
+148:     @param num_params_per_cam Number of parameters per camera
+149:     @param num_errs_per_measurement Number of error terms (components) per match
+150:      */
+151:     BundleAdjusterBase(int num_params_per_cam, int num_errs_per_measurement)
+152:         : num_params_per_cam_(num_params_per_cam),
+153:           num_errs_per_measurement_(num_errs_per_measurement)
+154:     {
+155:         setRefinementMask(Mat::ones(3, 3, CV_8U));
+156:         setConfThresh(1.);
+157:         setTermCriteria(TermCriteria(TermCriteria::EPS + TermCriteria::COUNT, 1000, DBL_EPSILON));
+158:     }
+159: 
+160:     // Runs bundle adjustment
+161:     virtual bool estimate(const std::vector&lt;ImageFeatures&gt; &amp;features,
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/iMate/J2AILAB/vendor/horizon/com.hobot.native.hobot-dms/opencv/3.2.0_linux_J2/files/opencv/include/opencv2/videostab/fast_marching.hpp" line="66" id="uninit" subid="uninitMemberVar" severity="Warning" msg="Member variable &apos;FastMarchingMethod::size_,&apos; is not initialized in the constructor." web_identify="{&quot;identify&quot;:&quot;FastMarchingMethod::size_,&quot;}" func_info="cv::videostab::FastMarchingMethod" content="56: //! @addtogroup videostab_marching
+57: //! @{
+58: 
+59: /** @brief Describes the Fast Marching Method implementation.
+60: 
+61:   See http://iwi.eldoc.ub.rug.nl/FILES/root/2004/JGraphToolsTelea/2004JGraphToolsTelea.pdf
+62:  */
+63: class CV_EXPORTS FastMarchingMethod
+64: {
+65: public:
+66:     FastMarchingMethod() : inf_(1e6f) {}
+67: 
+68:     /** @brief Template method that runs the Fast Marching Method.
+69: 
+70:     @param mask Image mask. 0 value indicates that the pixel value must be inpainted, 255 indicates
+71:     that the pixel value is known, other values aren&apos;t acceptable.
+72:     @param inpaint Inpainting functor that overloads void operator ()(int x, int y).
+73:     @return Inpainting functor.
+74:      */
+75:     template &lt;typename Inpaint&gt;
+76:     Inpaint run(const Mat &amp;mask, Inpaint inpaint);
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/iMate/J2AILAB/vendor/saiczone/sw/platform/core/include/system/window.h" line="390" id="uninit" subid="uninitMemberVar" severity="Warning" msg="Member variable &apos;ANativeWindow::oem,setSwapInterval,dequeueBuffer_DEPRECATED,lockBuffer_DEPRECATED,queueBuffer_DEPRECATED,query,perform,cancelBuffer_DEPRECATED,dequeueBuffer,queueBuffer,cancelBuffer,&apos; is not initialized in the constructor." web_identify="{&quot;identify&quot;:&quot;ANativeWindow::oem,setSwapInterval,dequeueBuffer_DEPRECATED,lockBuffer_DEPRECATED,queueBuffer_DEPRECATED,query,perform,cancelBuffer_DEPRECATED,dequeueBuffer,queueBuffer,cancelBuffer,&quot;}" func_info="ANativeWindow" content="380:  *
+381:  * Special timestamp value to indicate that timestamps should be auto-generated
+382:  * by the native window when queueBuffer is called.  This is equal to INT64_MIN,
+383:  * defined directly to avoid problems with C99/C++ inclusion of stdint.h.
+384:  */
+385: static const int64_t NATIVE_WINDOW_TIMESTAMP_AUTO = (-9223372036854775807LL-1);
+386: 
+387: struct ANativeWindow
+388: {
+389: #ifdef __cplusplus
+390:     ANativeWindow()
+391:         : flags(0), minSwapInterval(0), maxSwapInterval(0), xdpi(0), ydpi(0)
+392:     {
+393:         common.magic = ANDROID_NATIVE_WINDOW_MAGIC;
+394:         common.version = sizeof(ANativeWindow);
+395:         memset(common.reserved, 0, sizeof(common.reserved));
+396:     }
+397: 
+398:     /* Implement the methods that sp&lt;ANativeWindow&gt; expects so that it
+399:        can be used to automatically refcount ANativeWindow&apos;s. */
+400:     void incStrong(const void* /*id*/) const {
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/iMate/J2AILAB/vendor/saiczone/sw/platform/core/include/system/window.h" line="91" id="uninit" subid="uninitMemberVar" severity="Warning" msg="Member variable &apos;ANativeWindowBuffer::width,height,stride,format,usage,handle,reserved_proc,&apos; is not initialized in the constructor." web_identify="{&quot;identify&quot;:&quot;ANativeWindowBuffer::width,height,stride,format,usage,handle,reserved_proc,&quot;}" func_info="ANativeWindowBuffer" content="81:     void* reserved[4];
+82: 
+83:     /* reference-counting interface */
+84:     void (*incRef)(struct android_native_base_t* base);
+85:     void (*decRef)(struct android_native_base_t* base);
+86: } android_native_base_t;
+87: 
+88: typedef struct ANativeWindowBuffer
+89: {
+90: #ifdef __cplusplus
+91:     ANativeWindowBuffer() {
+92:         common.magic = ANDROID_NATIVE_BUFFER_MAGIC;
+93:         common.version = sizeof(ANativeWindowBuffer);
+94:         memset(common.reserved, 0, sizeof(common.reserved));
+95:     }
+96: 
+97:     // Implement the methods that sp&lt;ANativeWindowBuffer&gt; expects so that it
+98:     // can be used to automatically refcount ANativeWindowBuffer&apos;s.
+99:     void incStrong(const void* /*id*/) const {
+100:         common.incRef(const_cast&lt;android_native_base_t*&gt;(&amp;common));
+101:     }
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/iMate/J2AILAB/vendor/saiczone/sw/platform/core/include/sysutils/List.h" line="51" id="uninit" subid="uninitMemberVar" severity="Warning" msg="Member variable &apos;_Node::mpPrev,mpNext,&apos; is not initialized in the constructor." web_identify="{&quot;identify&quot;:&quot;_Node::mpPrev,mpNext,&quot;}" func_info="android::sysutils::List::_Node" content="41:  */
+42: template&lt;typename T&gt; 
+43: class List 
+44: {
+45: protected:
+46:     /*
+47:      * One element in the list.
+48:      */
+49:     class _Node {
+50:     public:
+51:         explicit _Node(const T&amp; val) : mVal(val) {}
+52:         ~_Node() {}
+53:         inline T&amp; getRef() { return mVal; }
+54:         inline const T&amp; getRef() const { return mVal; }
+55:         inline _Node* getPrev() const { return mpPrev; }
+56:         inline _Node* getNext() const { return mpNext; }
+57:         inline void setVal(const T&amp; val) { mVal = val; }
+58:         inline void setPrev(_Node* ptr) { mpPrev = ptr; }
+59:         inline void setNext(_Node* ptr) { mpNext = ptr; }
+60:     private:
+61:         friend class List;
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/iMate/J2AILAB/vendor/saiczone/sw/platform/core/include/utils/List.h" line="50" id="uninit" subid="uninitMemberVar" severity="Warning" msg="Member variable &apos;_Node::mpPrev,mpNext,&apos; is not initialized in the constructor." web_identify="{&quot;identify&quot;:&quot;_Node::mpPrev,mpNext,&quot;}" func_info="android::List::_Node" content="40:  */
+41: template&lt;typename T&gt; 
+42: class List 
+43: {
+44: protected:
+45:     /*
+46:      * One element in the list.
+47:      */
+48:     class _Node {
+49:     public:
+50:         explicit _Node(const T&amp; val) : mVal(val) {}
+51:         ~_Node() {}
+52:         inline T&amp; getRef() { return mVal; }
+53:         inline const T&amp; getRef() const { return mVal; }
+54:         inline _Node* getPrev() const { return mpPrev; }
+55:         inline _Node* getNext() const { return mpNext; }
+56:         inline void setVal(const T&amp; val) { mVal = val; }
+57:         inline void setPrev(_Node* ptr) { mpPrev = ptr; }
+58:         inline void setNext(_Node* ptr) { mpNext = ptr; }
+59:     private:
+60:         friend class List;
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/root_gradle/caches/modules-2/files-2.1/com.hobot.native.hobot-dms/opencv/3.2.0_linux_J2/files/opencv/include/opencv2/core/mat.inl.hpp" line="2387" id="nullpointer" subid="dereferenceAfterCheck" severity="Serious" msg="Comparing [m] to null at line 2386 implies that [m ] might be null.Dereferencing null pointer [m]." web_identify="{&quot;identify&quot;:&quot;m&quot;}" func_info="MatConstIterator::MatConstIterator ( const Mat * _m , int _row , int _col ) : m ( _m ) , elemSize ( _m . elemSize ( ) ) , ptr ( 0 ) , sliceStart ( 0 ) , sliceEnd ( 0 )" content="2377:         sliceEnd = sliceStart + m-&gt;total()*elemSize;
+2378:     }
+2379:     seek((const int*)0);
+2380: }
+2381: 
+2382: inline
+2383: MatConstIterator::MatConstIterator(const Mat* _m, int _row, int _col)
+2384:     : m(_m), elemSize(_m-&gt;elemSize()), ptr(0), sliceStart(0), sliceEnd(0)
+2385: {
+2386:     CV_Assert(m &amp;&amp; m-&gt;dims &lt;= 2);
+2387:     if( m-&gt;isContinuous() )
+2388:     {
+2389:         sliceStart = m-&gt;ptr();
+2390:         sliceEnd = sliceStart + m-&gt;total()*elemSize;
+2391:     }
+2392:     int idx[] = {_row, _col};
+2393:     seek(idx);
+2394: }
+2395: 
+2396: inline
+2397: MatConstIterator::MatConstIterator(const Mat* _m, Point _pt)
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/root_gradle/caches/modules-2/files-2.1/com.hobot.native.hobot-dms/opencv/3.2.0_linux_J2/files/opencv/include/opencv2/core/mat.inl.hpp" line="2401" id="nullpointer" subid="dereferenceAfterCheck" severity="Serious" msg="Comparing [m] to null at line 2400 implies that [m ] might be null.Dereferencing null pointer [m]." web_identify="{&quot;identify&quot;:&quot;m&quot;}" func_info="MatConstIterator::MatConstIterator ( const Mat * _m , Point2i _pt ) : m ( _m ) , elemSize ( _m . elemSize ( ) ) , ptr ( 0 ) , sliceStart ( 0 ) , sliceEnd ( 0 )" content="2391:     }
+2392:     int idx[] = {_row, _col};
+2393:     seek(idx);
+2394: }
+2395: 
+2396: inline
+2397: MatConstIterator::MatConstIterator(const Mat* _m, Point _pt)
+2398:     : m(_m), elemSize(_m-&gt;elemSize()), ptr(0), sliceStart(0), sliceEnd(0)
+2399: {
+2400:     CV_Assert(m &amp;&amp; m-&gt;dims &lt;= 2);
+2401:     if( m-&gt;isContinuous() )
+2402:     {
+2403:         sliceStart = m-&gt;ptr();
+2404:         sliceEnd = sliceStart + m-&gt;total()*elemSize;
+2405:     }
+2406:     int idx[] = {_pt.y, _pt.x};
+2407:     seek(idx);
+2408: }
+2409: 
+2410: inline
+2411: MatConstIterator::MatConstIterator(const MatConstIterator&amp; it)
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/root_gradle/caches/modules-2/files-2.1/com.hobot.native.hobot-dms/opencv/3.2.0_linux_J2/files/opencv/include/opencv2/core/mat.inl.hpp" line="2882" id="suspicious" subid="autovar" severity="Warning" msg="Reference to auto variable returned." web_identify="{&quot;identify&quot;:&quot;return&quot;}" func_info="SparseMatConstIterator SparseMatConstIterator::operator++ ( int )" content="2872: const SparseMat::Node* SparseMatConstIterator::node() const
+2873: {
+2874:     return (ptr &amp;&amp; m &amp;&amp; m-&gt;hdr) ? (const SparseMat::Node*)(const void*)(ptr - m-&gt;hdr-&gt;valueOffset) : 0;
+2875: }
+2876: 
+2877: inline
+2878: SparseMatConstIterator SparseMatConstIterator::operator ++(int)
+2879: {
+2880:     SparseMatConstIterator it = *this;
+2881:     ++*this;
+2882:     return it;
+2883: }
+2884: 
+2885: inline
+2886: void SparseMatConstIterator::seekEnd()
+2887: {
+2888:     if( m &amp;&amp; m-&gt;hdr )
+2889:     {
+2890:         hashidx = m-&gt;hdr-&gt;hashtab.size();
+2891:         ptr = 0;
+2892:     }
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/root_gradle/caches/modules-2/files-2.1/com.hobot.native.hobot-dms/opencv/3.2.0_linux_J2/files/opencv/include/opencv2/flann/allocator.h" line="95" id="uninit" subid="uninitMemberVar" severity="Warning" msg="Member variable &apos;PooledAllocator::loc,&apos; is not initialized in the constructor." web_identify="{&quot;identify&quot;:&quot;PooledAllocator::loc,&quot;}" func_info="cvflann::PooledAllocator" content="85:     int     blocksize;
+86: 
+87: 
+88: public:
+89:     int     usedMemory;
+90:     int     wastedMemory;
+91: 
+92:     /**
+93:         Default constructor. Initializes a new pool.
+94:      */
+95:     PooledAllocator(int blockSize = BLOCKSIZE)
+96:     {
+97:         blocksize = blockSize;
+98:         remaining = 0;
+99:         base = NULL;
+100: 
+101:         usedMemory = 0;
+102:         wastedMemory = 0;
+103:     }
+104: 
+105:     /**
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/root_gradle/caches/modules-2/files-2.1/com.hobot.native.hobot-dms/opencv/3.2.0_linux_J2/files/opencv/include/opencv2/flann/flann_base.hpp" line="83" id="memleak" subid="resourceLeak" severity="Warning" msg="Resource leak: fin" web_identify="{&quot;identify&quot;:&quot;fin&quot;}" func_info="" content="73: NNIndex&lt;Distance&gt;* load_saved_index(const Matrix&lt;typename Distance::ElementType&gt;&amp; dataset, const cv::String&amp; filename, Distance distance)
+74: {
+75:     typedef typename Distance::ElementType ElementType;
+76: 
+77:     FILE* fin = fopen(filename.c_str(), &quot;rb&quot;);
+78:     if (fin == NULL) {
+79:         return NULL;
+80:     }
+81:     IndexHeader header = load_header(fin);
+82:     if (header.data_type != Datatype&lt;ElementType&gt;::type()) {
+83:         throw FLANNException(&quot;Datatype of saved index is different than of the one to be created.&quot;);
+84:     }
+85:     if ((size_t(header.rows) != dataset.rows)||(size_t(header.cols) != dataset.cols)) {
+86:         throw FLANNException(&quot;The index saved belongs to a different dataset&quot;);
+87:     }
+88: 
+89:     IndexParams params;
+90:     params[&quot;algorithm&quot;] = header.index_type;
+91:     NNIndex&lt;Distance&gt;* nnIndex = create_index_by_type&lt;Distance&gt;(dataset, params, distance);
+92:     nnIndex-&gt;loadIndex(fin);
+93:     fclose(fin);
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/root_gradle/caches/modules-2/files-2.1/com.hobot.native.hobot-dms/opencv/3.2.0_linux_J2/files/opencv/include/opencv2/flann/index_testing.h" line="258" id="bufoverrun" subid="arrayIndexThenCheck" severity="Critical" msg="Array index &apos;pindex&apos; is used before limits check." web_identify="{&quot;identify&quot;:&quot;pindex&quot;}" func_info="&gt; void cvflann::test_index_precisions ( NNIndex &lt; Distance &gt; &amp; index , const Matrix &lt; typename Distance :: ElementType &gt; &amp; inputData , const Matrix &lt; typename Distance :: ElementType &gt; &amp; testData , const Matrix &lt; int &gt; &amp; matches , float * precisions , int precisions_length , const Distance &amp; distance , int nn = 1 , int skipMatches = 0 , float maxTime = 0 )" content="248:     float p1;
+249: 
+250:     float time;
+251:     DistanceType dist;
+252: 
+253:     p2 = search_with_ground_truth(index, inputData, testData, matches, nn, c2, time, dist, distance, skipMatches);
+254: 
+255:     // if precision for 1 run down the tree is already
+256:     // better then some of the requested precisions, then
+257:     // skip those
+258:     while (precisions[pindex]&lt;p2 &amp;&amp; pindex&lt;precisions_length) {
+259:         pindex++;
+260:     }
+261: 
+262:     if (pindex==precisions_length) {
+263:         Logger::info(&quot;Got as close as I can\n&quot;);
+264:         return;
+265:     }
+266: 
+267:     for (int i=pindex; i&lt;precisions_length; ++i) {
+268: 
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/root_gradle/caches/modules-2/files-2.1/com.hobot.native.hobot-dms/opencv/3.2.0_linux_J2/files/opencv/include/opencv2/flann/kmeans_index.h" line="1024" id="bufoverrun" subid="arrayIndexThenCheck" severity="Critical" msg="Array index &apos;j&apos; is used before limits check." web_identify="{&quot;identify&quot;:&quot;j&quot;}" func_info="void KMeansIndex::getCenterOrdering ( KMeansNode * node , const typename Distance :: ElementType * q , int * sort_indices )" content="1014:      *
+1015:      * I computes the order in which to traverse the child nodes of a particular node.
+1016:      */
+1017:     void getCenterOrdering(KMeansNodePtr node, const ElementType* q, int* sort_indices)
+1018:     {
+1019:         DistanceType* domain_distances = new DistanceType[branching_];
+1020:         for (int i=0; i&lt;branching_; ++i) {
+1021:             DistanceType dist = distance_(q, node-&gt;childs[i]-&gt;pivot, veclen_);
+1022: 
+1023:             int j=0;
+1024:             while (domain_distances[j]&lt;dist &amp;&amp; j&lt;i) j++;
+1025:             for (int k=i; k&gt;j; --k) {
+1026:                 domain_distances[k] = domain_distances[k-1];
+1027:                 sort_indices[k] = sort_indices[k-1];
+1028:             }
+1029:             domain_distances[j] = dist;
+1030:             sort_indices[j] = i;
+1031:         }
+1032:         delete[] domain_distances;
+1033:     }
+1034: 
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/root_gradle/caches/modules-2/files-2.1/com.hobot.native.hobot-dms/opencv/3.2.0_linux_J2/files/opencv/include/opencv2/flann/timer.h" line="60" id="uninit" subid="uninitMemberVar" severity="Warning" msg="Member variable &apos;StartStopTimer::startTime,&apos; is not initialized in the constructor." web_identify="{&quot;identify&quot;:&quot;StartStopTimer::startTime,&quot;}" func_info="cvflann::StartStopTimer" content="50: public:
+51:     /**
+52:      * Value of the timer.
+53:      */
+54:     double value;
+55: 
+56: 
+57:     /**
+58:      * Constructor.
+59:      */
+60:     StartStopTimer()
+61:     {
+62:         reset();
+63:     }
+64: 
+65:     /**
+66:      * Starts the timer.
+67:      */
+68:     void start()
+69:     {
+70:         startTime = cv::getTickCount();
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/root_gradle/caches/modules-2/files-2.1/com.hobot.native.hobot-dms/opencv/3.2.0_linux_J2/files/opencv/include/opencv2/stitching/detail/motion_estimators.hpp" line="151" id="uninit" subid="uninitMemberVar" severity="Warning" msg="Member variable &apos;BundleAdjusterBase::num_images_,total_num_matches_,features_,pairwise_matches_,&apos; is not initialized in the constructor." web_identify="{&quot;identify&quot;:&quot;BundleAdjusterBase::num_images_,total_num_matches_,features_,pairwise_matches_,&quot;}" func_info="cv::detail::BundleAdjusterBase" content="141: 
+142:     TermCriteria termCriteria() { return term_criteria_; }
+143:     void setTermCriteria(const TermCriteria&amp; term_criteria) { term_criteria_ = term_criteria; }
+144: 
+145: protected:
+146:     /** @brief Construct a bundle adjuster base instance.
+147: 
+148:     @param num_params_per_cam Number of parameters per camera
+149:     @param num_errs_per_measurement Number of error terms (components) per match
+150:      */
+151:     BundleAdjusterBase(int num_params_per_cam, int num_errs_per_measurement)
+152:         : num_params_per_cam_(num_params_per_cam),
+153:           num_errs_per_measurement_(num_errs_per_measurement)
+154:     {
+155:         setRefinementMask(Mat::ones(3, 3, CV_8U));
+156:         setConfThresh(1.);
+157:         setTermCriteria(TermCriteria(TermCriteria::EPS + TermCriteria::COUNT, 1000, DBL_EPSILON));
+158:     }
+159: 
+160:     // Runs bundle adjustment
+161:     virtual bool estimate(const std::vector&lt;ImageFeatures&gt; &amp;features,
+"/>
+    <error file="/home/app/repository/gitlab/saicv/dms-postprocess-ep33-dev-dual_1080p_duplicate_fdse-6/root_gradle/caches/modules-2/files-2.1/com.hobot.native.hobot-dms/opencv/3.2.0_linux_J2/files/opencv/include/opencv2/videostab/fast_marching.hpp" line="66" id="uninit" subid="uninitMemberVar" severity="Warning" msg="Member variable &apos;FastMarchingMethod::size_,&apos; is not initialized in the constructor." web_identify="{&quot;identify&quot;:&quot;FastMarchingMethod::size_,&quot;}" func_info="cv::videostab::FastMarchingMethod" content="56: //! @addtogroup videostab_marching
+57: //! @{
+58: 
+59: /** @brief Describes the Fast Marching Method implementation.
+60: 
+61:   See http://iwi.eldoc.ub.rug.nl/FILES/root/2004/JGraphToolsTelea/2004JGraphToolsTelea.pdf
+62:  */
+63: class CV_EXPORTS FastMarchingMethod
+64: {
+65: public:
+66:     FastMarchingMethod() : inf_(1e6f) {}
+67: 
+68:     /** @brief Template method that runs the Fast Marching Method.
+69: 
+70:     @param mask Image mask. 0 value indicates that the pixel value must be inpainted, 255 indicates
+71:     that the pixel value is known, other values aren&apos;t acceptable.
+72:     @param inpaint Inpainting functor that overloads void operator ()(int x, int y).
+73:     @return Inpainting functor.
+74:      */
+75:     template &lt;typename Inpaint&gt;
+76:     Inpaint run(const Mat &amp;mask, Inpaint inpaint);
+"/>
+
+</results>
