@@ -76,6 +76,7 @@ public class CppCodeAnalyzer extends BaseAnalyzer{
                 .memberList(memberList)
                 .globalParameterList(listener.getGlobalParameterList())
                 .absolutePath(file)
+                .enumList(listener.getEnumList())
                 .build();
 
 
@@ -97,9 +98,32 @@ public class CppCodeAnalyzer extends BaseAnalyzer{
 
 
     public static void main(String[] args) throws IOException {
-        String fileName = "/Users/keyon/Documents/bigDataPlatform/cppFiles/bloom.h";
+
+        String fileName = "/Users/keyon/Documents/bigDataPlatform/cppFiles/b.cpp";
         FileInfo fileInfo = CppCodeAnalyzer.parseFile(fileName);
+
+
         System.out.println(CppCodeAnalyzer.parseFileTree(fileName));
+
+        System.out.println("MethodInfo is : {");
+        for (MethodInfo methodInfo : fileInfo.getMethodInfoList()) {
+            System.out.println("  " + methodInfo.getMethodName());
+            System.out.println("  " + methodInfo.getMethodParameter());
+            System.out.println(" start: " + methodInfo.getStartPosition() + " end : " + methodInfo.getEndPosition());
+            System.out.println();
+        }
+        System.out.println("}");
+        System.out.println();
+        System.out.println("GlobalInfo is : {");
+        for (ParameterPair parameterPair : fileInfo.getGlobalParameterList()) {
+            System.out.println("  " + parameterPair.getSpecifier());
+            System.out.println("  " + parameterPair.getParameterName());
+            System.out.println(" start: " + parameterPair.getStartPosition() + " end : " + parameterPair.getEndPosition());
+            System.out.println();
+        }
+
+        System.out.println(fileInfo.getMemberList());
+
     }
 
 }
