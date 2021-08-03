@@ -54,6 +54,10 @@ public class CppExtractListener extends CPP14ParserBaseListener{
             // 此时确定为全局变量，获取全局变量信息
             String specifier = getSpecifier(declSpecifierSeqContext);
             CPP14Parser.InitDeclaratorListContext initDeclaratorListContext = ctx.initDeclaratorList();
+            // 类似于 class COutPoint; 这一结构，需要特判 initDeclaratorList 是否为 null
+            if (initDeclaratorListContext == null) {
+                return;
+            }
             for (CPP14Parser.InitDeclaratorContext initDeclaratorContext : initDeclaratorListContext.initDeclarator()) {
                 ParameterPair parameterPair = new ParameterPair();
                 String declarator = tokenStream.getText(initDeclaratorContext.declarator());
@@ -66,6 +70,7 @@ public class CppExtractListener extends CPP14ParserBaseListener{
         }
 
     }
+
 
     @Override
     public void enterFunctionDefinition(CPP14Parser.FunctionDefinitionContext ctx) {
@@ -93,10 +98,11 @@ public class CppExtractListener extends CPP14ParserBaseListener{
                 CPP14Parser.IdExpressionContext idExpressionContext = noPointerDeclaratorContext.noPointerDeclarator().declaratorid().idExpression();
                 if (idExpressionContext.unqualifiedId() != null) {
                     methodName = tokenStream.getText(idExpressionContext.unqualifiedId());
-                    methodInfo.setMethodName(methodName);
                 }else {
-                    // todo 处理有修饰符的情况
+                    // 型如 void CoinControlDialog::setModel ，有分域操作符时特殊处理
+                    methodName = tokenStream.getText(idExpressionContext.qualifiedId().unqualifiedId());
                 }
+                methodInfo.setMethodName(methodName);
                 // 获取参数
                 CPP14Parser.ParametersAndQualifiersContext parametersAndQualifiersContext = noPointerDeclaratorContext.parametersAndQualifiers();
                 CPP14Parser.ParameterDeclarationClauseContext parameterDeclarationClauseContext = parametersAndQualifiersContext.parameterDeclarationClause();
@@ -191,9 +197,11 @@ public class CppExtractListener extends CPP14ParserBaseListener{
         // 目前简单表达式修饰符类型只考虑了 typeSpecifier
         CPP14Parser.TypeSpecifierContext typeSpecifierContext = declSpecifierContext.typeSpecifier();
         if (typeSpecifierContext != null) {
-            return typeSpecifierContext.classSpecifier() == null;
+            // 若是类修饰和枚举修饰则代表不是全局变量
+            return typeSpecifierContext.classSpecifier() == null && typeSpecifierContext.enumSpecifier() == null;
         }
-        return false;
+        // warning  不清楚是否有 static class 这种类声明，若有则需要继续区分之后的修饰符是否包含 类或枚举 修饰
+        return true;
     }
 
     private String getSpecifier(CPP14Parser.DeclSpecifierSeqContext declSpecifierSeqContext) {
