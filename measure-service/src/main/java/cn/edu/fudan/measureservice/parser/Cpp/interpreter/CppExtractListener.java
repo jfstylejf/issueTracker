@@ -31,6 +31,8 @@ public class CppExtractListener extends CPP14ParserBaseListener{
 
     List<ParameterPair> globalParameterList = new ArrayList<>();
 
+    List<ParameterPair> enumList = new ArrayList<>();
+
     public CppExtractListener(CPP14Parser parser) {
         this.parser = parser;
         tokenStream = parser.getTokenStream();
@@ -46,26 +48,25 @@ public class CppExtractListener extends CPP14ParserBaseListener{
         }
         CPP14Parser.DeclSpecifierSeqContext declSpecifierSeqContext = ctx.declSpecifierSeq();
         if (declSpecifierSeqContext != null) {
-            Boolean flag = isGlobalDefinitionOrNot(declSpecifierSeqContext);
-            if (!flag) {
-                // 若非全局变量则直接退出
-                return;
+            //判断是类声明或者枚举类声明还是全局变量
+            int flag = isGlobalDefinitionOrEnum(declSpecifierSeqContext);
+            if (flag == 0) {
+                // 若是类声明则直接退出
+               return;
             }
-            // 此时确定为全局变量，获取全局变量信息
-            String specifier = getSpecifier(declSpecifierSeqContext);
-            CPP14Parser.InitDeclaratorListContext initDeclaratorListContext = ctx.initDeclaratorList();
-            for (CPP14Parser.InitDeclaratorContext initDeclaratorContext : initDeclaratorListContext.initDeclarator()) {
-                ParameterPair parameterPair = new ParameterPair();
-                String declarator = tokenStream.getText(initDeclaratorContext.declarator());
-                parameterPair.setSpecifier(specifier);
-                parameterPair.setParameterName(declarator);
-                parameterPair.setStartPosition(ctx.start.getLine());
-                parameterPair.setEndPosition(ctx.stop.getLine());
-                globalParameterList.add(parameterPair);
+            else if(flag ==1){
+                //枚举类型变量
+                getEnum(ctx);
             }
-        }
+            else{
+                // 此时确定为全局变量，获取全局变量信息
+                getGlobalParameter(ctx);
+            }
 
+
+        }
     }
+
 
     @Override
     public void enterFunctionDefinition(CPP14Parser.FunctionDefinitionContext ctx) {
@@ -93,10 +94,13 @@ public class CppExtractListener extends CPP14ParserBaseListener{
                 CPP14Parser.IdExpressionContext idExpressionContext = noPointerDeclaratorContext.noPointerDeclarator().declaratorid().idExpression();
                 if (idExpressionContext.unqualifiedId() != null) {
                     methodName = tokenStream.getText(idExpressionContext.unqualifiedId());
-                    methodInfo.setMethodName(methodName);
+
                 }else {
-                    // todo 处理有修饰符的情况
+                    // 型如 void CoinControlDialog::setModel ，有分域操作符时特殊处理
+                    methodName = tokenStream.getText(idExpressionContext.qualifiedId().unqualifiedId());
                 }
+                methodInfo.setMethodName(methodName);
+
                 // 获取参数
                 CPP14Parser.ParametersAndQualifiersContext parametersAndQualifiersContext = noPointerDeclaratorContext.parametersAndQualifiers();
                 CPP14Parser.ParameterDeclarationClauseContext parameterDeclarationClauseContext = parametersAndQualifiersContext.parameterDeclarationClause();
@@ -149,6 +153,7 @@ public class CppExtractListener extends CPP14ParserBaseListener{
     }
 
 
+
     /**
      * 获取成员变量
      * @param ctx
@@ -163,7 +168,8 @@ public class CppExtractListener extends CPP14ParserBaseListener{
            specifier = getSpecifier(declSpecifierSeqContext);
         }
         CPP14Parser.MemberDeclaratorListContext memberDeclaratorListContext = ctx.memberDeclaratorList();
-        if (memberDeclaratorListContext != null) {
+
+        if(memberDeclaratorListContext != null){
             List<CPP14Parser.MemberDeclaratorContext> memberDeclaratorContexts = memberDeclaratorListContext.memberDeclarator();
             for (CPP14Parser.MemberDeclaratorContext memberDeclaratorContext : memberDeclaratorContexts) {
                 // 获取加成员变量相关信息
@@ -178,22 +184,32 @@ public class CppExtractListener extends CPP14ParserBaseListener{
         }
 
 
+
     }
 
     /**
-     * 判段是否是全局变量，若为类声明则有 classSpecifier 的形式
+     * 判段是否是全局变量或者枚举类，或者类声明，若为类声明则有 classSpecifier 的形式，枚举类则是形式
+     * 类声明则返回0
+     * 枚举类返回1
+     * 全局变量返回2
      * @param declSpecifierSeqContext
      * @return
      */
-    private Boolean isGlobalDefinitionOrNot(CPP14Parser.DeclSpecifierSeqContext declSpecifierSeqContext) {
+    private int isGlobalDefinitionOrEnum(CPP14Parser.DeclSpecifierSeqContext declSpecifierSeqContext) {
         Objects.requireNonNull(declSpecifierSeqContext);
         CPP14Parser.DeclSpecifierContext declSpecifierContext = declSpecifierSeqContext.declSpecifier(0);
         // 目前简单表达式修饰符类型只考虑了 typeSpecifier
         CPP14Parser.TypeSpecifierContext typeSpecifierContext = declSpecifierContext.typeSpecifier();
         if (typeSpecifierContext != null) {
-            return typeSpecifierContext.classSpecifier() == null;
+            // 若是类修饰和枚举修饰则代表不是全局变量
+            if(typeSpecifierContext.classSpecifier() != null)
+                return 0;
+            else if(typeSpecifierContext.enumSpecifier() != null)
+                return 1;
+            else return 2;
         }
-        return false;
+        // warning  不清楚是否有 static class 这种类声明，若有则需要继续区分之后的修饰符是否包含 类或枚举 修饰
+        return 0;
     }
 
     private String getSpecifier(CPP14Parser.DeclSpecifierSeqContext declSpecifierSeqContext) {
@@ -206,6 +222,71 @@ public class CppExtractListener extends CPP14ParserBaseListener{
         }
         return sb.toString();
     }
+
+    /**
+     * 通过SimpleDeclaration获取到枚举类变量存入enumList
+     * @param ctx
+     */
+    private void getEnum(CPP14Parser.SimpleDeclarationContext ctx){
+        CPP14Parser.TypeSpecifierContext typeSpecifierContext = ctx.declSpecifierSeq().declSpecifier(0).typeSpecifier();
+        CPP14Parser.EnumSpecifierContext enumSpecifier = typeSpecifierContext.enumSpecifier();
+        if (enumSpecifier != null) {
+
+            CPP14Parser.EnumeratorListContext enumeratorListContext = enumSpecifier.enumeratorList();
+            if (enumeratorListContext != null) {
+                for (CPP14Parser.EnumeratorDefinitionContext enumeratorDefinitionContext : enumeratorListContext.enumeratorDefinition()) {
+                    ParameterPair parameterPair = new ParameterPair();
+                    String enumerator = tokenStream.getText(enumeratorDefinitionContext.enumerator());
+                    //parameterPair.setSpecifier(specifier);
+                    parameterPair.setParameterName(enumerator);
+                    parameterPair.setStartPosition(enumeratorDefinitionContext.start.getLine());
+                    parameterPair.setEndPosition(enumeratorDefinitionContext.start.getLine());
+                    enumList.add(parameterPair);
+
+                }
+            }
+        }
+    }
+
+    /**
+     * 通过SimpleDeclaration获取到全局变量存入globalParameterList
+     * @param ctx
+     */
+    private void getGlobalParameter(CPP14Parser.SimpleDeclarationContext ctx){
+        CPP14Parser.DeclSpecifierSeqContext declSpecifierSeqContext= ctx.declSpecifierSeq();
+        String specifier = getSpecifier(declSpecifierSeqContext);
+        CPP14Parser.InitDeclaratorListContext initDeclaratorListContext = ctx.initDeclaratorList();
+
+        if (initDeclaratorListContext != null) {
+            for (CPP14Parser.InitDeclaratorContext initDeclaratorContext : initDeclaratorListContext.initDeclarator()) {
+                ParameterPair parameterPair = new ParameterPair();
+                String declarator = tokenStream.getText(initDeclaratorContext.declarator());
+                parameterPair.setSpecifier(specifier);
+                parameterPair.setParameterName(declarator);
+                parameterPair.setStartPosition(ctx.start.getLine());
+                parameterPair.setEndPosition(ctx.stop.getLine());
+                globalParameterList.add(parameterPair);
+            }
+
+            // 类似于 class COutPoint; 这一结构，需要特判 initDeclaratorList 是否为 null
+            if (initDeclaratorListContext == null) {
+                return;
+            }
+            for (CPP14Parser.InitDeclaratorContext initDeclaratorContext : initDeclaratorListContext.initDeclarator()) {
+                ParameterPair parameterPair = new ParameterPair();
+                String declarator = tokenStream.getText(initDeclaratorContext.declarator());
+                parameterPair.setSpecifier(specifier);
+                parameterPair.setParameterName(declarator);
+                parameterPair.setStartPosition(ctx.start.getLine());
+                parameterPair.setEndPosition(ctx.stop.getLine());
+                globalParameterList.add(parameterPair);
+
+            }
+
+        }
+    }
+
+
 
 
 

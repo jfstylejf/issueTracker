@@ -1,4 +1,4 @@
-// Generated from C:/work/IssueTracker-Master/measure-service/src/main/java/cn/edu/fudan/measureservice/parser/Cpp\CPP14Lexer.g4 by ANTLR 4.9.1
+// Generated from /Users/keyon/Documents/bigDataPlatform/IssueTracker-Master/measure-service/src/main/java/cn/edu/fudan/measureservice/parser/Cpp/CPP14Lexer.g4 by ANTLR 4.9.1
 package cn.edu.fudan.measureservice.parser.Cpp;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.CharStream;
