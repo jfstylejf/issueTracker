@@ -54,15 +54,40 @@ public class CppExtractListener extends CPP14ParserBaseListener{
             // 此时确定为全局变量，获取全局变量信息
             String specifier = getSpecifier(declSpecifierSeqContext);
             CPP14Parser.InitDeclaratorListContext initDeclaratorListContext = ctx.initDeclaratorList();
-            for (CPP14Parser.InitDeclaratorContext initDeclaratorContext : initDeclaratorListContext.initDeclarator()) {
-                ParameterPair parameterPair = new ParameterPair();
-                String declarator = tokenStream.getText(initDeclaratorContext.declarator());
-                parameterPair.setSpecifier(specifier);
-                parameterPair.setParameterName(declarator);
-                parameterPair.setStartPosition(ctx.start.getLine());
-                parameterPair.setEndPosition(ctx.stop.getLine());
-                globalParameterList.add(parameterPair);
+            if(initDeclaratorListContext != null){
+                for (CPP14Parser.InitDeclaratorContext initDeclaratorContext : initDeclaratorListContext.initDeclarator()) {
+                    ParameterPair parameterPair = new ParameterPair();
+                    String declarator = tokenStream.getText(initDeclaratorContext.declarator());
+                    parameterPair.setSpecifier(specifier);
+                    parameterPair.setParameterName(declarator);
+                    parameterPair.setStartPosition(ctx.start.getLine());
+                    parameterPair.setEndPosition(ctx.stop.getLine());
+                    globalParameterList.add(parameterPair);
+                }
             }
+
+            //枚举类型变量
+            CPP14Parser.TypeSpecifierContext typeSpecifierContext = ctx.declSpecifierSeq().declSpecifier(0).typeSpecifier();
+            CPP14Parser.EnumSpecifierContext enumSpecifier = typeSpecifierContext.enumSpecifier();
+            if(enumSpecifier != null){
+
+                CPP14Parser.EnumeratorListContext enumeratorListContext= enumSpecifier.enumeratorList();
+                if(enumeratorListContext != null){
+                    for(CPP14Parser.EnumeratorDefinitionContext enumeratorDefinitionContext : enumeratorListContext.enumeratorDefinition()) {
+                        ParameterPair parameterPair = new ParameterPair();
+                        String enumerator = tokenStream.getText(enumeratorDefinitionContext.enumerator());
+                        //parameterPair.setSpecifier(specifier);
+                        parameterPair.setParameterName(enumerator);
+                        parameterPair.setStartPosition(enumeratorDefinitionContext.start.getLine());
+                        parameterPair.setEndPosition(enumeratorDefinitionContext.start.getLine());
+                        memberList.add(parameterPair);
+
+                    }
+                }
+            }
+
+
+
         }
 
     }
@@ -94,9 +119,12 @@ public class CppExtractListener extends CPP14ParserBaseListener{
                 if (idExpressionContext.unqualifiedId() != null) {
                     methodName = tokenStream.getText(idExpressionContext.unqualifiedId());
                     methodInfo.setMethodName(methodName);
-                }else {
-                    // todo 处理有修饰符的情况
                 }
+                //使用双冒号定义的方法
+                else if(idExpressionContext.qualifiedId() != null){
+                    methodName = tokenStream.getText(idExpressionContext.qualifiedId().unqualifiedId());
+                    methodInfo.setMethodName(methodName);
+                }// todo 处理有修饰符的情况
                 // 获取参数
                 CPP14Parser.ParametersAndQualifiersContext parametersAndQualifiersContext = noPointerDeclaratorContext.parametersAndQualifiers();
                 CPP14Parser.ParameterDeclarationClauseContext parameterDeclarationClauseContext = parametersAndQualifiersContext.parameterDeclarationClause();
@@ -149,6 +177,7 @@ public class CppExtractListener extends CPP14ParserBaseListener{
     }
 
 
+
     /**
      * 获取成员变量
      * @param ctx
@@ -163,7 +192,8 @@ public class CppExtractListener extends CPP14ParserBaseListener{
            specifier = getSpecifier(declSpecifierSeqContext);
         }
         CPP14Parser.MemberDeclaratorListContext memberDeclaratorListContext = ctx.memberDeclaratorList();
-        if (memberDeclaratorListContext != null) {
+
+        if(memberDeclaratorListContext != null){
             List<CPP14Parser.MemberDeclaratorContext> memberDeclaratorContexts = memberDeclaratorListContext.memberDeclarator();
             for (CPP14Parser.MemberDeclaratorContext memberDeclaratorContext : memberDeclaratorContexts) {
                 // 获取加成员变量相关信息
@@ -176,6 +206,7 @@ public class CppExtractListener extends CPP14ParserBaseListener{
                 memberList.add(parameterPair);
             }
         }
+
 
 
     }

@@ -78,6 +78,7 @@ public class CppCodeAnalyzer extends BaseAnalyzer{
                 .absolutePath(file)
                 .build();
 
+
         return fileInfo;
 
     }
@@ -96,7 +97,7 @@ public class CppCodeAnalyzer extends BaseAnalyzer{
 
 
     public static void main(String[] args) throws IOException {
-        String fileName = "C:\\Users\\wjzho\\Desktop\\test3.cpp";
+        String fileName = "/Users/keyon/Documents/bigDataPlatform/cppFiles/bloom.h";
         FileInfo fileInfo = CppCodeAnalyzer.parseFile(fileName);
         System.out.println(CppCodeAnalyzer.parseFileTree(fileName));
     }
