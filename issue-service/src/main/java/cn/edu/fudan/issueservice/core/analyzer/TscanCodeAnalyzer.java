@@ -1,13 +1,9 @@
 package cn.edu.fudan.issueservice.core.analyzer;
 
 import cn.edu.fudan.common.jgit.JGitHelper;
-import cn.edu.fudan.issueservice.core.parser.cpp.CppCodeAnalyzer;
 import cn.edu.fudan.issueservice.dao.CommitDao;
 import cn.edu.fudan.issueservice.domain.dbo.Location;
 import cn.edu.fudan.issueservice.domain.dbo.RawIssue;
-import cn.edu.fudan.issueservice.domain.dto.FileInfo;
-import cn.edu.fudan.issueservice.domain.dto.MethodInfo;
-import cn.edu.fudan.issueservice.domain.dto.ParameterPair;
 import cn.edu.fudan.issueservice.domain.dto.XmlError;
 import cn.edu.fudan.issueservice.domain.enums.ToolEnum;
 import cn.edu.fudan.issueservice.util.AstUtil;
@@ -15,6 +11,10 @@ import cn.edu.fudan.issueservice.util.FileUtil;
 import cn.edu.fudan.issueservice.util.ShUtil;
 import cn.edu.fudan.issueservice.util.XmlUtil;
 import cn.edu.fudan.issueservice.domain.enums.IssuePriorityEnums.CppIssuePriorityEnum;
+import cn.edu.fudan.measureservice.core.process.CppCodeAnalyzer;
+import cn.edu.fudan.measureservice.domain.dto.FileInfo;
+import cn.edu.fudan.measureservice.domain.dto.MethodInfo;
+import cn.edu.fudan.measureservice.domain.dto.ParameterPair;
 import lombok.extern.slf4j.Slf4j;
 import org.jdom2.JDOMException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,10 +82,12 @@ public class TscanCodeAnalyzer extends BaseAnalyzer {
             jGitInvoker.close();
 
             Set<String> files = new HashSet<>();
+            errors.forEach(error -> files.add(error.getFile()));
+            parseMethodAndField(files);
+
             for (XmlError error : errors) {
                 String uuid = UUID.randomUUID().toString();
                 String file = FileUtil.handleFileNameToRelativePath(error.getFile());
-                files.add(error.getFile());
 
                 RawIssue rawIssue = new RawIssue();
                 rawIssue.setUuid(uuid);
@@ -105,7 +107,6 @@ public class TscanCodeAnalyzer extends BaseAnalyzer {
             }
 
             resultRawIssues.addAll(rawIssues);
-            parseMethodAndField(files);
 
             return true;
         } catch (Exception e) {
@@ -184,8 +185,4 @@ public class TscanCodeAnalyzer extends BaseAnalyzer {
         this.commitDao = commitDao;
     }
 
-    public static void main(String[] args) throws IOException {
-        FileInfo fileInfo = CppCodeAnalyzer.parseFile("/Users/beethoven/CLionProjects/untitled2/main.cpp");
-        List<MethodInfo> methodInfoList = fileInfo.getMethodInfoList();
-    }
 }

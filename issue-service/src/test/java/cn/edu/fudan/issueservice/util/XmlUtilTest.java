@@ -19,5 +19,8 @@ public class XmlUtilTest {
     public void getErrorsTest() throws IOException, JDOMException, SAXException {
         List<XmlError> error = XmlUtil.getError(System.getProperty("user.dir") + "/src/test/resources/testFile/err-test.xml");
         Assert.assertEquals(error.size(), 36);
+
+        List<XmlError> error2 = XmlUtil.getError(System.getProperty("user.dir") + "/src/test/resources/testFile/err-test2.xml");
+        Assert.assertEquals(error2.size(), 108);
     }
 }
