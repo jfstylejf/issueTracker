@@ -27,7 +27,7 @@ public class XmlUtil {
         try (BufferedReader bf= new BufferedReader(new FileReader(fileName))){
             String s;
             while((s = bf.readLine())!=null){
-                buffer.append(s.trim());
+                buffer.append(s.trim()).append("\n");
             }
         }
         String xmlContent = buffer.toString().replaceAll("[\\x00-\\x08\\x0b-\\x0c\\x0e-\\x1f]", "");
