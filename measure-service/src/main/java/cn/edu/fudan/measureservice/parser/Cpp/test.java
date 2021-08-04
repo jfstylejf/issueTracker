@@ -21,7 +21,7 @@ public class test {
 
     public static void main(String[] args) throws IOException {
 
-        CPP14Lexer lexer = new CPP14Lexer(CharStreams.fromFileName("C:\\Users\\wjzho\\Desktop\\test.cpp"));
+        CPP14Lexer lexer = new CPP14Lexer(CharStreams.fromFileName("/Users/keyon/Documents/bigDataPlatform/cppFiles/b.cpp"));
 
         CommonTokenStream tokens = new CommonTokenStream(lexer);
 

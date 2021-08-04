@@ -75,6 +75,7 @@ public class IssueScanServiceImpl implements IssueScanService {
                 commitDao.getCommitByCommitId(repoUuid, mainIssueRepo.getStartCommit()).getCommitTime().substring(0, 19));
 
         commits.removeIf(commit -> scannedCommitList.contains(commit.getCommitId()));
+        commits.forEach(commit -> commit.setScanned(false));
 
         return new HashMap<>(8) {{
             put(TOTAL, commits.size());

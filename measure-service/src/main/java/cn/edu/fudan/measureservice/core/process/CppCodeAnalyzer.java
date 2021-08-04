@@ -76,7 +76,9 @@ public class CppCodeAnalyzer extends BaseAnalyzer{
                 .memberList(memberList)
                 .globalParameterList(listener.getGlobalParameterList())
                 .absolutePath(file)
+                .enumList(listener.getEnumList())
                 .build();
+
 
         return fileInfo;
 
@@ -96,9 +98,13 @@ public class CppCodeAnalyzer extends BaseAnalyzer{
 
 
     public static void main(String[] args) throws IOException {
-        String fileName = "C:\\Users\\wjzho\\Desktop\\coincontroldialog.cpp";
-        System.out.println(CppCodeAnalyzer.parseFileTree(fileName));
+
+        String fileName = "/Users/keyon/Documents/bigDataPlatform/cppFiles/b.cpp";
         FileInfo fileInfo = CppCodeAnalyzer.parseFile(fileName);
+
+
+        System.out.println(CppCodeAnalyzer.parseFileTree(fileName));
+
         System.out.println("MethodInfo is : {");
         for (MethodInfo methodInfo : fileInfo.getMethodInfoList()) {
             System.out.println("  " + methodInfo.getMethodName());

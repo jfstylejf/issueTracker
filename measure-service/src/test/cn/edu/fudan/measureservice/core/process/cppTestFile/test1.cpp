@@ -2,6 +2,12 @@
 #include "string"
 using namespace std;
 
+
+
+const int global_1;
+float global_2;
+vector<int> global_3;
+
 class Stats {
 private:
     double start_;
