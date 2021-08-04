@@ -84,53 +84,13 @@ public class CppExtractListener extends CPP14ParserBaseListener{
         }
 
         // 获取方法的名字和参数
-        String methodName;
         CPP14Parser.DeclaratorContext declaratorContext = ctx.declarator();
-        if (declaratorContext.pointerDeclarator() != null) {
-            CPP14Parser.NoPointerDeclaratorContext noPointerDeclaratorContext = declaratorContext.pointerDeclarator().noPointerDeclarator();
-            // todo : LeftParen pointerDeclarator RightParen 结构未处理
-            if (noPointerDeclaratorContext.noPointerDeclarator() != null) {
-                // 获取方法名
-                CPP14Parser.IdExpressionContext idExpressionContext = noPointerDeclaratorContext.noPointerDeclarator().declaratorid().idExpression();
-                if (idExpressionContext.unqualifiedId() != null) {
-                    methodName = tokenStream.getText(idExpressionContext.unqualifiedId());
-
-                }else {
-                    // 型如 void CoinControlDialog::setModel ，有分域操作符时特殊处理
-                    methodName = tokenStream.getText(idExpressionContext.qualifiedId().unqualifiedId());
-                }
-                methodInfo.setMethodName(methodName);
-
-                // 获取参数
-                CPP14Parser.ParametersAndQualifiersContext parametersAndQualifiersContext = noPointerDeclaratorContext.parametersAndQualifiers();
-                CPP14Parser.ParameterDeclarationClauseContext parameterDeclarationClauseContext = parametersAndQualifiersContext.parameterDeclarationClause();
-                if (parameterDeclarationClauseContext != null) {
-                    // 此时有参数
-                    CPP14Parser.ParameterDeclarationListContext parameterDeclarationListContext = parameterDeclarationClauseContext.parameterDeclarationList();
-                    for (CPP14Parser.ParameterDeclarationContext parameterDeclarationContext : parameterDeclarationListContext.parameterDeclaration()) {
-                        ParameterPair parameterPair = new ParameterPair();
-                        String declSpecifier = getSpecifier(parameterDeclarationContext.declSpecifierSeq());
-                        parameterPair.setSpecifier(declSpecifier);
-                        if (parameterDeclarationContext.declarator() != null) {
-                            String parameterName = tokenStream.getText(parameterDeclarationContext.declarator());
-                            parameterPair.setParameterName(parameterName);
-                            parameterPair.setStartPosition(parameterDeclarationContext.start.getLine());
-                            parameterPair.setEndPosition(parameterDeclarationContext.stop.getLine());
-                        }
-                        methodInfo.getMethodParameter().add(parameterPair);
-                    }
-                }
-                methodInfo.setStartPosition(ctx.start.getLine());
-                methodInfo.setEndPosition(ctx.stop.getLine());
-            }else {
-                // todo : LeftParen pointerDeclarator RightParen 结构未处理 以及 declaratorid attributeSpecifierSeq? 未处理
-            }
-
-
-        }else {
-            // todo 未考虑 noPointerDeclarator parametersAndQualifiers trailingReturnType 这一类型的定义
-        }
-
+        String methodName = getDeclarator(declaratorContext);
+        methodInfo.setMethodName(methodName);
+        List<ParameterPair> methodParameterPairList = getParametersAndQualifiers(declaratorContext);
+        methodInfo.getMethodParameter().addAll(methodParameterPairList);
+        methodInfo.setStartPosition(ctx.start.getLine());
+        methodInfo.setEndPosition(ctx.stop.getLine());
         methodInfoList.add(methodInfo);
 
     }
@@ -226,6 +186,77 @@ public class CppExtractListener extends CPP14ParserBaseListener{
     }
 
     /**
+     * 获取签名
+     * @param declaratorContext 声明内容
+     * @return
+     */
+    private String getDeclarator(CPP14Parser.DeclaratorContext declaratorContext) {
+        Objects.requireNonNull(declaratorContext);
+        if (declaratorContext.pointerDeclarator() != null) {
+            CPP14Parser.NoPointerDeclaratorContext noPointerDeclaratorContext = declaratorContext.pointerDeclarator().noPointerDeclarator();
+            // todo : LeftParen pointerDeclarator RightParen 结构未处理
+            if (noPointerDeclaratorContext.noPointerDeclarator() != null) {
+                // 获取签名
+                CPP14Parser.IdExpressionContext idExpressionContext = noPointerDeclaratorContext.noPointerDeclarator().declaratorid().idExpression();
+                return extractNameFromIdExpression(idExpressionContext);
+            }else {
+                // 对应于签名结构 declaratorid attributeSpecifierSeq?
+                CPP14Parser.IdExpressionContext idExpressionContext = noPointerDeclaratorContext.declaratorid().idExpression();
+                return extractNameFromIdExpression(idExpressionContext);
+            }
+        }else {
+            // todo 未考虑 noPointerDeclarator parametersAndQualifiers trailingReturnType 这一类型的定义
+        }
+        return "";
+    }
+
+    private String extractNameFromIdExpression(CPP14Parser.IdExpressionContext idExpressionContext) {
+        Objects.requireNonNull(idExpressionContext);
+        if (idExpressionContext.unqualifiedId() != null) {
+            return tokenStream.getText(idExpressionContext.unqualifiedId());
+        }else {
+            // 型如 void CoinControlDialog::setModel ，有分域操作符时特殊处理
+            return tokenStream.getText(idExpressionContext.qualifiedId().unqualifiedId());
+        }
+    }
+
+    /**
+     * 获取参数的签名和修饰符
+     * @param declaratorContext
+     * @return
+     */
+    private List<ParameterPair> getParametersAndQualifiers(CPP14Parser.DeclaratorContext declaratorContext) {
+        Objects.requireNonNull(declaratorContext);
+        List<ParameterPair> parameterPairList = new ArrayList<>();
+        if (declaratorContext.pointerDeclarator() != null) {
+            CPP14Parser.NoPointerDeclaratorContext noPointerDeclaratorContext = declaratorContext.pointerDeclarator().noPointerDeclarator();
+            // 获取参数
+            CPP14Parser.ParametersAndQualifiersContext parametersAndQualifiersContext = noPointerDeclaratorContext.parametersAndQualifiers();
+            CPP14Parser.ParameterDeclarationClauseContext parameterDeclarationClauseContext = parametersAndQualifiersContext.parameterDeclarationClause();
+            if (parameterDeclarationClauseContext != null) {
+                // 此时有参数
+                CPP14Parser.ParameterDeclarationListContext parameterDeclarationListContext = parameterDeclarationClauseContext.parameterDeclarationList();
+                for (CPP14Parser.ParameterDeclarationContext parameterDeclarationContext : parameterDeclarationListContext.parameterDeclaration()) {
+                    ParameterPair parameterPair = new ParameterPair();
+                    String declSpecifier = getSpecifier(parameterDeclarationContext.declSpecifierSeq());
+                    parameterPair.setSpecifier(declSpecifier);
+                    if (parameterDeclarationContext.declarator() != null) {
+                        String parameterName = getDeclarator(parameterDeclarationContext.declarator());
+                        parameterPair.setParameterName(parameterName);
+                        parameterPair.setStartPosition(parameterDeclarationContext.start.getLine());
+                        parameterPair.setEndPosition(parameterDeclarationContext.stop.getLine());
+                        parameterPairList.add(parameterPair);
+                    }
+                }
+            }
+        }else {
+            // todo 未考虑 noPointerDeclarator parametersAndQualifiers trailingReturnType 这一类型的定义
+        }
+        return parameterPairList;
+    }
+
+
+    /**
      * 通过SimpleDeclaration获取到枚举类变量存入enumList
      * @param ctx
      */
@@ -258,26 +289,19 @@ public class CppExtractListener extends CPP14ParserBaseListener{
         CPP14Parser.DeclSpecifierSeqContext declSpecifierSeqContext= ctx.declSpecifierSeq();
         String specifier = getSpecifier(declSpecifierSeqContext);
         CPP14Parser.InitDeclaratorListContext initDeclaratorListContext = ctx.initDeclaratorList();
-
+        // 类似于 class COutPoint; 这一结构，需要特判 initDeclaratorList 是否为 null
         if (initDeclaratorListContext != null) {
             for (CPP14Parser.InitDeclaratorContext initDeclaratorContext : initDeclaratorListContext.initDeclarator()) {
                 ParameterPair parameterPair = new ParameterPair();
-                String declarator = tokenStream.getText(initDeclaratorContext.declarator());
+                String declarator = getDeclarator(initDeclaratorContext.declarator());
                 parameterPair.setSpecifier(specifier);
                 parameterPair.setParameterName(declarator);
                 parameterPair.setStartPosition(initDeclaratorContext.start.getLine());
                 parameterPair.setEndPosition(initDeclaratorContext.stop.getLine());
                 globalParameterList.add(parameterPair);
             }
-
-            // 类似于 class COutPoint; 这一结构，需要特判 initDeclaratorList 是否为 null
-            if (initDeclaratorListContext == null) {
-                return;
-            }
-
         }
     }
-
 
 
 
