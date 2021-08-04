@@ -202,11 +202,13 @@ public class CppExtractListener extends CPP14ParserBaseListener{
         CPP14Parser.TypeSpecifierContext typeSpecifierContext = declSpecifierContext.typeSpecifier();
         if (typeSpecifierContext != null) {
             // 若是类修饰和枚举修饰则代表不是全局变量
-            if(typeSpecifierContext.classSpecifier() != null)
+            if(typeSpecifierContext.classSpecifier() != null) {
                 return 0;
-            else if(typeSpecifierContext.enumSpecifier() != null)
+            } else if(typeSpecifierContext.enumSpecifier() != null) {
                 return 1;
-            else return 2;
+            } else {
+                return 2;
+            }
         }
         // warning  不清楚是否有 static class 这种类声明，若有则需要继续区分之后的修饰符是否包含 类或枚举 修饰
         return 0;
@@ -240,7 +242,7 @@ public class CppExtractListener extends CPP14ParserBaseListener{
                     //parameterPair.setSpecifier(specifier);
                     parameterPair.setParameterName(enumerator);
                     parameterPair.setStartPosition(enumeratorDefinitionContext.start.getLine());
-                    parameterPair.setEndPosition(enumeratorDefinitionContext.start.getLine());
+                    parameterPair.setEndPosition(enumeratorDefinitionContext.stop.getLine());
                     enumList.add(parameterPair);
 
                 }
@@ -263,24 +265,14 @@ public class CppExtractListener extends CPP14ParserBaseListener{
                 String declarator = tokenStream.getText(initDeclaratorContext.declarator());
                 parameterPair.setSpecifier(specifier);
                 parameterPair.setParameterName(declarator);
-                parameterPair.setStartPosition(ctx.start.getLine());
-                parameterPair.setEndPosition(ctx.stop.getLine());
+                parameterPair.setStartPosition(initDeclaratorContext.start.getLine());
+                parameterPair.setEndPosition(initDeclaratorContext.stop.getLine());
                 globalParameterList.add(parameterPair);
             }
 
             // 类似于 class COutPoint; 这一结构，需要特判 initDeclaratorList 是否为 null
             if (initDeclaratorListContext == null) {
                 return;
-            }
-            for (CPP14Parser.InitDeclaratorContext initDeclaratorContext : initDeclaratorListContext.initDeclarator()) {
-                ParameterPair parameterPair = new ParameterPair();
-                String declarator = tokenStream.getText(initDeclaratorContext.declarator());
-                parameterPair.setSpecifier(specifier);
-                parameterPair.setParameterName(declarator);
-                parameterPair.setStartPosition(ctx.start.getLine());
-                parameterPair.setEndPosition(ctx.stop.getLine());
-                globalParameterList.add(parameterPair);
-
             }
 
         }
