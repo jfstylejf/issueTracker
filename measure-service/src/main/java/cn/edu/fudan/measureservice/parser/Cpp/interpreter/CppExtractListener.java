@@ -70,7 +70,10 @@ public class CppExtractListener extends CPP14ParserBaseListener{
 
     @Override
     public void enterFunctionDefinition(CPP14Parser.FunctionDefinitionContext ctx) {
-
+        // 不统计类声明中的方法定义
+        if (enterClassOrNot) {
+            return;
+        }
         enterFunctionOrNot = true;
         MethodInfo methodInfo = new MethodInfo();
 
@@ -157,9 +160,14 @@ public class CppExtractListener extends CPP14ParserBaseListener{
      */
     private int isGlobalDefinitionOrEnum(CPP14Parser.DeclSpecifierSeqContext declSpecifierSeqContext) {
         Objects.requireNonNull(declSpecifierSeqContext);
-        CPP14Parser.DeclSpecifierContext declSpecifierContext = declSpecifierSeqContext.declSpecifier(0);
+        CPP14Parser.TypeSpecifierContext typeSpecifierContext = null;
+        for (CPP14Parser.DeclSpecifierContext declSpecifierContext : declSpecifierSeqContext.declSpecifier()) {
+            typeSpecifierContext = declSpecifierContext.typeSpecifier();
+            if (typeSpecifierContext != null) {
+                break;
+            }
+        }
         // 目前简单表达式修饰符类型只考虑了 typeSpecifier
-        CPP14Parser.TypeSpecifierContext typeSpecifierContext = declSpecifierContext.typeSpecifier();
         if (typeSpecifierContext != null) {
             // 若是类修饰和枚举修饰则代表不是全局变量
             if(typeSpecifierContext.classSpecifier() != null) {

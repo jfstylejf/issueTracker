@@ -99,7 +99,7 @@ public class CppCodeAnalyzer extends BaseAnalyzer{
 
     public static void main(String[] args) throws IOException {
 
-        String fileName = "C:\\Users\\wjzho\\Desktop\\coincontroldialog.cpp";
+        String fileName = "C:\\Users\\wjzho\\Desktop\\test6.cpp";
         FileInfo fileInfo = CppCodeAnalyzer.parseFile(fileName);
 
 
@@ -122,8 +122,18 @@ public class CppCodeAnalyzer extends BaseAnalyzer{
             System.out.println(" start: " + parameterPair.getStartPosition() + " end : " + parameterPair.getEndPosition());
             System.out.println();
         }
+        System.out.println("}");
+        System.out.println();
 
-        System.out.println(fileInfo.getMemberList());
+        System.out.println("MemberInfo is : {");
+        for (ParameterPair parameterPair : fileInfo.getMemberList()) {
+            System.out.println("  " + parameterPair.getSpecifier());
+            System.out.println("  " + parameterPair.getParameterName());
+            System.out.println(" start: " + parameterPair.getStartPosition() + " end : " + parameterPair.getEndPosition());
+            System.out.println();
+        }
+        System.out.println("}");
+//        System.out.println(fileInfo.getMemberList());
 
     }
 
