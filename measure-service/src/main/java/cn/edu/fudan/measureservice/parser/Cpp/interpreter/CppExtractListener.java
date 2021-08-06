@@ -73,31 +73,45 @@ public class CppExtractListener extends CPP14ParserBaseListener{
 
     @Override
     public void enterFunctionDefinition(CPP14Parser.FunctionDefinitionContext ctx) {
-        // 不统计类声明中的方法定义
-        if (enterClassOrNot) {
-            return;
-        }
+
         enterFunctionOrNot = true;
         MethodInfo methodInfo = new MethodInfo();
-
+        // 判断是否是常规方法申明
+        boolean flag = false;
         // 获取方法修饰符
         CPP14Parser.DeclSpecifierSeqContext declSpecifierSeqContext = ctx.declSpecifierSeq();
         if (declSpecifierSeqContext != null) {
             String funcSpecifier = getSpecifier(declSpecifierSeqContext);
             methodInfo.setSpecifier(funcSpecifier);
         }else {
-            // todo 还有 attributeSpecifierSeq， virtualSpecifierSeq 存在的情况需要再考虑
+            // 对于这类结构特判     CBloomFilter() : isFull(true) {}
+            flag = true;
         }
 
         // 获取方法的名字和参数
         CPP14Parser.DeclaratorContext declaratorContext = ctx.declarator();
         String methodName = getDeclarator(declaratorContext);
-        methodInfo.setMethodName(methodName);
+        if (flag) {
+            methodInfo.setSpecifier(methodName);
+            CPP14Parser.FunctionBodyContext functionBodyContext = ctx.functionBody();
+            if (functionBodyContext.constructorInitializer() != null) {
+                CPP14Parser.MemInitializerListContext memInitializerListContext = functionBodyContext.constructorInitializer().memInitializerList();
+                methodName = tokenStream.getText(memInitializerListContext.memInitializer(0).meminitializerid());
+                methodInfo.setMethodName(methodName);
+            }
+        }else {
+            methodInfo.setMethodName(methodName);
+        }
         List<ParameterPair> methodParameterPairList = getParametersAndQualifiers(declaratorContext);
         methodInfo.getMethodParameter().addAll(methodParameterPairList);
         methodInfo.setStartPosition(ctx.start.getLine());
         methodInfo.setEndPosition(ctx.stop.getLine());
-        methodInfoList.add(methodInfo);
+        // 统计类声明中的方法定义
+        if (enterClassOrNot) {
+           memberMethodInfoList.add(methodInfo);
+        }else {
+            methodInfoList.add(methodInfo);
+        }
 
     }
 
@@ -138,29 +152,25 @@ public class CppExtractListener extends CPP14ParserBaseListener{
         if(memberDeclaratorListContext != null){
             List<CPP14Parser.MemberDeclaratorContext> memberDeclaratorContexts = memberDeclaratorListContext.memberDeclarator();
             for (CPP14Parser.MemberDeclaratorContext memberDeclaratorContext : memberDeclaratorContexts) {
-                CPP14Parser.NoPointerDeclaratorContext noPointerDeclaratorContext = memberDeclaratorContext.declarator().pointerDeclarator().noPointerDeclarator()
-                        .noPointerDeclarator();
-
-                // 获取加成员变量相关信息
-                if(noPointerDeclaratorContext == null){
+                CPP14Parser.DeclaratorContext declarator = memberDeclaratorContext.declarator();
+                String memberDeclarator = getDeclarator(declarator);
+                boolean flag = isMemberDefinitionOrNot(declarator);
+                if (flag) {
+                    // 获取加成员变量相关信息
                     ParameterPair parameterPair = new ParameterPair();
-                    String memberDeclarator = tokenStream.getText(memberDeclaratorContext);
                     parameterPair.setSpecifier(specifier);
                     parameterPair.setParameterName(memberDeclarator);
-                    parameterPair.setStartPosition(ctx.start.getLine());
-                    parameterPair.setEndPosition(ctx.stop.getLine());
+                    parameterPair.setStartPosition(memberDeclaratorContext.start.getLine());
+                    parameterPair.setEndPosition(memberDeclaratorContext.stop.getLine());
                     memberList.add(parameterPair);
-                }else {
+                } else {
                     MethodInfo methodInfo = new MethodInfo();
-                    String methodName = tokenStream.getText(noPointerDeclaratorContext);
-                    methodInfo.setMethodName(methodName);
+                    methodInfo.setMethodName(memberDeclarator);
                     methodInfo.setSpecifier(specifier);
-                    CPP14Parser.DeclaratorContext declaratorContext= memberDeclaratorContext.declarator();
-                    List<ParameterPair> methodParameterPairList = getParametersAndQualifiers(declaratorContext);
+                    List<ParameterPair> methodParameterPairList = getParametersAndQualifiers(declarator);
                     methodInfo.getMethodParameter().addAll(methodParameterPairList);
-                    methodInfo.setStartPosition(ctx.start.getLine());
-                    methodInfo.setEndPosition(ctx.stop.getLine());
-                    System.out.println(methodInfo);
+                    methodInfo.setStartPosition(memberDeclaratorContext.start.getLine());
+                    methodInfo.setEndPosition(memberDeclaratorContext.stop.getLine());
                     memberMethodInfoList.add(methodInfo);
 
                 }
@@ -170,6 +180,29 @@ public class CppExtractListener extends CPP14ParserBaseListener{
 
 
 
+    }
+
+    /**
+     * 判断是否是类成员变量或是类声明方法
+     * @param declarator 声明内容
+     * @return 若为false,则是声明方法内容，若为 true,则为成员变量
+     */
+    private boolean isMemberDefinitionOrNot(CPP14Parser.DeclaratorContext declarator) {
+        Objects.requireNonNull(declarator);
+        if (declarator.pointerDeclarator() != null) {
+            CPP14Parser.NoPointerDeclaratorContext noPointerDeclaratorContext = declarator.pointerDeclarator().noPointerDeclarator();
+            // todo : LeftParen pointerDeclarator RightParen 结构未处理
+            if (noPointerDeclaratorContext.noPointerDeclarator() != null) {
+                // 此时进入 noPointerDeclarator ( parametersAndQualifiers | ) 结构, 表明是类声明方法
+                return false;
+            }else {
+                // 对应于签名结构 declaratorid attributeSpecifierSeq?
+               return true;
+            }
+        }else {
+            // todo 未考虑 noPointerDeclarator parametersAndQualifiers trailingReturnType 这一类型的定义
+        }
+        return false;
     }
 
     /**

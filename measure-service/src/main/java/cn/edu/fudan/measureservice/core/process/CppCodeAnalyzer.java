@@ -100,7 +100,7 @@ public class CppCodeAnalyzer extends BaseAnalyzer{
 
     public static void main(String[] args) throws IOException {
 
-        String fileName = "/Users/keyon/Documents/bigDataPlatform/cppFiles/bloom.h";
+        String fileName = "C:\\Users\\wjzho\\Desktop\\walletdb.cpp";
         FileInfo fileInfo = CppCodeAnalyzer.parseFile(fileName);
 
 
