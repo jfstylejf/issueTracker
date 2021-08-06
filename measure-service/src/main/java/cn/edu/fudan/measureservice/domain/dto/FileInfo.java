@@ -29,6 +29,10 @@ public class FileInfo implements Serializable {
      */
     private List<ParameterPair> memberList;
     /**
+     * 文件声明类中的方法列表
+     */
+    private List<MethodInfo> memberMethodList;
+    /**
      * 文件枚举类成员列表
      */
     private List<ParameterPair> enumList;

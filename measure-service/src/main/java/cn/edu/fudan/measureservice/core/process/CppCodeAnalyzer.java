@@ -77,6 +77,7 @@ public class CppCodeAnalyzer extends BaseAnalyzer{
                 .globalParameterList(listener.getGlobalParameterList())
                 .absolutePath(file)
                 .enumList(listener.getEnumList())
+                .memberMethodList(listener.getMemberMethodInfoList())
                 .build();
 
 
@@ -99,7 +100,7 @@ public class CppCodeAnalyzer extends BaseAnalyzer{
 
     public static void main(String[] args) throws IOException {
 
-        String fileName = "C:\\Users\\wjzho\\Desktop\\test6.cpp";
+        String fileName = "/Users/keyon/Documents/bigDataPlatform/cppFiles/bloom.h";
         FileInfo fileInfo = CppCodeAnalyzer.parseFile(fileName);
 
 
@@ -130,6 +131,16 @@ public class CppCodeAnalyzer extends BaseAnalyzer{
             System.out.println("  " + parameterPair.getSpecifier());
             System.out.println("  " + parameterPair.getParameterName());
             System.out.println(" start: " + parameterPair.getStartPosition() + " end : " + parameterPair.getEndPosition());
+            System.out.println();
+        }
+        System.out.println("}");
+
+        System.out.println("memberMethodInfo is : {");
+        for (MethodInfo methodInfo : fileInfo.getMemberMethodList()) {
+            System.out.println("  " + methodInfo.getSpecifier());
+            System.out.println("  " + methodInfo.getMethodName());
+            System.out.println("  " + methodInfo.getMethodParameter());
+            System.out.println(" start: " + methodInfo.getStartPosition() + " end : " + methodInfo.getEndPosition());
             System.out.println();
         }
         System.out.println("}");

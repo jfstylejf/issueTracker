@@ -23,6 +23,8 @@ public class CppExtractListener extends CPP14ParserBaseListener{
 
     private List<MethodInfo> methodInfoList;
 
+    private List<MethodInfo> memberMethodInfoList;
+
     List<ParameterPair> memberList = new ArrayList<>();
 
     private boolean enterClassOrNot = false;
@@ -37,6 +39,7 @@ public class CppExtractListener extends CPP14ParserBaseListener{
         this.parser = parser;
         tokenStream = parser.getTokenStream();
         methodInfoList = new ArrayList<>();
+        memberMethodInfoList = new ArrayList<>();
     }
 
 
@@ -135,14 +138,33 @@ public class CppExtractListener extends CPP14ParserBaseListener{
         if(memberDeclaratorListContext != null){
             List<CPP14Parser.MemberDeclaratorContext> memberDeclaratorContexts = memberDeclaratorListContext.memberDeclarator();
             for (CPP14Parser.MemberDeclaratorContext memberDeclaratorContext : memberDeclaratorContexts) {
+                CPP14Parser.NoPointerDeclaratorContext noPointerDeclaratorContext = memberDeclaratorContext.declarator().pointerDeclarator().noPointerDeclarator()
+                        .noPointerDeclarator();
+
                 // 获取加成员变量相关信息
-                ParameterPair parameterPair = new ParameterPair();
-                String memberDeclarator = tokenStream.getText(memberDeclaratorContext);
-                parameterPair.setSpecifier(specifier);
-                parameterPair.setParameterName(memberDeclarator);
-                parameterPair.setStartPosition(ctx.start.getLine());
-                parameterPair.setEndPosition(ctx.stop.getLine());
-                memberList.add(parameterPair);
+                if(noPointerDeclaratorContext == null){
+                    ParameterPair parameterPair = new ParameterPair();
+                    String memberDeclarator = tokenStream.getText(memberDeclaratorContext);
+                    parameterPair.setSpecifier(specifier);
+                    parameterPair.setParameterName(memberDeclarator);
+                    parameterPair.setStartPosition(ctx.start.getLine());
+                    parameterPair.setEndPosition(ctx.stop.getLine());
+                    memberList.add(parameterPair);
+                }else {
+                    MethodInfo methodInfo = new MethodInfo();
+                    String methodName = tokenStream.getText(noPointerDeclaratorContext);
+                    methodInfo.setMethodName(methodName);
+                    methodInfo.setSpecifier(specifier);
+                    CPP14Parser.DeclaratorContext declaratorContext= memberDeclaratorContext.declarator();
+                    List<ParameterPair> methodParameterPairList = getParametersAndQualifiers(declaratorContext);
+                    methodInfo.getMethodParameter().addAll(methodParameterPairList);
+                    methodInfo.setStartPosition(ctx.start.getLine());
+                    methodInfo.setEndPosition(ctx.stop.getLine());
+                    System.out.println(methodInfo);
+                    memberMethodInfoList.add(methodInfo);
+
+                }
+
             }
         }
 
